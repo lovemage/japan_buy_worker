@@ -3,8 +3,22 @@ import { getDraft } from "./draft-store.js";
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
-const CATEGORY_ZH_MAP = {
-  "Tシャツ": "T 恤",
+const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
+const VIEW_MODES = ["list", "card", "2card"];
+const CATEGORY_TOKEN_MAP = {
+  "all item": "全部商品",
+  "tops": "上衣",
+  "bottoms": "下身",
+  "outer": "外套",
+  "onepiece": "洋裝",
+  "set item": "套裝",
+  "goods": "雜貨",
+  "baby": "嬰幼兒",
+  "kids": "童裝",
+  "boys": "男童",
+  "girls": "女童",
+  "unisex": "中性",
+  "tシャツ": "T 恤",
   "シャツ": "襯衫",
   "パンツ": "褲子",
   "ショートパンツ": "短褲",
@@ -98,6 +112,43 @@ function renderProducts(products, pricing) {
     .join("");
 }
 
+function getViewMode() {
+  const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY) || "card";
+  return VIEW_MODES.includes(saved) ? saved : "card";
+}
+
+function applyViewMode(mode) {
+  const grid = document.getElementById("product-grid");
+  if (!grid) {
+    return;
+  }
+  grid.classList.remove("product-grid--list", "product-grid--card", "product-grid--2card");
+  if (mode === "list") {
+    grid.classList.add("product-grid--list");
+  } else if (mode === "2card") {
+    grid.classList.add("product-grid--2card");
+  } else {
+    grid.classList.add("product-grid--card");
+  }
+
+  document.querySelectorAll(".view-switch__btn[data-view-mode]").forEach((btn) => {
+    const isActive = btn.getAttribute("data-view-mode") === mode;
+    btn.classList.toggle("is-active", isActive);
+  });
+}
+
+function initViewSwitch() {
+  const mode = getViewMode();
+  applyViewMode(mode);
+  document.querySelectorAll(".view-switch__btn[data-view-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const next = btn.getAttribute("data-view-mode") || "card";
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, next);
+      applyViewMode(next);
+    });
+  });
+}
+
 function formatDateOnly(input) {
   const value = new Date(input);
   if (Number.isNaN(value.getTime())) {
@@ -107,19 +158,26 @@ function formatDateOnly(input) {
 }
 
 function translateCategoryLabel(raw) {
-  const key = String(raw || "").trim();
-  if (!key) {
+  const input = String(raw || "").trim();
+  if (!input) {
     return "未分類";
   }
-  if (CATEGORY_ZH_MAP[key]) {
-    return CATEGORY_ZH_MAP[key];
+  const exact = CATEGORY_TOKEN_MAP[input.toLowerCase()];
+  if (exact) {
+    return exact;
   }
-  for (const [jp, zh] of Object.entries(CATEGORY_ZH_MAP)) {
-    if (key.includes(jp)) {
-      return key.replace(jp, zh);
-    }
+
+  let translated = input;
+  const pairs = Object.entries(CATEGORY_TOKEN_MAP).sort((a, b) => b[0].length - a[0].length);
+  for (const [token, zh] of pairs) {
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(escaped, "gi");
+    translated = translated.replace(re, zh);
   }
-  return key;
+
+  // Normalize separators for mixed tags like "BOYS_パンツ"
+  translated = translated.replace(/[_/]+/g, " / ").replace(/\s{2,}/g, " ").trim();
+  return translated;
 }
 
 function getPage() {
@@ -245,6 +303,7 @@ function initPromoModal() {
 async function bootstrap() {
   renderDraftCount();
   initPromoModal();
+  initViewSwitch();
   try {
     const categoryRes = await fetch("/api/product-categories");
     const categoryBody = categoryRes.ok ? await categoryRes.json() : null;
