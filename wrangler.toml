@@ -1,0 +1,14 @@
+name = "japan-buy-workers"
+main = "src/index.ts"
+compatibility_date = "2026-03-13"
+
+[vars]
+CRAWL_MAX_PAGES = "3"
+CRAWL_TIMEOUT_MS = "120000"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "japan-buy-db"
+database_id = "REPLACE_WITH_REAL_DATABASE_ID"
+migrations_dir = "migrations"
+
