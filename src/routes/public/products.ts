@@ -75,11 +75,13 @@ export async function handlePublicProducts(
   const limit = Math.min(Number(url.searchParams.get("limit") || 20), 100);
   const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
   const category = (url.searchParams.get("category") || "").trim();
+  const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
   const hasCategory = category.length > 0;
+  const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
   const pricing = await getPricingConfig(env.DB);
   const markup = Number(pricing.markupJpy);
   const rate = Number(pricing.jpyToTwd);
-  const promoThreshold = Number(pricing.promoTagMaxTwd);
+  const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
   const maxBaseJpy =
     Number.isFinite(markup) &&
     Number.isFinite(rate) &&
@@ -112,8 +114,7 @@ LEFT JOIN product_snapshots ps ON ps.id = (
   LIMIT 1
 )
 WHERE p.is_active = 1 AND p.category = ?
-  AND p.price_jpy_tax_in IS NOT NULL
-  AND p.price_jpy_tax_in <= ?
+  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
 ORDER BY updated_at DESC
 LIMIT ? OFFSET ?
 `
@@ -139,29 +140,41 @@ LEFT JOIN product_snapshots ps ON ps.id = (
   LIMIT 1
 )
 WHERE p.is_active = 1
-  AND p.price_jpy_tax_in IS NOT NULL
-  AND p.price_jpy_tax_in <= ?
+  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
 ORDER BY p.updated_at DESC
 LIMIT ? OFFSET ?
 `;
   const rows = hasCategory
-    ? await env.DB.prepare(listSql).bind(category, maxBaseJpy, limit, offset).all<ProductRow>()
-    : await env.DB.prepare(listSql).bind(maxBaseJpy, limit, offset).all<ProductRow>();
+    ? hasPromoFilter
+      ? await env.DB.prepare(listSql).bind(category, maxBaseJpy, limit, offset).all<ProductRow>()
+      : await env.DB.prepare(listSql).bind(category, limit, offset).all<ProductRow>()
+    : hasPromoFilter
+      ? await env.DB.prepare(listSql).bind(maxBaseJpy, limit, offset).all<ProductRow>()
+      : await env.DB.prepare(listSql).bind(limit, offset).all<ProductRow>();
 
   const products = Array.isArray(rows?.results) ? rows.results : [];
   const totalRow = hasCategory
-    ? await env.DB
-        .prepare(
-          "SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND category = ? AND price_jpy_tax_in IS NOT NULL AND price_jpy_tax_in <= ?"
-        )
-        .bind(category, maxBaseJpy)
-        .first<{ total: number }>()
-    : await env.DB
-        .prepare(
-          "SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND price_jpy_tax_in IS NOT NULL AND price_jpy_tax_in <= ?"
-        )
-        .bind(maxBaseJpy)
-        .first<{ total: number }>();
+    ? hasPromoFilter
+      ? await env.DB
+          .prepare(
+            "SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND category = ? AND price_jpy_tax_in IS NOT NULL AND price_jpy_tax_in <= ?"
+          )
+          .bind(category, maxBaseJpy)
+          .first<{ total: number }>()
+      : await env.DB
+          .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND category = ?")
+          .bind(category)
+          .first<{ total: number }>()
+    : hasPromoFilter
+      ? await env.DB
+          .prepare(
+            "SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND price_jpy_tax_in IS NOT NULL AND price_jpy_tax_in <= ?"
+          )
+          .bind(maxBaseJpy)
+          .first<{ total: number }>()
+      : await env.DB
+          .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1")
+          .first<{ total: number }>();
   const total = Number(totalRow?.total || 0);
   const totalSkuSql = hasCategory
     ? `
@@ -185,8 +198,7 @@ LEFT JOIN product_snapshots ps ON ps.id = (
   LIMIT 1
 )
 WHERE p.is_active = 1 AND p.category = ?
-  AND p.price_jpy_tax_in IS NOT NULL
-  AND p.price_jpy_tax_in <= ?
+  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
 `
     : `
 SELECT
@@ -209,12 +221,15 @@ LEFT JOIN product_snapshots ps ON ps.id = (
   LIMIT 1
 )
 WHERE p.is_active = 1
-  AND p.price_jpy_tax_in IS NOT NULL
-  AND p.price_jpy_tax_in <= ?
+  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
 `;
   const totalSkuRow = hasCategory
-    ? await env.DB.prepare(totalSkuSql).bind(category, maxBaseJpy).first<{ total_sku: number }>()
-    : await env.DB.prepare(totalSkuSql).bind(maxBaseJpy).first<{ total_sku: number }>();
+    ? hasPromoFilter
+      ? await env.DB.prepare(totalSkuSql).bind(category, maxBaseJpy).first<{ total_sku: number }>()
+      : await env.DB.prepare(totalSkuSql).bind(category).first<{ total_sku: number }>()
+    : hasPromoFilter
+      ? await env.DB.prepare(totalSkuSql).bind(maxBaseJpy).first<{ total_sku: number }>()
+      : await env.DB.prepare(totalSkuSql).first<{ total_sku: number }>();
   const totalSku = Number(totalSkuRow?.total_sku || 0);
   const page = Math.floor(offset / Math.max(limit, 1)) + 1;
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)));
@@ -223,7 +238,10 @@ WHERE p.is_active = 1
     JSON.stringify({
       ok: true,
       products: products.map(mapProduct),
-      filters: { category: hasCategory ? category : "" },
+      filters: {
+        category: hasCategory ? category : "",
+        promoMaxTwd: hasPromoFilter ? promoMaxTwd : null,
+      },
       paging: { limit, offset, page, total, totalPages, totalSku },
     }),
     { status: 200, headers: { "content-type": "application/json" } }

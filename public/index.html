@@ -16,14 +16,16 @@
           <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="card">card</button>
           <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="2card">2card</button>
         </div>
+        <div id="promo-switch" class="view-switch" aria-label="優惠篩選切換">
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="350">&lt;350</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="450">&lt;450</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="550">&lt;550</button>
+        </div>
         <section id="category-filters" class="category-filters"></section>
       </div>
     </header>
 
     <main class="container">
-      <section class="hero-banner card">
-        <img id="hero-image" src="/assets/images/success-shiba.png" alt="首頁活動圖" />
-      </section>
       <section id="list-error" class="notice hidden"></section>
       <section id="product-grid" class="product-grid card" aria-live="polite"></section>
       <section id="pagination" class="pagination hidden" aria-live="polite">

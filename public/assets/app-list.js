@@ -6,6 +6,8 @@ const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 }
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
+const PROMO_FILTER_VALUES = [350, 450, 550];
+const DEFAULT_PROMO_FILTER = 550;
 const CATEGORY_TOKEN_MAP = {
   "all item": "全部商品",
   "tops": "上衣",
@@ -111,12 +113,14 @@ function renderDraftCount() {
   }
 }
 
-function renderProducts(products, pricing) {
+function renderProducts(products, pricing, promoMaxTwd) {
   const grid = document.getElementById("product-grid");
   if (!grid) {
     return;
   }
-  const promoThreshold = Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
+  const promoThreshold = Number.isFinite(promoMaxTwd)
+    ? promoMaxTwd
+    : Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
   grid.innerHTML = products
     .map((item) => {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
@@ -131,9 +135,9 @@ function renderProducts(products, pricing) {
       const galleryPayload = encodeURIComponent(JSON.stringify(gallery));
       return `
       <article class="product-card ${gallery.length > 1 ? "has-gallery" : ""}" data-product-card data-gallery="${galleryPayload}">
-        <div class="product-card__media">
+        <div class="product-card__media image-loading" data-image-loading-wrap>
           ${isPromo ? '<span class="promo-badge">優惠</span>' : ""}
-          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" />
+          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" data-image-loading="1" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
         </div>
@@ -165,11 +169,23 @@ function initProductCardGalleries() {
     } catch {
       images = [];
     }
-    if (!Array.isArray(images) || images.length <= 1) {
-      return;
-    }
     const imageNode = card.querySelector("[data-card-image]");
     if (!(imageNode instanceof HTMLImageElement)) {
+      return;
+    }
+    const mediaWrap = card.querySelector("[data-image-loading-wrap]");
+    const setLoading = (loading) => {
+      if (!mediaWrap) {
+        return;
+      }
+      mediaWrap.classList.toggle("image-loading", loading);
+    };
+    imageNode.addEventListener("load", () => setLoading(false));
+    imageNode.addEventListener("error", () => setLoading(false));
+    if (imageNode.complete) {
+      setLoading(false);
+    }
+    if (!Array.isArray(images) || images.length <= 1) {
       return;
     }
 
@@ -177,6 +193,7 @@ function initProductCardGalleries() {
     let timer = null;
     const setIndex = (next) => {
       index = (next + images.length) % images.length;
+      setLoading(true);
       imageNode.src = images[index];
     };
     const stopAuto = () => {
@@ -218,6 +235,29 @@ function initProductCardGalleries() {
     });
   });
   applyProductImageFallback();
+}
+
+function getPromoMaxTwd() {
+  const url = new URL(location.href);
+  const raw = Number(url.searchParams.get("promoMaxTwd") || String(DEFAULT_PROMO_FILTER));
+  return PROMO_FILTER_VALUES.includes(raw) ? raw : DEFAULT_PROMO_FILTER;
+}
+
+function initPromoSwitch() {
+  const selected = getPromoMaxTwd();
+  document.querySelectorAll(".view-switch__btn[data-promo-max]").forEach((btn) => {
+    const value = Number(btn.getAttribute("data-promo-max") || "");
+    btn.classList.toggle("is-active", value === selected);
+    btn.addEventListener("click", () => {
+      if (!PROMO_FILTER_VALUES.includes(value)) {
+        return;
+      }
+      const url = new URL(location.href);
+      url.searchParams.set("promoMaxTwd", String(value));
+      url.searchParams.set("page", "1");
+      location.href = url.toString();
+    });
+  });
 }
 
 function getViewMode() {
@@ -299,7 +339,7 @@ function getCategory() {
   return (url.searchParams.get("category") || "").trim();
 }
 
-function goPage(page, category = getCategory()) {
+function goPage(page, category = getCategory(), promoMaxTwd = getPromoMaxTwd()) {
   const target = Math.max(1, page);
   const url = new URL(location.href);
   url.searchParams.set("page", String(target));
@@ -307,6 +347,9 @@ function goPage(page, category = getCategory()) {
     url.searchParams.set("category", category);
   } else {
     url.searchParams.delete("category");
+  }
+  if (PROMO_FILTER_VALUES.includes(Number(promoMaxTwd))) {
+    url.searchParams.set("promoMaxTwd", String(promoMaxTwd));
   }
   location.href = url.toString();
 }
@@ -375,15 +418,6 @@ function scrollToFirstProductCard() {
 function initPromoModal() {
   const modal = document.getElementById("promo-modal");
   const promoImage = document.getElementById("promo-image");
-  const heroImage = document.getElementById("hero-image");
-  if (heroImage) {
-    heroImage.addEventListener("error", () => {
-      const heroSection = heroImage.closest(".hero-banner");
-      if (heroSection) {
-        heroSection.classList.add("hidden");
-      }
-    });
-  }
   if (promoImage) {
     promoImage.addEventListener("error", () => {
       if (modal) {
@@ -412,6 +446,7 @@ async function bootstrap() {
   renderDraftCount();
   initPromoModal();
   initViewSwitch();
+  initPromoSwitch();
   try {
     const categoryRes = await fetch("/api/product-categories");
     const categoryBody = categoryRes.ok ? await categoryRes.json() : null;
@@ -423,10 +458,12 @@ async function bootstrap() {
     const pricing = pricingBody?.pricing || DEFAULT_PRICING;
     const page = getPage();
     const category = getCategory();
+    const promoMaxTwd = getPromoMaxTwd();
     const offset = (page - 1) * PAGE_SIZE;
     const params = new URLSearchParams({
       limit: String(PAGE_SIZE),
       offset: String(offset),
+      promoMaxTwd: String(promoMaxTwd),
     });
     if (category) {
       params.set("category", category);
@@ -444,7 +481,7 @@ async function bootstrap() {
       const dateText = last ? formatDateOnly(last) : "未知";
       lastNode.textContent = `最後更新：${dateText}｜總SKU數：${totalSku.toLocaleString("en-US")}`;
     }
-    renderProducts(products, pricing);
+    renderProducts(products, pricing, promoMaxTwd);
     initProductCardGalleries();
     renderPagination(body.paging || null);
     renderFloatingPagination(body.paging || null);
