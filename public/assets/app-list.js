@@ -41,11 +41,40 @@ const CATEGORY_TOKEN_MAP = {
   "キッズ": "童裝",
 };
 
-function formatPrice(price) {
-  if (typeof price !== "number") {
-    return "價格未提供";
+function escapeHtml(input) {
+  return String(input ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function toDisplayImageUrl(imageUrl) {
+  if (typeof imageUrl !== "string" || !imageUrl.trim()) {
+    return "";
   }
-  return `JPY ${price.toLocaleString("en-US")}`;
+  return imageUrl.trim().replace(/_ss(\.\w+)$/i, "_pm$1");
+}
+
+function buildProductGallery(item) {
+  const seen = new Set();
+  const images = [];
+  const pushImage = (value) => {
+    const normalized = toDisplayImageUrl(value);
+    if (!normalized || seen.has(normalized)) {
+      return;
+    }
+    seen.add(normalized);
+    images.push(normalized);
+  };
+
+  pushImage(item.displayImageUrl);
+  pushImage(item.imageUrl);
+  if (Array.isArray(item.gallery)) {
+    item.gallery.forEach(pushImage);
+  }
+  return images;
 }
 
 function calcAdjustedPrices(baseJpy, pricing) {
@@ -90,19 +119,22 @@ function renderProducts(products, pricing) {
     .map((item) => {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
       const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
+      const gallery = buildProductGallery(item);
+      const firstImage = gallery[0] || "";
+      const galleryPayload = encodeURIComponent(JSON.stringify(gallery));
       return `
-      <article class="product-card" data-product-card>
-        <a href="/product?code=${encodeURIComponent(item.code)}">
-          <img src="${item.displayImageUrl || item.imageUrl || ""}" alt="${title}" loading="lazy" />
-        </a>
+      <article class="product-card ${gallery.length > 1 ? "has-gallery" : ""}" data-product-card data-gallery="${galleryPayload}">
+        <div class="product-card__media">
+          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image />
+          <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
+          <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
+        </div>
         <div class="product-card__body">
-          <h2 class="product-card__title">
-            <a href="/product?code=${encodeURIComponent(item.code)}">${title}</a>
-          </h2>
-          <p class="meta">${item.brand || "品牌未提供"}</p>
+          <h2 class="product-card__title">${escapeHtml(title)}</h2>
+          <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
           <p class="meta">價格：${adjusted.jpy !== null ? `JPY ${adjusted.jpy.toLocaleString("en-US")}` : "價格未提供"}</p>
           <p class="meta">台幣估算：${adjusted.twd !== null ? `TWD ${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}</p>
-          <p class="meta">分類：${item.category || "未分類"}</p>
+          <p class="meta">分類：${escapeHtml(item.category || "未分類")}</p>
           <p class="meta">顏色數：${item.colorCount ?? "-"}</p>
           <a class="button" href="/product?code=${encodeURIComponent(item.code)}">check this out!</a>
         </div>
@@ -110,6 +142,73 @@ function renderProducts(products, pricing) {
       `;
     })
     .join("");
+}
+
+function initProductCardGalleries() {
+  const supportsHover =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  document.querySelectorAll("[data-product-card]").forEach((card) => {
+    const raw = card.getAttribute("data-gallery") || "";
+    let images = [];
+    try {
+      images = JSON.parse(decodeURIComponent(raw));
+    } catch {
+      images = [];
+    }
+    if (!Array.isArray(images) || images.length <= 1) {
+      return;
+    }
+    const imageNode = card.querySelector("[data-card-image]");
+    if (!(imageNode instanceof HTMLImageElement)) {
+      return;
+    }
+
+    let index = 0;
+    let timer = null;
+    const setIndex = (next) => {
+      index = (next + images.length) % images.length;
+      imageNode.src = images[index];
+    };
+    const stopAuto = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const startAuto = () => {
+      if (timer !== null || !supportsHover) {
+        return;
+      }
+      timer = setInterval(() => setIndex(index + 1), 1200);
+    };
+
+    const prev = card.querySelector("[data-card-prev]");
+    const next = card.querySelector("[data-card-next]");
+    if (prev instanceof HTMLButtonElement) {
+      prev.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        stopAuto();
+        setIndex(index - 1);
+      });
+    }
+    if (next instanceof HTMLButtonElement) {
+      next.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        stopAuto();
+        setIndex(index + 1);
+      });
+    }
+
+    card.addEventListener("mouseenter", startAuto);
+    card.addEventListener("mouseleave", () => {
+      stopAuto();
+      setIndex(0);
+    });
+  });
 }
 
 function getViewMode() {
@@ -337,6 +436,7 @@ async function bootstrap() {
       lastNode.textContent = `最後更新：${dateText}｜總SKU數：${totalSku.toLocaleString("en-US")}`;
     }
     renderProducts(products, pricing);
+    initProductCardGalleries();
     renderPagination(body.paging || null);
     renderFloatingPagination(body.paging || null);
     if (getCategory()) {

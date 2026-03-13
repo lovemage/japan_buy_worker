@@ -15,6 +15,7 @@ type ProductRow = {
   color_count: number | null;
   image_url: string | null;
   last_crawled_at: string | null;
+  source_payload_json: string | null;
 };
 
 type CategoryRow = {
@@ -30,6 +31,18 @@ function toDisplayImageUrl(imageUrl: string | null): string | null {
 }
 
 function mapProduct(item: ProductRow) {
+  let gallery: string[] = [];
+  try {
+    const payload = item.source_payload_json
+      ? (JSON.parse(item.source_payload_json) as Record<string, unknown>)
+      : {};
+    gallery = Array.isArray(payload.gallery)
+      ? payload.gallery.filter((x): x is string => typeof x === "string" && x.trim().length > 0)
+      : [];
+  } catch {
+    gallery = [];
+  }
+
   return {
     id: item.id,
     code: item.source_product_code,
@@ -42,6 +55,7 @@ function mapProduct(item: ProductRow) {
     imageUrl: item.image_url,
     displayImageUrl: toDisplayImageUrl(item.image_url),
     lastCrawledAt: item.last_crawled_at,
+    gallery,
   };
 }
 
@@ -65,36 +79,52 @@ export async function handlePublicProducts(
   const listSql = hasCategory
     ? `
 SELECT
-  id,
-  source_product_code,
-  title_ja,
-  title_zh_tw,
-  brand,
-  category,
-  price_jpy_tax_in,
-  color_count,
-  image_url,
-  last_crawled_at
-FROM products
-WHERE is_active = 1 AND category = ?
+  p.id,
+  p.source_product_code,
+  p.title_ja,
+  p.title_zh_tw,
+  p.brand,
+  p.category,
+  p.price_jpy_tax_in,
+  p.color_count,
+  p.image_url,
+  p.last_crawled_at,
+  ps.source_payload_json
+FROM products p
+LEFT JOIN product_snapshots ps ON ps.id = (
+  SELECT id
+  FROM product_snapshots
+  WHERE product_id = p.id
+  ORDER BY captured_at DESC, id DESC
+  LIMIT 1
+)
+WHERE p.is_active = 1 AND p.category = ?
 ORDER BY updated_at DESC
 LIMIT ? OFFSET ?
 `
     : `
 SELECT
-  id,
-  source_product_code,
-  title_ja,
-  title_zh_tw,
-  brand,
-  category,
-  price_jpy_tax_in,
-  color_count,
-  image_url,
-  last_crawled_at
-FROM products
-WHERE is_active = 1
-ORDER BY updated_at DESC
+  p.id,
+  p.source_product_code,
+  p.title_ja,
+  p.title_zh_tw,
+  p.brand,
+  p.category,
+  p.price_jpy_tax_in,
+  p.color_count,
+  p.image_url,
+  p.last_crawled_at,
+  ps.source_payload_json
+FROM products p
+LEFT JOIN product_snapshots ps ON ps.id = (
+  SELECT id
+  FROM product_snapshots
+  WHERE product_id = p.id
+  ORDER BY captured_at DESC, id DESC
+  LIMIT 1
+)
+WHERE p.is_active = 1
+ORDER BY p.updated_at DESC
 LIMIT ? OFFSET ?
 `;
   const rows = hasCategory
