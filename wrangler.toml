@@ -1,14 +1,15 @@
 name = "japan-buy-workers"
 main = "src/index.ts"
 compatibility_date = "2026-03-13"
+assets = { directory = "./public" }
 
 [vars]
+CRAWL_LIST_PAGES = "10"
 CRAWL_MAX_PAGES = "3"
 CRAWL_TIMEOUT_MS = "120000"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "japan-buy-db"
-database_id = "REPLACE_WITH_REAL_DATABASE_ID"
+database_name = "japan_buy"
+database_id = "35f83000-fddb-477c-9714-67aa1ba50864"
 migrations_dir = "migrations"
-

@@ -36,6 +36,15 @@ CREATE TABLE IF NOT EXISTS requirement_forms (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   customer_name TEXT NOT NULL,
   contact TEXT NOT NULL,
+  member_phone TEXT,
+  recipient_city TEXT,
+  recipient_address TEXT,
+  line_id TEXT,
+  shipping_method TEXT,
+  shipping_international_jpy INTEGER,
+  shipping_domestic_twd INTEGER,
+  shipping_total_twd INTEGER,
+  requires_ezway INTEGER NOT NULL DEFAULT 0,
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'new',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -52,6 +61,10 @@ CREATE TABLE IF NOT EXISTS requirement_items (
   product_id INTEGER,
   product_name_snapshot TEXT NOT NULL,
   quantity INTEGER NOT NULL CHECK (quantity > 0),
+  unit_price_jpy INTEGER,
+  unit_price_twd REAL,
+  subtotal_jpy INTEGER,
+  subtotal_twd REAL,
   desired_size TEXT,
   desired_color TEXT,
   note TEXT,
@@ -78,3 +91,8 @@ CREATE TABLE IF NOT EXISTS admin_orders (
 CREATE INDEX IF NOT EXISTS idx_admin_orders_form_id
   ON admin_orders(requirement_form_id);
 
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

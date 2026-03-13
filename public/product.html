@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>商品詳情</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <h1>商品詳情</h1>
+        <a class="button secondary" href="/index.html">返回商品列表</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="detail-error" class="notice hidden"></section>
+      <article class="product-detail">
+        <div>
+          <img id="detail-main-image" class="detail-main-image" src="" alt="" />
+          <div id="detail-gallery" class="detail-gallery"></div>
+        </div>
+        <div class="detail-meta">
+          <h2 id="detail-title"></h2>
+          <p class="meta" id="detail-brand"></p>
+          <p class="meta" id="detail-price"></p>
+          <p class="meta" id="detail-category"></p>
+          <p class="meta" id="detail-color-count"></p>
+          <p class="meta" id="detail-size-options"></p>
+          <p class="meta" id="detail-color-options"></p>
+          <p class="meta" id="detail-description"></p>
+          <div class="detail-spec-box">
+            <h3>商品規格</h3>
+            <ul id="detail-spec-list"></ul>
+          </div>
+          <div class="detail-spec-box">
+            <h3>Schema 摘要</h3>
+            <ul id="detail-schema-list"></ul>
+          </div>
+          <button id="detail-add" class="button">加入需求單</button>
+          <a class="button secondary" href="/request.html">前往需求單</a>
+        </div>
+      </article>
+    </main>
+
+    <script type="module" src="/assets/app-product.js"></script>
+  </body>
+</html>

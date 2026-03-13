@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <h1>Admin 登入</h1>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="login-error" class="notice hidden"></section>
+      <form id="admin-login-form" class="request-form">
+        <label>
+          帳號
+          <input id="username" name="username" type="text" required />
+        </label>
+        <label>
+          密碼
+          <input id="password" name="password" type="password" required />
+        </label>
+        <button class="button" type="submit">登入</button>
+      </form>
+    </main>
+
+    <script type="module" src="/assets/app-admin-login.js"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Japan Buy Admin</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <h1>Admin 後台</h1>
+        <a class="button secondary" href="/index.html">返回商品列表</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="admin-error" class="notice hidden"></section>
+      <section class="admin-form-card">
+        <h2 class="product-card__title">價格設定</h2>
+        <div class="admin-actions">
+          <label>每筆加價 JPY
+            <input id="markup-jpy" type="number" min="0" step="1" />
+          </label>
+          <label>JPY -> TWD 匯率
+            <input id="jpy-to-twd" type="number" min="0.01" step="0.001" />
+          </label>
+          <label>國際運費 (TWD)
+            <input id="international-shipping-twd" type="number" min="0" step="1" />
+          </label>
+          <label>國內運費 (TWD)
+            <input id="domestic-shipping-twd" type="number" min="0" step="1" />
+          </label>
+          <button id="admin-save-pricing" class="button" type="button">儲存價格設定</button>
+        </div>
+      </section>
+      <section class="admin-actions">
+        <button id="admin-crawl" class="button" type="button">執行抓取</button>
+        <button id="admin-refresh" class="button secondary" type="button">刷新需求單</button>
+        <button id="admin-logout" class="button secondary" type="button">登出</button>
+      </section>
+      <section id="admin-forms" class="admin-forms"></section>
+    </main>
+
+    <script type="module" src="/assets/app-admin.js"></script>
+  </body>
+</html>

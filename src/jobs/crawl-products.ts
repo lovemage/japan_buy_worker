@@ -1,244 +1,312 @@
-import type { CrawlResult, RawProduct } from "./types";
+import type { RawProduct } from "./types";
 
-const RANKING_URL =
-  "https://fo-online.jp/ranking?bc=J&gc=1&lcc=001001001&scc=001001001002";
+const LIST_PAGE_SIZE = 40;
+const LIST_DEFAULT_PAGES = 10;
+const LIST_MAX_PAGES = 20;
 
 type CrawlEnv = {
-  CLOUDFLARE_ACCOUNT_ID: string;
-  CLOUDFLARE_API_TOKEN: string;
-  CRAWL_MAX_PAGES?: string;
-  CRAWL_TIMEOUT_MS?: string;
+  CRAWL_LIST_PAGES?: string;
 };
 
-function assertEnv(env: Partial<CrawlEnv>): asserts env is CrawlEnv {
-  if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_API_TOKEN) {
-    throw new Error(
-      "Missing env: CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required."
-    );
+function listPageUrl(page: number): string {
+  if (page <= 1) {
+    return `https://fo-online.jp/items?pp=${LIST_PAGE_SIZE}&st=4&du=2`;
   }
+  return `https://fo-online.jp/items?cp=${page}&pp=${LIST_PAGE_SIZE}&st=4&du=2`;
 }
 
-function baseHeaders(env: CrawlEnv): HeadersInit {
-  return {
-    Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-    "Content-Type": "application/json",
-  };
+function decodeHtmlAttr(input: string): string {
+  return input
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
 }
 
-function crawlBaseUrl(accountId: string): string {
-  return `https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering/crawl`;
+function parsePriceNumber(v: unknown): number | null {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
-async function createCrawlJob(env: CrawlEnv): Promise<string> {
-  const body = {
-    url: RANKING_URL,
-    maxPages: Number(env.CRAWL_MAX_PAGES || 3),
-    outputFormats: ["html"],
-  };
+function buildImageUrl(code: string, colorCode?: string): string {
+  if (!code || !colorCode) {
+    return "";
+  }
+  return `https://fo-online.jp/images/item/${code}/${code}_c${colorCode}_a001_pm.jpg`;
+}
 
-  const res = await fetch(crawlBaseUrl(env.CLOUDFLARE_ACCOUNT_ID), {
-    method: "POST",
-    headers: baseHeaders(env),
-    body: JSON.stringify(body),
-  });
+function stripHtml(text: string): string {
+  return text.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim();
+}
 
+function toPmImage(image: string): string {
+  return image.replace(/_(ps|ss)(\.\w+)$/i, "_pm$2");
+}
+
+function uniq(items: string[]): string[] {
+  return Array.from(new Set(items.filter(Boolean)));
+}
+
+async function fetchListPageProducts(page: number): Promise<RawProduct[]> {
+  const url = listPageUrl(page);
+  const res = await fetch(url, { method: "GET" });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Failed to create crawl job: ${res.status} ${text}`);
+    throw new Error(`List page fetch failed: p${page} ${res.status}`);
+  }
+  const html = await res.text();
+
+  const attrs = Array.from(
+    html.matchAll(/data-web-tracking-v2-data-item="([^"]+)"/g)
+  ).map((m) => decodeHtmlAttr(m[1]));
+
+  const products: RawProduct[] = [];
+  const seen = new Set<string>();
+
+  for (const attr of attrs) {
+    let data: Record<string, unknown> = {};
+    try {
+      data = JSON.parse(attr) as Record<string, unknown>;
+    } catch {
+      continue;
+    }
+
+    const code = String(data.code || "").trim();
+    const name = String(data.name || "").trim();
+    if (!code || !name) {
+      continue;
+    }
+
+    const colorCode = String(data.colorCode || "").trim() || undefined;
+    const key = `${code}:${colorCode || ""}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+
+    const taxExcluded = parsePriceNumber(data.taxExcludedSalePrice);
+    const tax = parsePriceNumber(data.salePriceTax);
+    const priceJPYTaxIn =
+      taxExcluded !== null && tax !== null ? taxExcluded + tax : null;
+
+    products.push({
+      rank: String(products.length + 1),
+      code,
+      brand: String(data.brandName || "").trim() || undefined,
+      name,
+      priceJPYTaxIn,
+      categorySmallName: String(data.smallCategoryName || "").trim() || undefined,
+      colorCode,
+      colorName: String(data.colorName || "").trim() || undefined,
+      image: buildImageUrl(code, colorCode),
+      url: `https://fo-online.jp/items/${code}`,
+      badges: [],
+    });
   }
 
-  const json = (await res.json()) as {
-    success: boolean;
-    result?: { id?: string };
-    errors?: unknown[];
-  };
-  const jobId = json.result?.id;
-  if (!json.success || !jobId) {
-    throw new Error(`Invalid crawl create response: ${JSON.stringify(json)}`);
-  }
-  return jobId;
+  return products;
 }
 
-async function getCrawlJob(env: CrawlEnv, jobId: string): Promise<CrawlResult> {
-  const res = await fetch(`${crawlBaseUrl(env.CLOUDFLARE_ACCOUNT_ID)}/${jobId}`, {
-    method: "GET",
-    headers: baseHeaders(env),
-  });
+type DetailMeta = {
+  sizeOptions: string[];
+  colorOptions: string[];
+  gallery: string[];
+  description: string;
+  schema: Record<string, unknown> | null;
+};
 
+async function fetchDetailMeta(code: string): Promise<DetailMeta> {
+  const url = `https://fo-online.jp/items/${encodeURIComponent(code)}`;
+  const res = await fetch(url, { method: "GET" });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Failed to fetch crawl job: ${res.status} ${text}`);
+    return {
+      sizeOptions: [],
+      colorOptions: [],
+      gallery: [],
+      description: "",
+      schema: null,
+    };
   }
 
-  const json = (await res.json()) as {
-    success: boolean;
-    result?: CrawlResult;
-  };
-  if (!json.success || !json.result) {
-    throw new Error(`Invalid crawl status response: ${JSON.stringify(json)}`);
-  }
-  return json.result;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function parsePriceFromText(priceText: string): number | null {
-  const digits = priceText.replace(/[^\d]/g, "");
-  if (!digits) {
-    return null;
-  }
-  const parsed = Number(digits);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseProductsFromHtml(html: string): RawProduct[] {
-  const cards = html.match(
-    /<div class="c-item-card[\s\S]*?data-web-tracking-v2-data-item="[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/g
+  const html = await res.text();
+  const scriptMatch = html.match(
+    /<script type="application\/ld\+json" data-seo-structured-data-type="Product">\s*([\s\S]*?)\s*<\/script>/i
   );
-
-  if (!cards || cards.length === 0) {
-    return [];
+  if (!scriptMatch?.[1]) {
+    return {
+      sizeOptions: [],
+      colorOptions: [],
+      gallery: [],
+      description: "",
+      schema: null,
+    };
   }
 
-  return cards
-    .map((card) => {
-      const attr = card.match(/data-web-tracking-v2-data-item="([^"]+)"/)?.[1];
-      if (!attr) {
-        return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(scriptMatch[1]);
+  } catch {
+    return {
+      sizeOptions: [],
+      colorOptions: [],
+      gallery: [],
+      description: "",
+      schema: null,
+    };
+  }
+
+  const root = (Array.isArray(parsed) ? parsed[0] : parsed) as
+    | {
+        name?: string;
+        description?: string;
+        url?: string;
+        productGroupID?: string;
+        brand?: unknown;
+        hasVariant?: Array<{
+          sku?: unknown;
+          name?: unknown;
+          image?: unknown;
+          offers?: unknown;
+        }>;
       }
-      const decoded = attr
-        .replace(/&quot;/g, '"')
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">");
+    | undefined;
+  const variants = Array.isArray(root?.hasVariant) ? root.hasVariant : [];
 
-      let data: Record<string, unknown> = {};
-      try {
-        data = JSON.parse(decoded) as Record<string, unknown>;
-      } catch {
-        data = {};
+  const sizes: string[] = [];
+  const colors: string[] = [];
+  const gallery: string[] = [];
+
+  for (const v of variants) {
+    const name = String(v.name || "");
+    const parts = name.split(",").map((s) => s.trim());
+    if (parts[1]) {
+      colors.push(parts[1]);
+    }
+    if (parts[2]) {
+      sizes.push(parts[2]);
+    }
+    const image = String(v.image || "");
+    if (image) {
+      gallery.push(toPmImage(image));
+    }
+  }
+
+  const schema: Record<string, unknown> | null = root
+    ? {
+        "@type": "ProductGroup",
+        name: root.name || "",
+        description: stripHtml(String(root.description || "")),
+        url: root.url || "",
+        productGroupID: root.productGroupID || code,
+        brand: root.brand || null,
+        hasVariant: variants.map((v) => ({
+          sku: v.sku ?? null,
+          name: v.name ?? "",
+          image: typeof v.image === "string" ? toPmImage(v.image) : "",
+          offers: v.offers ?? null,
+        })),
       }
+    : null;
 
-      const priceText =
-        card.match(/<div class="c-item-card__price">([\s\S]*?)<\/div>/)?.[1]
-          ?.replace(/<[^>]+>/g, " ")
-          ?.replace(/\s+/g, " ")
-          ?.trim() || "";
-      const colorsText =
-        card
-          .match(/<div class="c-item-card__colors--text">([\s\S]*?)<\/div>/)?.[1]
-          ?.replace(/<[^>]+>/g, " ")
-          ?.replace(/\s+/g, " ")
-          ?.trim() || "";
-      const image =
-        card.match(/<img[^>]+src="([^"]+)"/)?.[1] ||
-        card.match(/<img[^>]+data-src="([^"]+)"/)?.[1] ||
-        "";
-      const url = card.match(/<a href="(https:\/\/fo-online\.jp\/items\/[^"]+)"/)?.[1] || "";
-      const rank =
-        card.match(/c-item-card__ranking--text">\s*([\d]+)\s*</)?.[1] || undefined;
+  return {
+    sizeOptions: uniq(sizes),
+    colorOptions: uniq(colors),
+    gallery: uniq(gallery),
+    description: stripHtml(String(root?.description || "")),
+    schema,
+  };
+}
 
-      const badges = Array.from(card.matchAll(/c-badge-list__badge-[^"]+">([^<]+)/g))
-        .map((m) => m[1].trim())
-        .filter(Boolean);
+async function enrichProductsWithDetail(products: RawProduct[]): Promise<RawProduct[]> {
+  const byCode = new Map<string, DetailMeta>();
+  const codes = Array.from(new Set(products.map((p) => p.code)));
+  const concurrency = 8;
+  let cursor = 0;
 
-      const code = String(data.code || "").trim();
-      const name = String(data.name || "").trim();
-
-      if (!code || !name) {
-        return null;
+  const workers = Array.from({ length: concurrency }, async () => {
+    while (cursor < codes.length) {
+      const i = cursor;
+      cursor += 1;
+      const code = codes[i];
+      if (!code || byCode.has(code)) {
+        continue;
       }
+      const detail = await fetchDetailMeta(code);
+      byCode.set(code, detail);
+    }
+  });
+  await Promise.all(workers);
 
-      return {
-        rank,
-        code,
-        brand: String(data.brandName || "").trim() || undefined,
-        name,
-        priceJPYTaxIn:
-          typeof data.taxExcludedSalePrice === "number" &&
-          typeof data.salePriceTax === "number"
-            ? data.taxExcludedSalePrice + data.salePriceTax
-            : parsePriceFromText(priceText),
-        priceText,
-        colorsText,
-        categorySmallName:
-          String(data.smallCategoryName || "").trim() || undefined,
-        colorName: String(data.colorName || "").trim() || undefined,
-        image,
-        url,
-        badges,
-      } satisfies RawProduct;
-    })
-    .filter((v): v is RawProduct => Boolean(v));
+  return products.map((item) => {
+    const detail = byCode.get(item.code);
+    if (!detail) {
+      return item;
+    }
+    return {
+      ...item,
+      sizeOptions: detail.sizeOptions,
+      colorOptions: detail.colorOptions,
+      gallery: detail.gallery,
+      description: detail.description,
+      image: item.image || detail.gallery[0] || "",
+      schema: detail.schema || undefined,
+    };
+  });
+}
+
+function dedupeByCode(products: RawProduct[]): RawProduct[] {
+  const map = new Map<string, RawProduct>();
+  for (const item of products) {
+    if (!map.has(item.code)) {
+      map.set(item.code, item);
+    }
+  }
+  return Array.from(map.values());
 }
 
 async function fallbackWithAgentBrowser(): Promise<RawProduct[]> {
   const processObj = (globalThis as { process?: { versions?: { node?: string } } })
     .process;
   if (!processObj?.versions?.node) {
-    throw new Error(
-      "Fallback parser requires Node runtime because it executes agent-browser CLI."
-    );
+    throw new Error("Fallback requires Node runtime.");
   }
 
   const { execSync } = await import("node:child_process");
   const session = "fo_fallback";
-  execSync(
-    `agent-browser --session-name ${session} open "${RANKING_URL}" && agent-browser --session-name ${session} wait 5000`,
-    { stdio: "ignore" }
-  );
   const output = execSync(
-    `agent-browser --session-name ${session} eval '(() => { const cards=[...document.querySelectorAll(".p-ranking-list .c-item-card")]; const parseJson=(s)=>{try{return JSON.parse(s||"{}")}catch(e){return {}}}; return cards.map((card, idx) => { const data=parseJson(card.getAttribute("data-web-tracking-v2-data-item")); const rank=(card.querySelector(".c-item-card__ranking--text")?.textContent||String(idx+1)).trim(); const priceText=(card.querySelector(".c-item-card__price")?.textContent||"").replace(/\\s+/g," ").trim(); const colorsText=(card.querySelector(".c-item-card__colors--text")?.textContent||"").replace(/\\s+/g," ").trim(); const badges=[...card.querySelectorAll(".c-badge-list *")].map(e=>e.textContent.trim()).filter(Boolean); const a=card.querySelector("a[href*=\\"/items/\\"]"); return { rank, code:String(data.code||""), brand:String(data.brandName||""), name:String(data.name||""), priceJPYTaxIn:(typeof data.taxExcludedSalePrice==="number" && typeof data.salePriceTax==="number") ? (data.taxExcludedSalePrice + data.salePriceTax) : null, priceText, colorsText, categorySmallName:String(data.smallCategoryName||""), colorName:String(data.colorName||""), image:card.querySelector("img")?.getAttribute("src")||"", url:a?.href||"", badges }; }).filter(item => item.code && item.name); })()'`
+    `agent-browser --session-name ${session} open "https://fo-online.jp/items?pp=${LIST_PAGE_SIZE}&st=4&du=2" && agent-browser --session-name ${session} wait 5000 && agent-browser --session-name ${session} eval '(() => { const cards=[...document.querySelectorAll(".c-item-card[data-web-tracking-v2-data-item]")]; const parse=(s)=>{try{return JSON.parse(s||"{}")}catch(e){return {}}}; return cards.map((card,idx)=>{ const data=parse(card.getAttribute("data-web-tracking-v2-data-item")); const code=String(data.code||""); const colorCode=String(data.colorCode||""); if(!code){ return null; } const image=(code&&colorCode)?(\"https://fo-online.jp/images/item/\"+code+\"/\"+code+\"_c\"+colorCode+\"_a001_pm.jpg\"):\"\"; return { rank:String(idx+1), code, brand:String(data.brandName||\"\"), name:String(data.name||\"\"), priceJPYTaxIn:(typeof data.taxExcludedSalePrice===\"number\" && typeof data.salePriceTax===\"number\") ? (data.taxExcludedSalePrice+data.salePriceTax):null, categorySmallName:String(data.smallCategoryName||\"\"), colorCode, colorName:String(data.colorName||\"\"), image, url:\"https://fo-online.jp/items/\"+code, badges:[] }; }).filter(Boolean); })()'`
   )
     .toString()
     .trim();
 
   const parsed = JSON.parse(output) as RawProduct[];
-  if (!Array.isArray(parsed)) {
-    throw new Error("Fallback output is not an array.");
-  }
-  return parsed;
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 export async function crawlProducts(
   envInput: Partial<CrawlEnv>
 ): Promise<{ jobId: string; products: RawProduct[]; source: "crawl" | "fallback" }> {
-  assertEnv(envInput);
-  const env = envInput;
+  const pages = Math.max(
+    1,
+    Math.min(
+      Number(envInput.CRAWL_LIST_PAGES || LIST_DEFAULT_PAGES),
+      LIST_MAX_PAGES
+    )
+  );
+  const jobId = `list-${Date.now()}`;
 
-  const jobId = await createCrawlJob(env);
-  const timeoutMs = Number(env.CRAWL_TIMEOUT_MS || 120000);
-  const startedAt = Date.now();
-
-  let latest: CrawlResult | null = null;
-  while (Date.now() - startedAt < timeoutMs) {
-    latest = await getCrawlJob(env, jobId);
-    if (latest.status === "completed" || latest.status === "failed") {
-      break;
-    }
-    await sleep(2000);
+  const crawled: RawProduct[] = [];
+  for (let page = 1; page <= pages; page += 1) {
+    const pageProducts = await fetchListPageProducts(page);
+    crawled.push(...pageProducts);
   }
 
-  if (!latest) {
-    throw new Error(`Crawl job ${jobId} returned no status payload.`);
+  const deduped = dedupeByCode(crawled);
+  if (deduped.length === 0) {
+    const fallback = dedupeByCode(await fallbackWithAgentBrowser());
+    const enrichedFallback = await enrichProductsWithDetail(fallback);
+    return { jobId, products: enrichedFallback, source: "fallback" };
   }
 
-  if (latest.status !== "completed") {
-    const fallback = await fallbackWithAgentBrowser();
-    return { jobId, products: fallback, source: "fallback" };
-  }
-
-  const htmlRecords = latest.records
-    .map((record) => record.html || "")
-    .filter(Boolean);
-  const products = htmlRecords.flatMap((html) => parseProductsFromHtml(html));
-
-  if (products.length > 0) {
-    return { jobId, products, source: "crawl" };
-  }
-
-  const fallback = await fallbackWithAgentBrowser();
-  return { jobId, products: fallback, source: "fallback" };
+  const enriched = await enrichProductsWithDetail(deduped);
+  return { jobId, products: enriched, source: "crawl" };
 }

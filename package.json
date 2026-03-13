@@ -6,11 +6,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "d1:migrate:local": "wrangler d1 migrations apply japan-buy-db --local",
-    "d1:migrate:remote": "wrangler d1 migrations apply japan-buy-db --remote"
+    "d1:migrate:local": "wrangler d1 migrations apply japan_buy --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply japan_buy --remote"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
   }
 }
-

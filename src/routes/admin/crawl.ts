@@ -1,3 +1,4 @@
+import { isAdminAuthorized } from "./auth";
 import { crawlProducts } from "../../jobs/crawl-products";
 import { normalizeProducts } from "../../jobs/normalize-products";
 import { upsertProducts } from "../../jobs/upsert-products";
@@ -7,6 +8,7 @@ type Env = {
   DB: D1DatabaseLike;
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_API_TOKEN: string;
+  CRAWL_LIST_PAGES?: string;
   CRAWL_MAX_PAGES?: string;
   CRAWL_TIMEOUT_MS?: string;
 };
@@ -18,11 +20,18 @@ export async function handleAdminCrawl(request: Request, env: Env): Promise<Resp
       headers: { "content-type": "application/json" },
     });
   }
+  if (!isAdminAuthorized(request)) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { "content-type": "application/json" },
+    });
+  }
 
   try {
     const crawled = await crawlProducts({
       CLOUDFLARE_ACCOUNT_ID: env.CLOUDFLARE_ACCOUNT_ID,
       CLOUDFLARE_API_TOKEN: env.CLOUDFLARE_API_TOKEN,
+      CRAWL_LIST_PAGES: env.CRAWL_LIST_PAGES,
       CRAWL_MAX_PAGES: env.CRAWL_MAX_PAGES,
       CRAWL_TIMEOUT_MS: env.CRAWL_TIMEOUT_MS,
     });

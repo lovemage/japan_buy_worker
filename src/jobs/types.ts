@@ -7,10 +7,16 @@ export type RawProduct = {
   priceText?: string;
   colorsText?: string;
   categorySmallName?: string;
+  colorCode?: string;
   colorName?: string;
   image?: string;
   url?: string;
   badges?: string[];
+  sizeOptions?: string[];
+  colorOptions?: string[];
+  gallery?: string[];
+  description?: string;
+  schema?: Record<string, unknown>;
 };
 
 export type CrawlRecord = {
@@ -49,4 +55,3 @@ export type NormalizedProduct = {
   sourcePayloadJson: string;
   statusBadgesJson: string | null;
 };
-

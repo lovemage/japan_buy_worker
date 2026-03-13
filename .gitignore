@@ -2,6 +2,6 @@ node_modules/
 .wrangler/
 .env
 .env.*
+.dev.vars
 dist/
 *.log
-
