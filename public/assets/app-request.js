@@ -94,9 +94,15 @@ function renderDraftItems() {
     .map(
       (item, idx) => `
       <article class="request-item" data-idx="${idx}">
-        <img src="${item.selectedImageUrl || item.imageUrl || ""}" alt="${item.productNameSnapshot}" />
+        <a href="${item.code ? `/product?code=${encodeURIComponent(item.code)}` : "#"}" target="_blank" rel="noopener noreferrer">
+          <img src="${item.selectedImageUrl || item.imageUrl || ""}" alt="${item.productNameSnapshot}" />
+        </a>
         <div>
-          <h2 class="product-card__title">${item.productNameSnapshot}</h2>
+          <h2 class="product-card__title">
+            <a href="${item.code ? `/product?code=${encodeURIComponent(item.code)}` : "#"}" target="_blank" rel="noopener noreferrer">
+              ${item.productNameSnapshot}
+            </a>
+          </h2>
           <p class="meta">JPY ${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")}</p>
           <p class="meta">TWD ${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
           <div class="request-item__controls">
@@ -120,6 +126,7 @@ function renderDraftItems() {
                 : `<input type="text" data-field="desiredColor" value="${item.desiredColor || ""}" placeholder="未抓到顏色，可手動填寫" />`
             }</label>
             <label>備註<input type="text" data-field="note" value="${item.note || ""}" /></label>
+            <button type="button" class="button secondary js-remove-item" data-remove-idx="${idx}">刪除此商品</button>
           </div>
         </div>
       </article>
@@ -144,6 +151,20 @@ function renderDraftItems() {
         setDraft(d);
         renderTotals();
       });
+    });
+  });
+
+  wrapper.querySelectorAll(".js-remove-item").forEach((button) => {
+    button.addEventListener("click", () => {
+      const idx = Number(button.getAttribute("data-remove-idx"));
+      const d = getDraft();
+      if (!Number.isInteger(idx) || idx < 0 || idx >= d.items.length) {
+        return;
+      }
+      d.items.splice(idx, 1);
+      setDraft(d);
+      renderDraftItems();
+      renderTotals();
     });
   });
 

@@ -1,4 +1,4 @@
-import { addItem } from "./draft-store.js";
+import { addItem, getDraft } from "./draft-store.js";
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
 
 function setError(message) {
@@ -146,12 +146,22 @@ function renderProduct(item, pricing) {
         sizeOptions: Array.isArray(item.sizeOptions) ? item.sizeOptions : [],
         colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],
       });
+      renderDraftCount();
       location.href = "/request.html";
     });
   }
 }
 
+function renderDraftCount() {
+  const countNode = document.getElementById("floating-draft-count");
+  if (!countNode) {
+    return;
+  }
+  countNode.textContent = String(getDraft().items.length);
+}
+
 async function bootstrap() {
+  renderDraftCount();
   const pricingRes = await fetch("/api/pricing");
   const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
   const pricing = pricingBody?.pricing || DEFAULT_PRICING;

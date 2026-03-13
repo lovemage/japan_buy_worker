@@ -1,4 +1,4 @@
-import { addItem, getDraft } from "./draft-store.js";
+import { getDraft } from "./draft-store.js";
 
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
@@ -32,11 +32,15 @@ function setError(message) {
 }
 
 function renderDraftCount() {
+  const count = String(getDraft().items.length);
   const countNode = document.getElementById("draft-count");
-  if (!countNode) {
-    return;
+  const floatingCountNode = document.getElementById("floating-draft-count");
+  if (countNode) {
+    countNode.textContent = count;
   }
-  countNode.textContent = String(getDraft().items.length);
+  if (floatingCountNode) {
+    floatingCountNode.textContent = count;
+  }
 }
 
 function renderProducts(products, pricing) {
@@ -62,30 +66,12 @@ function renderProducts(products, pricing) {
           <p class="meta">台幣估算：${adjusted.twd !== null ? `TWD ${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}</p>
           <p class="meta">分類：${item.category || "未分類"}</p>
           <p class="meta">顏色數：${item.colorCount ?? "-"}</p>
-          <button class="button js-add-item" data-product-id="${item.id}">加入需求單</button>
+          <a class="button" href="/product?code=${encodeURIComponent(item.code)}">check this out!</a>
         </div>
       </article>
       `;
     })
     .join("");
-
-  grid.querySelectorAll(".js-add-item").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = Number(button.getAttribute("data-product-id"));
-      const product = products.find((p) => p.id === id);
-      if (!product) {
-        return;
-      }
-      addItem({
-        productId: product.id,
-        code: product.code,
-        productNameSnapshot: product.nameZhTw || product.nameJa || product.code,
-        imageUrl: product.displayImageUrl || product.imageUrl || "",
-        priceJpyTaxIn: calcAdjustedPrices(product.priceJpyTaxIn, pricing).jpy,
-      });
-      renderDraftCount();
-    });
-  });
 }
 
 function getPage() {
