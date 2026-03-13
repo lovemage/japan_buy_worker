@@ -5,6 +5,8 @@ const DEFAULT_PRICING = {
   jpyToTwd: 0.21,
   internationalShippingTwd: 350,
   domesticShippingTwd: 60,
+  limitedProxyShippingTwd: 80,
+  shippingOptionsEnabled: true,
 };
 const TAIWAN_CITIES = [
   "台北市",
@@ -178,14 +180,21 @@ function renderTotals() {
     (sum, item) => sum + Number(item.unitPriceTwd || 0) * Number(item.quantity || 1),
     0
   );
-  const shippingMethod =
-    document.querySelector('input[name="shippingMethod"]:checked')?.value || "consolidated_tw";
+  const shippingOptionsEnabled = pricingConfig?.shippingOptionsEnabled !== false;
+  const shippingMethod = shippingOptionsEnabled
+    ? document.querySelector('input[name="shippingMethod"]:checked')?.value || "consolidated_tw"
+    : "shipping_hidden";
   const intlShippingTwd = Number(pricingConfig?.internationalShippingTwd || 0);
   const domesticShippingTwd = Number(pricingConfig?.domesticShippingTwd || 0);
+  const limitedProxyShippingTwd = Number(pricingConfig?.limitedProxyShippingTwd || 0);
   const shippingTwd =
     shippingMethod === "jp_direct"
       ? intlShippingTwd
-      : intlShippingTwd + Math.round(domesticShippingTwd);
+      : shippingMethod === "limited_proxy"
+        ? Math.round(limitedProxyShippingTwd)
+        : shippingMethod === "consolidated_tw"
+          ? intlShippingTwd + Math.round(domesticShippingTwd)
+          : 0;
   const totalJpy = itemsTotalJpy;
   const totalTwd = itemsTotalTwd + shippingTwd;
   const totalJpyNode = document.getElementById("total-jpy");
@@ -202,21 +211,41 @@ function renderTotals() {
     totalTwdNode.textContent = `合計 TWD：${totalTwd.toLocaleString("en-US")}`;
   }
   if (shippingNote) {
-    shippingNote.textContent =
-      shippingMethod === "jp_direct"
+    shippingNote.textContent = shippingOptionsEnabled
+      ? shippingMethod === "jp_direct"
         ? "提醒：日本直送需完成 EZWAY 實名驗證。"
-        : "使用集運回台灣：含國際運費與國內 7-11 店到店。";
+        : shippingMethod === "limited_proxy"
+          ? "限時連線代購：使用固定運費。"
+          : "使用集運回台灣：含國際運費與國內 7-11 店到店。"
+      : "運費選項目前由 Admin 隱藏，將由客服後續確認。";
   }
 
   return {
     shippingMethod,
-    shippingInternationalTwd: intlShippingTwd,
-    shippingDomesticTwd: shippingMethod === "jp_direct" ? 0 : Math.round(domesticShippingTwd),
+    shippingInternationalTwd:
+      shippingMethod === "consolidated_tw" || shippingMethod === "jp_direct" ? intlShippingTwd : 0,
+    shippingDomesticTwd: shippingMethod === "consolidated_tw" ? Math.round(domesticShippingTwd) : 0,
     shippingTotalTwd: shippingTwd,
     requiresEzway: shippingMethod === "jp_direct",
     totalJpy,
     totalTwd,
   };
+}
+
+function applyShippingOptionsVisibility() {
+  const box = document.getElementById("shipping-options-box");
+  const radios = document.querySelectorAll('input[name="shippingMethod"]');
+  const enabled = pricingConfig?.shippingOptionsEnabled !== false;
+  if (box) {
+    box.classList.toggle("hidden", !enabled);
+  }
+  radios.forEach((node) => {
+    if (enabled) {
+      node.removeAttribute("disabled");
+    } else {
+      node.setAttribute("disabled", "true");
+    }
+  });
 }
 
 async function hydrateDraftWithOptions() {
@@ -319,7 +348,12 @@ function validateForm(payload) {
   if (!payload.lineId?.trim()) {
     return "Line ID 為必填";
   }
-  if (!payload.shippingMethod) {
+  if (
+    !payload.shippingMethod ||
+    !["consolidated_tw", "jp_direct", "limited_proxy", "shipping_hidden"].includes(
+      payload.shippingMethod
+    )
+  ) {
     return "配送方式為必填";
   }
   if (!Array.isArray(payload.items) || payload.items.length === 0) {
@@ -412,6 +446,8 @@ async function bootstrap() {
   document.querySelectorAll('input[name="shippingMethod"]').forEach((node) => {
     node.addEventListener("change", renderTotals);
   });
+  applyShippingOptionsVisibility();
+  renderTotals();
   const form = document.getElementById("request-form");
   if (form) {
     form.addEventListener("submit", onSubmit);

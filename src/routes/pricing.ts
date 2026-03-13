@@ -15,6 +15,8 @@ const DEFAULT_JPY_TO_TWD = 0.21;
 const DEFAULT_INTL_SHIPPING_TWD = 350;
 const DEFAULT_DOMESTIC_SHIPPING_TWD = 60;
 const DEFAULT_PROMO_TAG_MAX_TWD = 500;
+const DEFAULT_LIMITED_PROXY_SHIPPING_TWD = 80;
+const DEFAULT_SHIPPING_OPTIONS_ENABLED = 1;
 
 async function ensureSettingsTable(db: D1DatabaseLike): Promise<void> {
   await db
@@ -36,6 +38,8 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
   internationalShippingTwd: number;
   domesticShippingTwd: number;
   promoTagMaxTwd: number;
+  limitedProxyShippingTwd: number;
+  shippingOptionsEnabled: boolean;
 }> {
   await ensureSettingsTable(db);
   await db
@@ -68,10 +72,22 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
     )
     .bind(String(DEFAULT_PROMO_TAG_MAX_TWD))
     .run();
+  await db
+    .prepare(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES ('limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+    )
+    .bind(String(DEFAULT_LIMITED_PROXY_SHIPPING_TWD))
+    .run();
+  await db
+    .prepare(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES ('shipping_options_enabled', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+    )
+    .bind(String(DEFAULT_SHIPPING_OPTIONS_ENABLED))
+    .run();
 
   const rows = await db
     .prepare(
-      "SELECT key, value FROM app_settings WHERE key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd')"
+      "SELECT key, value FROM app_settings WHERE key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled')"
     )
     .all<SettingRow>();
   const result = Array.isArray(rows?.results) ? rows.results : [];
@@ -82,12 +98,20 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
     result.find((x) => x.key === "international_shipping_jpy")?.value;
   const domesticShippingRaw = result.find((x) => x.key === "domestic_shipping_twd")?.value;
   const promoTagMaxRaw = result.find((x) => x.key === "promo_tag_max_twd")?.value;
+  const limitedProxyShippingRaw = result.find(
+    (x) => x.key === "limited_proxy_shipping_twd"
+  )?.value;
+  const shippingOptionsEnabledRaw = result.find(
+    (x) => x.key === "shipping_options_enabled"
+  )?.value;
 
   const markup = Number(markupRaw);
   const rate = Number(rateRaw);
   const intlShipping = Number(intlShippingRaw);
   const domesticShipping = Number(domesticShippingRaw);
   const promoTagMaxTwd = Number(promoTagMaxRaw);
+  const limitedProxyShippingTwd = Number(limitedProxyShippingRaw);
+  const shippingOptionsEnabled = Number(shippingOptionsEnabledRaw);
   return {
     markupJpy: Number.isFinite(markup) ? markup : DEFAULT_MARKUP_JPY,
     jpyToTwd: Number.isFinite(rate) ? rate : DEFAULT_JPY_TO_TWD,
@@ -98,6 +122,11 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
       ? domesticShipping
       : DEFAULT_DOMESTIC_SHIPPING_TWD,
     promoTagMaxTwd: Number.isFinite(promoTagMaxTwd) ? promoTagMaxTwd : DEFAULT_PROMO_TAG_MAX_TWD,
+    limitedProxyShippingTwd: Number.isFinite(limitedProxyShippingTwd)
+      ? limitedProxyShippingTwd
+      : DEFAULT_LIMITED_PROXY_SHIPPING_TWD,
+    shippingOptionsEnabled:
+      Number.isFinite(shippingOptionsEnabled) && shippingOptionsEnabled === 0 ? false : true,
   };
 }
 
@@ -145,6 +174,8 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
     internationalShippingJpy?: number;
     domesticShippingTwd?: number;
     promoTagMaxTwd?: number;
+    limitedProxyShippingTwd?: number;
+    shippingOptionsEnabled?: boolean;
   };
   try {
     body = (await request.json()) as {
@@ -154,6 +185,8 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
       internationalShippingJpy?: number;
       domesticShippingTwd?: number;
       promoTagMaxTwd?: number;
+      limitedProxyShippingTwd?: number;
+      shippingOptionsEnabled?: boolean;
     };
   } catch {
     return new Response(JSON.stringify({ ok: false, error: "Invalid JSON body" }), {
@@ -169,6 +202,8 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
   );
   const domesticShippingTwd = Number(body.domesticShippingTwd);
   const promoTagMaxTwd = Number(body.promoTagMaxTwd);
+  const limitedProxyShippingTwd = Number(body.limitedProxyShippingTwd);
+  const shippingOptionsEnabled = body.shippingOptionsEnabled === false ? 0 : 1;
   if (!Number.isFinite(markupJpy) || markupJpy < 0) {
     return new Response(JSON.stringify({ ok: false, error: "markupJpy must be >= 0" }), {
       status: 400,
@@ -208,6 +243,15 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
       }
     );
   }
+  if (!Number.isFinite(limitedProxyShippingTwd) || limitedProxyShippingTwd < 0) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "limitedProxyShippingTwd must be >= 0" }),
+      {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      }
+    );
+  }
 
   await ensureSettingsTable(env.DB);
   await env.DB
@@ -240,6 +284,18 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
     )
     .bind(String(promoTagMaxTwd))
     .run();
+  await env.DB
+    .prepare(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES ('limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(String(limitedProxyShippingTwd))
+    .run();
+  await env.DB
+    .prepare(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES ('shipping_options_enabled', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(String(shippingOptionsEnabled))
+    .run();
 
   return new Response(
     JSON.stringify({
@@ -250,6 +306,8 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
         internationalShippingTwd,
         domesticShippingTwd,
         promoTagMaxTwd,
+        limitedProxyShippingTwd,
+        shippingOptionsEnabled: shippingOptionsEnabled === 1,
       },
     }),
     {

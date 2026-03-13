@@ -32,6 +32,19 @@ function setCrawlStatus(text) {
   node.textContent = `抓取狀態：${text}`;
 }
 
+function shippingMethodText(method) {
+  if (method === "jp_direct") {
+    return "日本直送（需完成EZWAY）";
+  }
+  if (method === "limited_proxy") {
+    return "限時連線代購（固定運費）";
+  }
+  if (method === "shipping_hidden") {
+    return "運費選項隱藏（由客服後續確認）";
+  }
+  return "集運回台灣（國際+國內）";
+}
+
 function renderForms(forms) {
   const wrapper = document.getElementById("admin-forms");
   if (!wrapper) {
@@ -69,7 +82,7 @@ function renderForms(forms) {
         <p class="meta">電話：${form.memberPhone || form.contact || "無"}</p>
         <p class="meta">Line ID：${form.lineId || "無"}</p>
         <p class="meta">收件：${form.recipientCity || ""} ${form.recipientAddress || ""}</p>
-        <p class="meta">配送：${form.shippingMethod === "jp_direct" ? "日本直送（需完成EZWAY）" : "集運回台灣（國際+國內）"}</p>
+        <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
         <p class="meta">EZWAY：${form.requiresEzway ? "需要" : "不需要"}</p>
         <p class="meta">運費：國際 TWD ${formatCurrency(form.shippingInternationalTwd)} / 國內 TWD ${formatCurrency(form.shippingDomesticTwd)} / 合計運費TWD ${formatCurrency(form.shippingTotalTwd)}</p>
         <p class="meta">整單備註：${form.notes || "無"}</p>
@@ -171,6 +184,8 @@ async function loadPricing() {
   const intlNode = document.getElementById("international-shipping-twd");
   const domesticNode = document.getElementById("domestic-shipping-twd");
   const promoNode = document.getElementById("promo-tag-max-twd");
+  const limitedProxyNode = document.getElementById("limited-proxy-shipping-twd");
+  const optionsEnabledNode = document.getElementById("shipping-options-enabled");
   if (markupNode) {
     markupNode.value = String(body?.pricing?.markupJpy ?? 1000);
   }
@@ -186,6 +201,12 @@ async function loadPricing() {
   if (promoNode) {
     promoNode.value = String(body?.pricing?.promoTagMaxTwd ?? 500);
   }
+  if (limitedProxyNode) {
+    limitedProxyNode.value = String(body?.pricing?.limitedProxyShippingTwd ?? 80);
+  }
+  if (optionsEnabledNode) {
+    optionsEnabledNode.checked = body?.pricing?.shippingOptionsEnabled !== false;
+  }
 }
 
 async function savePricing() {
@@ -194,11 +215,15 @@ async function savePricing() {
   const intlNode = document.getElementById("international-shipping-twd");
   const domesticNode = document.getElementById("domestic-shipping-twd");
   const promoNode = document.getElementById("promo-tag-max-twd");
+  const limitedProxyNode = document.getElementById("limited-proxy-shipping-twd");
+  const optionsEnabledNode = document.getElementById("shipping-options-enabled");
   const markupJpy = Number(markupNode?.value || 0);
   const jpyToTwd = Number(rateNode?.value || 0);
   const internationalShippingTwd = Number(intlNode?.value || 0);
   const domesticShippingTwd = Number(domesticNode?.value || 0);
   const promoTagMaxTwd = Number(promoNode?.value || 0);
+  const limitedProxyShippingTwd = Number(limitedProxyNode?.value || 0);
+  const shippingOptionsEnabled = Boolean(optionsEnabledNode?.checked);
   const res = await fetch("/api/admin/pricing", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -208,6 +233,8 @@ async function savePricing() {
       internationalShippingTwd,
       domesticShippingTwd,
       promoTagMaxTwd,
+      limitedProxyShippingTwd,
+      shippingOptionsEnabled,
     }),
   });
   if (res.status === 401) {

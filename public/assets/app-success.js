@@ -13,11 +13,21 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-US");
 }
 
+function shippingMethodText(method) {
+  if (method === "jp_direct") {
+    return "日本直送（需完成 EZWAY）";
+  }
+  if (method === "limited_proxy") {
+    return "限時連線代購（固定運費）";
+  }
+  if (method === "shipping_hidden") {
+    return "運費選項隱藏（由客服後續確認）";
+  }
+  return "集運回台灣（國際+國內）";
+}
+
 function buildCopyText(requirement) {
-  const shippingText =
-    requirement.shippingMethod === "jp_direct"
-      ? "日本直送（需完成 EZWAY）"
-      : "集運回台灣（國際+國內）";
+  const shippingText = shippingMethodText(requirement.shippingMethod);
   const itemLines = requirement.items
     .map((item, idx) => {
       return `${idx + 1}. ${item.productNameSnapshot} (${item.code || "無代碼"}) x${item.quantity}
@@ -49,10 +59,7 @@ function renderDetail(requirement) {
   if (!node) {
     return "";
   }
-  const shippingText =
-    requirement.shippingMethod === "jp_direct"
-      ? "日本直送（需完成 EZWAY）"
-      : "集運回台灣（國際+國內）";
+  const shippingText = shippingMethodText(requirement.shippingMethod);
   const itemsHtml = requirement.items
     .map((item) => {
       return `<li>${item.productNameSnapshot}（${item.code || "無代碼"}）x ${item.quantity}，

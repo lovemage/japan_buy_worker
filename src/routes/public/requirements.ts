@@ -24,7 +24,7 @@ type RequirementInput = {
   recipientCity?: string;
   recipientAddress?: string;
   lineId?: string;
-  shippingMethod?: "consolidated_tw" | "jp_direct";
+  shippingMethod?: "consolidated_tw" | "jp_direct" | "limited_proxy" | "shipping_hidden";
   shippingInternationalTwd?: number;
   shippingDomesticTwd?: number;
   shippingTotalTwd?: number;
@@ -105,7 +105,12 @@ export async function handlePublicRequirements(
   if (!body.lineId?.trim()) {
     return badRequest("lineId is required");
   }
-  if (!body.shippingMethod || !["consolidated_tw", "jp_direct"].includes(body.shippingMethod)) {
+  if (
+    !body.shippingMethod ||
+    !["consolidated_tw", "jp_direct", "limited_proxy", "shipping_hidden"].includes(
+      body.shippingMethod
+    )
+  ) {
     return badRequest("shippingMethod is required");
   }
   if (!Array.isArray(body.items) || body.items.length === 0) {

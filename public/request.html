@@ -39,7 +39,7 @@
           Line ID 💬
           <input id="lineId" name="lineId" type="text" class="input-cute" required />
         </label>
-        <fieldset class="detail-spec-box">
+        <fieldset id="shipping-options-box" class="detail-spec-box">
           <legend>配送方式 🚚</legend>
           <label>
             <input type="radio" name="shippingMethod" value="consolidated_tw" checked />
@@ -48,6 +48,10 @@
           <label>
             <input type="radio" name="shippingMethod" value="jp_direct" />
             日本直送（僅國際運費，需完成 EZWAY 驗證） 🇯🇵
+          </label>
+          <label>
+            <input type="radio" name="shippingMethod" value="limited_proxy" />
+            限時連線代購（固定運費） ⚡
           </label>
           <p id="shipping-note" class="meta"></p>
         </fieldset>
