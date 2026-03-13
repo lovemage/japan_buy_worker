@@ -45,6 +45,24 @@ function shippingMethodText(method) {
   return "集運回台灣（國際+國內）";
 }
 
+const STATUS_OPTIONS = [
+  { value: "pending", label: "待處理" },
+  { value: "ordered", label: "已下單" },
+  { value: "shipped", label: "已出貨" },
+  { value: "cancelled", label: "取消訂單" },
+];
+
+function statusLabel(value) {
+  return STATUS_OPTIONS.find((o) => o.value === value)?.label || value;
+}
+
+function statusSelectHtml(formId, current) {
+  const options = STATUS_OPTIONS.map(
+    (o) => `<option value="${o.value}"${o.value === current ? " selected" : ""}>${o.label}</option>`
+  ).join("");
+  return `<select class="js-status-select" data-form-id="${formId}">${options}</select>`;
+}
+
 function renderForms(forms) {
   const wrapper = document.getElementById("admin-forms");
   if (!wrapper) {
@@ -62,29 +80,40 @@ function renderForms(forms) {
             .map((item) => {
               const size = item.desiredSize || "未選";
               const color = item.desiredColor || "未選";
-              const note = item.note ? `，備註：${item.note}` : "";
+              const note = item.note ? `<p class="meta">備註：${item.note}</p>` : "";
               const sourceLink = item.productUrl
-                ? `，<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer">原商品頁</a>`
+                ? `<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer" class="meta">原商品頁</a>`
                 : "";
-              const selectedImage = item.selectedImageUrl
-                ? `<img class="admin-item-thumb" src="${withProductImageFallback(item.selectedImageUrl)}" alt="${item.productNameSnapshot}" data-fallback="product" />`
-                : "";
-              return `<li>${selectedImage}${item.productNameSnapshot}（${item.code || "無代碼"}）x ${item.quantity}，尺寸：${size}，顏色：${color}，單價 JPY ${formatCurrency(item.unitPriceJpy)} / TWD ${formatCurrency(item.unitPriceTwd)}，小計 JPY ${formatCurrency(item.subtotalJpy)} / TWD ${formatCurrency(item.subtotalTwd)}${sourceLink}${note}</li>`;
+              const imageUrl = withProductImageFallback(item.selectedImageUrl || item.imageUrl || "");
+              return `<li class="admin-item-row">
+                <img class="admin-item-image" src="${imageUrl}" alt="${item.productNameSnapshot}" data-fallback="product" />
+                <div class="admin-item-info">
+                  <p><strong>${item.productNameSnapshot}</strong>（${item.code || "無代碼"}）x ${item.quantity}</p>
+                  <p class="meta">尺寸：${size}，顏色：${color}</p>
+                  <p class="meta">單價 &yen;${formatCurrency(item.unitPriceJpy)} / NT$${formatCurrency(item.unitPriceTwd)}，小計 &yen;${formatCurrency(item.subtotalJpy)} / NT$${formatCurrency(item.subtotalTwd)}</p>
+                  ${note}${sourceLink}
+                </div>
+              </li>`;
             })
             .join("")
         : "";
+      const displayCode = form.orderCode || String(form.id);
       return `
-      <article class="admin-form-card">
-        <h2 class="product-card__title">需求單 #${form.id}</h2>
+      <article class="admin-form-card" data-status="${form.status}">
+        <div class="admin-form-header">
+          <h2 class="product-card__title">需求單 #${displayCode}</h2>
+          <div class="admin-form-status">
+            ${statusSelectHtml(form.id, form.status)}
+          </div>
+        </div>
         <p class="meta">建立時間：${new Date(form.createdAt).toLocaleString("zh-TW")}</p>
-        <p class="meta">狀態：${form.status}</p>
         <p class="meta">客戶：${form.customerName}</p>
         <p class="meta">電話：${form.memberPhone || form.contact || "無"}</p>
         <p class="meta">Line ID：${form.lineId || "無"}</p>
         <p class="meta">收件：${form.recipientCity || ""} ${form.recipientAddress || ""}</p>
         <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
         <p class="meta">EZWAY：${form.requiresEzway ? "需要" : "不需要"}</p>
-        <p class="meta">運費：國際 TWD ${formatCurrency(form.shippingInternationalTwd)} / 國內 TWD ${formatCurrency(form.shippingDomesticTwd)} / 合計運費TWD ${formatCurrency(form.shippingTotalTwd)}</p>
+        <p class="meta">運費：國際 NT$${formatCurrency(form.shippingInternationalTwd)} / 國內 NT$${formatCurrency(form.shippingDomesticTwd)} / 合計運費 NT$${formatCurrency(form.shippingTotalTwd)}</p>
         <p class="meta">整單備註：${form.notes || "無"}</p>
         <button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此需求單</button>
         <ul class="admin-form-items">${itemsHtml}</ul>
@@ -93,6 +122,32 @@ function renderForms(forms) {
     })
     .join("");
   applyProductImageFallback(wrapper);
+
+  wrapper.querySelectorAll(".js-status-select").forEach((select) => {
+    select.addEventListener("change", async () => {
+      const formId = Number(select.getAttribute("data-form-id"));
+      const newStatus = select.value;
+      hideError();
+      const res = await fetch("/api/admin/requirements", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: formId, status: newStatus }),
+      });
+      if (res.status === 401) {
+        location.href = "/admin-login.html";
+        return;
+      }
+      if (!res.ok) {
+        showError(`狀態更新失敗：${res.status}`);
+        return;
+      }
+      const card = select.closest(".admin-form-card");
+      if (card) {
+        card.setAttribute("data-status", newStatus);
+      }
+    });
+  });
+
   wrapper.querySelectorAll(".js-delete-form").forEach((button) => {
     button.addEventListener("click", async () => {
       const id = Number(button.getAttribute("data-form-id") || "");

@@ -16,36 +16,44 @@
 
     <main class="container">
       <section id="detail-error" class="notice hidden"></section>
-      <article class="product-detail">
-        <div>
-          <img id="detail-main-image" class="detail-main-image" src="" alt="" />
+      <article class="product-detail" id="product-detail">
+        <div class="detail-image-col">
+          <div class="detail-main-wrap">
+            <img id="detail-main-image" class="detail-main-image" src="" alt="" />
+          </div>
           <div id="detail-gallery" class="detail-gallery"></div>
         </div>
         <div class="detail-meta">
-          <h2 id="detail-title"></h2>
-          <p class="meta" id="detail-brand"></p>
-          <p class="meta" id="detail-price"></p>
-          <p class="meta" id="detail-category"></p>
-          <p class="meta" id="detail-color-count"></p>
-          <p class="meta" id="detail-size-options"></p>
-          <p class="meta" id="detail-color-options"></p>
+          <h2 id="detail-title" class="detail-title"></h2>
+          <p id="detail-brand" class="detail-brand"></p>
+          <div id="detail-price" class="detail-price-block"></div>
+          <div class="detail-attributes">
+            <p class="meta" id="detail-category"></p>
+            <p class="meta" id="detail-color-count"></p>
+            <p class="meta" id="detail-size-options"></p>
+            <p class="meta" id="detail-color-options"></p>
+          </div>
           <p class="meta" id="detail-description"></p>
           <div class="detail-spec-box">
             <h3>商品規格</h3>
             <ul id="detail-spec-list"></ul>
           </div>
-          <div class="detail-spec-box">
-            <h3>Schema 摘要</h3>
-            <ul id="detail-schema-list"></ul>
-          </div>
-          <label>
-            數量
-            <input id="detail-quantity" type="number" min="1" value="1" />
-          </label>
-          <button id="detail-add" class="button">加入需求單</button>
         </div>
       </article>
     </main>
+    <div class="detail-actions" id="detail-actions">
+      <div class="qty-stepper">
+        <button type="button" class="qty-stepper__btn" id="qty-minus" aria-label="減少數量">-</button>
+        <input id="detail-quantity" class="qty-stepper__input" type="number" min="1" value="1" aria-label="數量" />
+        <button type="button" class="qty-stepper__btn" id="qty-plus" aria-label="增加數量">+</button>
+      </div>
+      <button id="detail-add" class="button detail-add-btn" type="button">
+        <span class="detail-add-btn__text">加入需求單</span>
+        <svg class="detail-add-btn__check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="4 12 10 18 20 6" />
+        </svg>
+      </button>
+    </div>
     <a class="floating-request-btn" href="/request.html">
       需求單（<span id="floating-draft-count">0</span>）
     </a>

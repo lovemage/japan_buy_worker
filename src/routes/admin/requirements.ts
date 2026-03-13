@@ -5,8 +5,12 @@ type Env = {
   DB: D1DatabaseLike;
 };
 
+const VALID_STATUSES = ["pending", "ordered", "shipped", "cancelled"] as const;
+type RequirementStatus = (typeof VALID_STATUSES)[number];
+
 type FormRow = {
   id: number;
+  order_code: string | null;
   customer_name: string;
   contact: string;
   member_phone: string | null;
@@ -50,6 +54,42 @@ export async function handleAdminRequirements(
       headers: { "content-type": "application/json" },
     });
   }
+  if (request.method === "PATCH") {
+    let body: { id?: number; status?: string };
+    try {
+      body = (await request.json()) as { id?: number; status?: string };
+    } catch {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    const id = Number(body?.id);
+    const status = (body?.status || "") as RequirementStatus;
+    if (!Number.isInteger(id) || id <= 0) {
+      return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    if (!VALID_STATUSES.includes(status)) {
+      return new Response(
+        JSON.stringify({ ok: false, error: `status must be one of: ${VALID_STATUSES.join(", ")}` }),
+        { status: 400, headers: { "content-type": "application/json" } }
+      );
+    }
+    await env.DB
+      .prepare(
+        "UPDATE requirement_forms SET status = ?, updated_at = datetime('now') WHERE id = ?"
+      )
+      .bind(status, id)
+      .run();
+    return new Response(JSON.stringify({ ok: true, id, status }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
   if (request.method === "DELETE") {
     const url = new URL(request.url);
     const id = Number(url.searchParams.get("id") || "");
@@ -87,6 +127,7 @@ export async function handleAdminRequirements(
       `
 SELECT
   id,
+  order_code,
   customer_name,
   contact,
   member_phone,
@@ -158,6 +199,7 @@ ORDER BY ri.id DESC
       ok: true,
       forms: forms.map((form) => ({
         id: form.id,
+        orderCode: form.order_code || String(form.id),
         customerName: form.customer_name,
         contact: form.contact,
         memberPhone: form.member_phone || "",

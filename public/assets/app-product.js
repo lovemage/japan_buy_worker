@@ -11,13 +11,6 @@ function setError(message) {
   node.classList.remove("hidden");
 }
 
-function formatPrice(price) {
-  if (typeof price !== "number") {
-    return "價格未提供";
-  }
-  return `JPY ${price.toLocaleString("en-US")}`;
-}
-
 function calcAdjustedPrices(baseJpy, pricing) {
   const base = Number(baseJpy);
   if (!Number.isFinite(base)) {
@@ -58,7 +51,12 @@ function renderProduct(item, pricing) {
         if (!main || !image) {
           return;
         }
+        // Crossfade animation on image switch
+        main.classList.add("is-switching");
         main.src = image;
+        main.addEventListener("animationend", () => {
+          main.classList.remove("is-switching");
+        }, { once: true });
         gallery.querySelectorAll(".detail-thumb-btn").forEach((node) => {
           node.classList.remove("is-active");
         });
@@ -79,14 +77,21 @@ function renderProduct(item, pricing) {
   };
 
   bindText("detail-title", title);
-  bindText("detail-brand", `品牌：${item.brand || "未提供"}`);
+  bindText("detail-brand", item.brand || "未提供");
+
+  // Price block with prominent TWD
   const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
-  bindText(
-    "detail-price",
-    `代購價：${
-      adjusted.jpy !== null ? `JPY ${adjusted.jpy.toLocaleString("en-US")} / TWD ${adjusted.twd.toLocaleString("en-US")}` : formatPrice(item.priceJpyTaxIn)
-    }`
-  );
+  const priceBlock = document.getElementById("detail-price");
+  if (priceBlock) {
+    if (adjusted.twd !== null) {
+      priceBlock.innerHTML =
+        `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` +
+        `<p class="detail-price-jpy">&yen;${adjusted.jpy.toLocaleString("en-US")}（含代購費）</p>`;
+    } else {
+      priceBlock.innerHTML = `<p class="detail-price-twd">價格未提供</p>`;
+    }
+  }
+
   bindText("detail-category", `分類：${item.category || "未分類"}`);
   bindText("detail-color-count", `顏色數：${item.colorCount ?? "-"}`);
   bindText(
@@ -119,20 +124,10 @@ function renderProduct(item, pricing) {
     specList.innerHTML = specRows.map(([k, v]) => `<li>${k}：${v}</li>`).join("");
   }
 
-  const schemaList = document.getElementById("detail-schema-list");
-  if (schemaList) {
-    const schema = item.schema || {};
-    const variantCount = Array.isArray(schema.hasVariant)
-      ? schema.hasVariant.length
-      : 0;
-    const schemaRows = [
-      ["類型", schema["@type"] || "-"],
-      ["群組 ID", schema.productGroupID || item.code || "-"],
-      ["Variant 數", variantCount],
-    ];
-    schemaList.innerHTML = schemaRows.map(([k, v]) => `<li>${k}：${v}</li>`).join("");
-  }
+  // Quantity stepper
+  initQuantityStepper();
 
+  // Add to cart with delight
   const addButton = document.getElementById("detail-add");
   const qtyInput = document.getElementById("detail-quantity");
   if (addButton) {
@@ -152,15 +147,57 @@ function renderProduct(item, pricing) {
         colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],
       });
       renderDraftCount();
-      const original = addButton.textContent;
+      bumpFloatingButton();
+
+      // Animated check feedback
       addButton.classList.add("is-added");
-      addButton.textContent = "已加入需求單";
+      addButton.setAttribute("disabled", "true");
       setTimeout(() => {
         addButton.classList.remove("is-added");
-        addButton.textContent = original || "加入需求單";
-      }, 1200);
+        addButton.removeAttribute("disabled");
+      }, 1400);
     });
   }
+
+  // Trigger entrance animation
+  const article = document.getElementById("product-detail");
+  if (article) {
+    requestAnimationFrame(() => {
+      article.classList.add("is-loaded");
+    });
+  }
+}
+
+function initQuantityStepper() {
+  const input = document.getElementById("detail-quantity");
+  const minus = document.getElementById("qty-minus");
+  const plus = document.getElementById("qty-plus");
+  if (!input) {
+    return;
+  }
+  const update = (delta) => {
+    const current = Math.max(1, Number(input.value || 1));
+    input.value = String(Math.max(1, current + delta));
+  };
+  if (minus) {
+    minus.addEventListener("click", () => update(-1));
+  }
+  if (plus) {
+    plus.addEventListener("click", () => update(1));
+  }
+}
+
+function bumpFloatingButton() {
+  const btn = document.querySelector(".floating-request-btn");
+  if (!btn) {
+    return;
+  }
+  btn.classList.remove("is-bumped");
+  void btn.offsetWidth;
+  btn.classList.add("is-bumped");
+  btn.addEventListener("animationend", () => {
+    btn.classList.remove("is-bumped");
+  }, { once: true });
 }
 
 function renderDraftCount() {

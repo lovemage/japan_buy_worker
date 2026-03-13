@@ -38,8 +38,9 @@ function buildCopyText(requirement) {
     })
     .join("\n");
 
+  const displayCode = requirement.orderCode || requirement.id;
   return `您好，我要確認代購訂單
-訂單編號: #${requirement.id}
+訂單編號: #${displayCode}
 官方Line: ${OFFICIAL_LINE_URL}
 會員姓名: ${requirement.memberName}
 會員電話: ${requirement.memberPhone}
@@ -69,7 +70,7 @@ function renderDetail(requirement) {
     })
     .join("");
   node.innerHTML = `
-    <p class="meta">訂單編號：#${requirement.id}</p>
+    <p class="meta">訂單編號：#${requirement.orderCode || requirement.id}</p>
     <p class="meta">姓名：${requirement.memberName}</p>
     <p class="meta">電話：${requirement.memberPhone}</p>
     <p class="meta">收件：${requirement.recipientCity} ${requirement.recipientAddress}</p>
@@ -85,10 +86,13 @@ function renderDetail(requirement) {
 }
 
 async function bootstrap() {
-  const id = new URL(location.href).searchParams.get("id");
+  const params = new URL(location.href).searchParams;
+  const id = params.get("id");
+  const code = params.get("code");
   const titleNode = document.getElementById("success-id");
   if (titleNode) {
-    titleNode.textContent = id ? `需求單編號：#${id}` : "需求單編號：未知";
+    const display = code || id || "未知";
+    titleNode.textContent = `需求單編號：#${display}`;
   }
   if (!id) {
     showError("缺少需求單編號");

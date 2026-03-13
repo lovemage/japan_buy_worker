@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS requirement_forms (
   shipping_total_twd INTEGER,
   requires_ezway INTEGER NOT NULL DEFAULT 0,
   notes TEXT,
-  status TEXT NOT NULL DEFAULT 'new',
+  status TEXT NOT NULL DEFAULT 'pending',
+  order_code TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   status_updated_by TEXT
@@ -54,6 +55,9 @@ CREATE TABLE IF NOT EXISTS requirement_forms (
 
 CREATE INDEX IF NOT EXISTS idx_requirement_forms_status
   ON requirement_forms(status);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_requirement_forms_order_code
+  ON requirement_forms(order_code) WHERE order_code IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS requirement_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

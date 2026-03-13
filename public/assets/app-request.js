@@ -89,7 +89,7 @@ function renderDraftItems() {
 
   const draft = getDraft();
   if (draft.items.length === 0) {
-    wrapper.innerHTML = '<p class="notice">目前沒有商品，請先從列表加入。</p>';
+    wrapper.innerHTML = '<div class="empty-state"><p>目前沒有商品</p><a class="btn-pill secondary" href="/index.html">&larr; 前往商品列表加入</a></div>';
     return [];
   }
 
@@ -106,8 +106,7 @@ function renderDraftItems() {
               ${item.productNameSnapshot}
             </a>
           </h2>
-          <p class="meta">JPY ${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")}</p>
-          <p class="meta">TWD ${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
+          <p class="meta">&yen;${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} / NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
           <div class="request-item__controls">
             <label>數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" /></label>
             <label>尺寸${
@@ -202,13 +201,13 @@ function renderTotals() {
   const shippingTwdNode = document.getElementById("shipping-twd");
   const shippingNote = document.getElementById("shipping-note");
   if (shippingTwdNode) {
-    shippingTwdNode.textContent = `運費 TWD：${shippingTwd.toLocaleString("en-US")}`;
+    shippingTwdNode.textContent = `運費：NT$${shippingTwd.toLocaleString("en-US")}`;
   }
   if (totalJpyNode) {
-    totalJpyNode.textContent = `合計 JPY：${totalJpy.toLocaleString("en-US")}`;
+    totalJpyNode.textContent = `商品合計：\u00a5${totalJpy.toLocaleString("en-US")}`;
   }
   if (totalTwdNode) {
-    totalTwdNode.textContent = `合計 TWD：${totalTwd.toLocaleString("en-US")}`;
+    totalTwdNode.textContent = `合計：NT$${totalTwd.toLocaleString("en-US")}`;
   }
   if (shippingNote) {
     shippingNote.textContent = shippingOptionsEnabled
@@ -410,23 +409,37 @@ async function onSubmit(event) {
     return;
   }
 
-  const res = await fetch("/api/requirements", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    showError(`送出失敗：${res.status}`);
-    return;
-  }
-  const body = await res.json();
-  if (!body.ok || !body.requirementId) {
-    showError("送出失敗：回應格式錯誤");
-    return;
+  const submitBtn = document.getElementById("submit-btn");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "送出中...";
   }
 
-  clearDraft();
-  location.href = `/success.html?id=${encodeURIComponent(String(body.requirementId))}`;
+  try {
+    const res = await fetch("/api/requirements", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      showError(`送出失敗：${res.status}`);
+      return;
+    }
+    const body = await res.json();
+    if (!body.ok || !body.requirementId) {
+      showError("送出失敗：回應格式錯誤");
+      return;
+    }
+
+    clearDraft();
+    const code = body.orderCode || String(body.requirementId);
+    location.href = `/success.html?id=${encodeURIComponent(String(body.requirementId))}&code=${encodeURIComponent(code)}`;
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "送出需求單";
+    }
+  }
 }
 
 async function bootstrap() {

@@ -185,11 +185,9 @@ function renderProducts(products, pricing, promoMaxTwd) {
         <div class="product-card__body">
           <h2 class="product-card__title">${escapeHtml(title)}</h2>
           <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
-          <p class="meta">價格：${adjusted.jpy !== null ? `JPY ${adjusted.jpy.toLocaleString("en-US")}` : "價格未提供"}</p>
-          <p class="meta">台幣估算：${adjusted.twd !== null ? `TWD ${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}</p>
-          <p class="meta">分類：${escapeHtml(item.category || "未分類")}</p>
-          <p class="meta">顏色數：${item.colorCount ?? "-"}</p>
-          <a class="button" data-product-detail-link="1" href="/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">check this out!</a>
+          <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${adjusted.jpy !== null ? ` <span class="meta" style="font-weight:400">(&yen;${adjusted.jpy.toLocaleString("en-US")})</span>` : ""}</p>
+          <p class="product-card__category">${escapeHtml(translateCategoryLabel(item.category))}${item.colorCount ? ` · ${item.colorCount} 色` : ""}</p>
+          <a class="button" data-product-detail-link="1" href="/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">查看詳情</a>
         </div>
       </article>
       `;
@@ -548,7 +546,20 @@ async function bootstrap() {
     }
   } catch (error) {
     setError(error instanceof Error ? error.message : "資料載入失敗");
+  } finally {
+    dismissLoading();
   }
+}
+
+function dismissLoading() {
+  const overlay = document.getElementById("loading-overlay");
+  if (!overlay) {
+    return;
+  }
+  overlay.classList.add("is-hiding");
+  overlay.addEventListener("transitionend", () => {
+    overlay.classList.add("hidden");
+  }, { once: true });
 }
 
 bootstrap();

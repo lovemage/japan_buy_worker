@@ -42,6 +42,7 @@ function badRequest(message: string): Response {
 
 type RequirementFormRow = {
   id: number;
+  order_code: string | null;
   customer_name: string;
   member_phone: string | null;
   recipient_city: string | null;
@@ -55,6 +56,29 @@ type RequirementFormRow = {
   notes: string | null;
   created_at: string;
 };
+
+function generateOrderCode(): string {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const rand = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+  return `${dd}${mm}${rand}`;
+}
+
+async function generateUniqueOrderCode(db: D1DatabaseLike, maxRetries = 10): Promise<string> {
+  for (let i = 0; i < maxRetries; i++) {
+    const code = generateOrderCode();
+    const exists = await db
+      .prepare("SELECT 1 FROM requirement_forms WHERE order_code = ? LIMIT 1")
+      .bind(code)
+      .first();
+    if (!exists) {
+      return code;
+    }
+  }
+  const fallback = generateOrderCode() + String(Math.floor(Math.random() * 100)).padStart(2, "0");
+  return fallback;
+}
 
 type RequirementItemRow = {
   id: number;
@@ -120,6 +144,8 @@ export async function handlePublicRequirements(
     return badRequest("item quantity must be >= 1");
   }
 
+  const orderCode = await generateUniqueOrderCode(env.DB);
+
   const insertedForm = await env.DB
     .prepare(
       `
@@ -137,10 +163,11 @@ INSERT INTO requirement_forms (
   requires_ezway,
   notes,
   status,
+  order_code,
   created_at,
   updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', datetime('now'), datetime('now'))
-RETURNING id
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, datetime('now'), datetime('now'))
+RETURNING id, order_code
 `
     )
     .bind(
@@ -159,9 +186,10 @@ RETURNING id
         : null,
       Number.isFinite(Number(body.shippingTotalTwd)) ? Number(body.shippingTotalTwd) : null,
       body.requiresEzway ? 1 : 0,
-      (body.notes || "").trim()
+      (body.notes || "").trim(),
+      orderCode
     )
-    .first<{ id: number }>();
+    .first<{ id: number; order_code: string }>();
 
   if (!insertedForm?.id) {
     return new Response(JSON.stringify({ ok: false, error: "Failed to create form" }), {
@@ -220,10 +248,14 @@ INSERT INTO requirement_items (
     }
   }
 
-  return new Response(JSON.stringify({ ok: true, requirementId: insertedForm.id }), {
-    status: 200,
-    headers: { "content-type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      requirementId: insertedForm.id,
+      orderCode: insertedForm.order_code || String(insertedForm.id),
+    }),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
 }
 
 export async function handlePublicRequirementDetail(
@@ -248,6 +280,7 @@ export async function handlePublicRequirementDetail(
       `
 SELECT
   id,
+  order_code,
   customer_name,
   member_phone,
   recipient_city,
@@ -311,6 +344,7 @@ ORDER BY ri.id ASC
       ok: true,
       requirement: {
         id: form.id,
+        orderCode: form.order_code || String(form.id),
         createdAt: form.created_at,
         memberName: form.customer_name,
         memberPhone: form.member_phone || "",
