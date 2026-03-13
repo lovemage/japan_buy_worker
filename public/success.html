@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>需求單送出成功 🐾</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <main class="container success-page card" style="text-align: center;">
+      <img src="/assets/images/success-shiba.png" alt="Success Mascot" style="max-width: 300px; margin: 0 auto; display: block;" />
+      <h1>需求單已建立 🎉✨</h1>
+      <p id="success-id">單號載入中... ⏳</p>
+      <p class="meta">
+        請加入官方 Line，貼上以下訂單資訊，與客服確認代購流程與付款。 💖
+      </p>
+      <a
+        class="button btn-pill"
+        href="https://lin.ee/CnwC6Nt"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        加入官方 Line 💬
+      </a>
+      <section id="success-error" class="notice hidden"></section>
+      <section id="success-detail" class="detail-spec-box" style="text-align: left; margin: 1.5rem 0;"></section>
+      <button id="copy-order-text" class="button btn-pill" type="button" style="margin-bottom: 0.5rem;">複製訂單資訊 📋</button>
+      <br />
+      <a class="button btn-pill" href="/index.html">返回商品列表 🌸</a>
+    </main>
+    <script type="module" src="/assets/app-success.js"></script>
+  </body>
+</html>
