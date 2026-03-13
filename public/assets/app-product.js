@@ -164,8 +164,25 @@ function renderDraftCount() {
   countNode.textContent = String(getDraft().items.length);
 }
 
+function initFloatingNavButtons() {
+  const upBtn = document.getElementById("float-scroll-up");
+  const downBtn = document.getElementById("float-scroll-down");
+  if (upBtn) {
+    upBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+  if (downBtn) {
+    downBtn.addEventListener("click", () => {
+      const target = document.documentElement.scrollHeight;
+      window.scrollTo({ top: target, behavior: "smooth" });
+    });
+  }
+}
+
 async function bootstrap() {
   renderDraftCount();
+  initFloatingNavButtons();
   const pricingRes = await fetch("/api/pricing");
   const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
   const pricing = pricingBody?.pricing || DEFAULT_PRICING;
