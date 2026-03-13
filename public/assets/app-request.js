@@ -116,15 +116,9 @@ function renderDraftItems() {
                   )}</select>`
                 : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="未抓到尺寸，可手動填寫" />`
             }</label>
-            <label>顏色${
-              Array.isArray(item.colorOptions) && item.colorOptions.length > 0
-                ? `<select data-field="desiredColor">${renderSelectOptions(
-                    item.colorOptions,
-                    item.desiredColor || "",
-                    "請選擇顏色"
-                  )}</select>`
-                : `<input type="text" data-field="desiredColor" value="${item.desiredColor || ""}" placeholder="未抓到顏色，可手動填寫" />`
-            }</label>
+            <label>顏色
+              <input type="text" value="${item.desiredColor || "依商品圖片選擇"}" disabled />
+            </label>
             <label>備註<input type="text" data-field="note" value="${item.note || ""}" /></label>
             <button type="button" class="button secondary js-remove-item" data-remove-idx="${idx}">刪除此商品</button>
           </div>

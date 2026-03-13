@@ -105,6 +105,18 @@ function renderPagination(paging) {
   next.onclick = () => goPage(paging.page + 1);
 }
 
+function renderFloatingPagination(paging) {
+  const prev = document.getElementById("float-page-prev");
+  const next = document.getElementById("float-page-next");
+  if (!prev || !next || !paging) {
+    return;
+  }
+  prev.disabled = paging.page <= 1;
+  next.disabled = paging.page >= paging.totalPages;
+  prev.onclick = () => goPage(paging.page - 1);
+  next.onclick = () => goPage(paging.page + 1);
+}
+
 function initPromoModal() {
   const modal = document.getElementById("promo-modal");
   const promoImage = document.getElementById("promo-image");
@@ -141,26 +153,9 @@ function initPromoModal() {
   });
 }
 
-function initFloatingNavButtons() {
-  const upBtn = document.getElementById("float-scroll-up");
-  const downBtn = document.getElementById("float-scroll-down");
-  if (upBtn) {
-    upBtn.addEventListener("click", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-  }
-  if (downBtn) {
-    downBtn.addEventListener("click", () => {
-      const target = document.documentElement.scrollHeight;
-      window.scrollTo({ top: target, behavior: "smooth" });
-    });
-  }
-}
-
 async function bootstrap() {
   renderDraftCount();
   initPromoModal();
-  initFloatingNavButtons();
   try {
     const pricingRes = await fetch("/api/pricing");
     const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
@@ -182,6 +177,7 @@ async function bootstrap() {
     }
     renderProducts(products, pricing);
     renderPagination(body.paging || null);
+    renderFloatingPagination(body.paging || null);
   } catch (error) {
     setError(error instanceof Error ? error.message : "資料載入失敗");
   }

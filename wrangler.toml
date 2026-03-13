@@ -4,8 +4,8 @@ compatibility_date = "2026-03-13"
 assets = { directory = "./public" }
 
 [vars]
-CRAWL_LIST_PAGES = "10"
-CRAWL_MAX_PAGES = "3"
+CRAWL_LIST_PAGES = "20"
+CRAWL_MAX_PAGES = "20"
 CRAWL_TIMEOUT_MS = "120000"
 
 [[d1_databases]]
