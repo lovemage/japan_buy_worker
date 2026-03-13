@@ -147,7 +147,11 @@ function renderProduct(item, pricing) {
         colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],
       });
       renderDraftCount();
-      location.href = "/request.html";
+      const original = addButton.textContent;
+      addButton.textContent = "已加入需求單";
+      setTimeout(() => {
+        addButton.textContent = original || "加入需求單";
+      }, 1200);
     });
   }
 }

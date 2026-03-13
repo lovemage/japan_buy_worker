@@ -18,6 +18,9 @@
     </header>
 
     <main class="container">
+      <section class="hero-banner card">
+        <img id="hero-image" src="/assets/images/success-shiba.png" alt="首頁活動圖" />
+      </section>
       <section id="list-error" class="notice hidden"></section>
       <section id="product-grid" class="product-grid card" aria-live="polite"></section>
       <section id="pagination" class="pagination hidden" aria-live="polite">
@@ -26,6 +29,11 @@
         <button id="page-next" class="btn-pill secondary" type="button">下一頁 👉</button>
       </section>
     </main>
+    <section id="promo-modal" class="promo-modal hidden" aria-hidden="true">
+      <div class="promo-modal__content">
+        <img id="promo-image" src="/assets/images/popup.jpg" alt="活動彈窗" />
+      </div>
+    </section>
     <a class="floating-request-btn" href="/request.html">
       需求單（<span id="floating-draft-count">0</span>）
     </a>

@@ -2,6 +2,7 @@ import { getDraft } from "./draft-store.js";
 
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
+const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 
 function formatPrice(price) {
   if (typeof price !== "number") {
@@ -104,8 +105,45 @@ function renderPagination(paging) {
   next.onclick = () => goPage(paging.page + 1);
 }
 
+function initPromoModal() {
+  const modal = document.getElementById("promo-modal");
+  const promoImage = document.getElementById("promo-image");
+  const heroImage = document.getElementById("hero-image");
+  if (heroImage) {
+    heroImage.addEventListener("error", () => {
+      const heroSection = heroImage.closest(".hero-banner");
+      if (heroSection) {
+        heroSection.classList.add("hidden");
+      }
+    });
+  }
+  if (promoImage) {
+    promoImage.addEventListener("error", () => {
+      if (modal) {
+        modal.classList.add("hidden");
+      }
+      localStorage.setItem(PROMO_STORAGE_KEY, "1");
+    });
+  }
+  if (!modal) {
+    return;
+  }
+
+  const shown = localStorage.getItem(PROMO_STORAGE_KEY) === "1";
+  if (shown) {
+    modal.classList.add("hidden");
+    return;
+  }
+  modal.classList.remove("hidden");
+  modal.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    localStorage.setItem(PROMO_STORAGE_KEY, "1");
+  });
+}
+
 async function bootstrap() {
   renderDraftCount();
+  initPromoModal();
   try {
     const pricingRes = await fetch("/api/pricing");
     const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
