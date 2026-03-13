@@ -412,6 +412,28 @@ select:disabled {
   gap: 8px;
 }
 
+.category-filters {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.category-filters .btn-pill {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.btn-pill.is-active {
+  background: var(--brand);
+  color: #fff;
+}
+
 .hero-banner {
   margin-bottom: 14px;
   overflow: hidden;
@@ -470,5 +492,10 @@ select:disabled {
 
   .product-detail {
     grid-template-columns: 1fr;
+  }
+
+  .category-filters .btn-pill {
+    padding: 5px 10px;
+    font-size: 12px;
   }
 }

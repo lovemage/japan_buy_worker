@@ -22,6 +22,14 @@ function hideError() {
   node.classList.add("hidden");
 }
 
+function setCrawlStatus(text) {
+  const node = document.getElementById("admin-crawl-status");
+  if (!node) {
+    return;
+  }
+  node.textContent = `抓取狀態：${text}`;
+}
+
 function renderForms(forms) {
   const wrapper = document.getElementById("admin-forms");
   if (!wrapper) {
@@ -87,6 +95,7 @@ async function loadForms() {
 
 async function runCrawl() {
   hideError();
+  setCrawlStatus("抓取中（100 頁），請稍候...");
   const button = document.getElementById("admin-crawl");
   if (button) {
     button.setAttribute("disabled", "true");
@@ -99,8 +108,17 @@ async function runCrawl() {
       return;
     }
     if (!res.ok) {
+      setCrawlStatus(`抓取失敗（HTTP ${res.status}）`);
       showError(`抓取失敗：${res.status}`);
       return;
+    }
+    const body = await res.json();
+    if (body?.ok) {
+      setCrawlStatus(
+        `完成：來源 ${body.source || "-"}，抓到 ${body.crawledCount || 0} 筆，寫入 ${body.upserted || 0} 筆`
+      );
+    } else {
+      setCrawlStatus("抓取失敗（回應格式錯誤）");
     }
     await loadForms();
   } finally {

@@ -17,6 +17,11 @@ type ProductRow = {
   last_crawled_at: string | null;
 };
 
+type CategoryRow = {
+  category: string | null;
+  total: number;
+};
+
 function toDisplayImageUrl(imageUrl: string | null): string | null {
   if (!imageUrl) {
     return null;
@@ -54,10 +59,28 @@ export async function handlePublicProducts(
   const url = new URL(request.url);
   const limit = Math.min(Number(url.searchParams.get("limit") || 20), 100);
   const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
+  const category = (url.searchParams.get("category") || "").trim();
+  const hasCategory = category.length > 0;
 
-  const rows = await env.DB
-    .prepare(
-      `
+  const listSql = hasCategory
+    ? `
+SELECT
+  id,
+  source_product_code,
+  title_ja,
+  title_zh_tw,
+  brand,
+  category,
+  price_jpy_tax_in,
+  color_count,
+  image_url,
+  last_crawled_at
+FROM products
+WHERE is_active = 1 AND category = ?
+ORDER BY updated_at DESC
+LIMIT ? OFFSET ?
+`
+    : `
 SELECT
   id,
   source_product_code,
@@ -73,15 +96,20 @@ FROM products
 WHERE is_active = 1
 ORDER BY updated_at DESC
 LIMIT ? OFFSET ?
-`
-    )
-    .bind(limit, offset)
-    .all<ProductRow>();
+`;
+  const rows = hasCategory
+    ? await env.DB.prepare(listSql).bind(category, limit, offset).all<ProductRow>()
+    : await env.DB.prepare(listSql).bind(limit, offset).all<ProductRow>();
 
   const products = Array.isArray(rows?.results) ? rows.results : [];
-  const totalRow = await env.DB
-    .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1")
-    .first<{ total: number }>();
+  const totalRow = hasCategory
+    ? await env.DB
+        .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND category = ?")
+        .bind(category)
+        .first<{ total: number }>()
+    : await env.DB
+        .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1")
+        .first<{ total: number }>();
   const total = Number(totalRow?.total || 0);
   const page = Math.floor(offset / Math.max(limit, 1)) + 1;
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)));
@@ -90,10 +118,45 @@ LIMIT ? OFFSET ?
     JSON.stringify({
       ok: true,
       products: products.map(mapProduct),
+      filters: { category: hasCategory ? category : "" },
       paging: { limit, offset, page, total, totalPages },
     }),
     { status: 200, headers: { "content-type": "application/json" } }
   );
+}
+
+export async function handlePublicProductCategories(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+      status: 405,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  const rows = await env.DB
+    .prepare(
+      `
+SELECT category, COUNT(1) as total
+FROM products
+WHERE is_active = 1 AND category IS NOT NULL AND category != ''
+GROUP BY category
+ORDER BY total DESC, category ASC
+`
+    )
+    .all<CategoryRow>();
+  const categories = Array.isArray(rows?.results)
+    ? rows.results
+        .filter((row) => typeof row.category === "string" && row.category.trim().length > 0)
+        .map((row) => ({ name: String(row.category), total: Number(row.total || 0) }))
+    : [];
+
+  return new Response(JSON.stringify({ ok: true, categories }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 export async function handlePublicProductDetail(

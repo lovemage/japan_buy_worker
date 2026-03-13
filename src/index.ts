@@ -6,6 +6,7 @@ import {
 import { handleAdminCrawl } from "./routes/admin/crawl";
 import { handleAdminRequirements } from "./routes/admin/requirements";
 import {
+  handlePublicProductCategories,
   handlePublicProductDetail,
   handlePublicProducts,
 } from "./routes/public/products";
@@ -77,6 +78,10 @@ export default {
 
     if (url.pathname === "/api/products") {
       return handlePublicProducts(request, env);
+    }
+
+    if (url.pathname === "/api/product-categories") {
+      return handlePublicProductCategories(request, env);
     }
 
     if (url.pathname === "/api/product") {

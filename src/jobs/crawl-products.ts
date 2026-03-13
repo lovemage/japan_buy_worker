@@ -1,8 +1,8 @@
 import type { RawProduct } from "./types";
 
 const LIST_PAGE_SIZE = 40;
-const LIST_DEFAULT_PAGES = 20;
-const LIST_MAX_PAGES = 20;
+const LIST_DEFAULT_PAGES = 100;
+const LIST_MAX_PAGES = 100;
 
 type CrawlEnv = {
   CRAWL_LIST_PAGES?: string;

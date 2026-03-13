@@ -3,6 +3,29 @@ import { getDraft } from "./draft-store.js";
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
+const CATEGORY_ZH_MAP = {
+  "Tシャツ": "T 恤",
+  "シャツ": "襯衫",
+  "パンツ": "褲子",
+  "ショートパンツ": "短褲",
+  "スカート": "裙子",
+  "ワンピース": "洋裝",
+  "アウター": "外套",
+  "ジャケット": "夾克",
+  "パーカー": "連帽上衣",
+  "トレーナー": "大學T",
+  "スウェット": "衛衣",
+  "ニット": "針織",
+  "カーディガン": "針織外套",
+  "バッグ": "包包",
+  "シューズ": "鞋子",
+  "サンダル": "涼鞋",
+  "ソックス": "襪子",
+  "帽子": "帽子",
+  "アクセサリー": "配件",
+  "ベビー": "嬰幼兒",
+  "キッズ": "童裝",
+};
 
 function formatPrice(price) {
   if (typeof price !== "number") {
@@ -75,16 +98,50 @@ function renderProducts(products, pricing) {
     .join("");
 }
 
+function formatDateOnly(input) {
+  const value = new Date(input);
+  if (Number.isNaN(value.getTime())) {
+    return "未知";
+  }
+  return value.toLocaleDateString("zh-TW");
+}
+
+function translateCategoryLabel(raw) {
+  const key = String(raw || "").trim();
+  if (!key) {
+    return "未分類";
+  }
+  if (CATEGORY_ZH_MAP[key]) {
+    return CATEGORY_ZH_MAP[key];
+  }
+  for (const [jp, zh] of Object.entries(CATEGORY_ZH_MAP)) {
+    if (key.includes(jp)) {
+      return key.replace(jp, zh);
+    }
+  }
+  return key;
+}
+
 function getPage() {
   const url = new URL(location.href);
   const pageRaw = Number(url.searchParams.get("page") || "1");
   return Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
 }
 
-function goPage(page) {
+function getCategory() {
+  const url = new URL(location.href);
+  return (url.searchParams.get("category") || "").trim();
+}
+
+function goPage(page, category = getCategory()) {
   const target = Math.max(1, page);
   const url = new URL(location.href);
   url.searchParams.set("page", String(target));
+  if (category) {
+    url.searchParams.set("category", category);
+  } else {
+    url.searchParams.delete("category");
+  }
   location.href = url.toString();
 }
 
@@ -115,6 +172,38 @@ function renderFloatingPagination(paging) {
   next.disabled = paging.page >= paging.totalPages;
   prev.onclick = () => goPage(paging.page - 1);
   next.onclick = () => goPage(paging.page + 1);
+}
+
+function renderCategoryFilters(categories) {
+  const wrapper = document.getElementById("category-filters");
+  if (!wrapper) {
+    return;
+  }
+  const selectedCategory = getCategory();
+  const buttons = [
+    `<button type="button" class="btn-pill secondary ${selectedCategory ? "" : "is-active"}" data-category="">全部</button>`,
+    ...categories.map(
+      (item) =>
+        `<button type="button" class="btn-pill secondary ${selectedCategory === item.name ? "is-active" : ""}" data-category="${item.name}">
+          ${translateCategoryLabel(item.name)}（${item.total}）
+        </button>`
+    ),
+  ];
+  wrapper.innerHTML = buttons.join("");
+  wrapper.querySelectorAll("button[data-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const category = (button.getAttribute("data-category") || "").trim();
+      goPage(1, category);
+    });
+  });
+}
+
+function scrollToFirstProductCard() {
+  const firstCard = document.querySelector(".product-card");
+  if (!firstCard) {
+    return;
+  }
+  firstCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function initPromoModal() {
@@ -157,27 +246,43 @@ async function bootstrap() {
   renderDraftCount();
   initPromoModal();
   try {
+    const categoryRes = await fetch("/api/product-categories");
+    const categoryBody = categoryRes.ok ? await categoryRes.json() : null;
+    const categories = Array.isArray(categoryBody?.categories) ? categoryBody.categories : [];
+    renderCategoryFilters(categories);
+
     const pricingRes = await fetch("/api/pricing");
     const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
     const pricing = pricingBody?.pricing || DEFAULT_PRICING;
     const page = getPage();
+    const category = getCategory();
     const offset = (page - 1) * PAGE_SIZE;
-    const res = await fetch(`/api/products?limit=${PAGE_SIZE}&offset=${offset}`);
+    const params = new URLSearchParams({
+      limit: String(PAGE_SIZE),
+      offset: String(offset),
+    });
+    if (category) {
+      params.set("category", category);
+    }
+    const res = await fetch(`/api/products?${params.toString()}`);
     if (!res.ok) {
       throw new Error(`Load failed: ${res.status}`);
     }
     const body = await res.json();
     const products = Array.isArray(body.products) ? body.products : [];
     const last = products.find((p) => p.lastCrawledAt)?.lastCrawledAt;
+    const total = Number(body?.paging?.total || 0);
     const lastNode = document.getElementById("last-updated-text");
     if (lastNode) {
-      lastNode.textContent = last
-        ? `最後更新：${new Date(last).toLocaleString("zh-TW")}`
-        : "最後更新：未知";
+      const dateText = last ? formatDateOnly(last) : "未知";
+      lastNode.textContent = `最後更新：${dateText}｜總商品數：${total.toLocaleString("en-US")}`;
     }
     renderProducts(products, pricing);
     renderPagination(body.paging || null);
     renderFloatingPagination(body.paging || null);
+    if (getCategory()) {
+      scrollToFirstProductCard();
+    }
   } catch (error) {
     setError(error instanceof Error ? error.message : "資料載入失敗");
   }
