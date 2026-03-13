@@ -111,6 +111,55 @@ LIMIT ? OFFSET ?
         .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1")
         .first<{ total: number }>();
   const total = Number(totalRow?.total || 0);
+  const totalSkuSql = hasCategory
+    ? `
+SELECT
+  COALESCE(
+    SUM(
+      CASE
+        WHEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant')) > 0
+          THEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant'))
+        ELSE 1
+      END
+    ),
+    0
+  ) as total_sku
+FROM products p
+LEFT JOIN product_snapshots ps ON ps.id = (
+  SELECT id
+  FROM product_snapshots
+  WHERE product_id = p.id
+  ORDER BY captured_at DESC, id DESC
+  LIMIT 1
+)
+WHERE p.is_active = 1 AND p.category = ?
+`
+    : `
+SELECT
+  COALESCE(
+    SUM(
+      CASE
+        WHEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant')) > 0
+          THEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant'))
+        ELSE 1
+      END
+    ),
+    0
+  ) as total_sku
+FROM products p
+LEFT JOIN product_snapshots ps ON ps.id = (
+  SELECT id
+  FROM product_snapshots
+  WHERE product_id = p.id
+  ORDER BY captured_at DESC, id DESC
+  LIMIT 1
+)
+WHERE p.is_active = 1
+`;
+  const totalSkuRow = hasCategory
+    ? await env.DB.prepare(totalSkuSql).bind(category).first<{ total_sku: number }>()
+    : await env.DB.prepare(totalSkuSql).first<{ total_sku: number }>();
+  const totalSku = Number(totalSkuRow?.total_sku || 0);
   const page = Math.floor(offset / Math.max(limit, 1)) + 1;
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)));
 
@@ -119,7 +168,7 @@ LIMIT ? OFFSET ?
       ok: true,
       products: products.map(mapProduct),
       filters: { category: hasCategory ? category : "" },
-      paging: { limit, offset, page, total, totalPages },
+      paging: { limit, offset, page, total, totalPages, totalSku },
     }),
     { status: 200, headers: { "content-type": "application/json" } }
   );

@@ -330,11 +330,11 @@ async function bootstrap() {
     const body = await res.json();
     const products = Array.isArray(body.products) ? body.products : [];
     const last = products.find((p) => p.lastCrawledAt)?.lastCrawledAt;
-    const total = Number(body?.paging?.total || 0);
+    const totalSku = Number(body?.paging?.totalSku || body?.paging?.total || 0);
     const lastNode = document.getElementById("last-updated-text");
     if (lastNode) {
       const dateText = last ? formatDateOnly(last) : "未知";
-      lastNode.textContent = `最後更新：${dateText}｜總商品數：${total.toLocaleString("en-US")}`;
+      lastNode.textContent = `最後更新：${dateText}｜總SKU數：${totalSku.toLocaleString("en-US")}`;
     }
     renderProducts(products, pricing);
     renderPagination(body.paging || null);
