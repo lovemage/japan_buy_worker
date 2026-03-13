@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Japan Buy 商品列表</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="container">
+        <h1>🌸 Japan Buy 商品列表 🛍️</h1>
+        <p id="last-updated-text">✨ 資料載入中... ✨</p>
+        <a class="btn-pill" href="/request.html" id="goto-request">
+          🛒 前往需求單（<span id="draft-count">0</span>）
+        </a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="list-error" class="notice hidden"></section>
+      <section id="product-grid" class="product-grid card" aria-live="polite"></section>
+      <section id="pagination" class="pagination hidden" aria-live="polite">
+        <button id="page-prev" class="btn-pill secondary" type="button">👈 上一頁</button>
+        <p id="page-indicator" class="meta"></p>
+        <button id="page-next" class="btn-pill secondary" type="button">下一頁 👉</button>
+      </section>
+    </main>
+
+    <script type="module" src="/assets/app-list.js"></script>
+  </body>
+</html>
