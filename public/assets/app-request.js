@@ -1,4 +1,5 @@
 import { clearDraft, getDraft, setDraft } from "./draft-store.js";
+import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 const DEFAULT_PRICING = {
   markupJpy: 1000,
   jpyToTwd: 0.21,
@@ -95,7 +96,7 @@ function renderDraftItems() {
       (item, idx) => `
       <article class="request-item" data-idx="${idx}">
         <a href="${item.code ? `/product?code=${encodeURIComponent(item.code)}` : "#"}" target="_blank" rel="noopener noreferrer">
-          <img src="${item.selectedImageUrl || item.imageUrl || ""}" alt="${item.productNameSnapshot}" />
+          <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${item.productNameSnapshot}" data-fallback="product" />
         </a>
         <div>
           <h2 class="product-card__title">
@@ -161,6 +162,8 @@ function renderDraftItems() {
       renderTotals();
     });
   });
+
+  applyProductImageFallback(wrapper);
 
   return draft.items;
 }

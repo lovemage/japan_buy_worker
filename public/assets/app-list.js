@@ -1,4 +1,5 @@
 import { getDraft } from "./draft-store.js";
+import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
@@ -120,12 +121,12 @@ function renderProducts(products, pricing) {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
       const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
       const gallery = buildProductGallery(item);
-      const firstImage = gallery[0] || "";
+      const firstImage = withProductImageFallback(gallery[0] || "");
       const galleryPayload = encodeURIComponent(JSON.stringify(gallery));
       return `
       <article class="product-card ${gallery.length > 1 ? "has-gallery" : ""}" data-product-card data-gallery="${galleryPayload}">
         <div class="product-card__media">
-          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image />
+          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
         </div>
@@ -209,6 +210,7 @@ function initProductCardGalleries() {
       setIndex(0);
     });
   });
+  applyProductImageFallback();
 }
 
 function getViewMode() {

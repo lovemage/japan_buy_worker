@@ -1,4 +1,5 @@
 import { addItem, getDraft } from "./draft-store.js";
+import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
 
 function setError(message) {
@@ -31,7 +32,7 @@ function calcAdjustedPrices(baseJpy, pricing) {
 
 function renderProduct(item, pricing) {
   const title = item.nameZhTw || item.nameJa || "未命名商品";
-  const mainImage = item.mainImageUrl || item.displayImageUrl || item.imageUrl || "";
+  const mainImage = withProductImageFallback(item.mainImageUrl || item.displayImageUrl || item.imageUrl || "");
   const images = Array.isArray(item.gallery) && item.gallery.length > 0 ? item.gallery : [mainImage];
 
   const main = document.getElementById("detail-main-image");
@@ -47,7 +48,7 @@ function renderProduct(item, pricing) {
       .map(
         (img, idx) =>
           `<button class="detail-thumb-btn ${idx === 0 ? "is-active" : ""}" type="button" data-image="${img}">
-            <img src="${img}" alt="${title}" class="detail-thumb" />
+            <img src="${withProductImageFallback(img)}" alt="${title}" class="detail-thumb" data-fallback="product" />
           </button>`
       )
       .join("");
@@ -65,6 +66,10 @@ function renderProduct(item, pricing) {
       });
     });
   }
+  if (main) {
+    main.setAttribute("data-fallback", "product");
+  }
+  applyProductImageFallback();
 
   const bindText = (id, text) => {
     const node = document.getElementById(id);

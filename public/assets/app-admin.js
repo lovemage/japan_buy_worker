@@ -1,3 +1,5 @@
+import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+
 function showError(message) {
   const node = document.getElementById("admin-error");
   if (!node) {
@@ -52,7 +54,7 @@ function renderForms(forms) {
                 ? `，<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer">原商品頁</a>`
                 : "";
               const selectedImage = item.selectedImageUrl
-                ? `<img class="admin-item-thumb" src="${item.selectedImageUrl}" alt="${item.productNameSnapshot}" />`
+                ? `<img class="admin-item-thumb" src="${withProductImageFallback(item.selectedImageUrl)}" alt="${item.productNameSnapshot}" data-fallback="product" />`
                 : "";
               return `<li>${selectedImage}${item.productNameSnapshot}（${item.code || "無代碼"}）x ${item.quantity}，尺寸：${size}，顏色：${color}，單價 JPY ${formatCurrency(item.unitPriceJpy)} / TWD ${formatCurrency(item.unitPriceTwd)}，小計 JPY ${formatCurrency(item.subtotalJpy)} / TWD ${formatCurrency(item.subtotalTwd)}${sourceLink}${note}</li>`;
             })
@@ -76,6 +78,7 @@ function renderForms(forms) {
       `;
     })
     .join("");
+  applyProductImageFallback(wrapper);
 }
 
 async function loadForms() {
