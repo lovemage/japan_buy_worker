@@ -94,7 +94,7 @@ function renderDraftItems() {
     .map(
       (item, idx) => `
       <article class="request-item" data-idx="${idx}">
-        <img src="${item.imageUrl || ""}" alt="${item.productNameSnapshot}" />
+        <img src="${item.selectedImageUrl || item.imageUrl || ""}" alt="${item.productNameSnapshot}" />
         <div>
           <h2 class="product-card__title">${item.productNameSnapshot}</h2>
           <p class="meta">JPY ${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")}</p>
@@ -340,6 +340,7 @@ async function onSubmit(event) {
     items: draft.items.map((item) => ({
       productId: item.productId,
       productNameSnapshot: item.productNameSnapshot,
+      selectedImageUrl: item.selectedImageUrl || item.imageUrl || "",
       quantity: Number(item.quantity || 1),
       unitPriceJpy: Number(item.priceJpyTaxIn || 0),
       unitPriceTwd: Number(item.unitPriceTwd || 0),

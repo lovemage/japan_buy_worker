@@ -7,6 +7,7 @@ type Env = {
 type RequirementItemInput = {
   productId?: number | null;
   productNameSnapshot?: string;
+  selectedImageUrl?: string;
   quantity?: number;
   unitPriceJpy?: number | null;
   unitPriceTwd?: number | null;
@@ -59,6 +60,7 @@ type RequirementItemRow = {
   id: number;
   product_id: number | null;
   product_name_snapshot: string;
+  selected_image_url: string | null;
   quantity: number;
   unit_price_jpy: number | null;
   unit_price_twd: number | null;
@@ -176,6 +178,7 @@ INSERT INTO requirement_items (
   requirement_form_id,
   product_id,
   product_name_snapshot,
+  selected_image_url,
   quantity,
   unit_price_jpy,
   unit_price_twd,
@@ -185,13 +188,14 @@ INSERT INTO requirement_items (
   desired_color,
   note,
   created_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
 `
       )
       .bind(
         insertedForm.id,
         item.productId || null,
         productNameSnapshot,
+        (item.selectedImageUrl || "").trim(),
         Number(item.quantity || 1),
         Number.isFinite(Number(item.unitPriceJpy)) ? Number(item.unitPriceJpy) : null,
         Number.isFinite(Number(item.unitPriceTwd)) ? Number(item.unitPriceTwd) : null,
@@ -272,6 +276,7 @@ SELECT
   ri.id,
   ri.product_id,
   ri.product_name_snapshot,
+  ri.selected_image_url,
   ri.quantity,
   ri.unit_price_jpy,
   ri.unit_price_twd,
@@ -320,6 +325,7 @@ ORDER BY ri.id ASC
           id: item.id,
           productId: item.product_id,
           productNameSnapshot: item.product_name_snapshot,
+          selectedImageUrl: item.selected_image_url || "",
           code: item.product_code || "",
           productUrl: item.product_code
             ? `https://fo-online.jp/items/${encodeURIComponent(item.product_code)}`

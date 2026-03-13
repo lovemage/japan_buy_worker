@@ -28,6 +28,7 @@ type ItemRow = {
   requirement_form_id: number;
   product_id: number | null;
   product_name_snapshot: string;
+  selected_image_url: string | null;
   quantity: number;
   unit_price_jpy: number | null;
   unit_price_twd: number | null;
@@ -98,6 +99,7 @@ SELECT
   ri.requirement_form_id,
   ri.product_id,
   ri.product_name_snapshot,
+  ri.selected_image_url,
   ri.quantity,
   ri.unit_price_jpy,
   ri.unit_price_twd,
@@ -153,6 +155,7 @@ ORDER BY ri.id DESC
             ? `https://fo-online.jp/items/${encodeURIComponent(item.product_code)}`
             : "",
           productNameSnapshot: item.product_name_snapshot,
+          selectedImageUrl: item.selected_image_url || "",
           quantity: item.quantity,
           unitPriceJpy: item.unit_price_jpy,
           unitPriceTwd: item.unit_price_twd,

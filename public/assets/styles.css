@@ -364,6 +364,16 @@ select {
   gap: 6px;
 }
 
+.admin-item-thumb {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 @media (max-width: 1024px) {
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

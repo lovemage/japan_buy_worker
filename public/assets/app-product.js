@@ -129,13 +129,18 @@ function renderProduct(item, pricing) {
   }
 
   const addButton = document.getElementById("detail-add");
+  const qtyInput = document.getElementById("detail-quantity");
   if (addButton) {
     addButton.addEventListener("click", () => {
+      const quantity = Math.max(1, Number(qtyInput?.value || 1));
+      const selectedImageUrl = main?.src || images[0] || mainImage;
       addItem({
         productId: item.id,
         code: item.code || "",
         productNameSnapshot: title,
         imageUrl: mainImage,
+        selectedImageUrl,
+        quantity,
         priceJpyTaxIn: adjusted.jpy,
         unitPriceTwd: adjusted.twd,
         sizeOptions: Array.isArray(item.sizeOptions) ? item.sizeOptions : [],

@@ -22,6 +22,7 @@ function buildCopyText(requirement) {
     .map((item, idx) => {
       return `${idx + 1}. ${item.productNameSnapshot} (${item.code || "無代碼"}) x${item.quantity}
    規格: 尺寸=${item.desiredSize || "未選"}, 顏色=${item.desiredColor || "未選"}
+   選擇圖片: ${item.selectedImageUrl || "-"}
    金額: JPY ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}
    商品頁: ${item.productUrl || "-"}`;
     })
@@ -56,6 +57,7 @@ function renderDetail(requirement) {
     .map((item) => {
       return `<li>${item.productNameSnapshot}（${item.code || "無代碼"}）x ${item.quantity}，
       尺寸：${item.desiredSize || "未選"}，顏色：${item.desiredColor || "未選"}，
+      選圖：${item.selectedImageUrl ? `<a href="${item.selectedImageUrl}" target="_blank" rel="noopener noreferrer">查看</a>` : "無"}，
       小計 JPY ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}</li>`;
     })
     .join("");

@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS requirement_items (
   unit_price_twd REAL,
   subtotal_jpy INTEGER,
   subtotal_twd REAL,
+  selected_image_url TEXT,
   desired_size TEXT,
   desired_color TEXT,
   note TEXT,
