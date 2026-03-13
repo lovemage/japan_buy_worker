@@ -44,15 +44,40 @@ export async function handleAdminRequirements(
   request: Request,
   env: Env
 ): Promise<Response> {
-  if (request.method !== "GET") {
-    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
-      status: 405,
-      headers: { "content-type": "application/json" },
-    });
-  }
   if (!isAdminAuthorized(request)) {
     return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
       status: 401,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (request.method === "DELETE") {
+    const url = new URL(request.url);
+    const id = Number(url.searchParams.get("id") || "");
+    if (!Number.isInteger(id) || id <= 0) {
+      return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    const exists = await env.DB
+      .prepare("SELECT id FROM requirement_forms WHERE id = ?")
+      .bind(id)
+      .first<{ id: number }>();
+    if (!exists?.id) {
+      return new Response(JSON.stringify({ ok: false, error: "Requirement not found" }), {
+        status: 404,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    await env.DB.prepare("DELETE FROM requirement_forms WHERE id = ?").bind(id).run();
+    return new Response(JSON.stringify({ ok: true, deletedId: id }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (request.method !== "GET") {
+    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
+      status: 405,
       headers: { "content-type": "application/json" },
     });
   }

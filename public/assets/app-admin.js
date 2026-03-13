@@ -73,12 +73,36 @@ function renderForms(forms) {
         <p class="meta">EZWAY：${form.requiresEzway ? "需要" : "不需要"}</p>
         <p class="meta">運費：國際 TWD ${formatCurrency(form.shippingInternationalTwd)} / 國內 TWD ${formatCurrency(form.shippingDomesticTwd)} / 合計運費TWD ${formatCurrency(form.shippingTotalTwd)}</p>
         <p class="meta">整單備註：${form.notes || "無"}</p>
+        <button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此需求單</button>
         <ul class="admin-form-items">${itemsHtml}</ul>
       </article>
       `;
     })
     .join("");
   applyProductImageFallback(wrapper);
+  wrapper.querySelectorAll(".js-delete-form").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = Number(button.getAttribute("data-form-id") || "");
+      if (!Number.isInteger(id) || id <= 0) {
+        return;
+      }
+      const yes = confirm(`確定刪除需求單 #${id}？此操作無法復原。`);
+      if (!yes) {
+        return;
+      }
+      hideError();
+      const res = await fetch(`/api/admin/requirements?id=${id}`, { method: "DELETE" });
+      if (res.status === 401) {
+        location.href = "/admin-login.html";
+        return;
+      }
+      if (!res.ok) {
+        showError(`刪除需求單失敗：${res.status}`);
+        return;
+      }
+      await loadForms();
+    });
+  });
 }
 
 async function loadForms() {
@@ -146,6 +170,7 @@ async function loadPricing() {
   const rateNode = document.getElementById("jpy-to-twd");
   const intlNode = document.getElementById("international-shipping-twd");
   const domesticNode = document.getElementById("domestic-shipping-twd");
+  const promoNode = document.getElementById("promo-tag-max-twd");
   if (markupNode) {
     markupNode.value = String(body?.pricing?.markupJpy ?? 1000);
   }
@@ -158,6 +183,9 @@ async function loadPricing() {
   if (domesticNode) {
     domesticNode.value = String(body?.pricing?.domesticShippingTwd ?? 60);
   }
+  if (promoNode) {
+    promoNode.value = String(body?.pricing?.promoTagMaxTwd ?? 500);
+  }
 }
 
 async function savePricing() {
@@ -165,14 +193,22 @@ async function savePricing() {
   const rateNode = document.getElementById("jpy-to-twd");
   const intlNode = document.getElementById("international-shipping-twd");
   const domesticNode = document.getElementById("domestic-shipping-twd");
+  const promoNode = document.getElementById("promo-tag-max-twd");
   const markupJpy = Number(markupNode?.value || 0);
   const jpyToTwd = Number(rateNode?.value || 0);
   const internationalShippingTwd = Number(intlNode?.value || 0);
   const domesticShippingTwd = Number(domesticNode?.value || 0);
+  const promoTagMaxTwd = Number(promoNode?.value || 0);
   const res = await fetch("/api/admin/pricing", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ markupJpy, jpyToTwd, internationalShippingTwd, domesticShippingTwd }),
+    body: JSON.stringify({
+      markupJpy,
+      jpyToTwd,
+      internationalShippingTwd,
+      domesticShippingTwd,
+      promoTagMaxTwd,
+    }),
   });
   if (res.status === 401) {
     location.href = "/admin-login.html";

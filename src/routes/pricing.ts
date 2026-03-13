@@ -14,6 +14,7 @@ const DEFAULT_MARKUP_JPY = 1000;
 const DEFAULT_JPY_TO_TWD = 0.21;
 const DEFAULT_INTL_SHIPPING_TWD = 350;
 const DEFAULT_DOMESTIC_SHIPPING_TWD = 60;
+const DEFAULT_PROMO_TAG_MAX_TWD = 500;
 
 async function ensureSettingsTable(db: D1DatabaseLike): Promise<void> {
   await db
@@ -34,6 +35,7 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
   jpyToTwd: number;
   internationalShippingTwd: number;
   domesticShippingTwd: number;
+  promoTagMaxTwd: number;
 }> {
   await ensureSettingsTable(db);
   await db
@@ -60,10 +62,16 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
     )
     .bind(String(DEFAULT_DOMESTIC_SHIPPING_TWD))
     .run();
+  await db
+    .prepare(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES ('promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+    )
+    .bind(String(DEFAULT_PROMO_TAG_MAX_TWD))
+    .run();
 
   const rows = await db
     .prepare(
-      "SELECT key, value FROM app_settings WHERE key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd')"
+      "SELECT key, value FROM app_settings WHERE key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd')"
     )
     .all<SettingRow>();
   const result = Array.isArray(rows?.results) ? rows.results : [];
@@ -73,11 +81,13 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
     result.find((x) => x.key === "international_shipping_twd")?.value ||
     result.find((x) => x.key === "international_shipping_jpy")?.value;
   const domesticShippingRaw = result.find((x) => x.key === "domestic_shipping_twd")?.value;
+  const promoTagMaxRaw = result.find((x) => x.key === "promo_tag_max_twd")?.value;
 
   const markup = Number(markupRaw);
   const rate = Number(rateRaw);
   const intlShipping = Number(intlShippingRaw);
   const domesticShipping = Number(domesticShippingRaw);
+  const promoTagMaxTwd = Number(promoTagMaxRaw);
   return {
     markupJpy: Number.isFinite(markup) ? markup : DEFAULT_MARKUP_JPY,
     jpyToTwd: Number.isFinite(rate) ? rate : DEFAULT_JPY_TO_TWD,
@@ -87,6 +97,7 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
     domesticShippingTwd: Number.isFinite(domesticShipping)
       ? domesticShipping
       : DEFAULT_DOMESTIC_SHIPPING_TWD,
+    promoTagMaxTwd: Number.isFinite(promoTagMaxTwd) ? promoTagMaxTwd : DEFAULT_PROMO_TAG_MAX_TWD,
   };
 }
 
@@ -133,6 +144,7 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
     internationalShippingTwd?: number;
     internationalShippingJpy?: number;
     domesticShippingTwd?: number;
+    promoTagMaxTwd?: number;
   };
   try {
     body = (await request.json()) as {
@@ -141,6 +153,7 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
       internationalShippingTwd?: number;
       internationalShippingJpy?: number;
       domesticShippingTwd?: number;
+      promoTagMaxTwd?: number;
     };
   } catch {
     return new Response(JSON.stringify({ ok: false, error: "Invalid JSON body" }), {
@@ -155,6 +168,7 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
     body.internationalShippingTwd ?? body.internationalShippingJpy
   );
   const domesticShippingTwd = Number(body.domesticShippingTwd);
+  const promoTagMaxTwd = Number(body.promoTagMaxTwd);
   if (!Number.isFinite(markupJpy) || markupJpy < 0) {
     return new Response(JSON.stringify({ ok: false, error: "markupJpy must be >= 0" }), {
       status: 400,
@@ -179,6 +193,15 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
   if (!Number.isFinite(domesticShippingTwd) || domesticShippingTwd < 0) {
     return new Response(
       JSON.stringify({ ok: false, error: "domesticShippingTwd must be >= 0" }),
+      {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      }
+    );
+  }
+  if (!Number.isFinite(promoTagMaxTwd) || promoTagMaxTwd < 0) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "promoTagMaxTwd must be >= 0" }),
       {
         status: 400,
         headers: { "content-type": "application/json" },
@@ -211,11 +234,23 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
     )
     .bind(String(domesticShippingTwd))
     .run();
+  await env.DB
+    .prepare(
+      "INSERT INTO app_settings (key, value, updated_at) VALUES ('promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(String(promoTagMaxTwd))
+    .run();
 
   return new Response(
     JSON.stringify({
       ok: true,
-      pricing: { markupJpy, jpyToTwd, internationalShippingTwd, domesticShippingTwd },
+      pricing: {
+        markupJpy,
+        jpyToTwd,
+        internationalShippingTwd,
+        domesticShippingTwd,
+        promoTagMaxTwd,
+      },
     }),
     {
       status: 200,

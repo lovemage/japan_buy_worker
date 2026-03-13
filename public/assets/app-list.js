@@ -2,7 +2,7 @@ import { getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 
 const PAGE_SIZE = 20;
-const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
+const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
@@ -116,16 +116,23 @@ function renderProducts(products, pricing) {
   if (!grid) {
     return;
   }
+  const promoThreshold = Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
   grid.innerHTML = products
     .map((item) => {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
       const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
+      const isPromo =
+        adjusted.twd !== null &&
+        Number.isFinite(promoThreshold) &&
+        promoThreshold >= 0 &&
+        adjusted.twd <= promoThreshold;
       const gallery = buildProductGallery(item);
       const firstImage = withProductImageFallback(gallery[0] || "");
       const galleryPayload = encodeURIComponent(JSON.stringify(gallery));
       return `
       <article class="product-card ${gallery.length > 1 ? "has-gallery" : ""}" data-product-card data-gallery="${galleryPayload}">
         <div class="product-card__media">
+          ${isPromo ? '<span class="promo-badge">優惠</span>' : ""}
           <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
