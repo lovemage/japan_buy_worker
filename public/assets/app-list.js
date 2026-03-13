@@ -4,6 +4,7 @@ import { applyProductImageFallback, withProductImageFallback } from "./image-fal
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
+const LIST_RETURN_STATE_KEY = "japan-buy-list-return-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
 const PROMO_FILTER_VALUES = ["all", 450, 550];
@@ -113,6 +114,46 @@ function renderDraftCount() {
   }
 }
 
+function getCurrentListUrl() {
+  return `${location.pathname}${location.search}`;
+}
+
+function saveListScrollState() {
+  sessionStorage.setItem(
+    LIST_RETURN_STATE_KEY,
+    JSON.stringify({
+      url: getCurrentListUrl(),
+      scrollY: window.scrollY,
+      at: Date.now(),
+    })
+  );
+}
+
+function consumeListScrollState() {
+  const raw = sessionStorage.getItem(LIST_RETURN_STATE_KEY);
+  if (!raw) {
+    return null;
+  }
+  sessionStorage.removeItem(LIST_RETURN_STATE_KEY);
+  try {
+    const parsed = JSON.parse(raw);
+    const sameUrl = parsed?.url === getCurrentListUrl();
+    const y = Number(parsed?.scrollY);
+    if (sameUrl && Number.isFinite(y) && y >= 0) {
+      return y;
+    }
+  } catch {}
+  return null;
+}
+
+function bindProductNavigationState() {
+  document.querySelectorAll('a[data-product-detail-link="1"]').forEach((link) => {
+    link.addEventListener("click", () => {
+      saveListScrollState();
+    });
+  });
+}
+
 function renderProducts(products, pricing, promoMaxTwd) {
   const grid = document.getElementById("product-grid");
   if (!grid) {
@@ -148,12 +189,13 @@ function renderProducts(products, pricing, promoMaxTwd) {
           <p class="meta">台幣估算：${adjusted.twd !== null ? `TWD ${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}</p>
           <p class="meta">分類：${escapeHtml(item.category || "未分類")}</p>
           <p class="meta">顏色數：${item.colorCount ?? "-"}</p>
-          <a class="button" href="/product?code=${encodeURIComponent(item.code)}">check this out!</a>
+          <a class="button" data-product-detail-link="1" href="/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">check this out!</a>
         </div>
       </article>
       `;
     })
     .join("");
+  bindProductNavigationState();
 }
 
 function initProductCardGalleries() {
@@ -498,7 +540,10 @@ async function bootstrap() {
     initProductCardGalleries();
     renderPagination(body.paging || null);
     renderFloatingPagination(body.paging || null);
-    if (getCategory()) {
+    const restoreY = consumeListScrollState();
+    if (restoreY !== null) {
+      requestAnimationFrame(() => window.scrollTo({ top: restoreY, behavior: "auto" }));
+    } else if (getCategory()) {
       scrollToFirstProductCard();
     }
   } catch (error) {
