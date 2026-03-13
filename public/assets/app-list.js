@@ -6,8 +6,8 @@ const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 }
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
-const PROMO_FILTER_VALUES = [350, 450, 550];
-const DEFAULT_PROMO_FILTER = 550;
+const PROMO_FILTER_VALUES = ["all", 450, 550];
+const DEFAULT_PROMO_FILTER = "all";
 const CATEGORY_TOKEN_MAP = {
   "all item": "全部商品",
   "tops": "上衣",
@@ -239,21 +239,30 @@ function initProductCardGalleries() {
 
 function getPromoMaxTwd() {
   const url = new URL(location.href);
-  const raw = Number(url.searchParams.get("promoMaxTwd") || String(DEFAULT_PROMO_FILTER));
-  return PROMO_FILTER_VALUES.includes(raw) ? raw : DEFAULT_PROMO_FILTER;
+  const raw = (url.searchParams.get("promoMaxTwd") || String(DEFAULT_PROMO_FILTER)).trim();
+  if (raw === "all") {
+    return "all";
+  }
+  const value = Number(raw);
+  return PROMO_FILTER_VALUES.includes(value) ? value : DEFAULT_PROMO_FILTER;
 }
 
 function initPromoSwitch() {
   const selected = getPromoMaxTwd();
   document.querySelectorAll(".view-switch__btn[data-promo-max]").forEach((btn) => {
-    const value = Number(btn.getAttribute("data-promo-max") || "");
+    const raw = (btn.getAttribute("data-promo-max") || "").trim();
+    const value = raw === "all" ? "all" : Number(raw);
     btn.classList.toggle("is-active", value === selected);
     btn.addEventListener("click", () => {
       if (!PROMO_FILTER_VALUES.includes(value)) {
         return;
       }
       const url = new URL(location.href);
-      url.searchParams.set("promoMaxTwd", String(value));
+      if (value === "all") {
+        url.searchParams.delete("promoMaxTwd");
+      } else {
+        url.searchParams.set("promoMaxTwd", String(value));
+      }
       url.searchParams.set("page", "1");
       location.href = url.toString();
     });
@@ -348,7 +357,9 @@ function goPage(page, category = getCategory(), promoMaxTwd = getPromoMaxTwd()) 
   } else {
     url.searchParams.delete("category");
   }
-  if (PROMO_FILTER_VALUES.includes(Number(promoMaxTwd))) {
+  if (promoMaxTwd === "all") {
+    url.searchParams.delete("promoMaxTwd");
+  } else if (PROMO_FILTER_VALUES.includes(Number(promoMaxTwd))) {
     url.searchParams.set("promoMaxTwd", String(promoMaxTwd));
   }
   location.href = url.toString();
@@ -463,8 +474,10 @@ async function bootstrap() {
     const params = new URLSearchParams({
       limit: String(PAGE_SIZE),
       offset: String(offset),
-      promoMaxTwd: String(promoMaxTwd),
     });
+    if (promoMaxTwd !== "all") {
+      params.set("promoMaxTwd", String(promoMaxTwd));
+    }
     if (category) {
       params.set("category", category);
     }
