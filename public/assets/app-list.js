@@ -7,8 +7,8 @@ const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 const LIST_RETURN_STATE_KEY = "japan-buy-list-return-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
-const PROMO_FILTER_VALUES = ["all", 450, 550];
-const DEFAULT_PROMO_FILTER = "all";
+const PROMO_FILTER_VALUES = ["all", 350, 450, 550];
+const DEFAULT_PROMO_FILTER = 350;
 const CATEGORY_TOKEN_MAP = {
   "all item": "全部商品",
   "tops": "上衣",
@@ -310,8 +310,8 @@ function initPromoSwitch() {
 }
 
 function getViewMode() {
-  const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY) || "card";
-  return VIEW_MODES.includes(saved) ? saved : "card";
+  const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY) || "2card";
+  return VIEW_MODES.includes(saved) ? saved : "2card";
 }
 
 function applyViewMode(mode) {
