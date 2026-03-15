@@ -14,23 +14,12 @@ CREATE TABLE IF NOT EXISTS products (
   image_url TEXT,
   is_active INTEGER NOT NULL DEFAULT 1,
   last_crawled_at TEXT,
+  source_payload_json TEXT,
+  status_badges_json TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(source_site, source_product_code)
 );
-
-CREATE TABLE IF NOT EXISTS product_snapshots (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  product_id INTEGER NOT NULL,
-  source_payload_json TEXT NOT NULL,
-  price_jpy_tax_in INTEGER,
-  status_badges_json TEXT,
-  captured_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_product_snapshots_product_id
-  ON product_snapshots(product_id);
 
 CREATE TABLE IF NOT EXISTS requirement_forms (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

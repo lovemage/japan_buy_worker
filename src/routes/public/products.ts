@@ -1,6 +1,7 @@
 import type { D1DatabaseLike } from "../../types/d1";
 import { getPricingConfig } from "../pricing";
 import { buildProductWhereClause, parseBrandFilters } from "./product-filters";
+import { parseStoredProductPayload } from "../../jobs/product-records";
 
 type Env = {
   DB: D1DatabaseLike;
@@ -38,17 +39,7 @@ function toDisplayImageUrl(imageUrl: string | null): string | null {
 }
 
 function mapProduct(item: ProductRow) {
-  let gallery: string[] = [];
-  try {
-    const payload = item.source_payload_json
-      ? (JSON.parse(item.source_payload_json) as Record<string, unknown>)
-      : {};
-    gallery = Array.isArray(payload.gallery)
-      ? payload.gallery.filter((x): x is string => typeof x === "string" && x.trim().length > 0)
-      : [];
-  } catch {
-    gallery = [];
-  }
+  const payload = parseStoredProductPayload(item.source_payload_json);
 
   return {
     id: item.id,
@@ -62,7 +53,7 @@ function mapProduct(item: ProductRow) {
     imageUrl: item.image_url,
     displayImageUrl: toDisplayImageUrl(item.image_url),
     lastCrawledAt: item.last_crawled_at,
-    gallery,
+    gallery: payload.gallery,
   };
 }
 
@@ -115,15 +106,8 @@ SELECT
   p.color_count,
   p.image_url,
   p.last_crawled_at,
-  ps.source_payload_json
+  p.source_payload_json
 FROM products p
-LEFT JOIN product_snapshots ps ON ps.id = (
-  SELECT id
-  FROM product_snapshots
-  WHERE product_id = p.id
-  ORDER BY captured_at DESC, id DESC
-  LIMIT 1
-)
 ${where.whereSql}
 ORDER BY updated_at DESC
 LIMIT ? OFFSET ?
@@ -144,21 +128,14 @@ SELECT
   COALESCE(
     SUM(
       CASE
-        WHEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant')) > 0
-          THEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant'))
+        WHEN json_array_length(json_extract(p.source_payload_json, '$.schema.hasVariant')) > 0
+          THEN json_array_length(json_extract(p.source_payload_json, '$.schema.hasVariant'))
         ELSE 1
       END
     ),
     0
   ) as total_sku
 FROM products p
-LEFT JOIN product_snapshots ps ON ps.id = (
-  SELECT id
-  FROM product_snapshots
-  WHERE product_id = p.id
-  ORDER BY captured_at DESC, id DESC
-  LIMIT 1
-)
 ${where.whereSql}
 `;
   const totalSkuRow = await env.DB
@@ -294,7 +271,8 @@ SELECT
   price_jpy_tax_in,
   color_count,
   image_url,
-  last_crawled_at
+  last_crawled_at,
+  source_payload_json
 FROM products
 WHERE is_active = 1 AND source_product_code = ?
 LIMIT 1
@@ -312,46 +290,14 @@ LIMIT 1
 
   const mapped = mapProduct(product);
   const main = mapped.displayImageUrl || mapped.imageUrl;
-  const latestSnapshot = await env.DB
-    .prepare(
-      `
-SELECT source_payload_json
-FROM product_snapshots
-WHERE product_id = ?
-ORDER BY captured_at DESC, id DESC
-LIMIT 1
-`
-    )
-    .bind(product.id)
-    .first<{ source_payload_json: string }>();
-
-  let snapshotPayload: Record<string, unknown> = {};
-  try {
-    snapshotPayload = latestSnapshot?.source_payload_json
-      ? (JSON.parse(latestSnapshot.source_payload_json) as Record<string, unknown>)
-      : {};
-  } catch {
-    snapshotPayload = {};
-  }
-
-  const sizeOptions = Array.isArray(snapshotPayload.sizeOptions)
-    ? snapshotPayload.sizeOptions.filter((x): x is string => typeof x === "string")
-    : [];
-  const colorOptions = Array.isArray(snapshotPayload.colorOptions)
-    ? snapshotPayload.colorOptions.filter((x): x is string => typeof x === "string")
-    : [];
-  const galleryRaw = Array.isArray(snapshotPayload.gallery)
-    ? snapshotPayload.gallery.filter((x): x is string => typeof x === "string")
-    : [];
+  const storedPayload = parseStoredProductPayload(product.source_payload_json);
+  const galleryRaw = storedPayload.gallery;
   const gallery = galleryRaw.length > 0 ? galleryRaw : main ? [main] : [];
   const description =
-    typeof snapshotPayload.description === "string"
-      ? snapshotPayload.description
+    storedPayload.description
+      ? storedPayload.description
       : "此商品為日本站同步資料。實際尺寸與顏色以需求單備註為準。";
-  const schema =
-    snapshotPayload.schema && typeof snapshotPayload.schema === "object"
-      ? (snapshotPayload.schema as Record<string, unknown>)
-      : null;
+  const schema = storedPayload.schema;
 
   return new Response(
     JSON.stringify({
@@ -361,8 +307,8 @@ LIMIT 1
         mainImageUrl: main,
         gallery,
         description,
-        sizeOptions,
-        colorOptions,
+        sizeOptions: storedPayload.sizeOptions,
+        colorOptions: storedPayload.colorOptions,
         specifications: {
           code: mapped.code,
           category: mapped.category || "",
