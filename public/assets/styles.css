@@ -1048,6 +1048,14 @@ select:disabled {
   line-height: 1.2;
 }
 
+.brand-filters {
+  margin-top: 12px;
+}
+
+.brand-filters:empty::before {
+  content: "";
+}
+
 .btn-pill.is-active {
   background: var(--brand);
   color: #fff;

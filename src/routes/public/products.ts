@@ -1,5 +1,6 @@
 import type { D1DatabaseLike } from "../../types/d1";
 import { getPricingConfig } from "../pricing";
+import { buildProductWhereClause, parseBrandFilters } from "./product-filters";
 
 type Env = {
   DB: D1DatabaseLike;
@@ -21,6 +22,11 @@ type ProductRow = {
 
 type CategoryRow = {
   category: string | null;
+  total: number;
+};
+
+type BrandRow = {
+  brand: string | null;
   total: number;
 };
 
@@ -75,6 +81,7 @@ export async function handlePublicProducts(
   const limit = Math.min(Number(url.searchParams.get("limit") || 20), 100);
   const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
   const category = (url.searchParams.get("category") || "").trim();
+  const brands = parseBrandFilters(url.searchParams.get("brands"));
   const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
   const hasCategory = category.length > 0;
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
@@ -90,9 +97,13 @@ export async function handlePublicProducts(
     promoThreshold >= 0
       ? Math.max(0, Math.floor(promoThreshold / rate - markup))
       : Number.MAX_SAFE_INTEGER;
+  const where = buildProductWhereClause({
+    category,
+    maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
+    brands,
+  });
 
-  const listSql = hasCategory
-    ? `
+  const listSql = `
 SELECT
   p.id,
   p.source_product_code,
@@ -113,71 +124,22 @@ LEFT JOIN product_snapshots ps ON ps.id = (
   ORDER BY captured_at DESC, id DESC
   LIMIT 1
 )
-WHERE p.is_active = 1 AND p.category = ?
-  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
+${where.whereSql}
 ORDER BY updated_at DESC
 LIMIT ? OFFSET ?
-`
-    : `
-SELECT
-  p.id,
-  p.source_product_code,
-  p.title_ja,
-  p.title_zh_tw,
-  p.brand,
-  p.category,
-  p.price_jpy_tax_in,
-  p.color_count,
-  p.image_url,
-  p.last_crawled_at,
-  ps.source_payload_json
-FROM products p
-LEFT JOIN product_snapshots ps ON ps.id = (
-  SELECT id
-  FROM product_snapshots
-  WHERE product_id = p.id
-  ORDER BY captured_at DESC, id DESC
-  LIMIT 1
-)
-WHERE p.is_active = 1
-  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
-ORDER BY p.updated_at DESC
-LIMIT ? OFFSET ?
 `;
-  const rows = hasCategory
-    ? hasPromoFilter
-      ? await env.DB.prepare(listSql).bind(category, maxBaseJpy, limit, offset).all<ProductRow>()
-      : await env.DB.prepare(listSql).bind(category, limit, offset).all<ProductRow>()
-    : hasPromoFilter
-      ? await env.DB.prepare(listSql).bind(maxBaseJpy, limit, offset).all<ProductRow>()
-      : await env.DB.prepare(listSql).bind(limit, offset).all<ProductRow>();
+  const rows = await env.DB
+    .prepare(listSql)
+    .bind(...where.params, limit, offset)
+    .all<ProductRow>();
 
   const products = Array.isArray(rows?.results) ? rows.results : [];
-  const totalRow = hasCategory
-    ? hasPromoFilter
-      ? await env.DB
-          .prepare(
-            "SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND category = ? AND price_jpy_tax_in IS NOT NULL AND price_jpy_tax_in <= ?"
-          )
-          .bind(category, maxBaseJpy)
-          .first<{ total: number }>()
-      : await env.DB
-          .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND category = ?")
-          .bind(category)
-          .first<{ total: number }>()
-    : hasPromoFilter
-      ? await env.DB
-          .prepare(
-            "SELECT COUNT(1) as total FROM products WHERE is_active = 1 AND price_jpy_tax_in IS NOT NULL AND price_jpy_tax_in <= ?"
-          )
-          .bind(maxBaseJpy)
-          .first<{ total: number }>()
-      : await env.DB
-          .prepare("SELECT COUNT(1) as total FROM products WHERE is_active = 1")
-          .first<{ total: number }>();
+  const totalRow = await env.DB
+    .prepare(`SELECT COUNT(1) as total FROM products p ${where.whereSql}`)
+    .bind(...where.params)
+    .first<{ total: number }>();
   const total = Number(totalRow?.total || 0);
-  const totalSkuSql = hasCategory
-    ? `
+  const totalSkuSql = `
 SELECT
   COALESCE(
     SUM(
@@ -197,39 +159,12 @@ LEFT JOIN product_snapshots ps ON ps.id = (
   ORDER BY captured_at DESC, id DESC
   LIMIT 1
 )
-WHERE p.is_active = 1 AND p.category = ?
-  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
-`
-    : `
-SELECT
-  COALESCE(
-    SUM(
-      CASE
-        WHEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant')) > 0
-          THEN json_array_length(json_extract(ps.source_payload_json, '$.schema.hasVariant'))
-        ELSE 1
-      END
-    ),
-    0
-  ) as total_sku
-FROM products p
-LEFT JOIN product_snapshots ps ON ps.id = (
-  SELECT id
-  FROM product_snapshots
-  WHERE product_id = p.id
-  ORDER BY captured_at DESC, id DESC
-  LIMIT 1
-)
-WHERE p.is_active = 1
-  ${hasPromoFilter ? "AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?" : ""}
+${where.whereSql}
 `;
-  const totalSkuRow = hasCategory
-    ? hasPromoFilter
-      ? await env.DB.prepare(totalSkuSql).bind(category, maxBaseJpy).first<{ total_sku: number }>()
-      : await env.DB.prepare(totalSkuSql).bind(category).first<{ total_sku: number }>()
-    : hasPromoFilter
-      ? await env.DB.prepare(totalSkuSql).bind(maxBaseJpy).first<{ total_sku: number }>()
-      : await env.DB.prepare(totalSkuSql).first<{ total_sku: number }>();
+  const totalSkuRow = await env.DB
+    .prepare(totalSkuSql)
+    .bind(...where.params)
+    .first<{ total_sku: number }>();
   const totalSku = Number(totalSkuRow?.total_sku || 0);
   const page = Math.floor(offset / Math.max(limit, 1)) + 1;
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)));
@@ -240,6 +175,7 @@ WHERE p.is_active = 1
       products: products.map(mapProduct),
       filters: {
         category: hasCategory ? category : "",
+        brands,
         promoMaxTwd: hasPromoFilter ? promoMaxTwd : null,
       },
       paging: { limit, offset, page, total, totalPages, totalSku },
@@ -277,6 +213,49 @@ ORDER BY total DESC, category ASC
     : [];
 
   return new Response(JSON.stringify({ ok: true, categories }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+export async function handlePublicProductBrands(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+      status: 405,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  const url = new URL(request.url);
+  const category = (url.searchParams.get("category") || "").trim();
+  const where = buildProductWhereClause({
+    category,
+    maxBaseJpy: null,
+    brands: [],
+  });
+
+  const rows = await env.DB
+    .prepare(
+      `
+SELECT p.brand, COUNT(1) as total
+FROM products p
+${where.whereSql} AND p.brand IS NOT NULL AND TRIM(p.brand) != ''
+GROUP BY p.brand
+ORDER BY total DESC, p.brand ASC
+`
+    )
+    .bind(...where.params)
+    .all<BrandRow>();
+  const brands = Array.isArray(rows?.results)
+    ? rows.results
+        .filter((row) => typeof row.brand === "string" && row.brand.trim().length > 0)
+        .map((row) => ({ name: String(row.brand), total: Number(row.total || 0) }))
+    : [];
+
+  return new Response(JSON.stringify({ ok: true, brands }), {
     status: 200,
     headers: { "content-type": "application/json" },
   });

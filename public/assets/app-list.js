@@ -388,7 +388,24 @@ function getCategory() {
   return (url.searchParams.get("category") || "").trim();
 }
 
-function goPage(page, category = getCategory(), promoMaxTwd = getPromoMaxTwd()) {
+function getSelectedBrands() {
+  const url = new URL(location.href);
+  return Array.from(
+    new Set(
+      (url.searchParams.get("brands") || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function goPage(
+  page,
+  category = getCategory(),
+  promoMaxTwd = getPromoMaxTwd(),
+  brands = getSelectedBrands()
+) {
   const target = Math.max(1, page);
   const url = new URL(location.href);
   url.searchParams.set("page", String(target));
@@ -401,6 +418,11 @@ function goPage(page, category = getCategory(), promoMaxTwd = getPromoMaxTwd()) 
     url.searchParams.delete("promoMaxTwd");
   } else if (PROMO_FILTER_VALUES.includes(Number(promoMaxTwd))) {
     url.searchParams.set("promoMaxTwd", String(promoMaxTwd));
+  }
+  if (brands.length > 0) {
+    url.searchParams.set("brands", brands.join(","));
+  } else {
+    url.searchParams.delete("brands");
   }
   location.href = url.toString();
 }
@@ -458,6 +480,43 @@ function renderCategoryFilters(categories) {
   });
 }
 
+function renderBrandFilters(brands) {
+  const wrapper = document.getElementById("brand-filters");
+  if (!wrapper) {
+    return;
+  }
+
+  const selectedBrands = getSelectedBrands();
+  const selectedSet = new Set(selectedBrands);
+  const buttons = [
+    `<button type="button" class="btn-pill secondary ${selectedBrands.length === 0 ? "is-active" : ""}" data-brand="">全部品牌</button>`,
+    ...brands.map(
+      (item) =>
+        `<button type="button" class="btn-pill secondary ${selectedSet.has(item.name) ? "is-active" : ""}" data-brand="${escapeHtml(item.name)}">
+          ${escapeHtml(item.name)}（${item.total}）
+        </button>`
+    ),
+  ];
+  wrapper.innerHTML = buttons.join("");
+  wrapper.querySelectorAll("button[data-brand]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const brand = (button.getAttribute("data-brand") || "").trim();
+      if (!brand) {
+        goPage(1, getCategory(), getPromoMaxTwd(), []);
+        return;
+      }
+
+      const next = new Set(getSelectedBrands());
+      if (next.has(brand)) {
+        next.delete(brand);
+      } else {
+        next.add(brand);
+      }
+      goPage(1, getCategory(), getPromoMaxTwd(), Array.from(next));
+    });
+  });
+}
+
 function scrollToFirstProductCard() {
   const firstCard = document.querySelector(".product-card");
   if (!firstCard) {
@@ -499,17 +558,28 @@ async function bootstrap() {
   initViewSwitch();
   initPromoSwitch();
   try {
-    const categoryRes = await fetch("/api/product-categories");
+    const category = getCategory();
+    const brandParams = new URLSearchParams();
+    if (category) {
+      brandParams.set("category", category);
+    }
+    const [categoryRes, brandRes] = await Promise.all([
+      fetch("/api/product-categories"),
+      fetch(`/api/product-brands?${brandParams.toString()}`),
+    ]);
     const categoryBody = categoryRes.ok ? await categoryRes.json() : null;
+    const brandBody = brandRes.ok ? await brandRes.json() : null;
     const categories = Array.isArray(categoryBody?.categories) ? categoryBody.categories : [];
+    const brands = Array.isArray(brandBody?.brands) ? brandBody.brands : [];
+    renderBrandFilters(brands);
     renderCategoryFilters(categories);
 
     const pricingRes = await fetch("/api/pricing");
     const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
     const pricing = pricingBody?.pricing || DEFAULT_PRICING;
     const page = getPage();
-    const category = getCategory();
     const promoMaxTwd = getPromoMaxTwd();
+    const selectedBrands = getSelectedBrands();
     const offset = (page - 1) * PAGE_SIZE;
     const params = new URLSearchParams({
       limit: String(PAGE_SIZE),
@@ -520,6 +590,9 @@ async function bootstrap() {
     }
     if (category) {
       params.set("category", category);
+    }
+    if (selectedBrands.length > 0) {
+      params.set("brands", selectedBrands.join(","));
     }
     const res = await fetch(`/api/products?${params.toString()}`);
     if (!res.ok) {
@@ -541,7 +614,7 @@ async function bootstrap() {
     const restoreY = consumeListScrollState();
     if (restoreY !== null) {
       requestAnimationFrame(() => window.scrollTo({ top: restoreY, behavior: "auto" }));
-    } else if (getCategory()) {
+    } else if (getCategory() || getSelectedBrands().length > 0) {
       scrollToFirstProductCard();
     }
   } catch (error) {
