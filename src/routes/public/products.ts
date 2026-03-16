@@ -208,9 +208,23 @@ export async function handlePublicProductBrands(
 
   const url = new URL(request.url);
   const category = (url.searchParams.get("category") || "").trim();
+  const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
+  const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
+  const pricing = await getPricingConfig(env.DB);
+  const markup = Number(pricing.markupJpy);
+  const rate = Number(pricing.jpyToTwd);
+  const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
+  const maxBaseJpy =
+    Number.isFinite(markup) &&
+    Number.isFinite(rate) &&
+    rate > 0 &&
+    Number.isFinite(promoThreshold) &&
+    promoThreshold >= 0
+      ? Math.max(0, Math.floor(promoThreshold / rate - markup))
+      : Number.MAX_SAFE_INTEGER;
   const where = buildProductWhereClause({
     category,
-    maxBaseJpy: null,
+    maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
     brands: [],
   });
 

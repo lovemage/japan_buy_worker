@@ -1,5 +1,6 @@
 import { getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+import { buildListQueryParams } from "./list-query.js";
 
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 };
@@ -559,10 +560,11 @@ async function bootstrap() {
   initPromoSwitch();
   try {
     const category = getCategory();
-    const brandParams = new URLSearchParams();
-    if (category) {
-      brandParams.set("category", category);
-    }
+    const promoMaxTwd = getPromoMaxTwd();
+    const brandParams = buildListQueryParams({
+      promoMaxTwd,
+      category,
+    });
     const [categoryRes, brandRes] = await Promise.all([
       fetch("/api/product-categories"),
       fetch(`/api/product-brands?${brandParams.toString()}`),
@@ -578,22 +580,15 @@ async function bootstrap() {
     const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
     const pricing = pricingBody?.pricing || DEFAULT_PRICING;
     const page = getPage();
-    const promoMaxTwd = getPromoMaxTwd();
     const selectedBrands = getSelectedBrands();
     const offset = (page - 1) * PAGE_SIZE;
-    const params = new URLSearchParams({
-      limit: String(PAGE_SIZE),
-      offset: String(offset),
+    const params = buildListQueryParams({
+      limit: PAGE_SIZE,
+      offset,
+      promoMaxTwd,
+      category,
+      brands: selectedBrands,
     });
-    if (promoMaxTwd !== "all") {
-      params.set("promoMaxTwd", String(promoMaxTwd));
-    }
-    if (category) {
-      params.set("category", category);
-    }
-    if (selectedBrands.length > 0) {
-      params.set("brands", selectedBrands.join(","));
-    }
     const res = await fetch(`/api/products?${params.toString()}`);
     if (!res.ok) {
       throw new Error(`Load failed: ${res.status}`);

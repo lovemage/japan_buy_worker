@@ -42,3 +42,17 @@ test('buildProductWhereClause omits optional clauses when filters are empty', ()
   assert.equal(built.whereSql, 'WHERE p.is_active = 1');
   assert.deepEqual(built.params, []);
 });
+
+test('buildProductWhereClause includes promo filtering for brand aggregations', () => {
+  const built = buildProductWhereClause({
+    category: 'ワンピース',
+    maxBaseJpy: 666,
+    brands: [],
+  });
+
+  assert.equal(
+    built.whereSql,
+    'WHERE p.is_active = 1 AND p.category = ? AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?'
+  );
+  assert.deepEqual(built.params, ['ワンピース', 666]);
+});
