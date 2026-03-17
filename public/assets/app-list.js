@@ -1,6 +1,7 @@
 import { getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 import { buildListQueryParams } from "./list-query.js";
+import { getNormalizedPromoMax, nextSingleBrandSelection } from "./list-state.js";
 
 const PAGE_SIZE = 20;
 const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 };
@@ -9,7 +10,7 @@ const LIST_RETURN_STATE_KEY = "japan-buy-list-return-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
 const PROMO_FILTER_VALUES = ["all", 350, 450, 550];
-const DEFAULT_PROMO_FILTER = 350;
+const DEFAULT_PROMO_FILTER = "all";
 const CATEGORY_TOKEN_MAP = {
   "all item": "全部商品",
   "tops": "上衣",
@@ -280,12 +281,7 @@ function initProductCardGalleries() {
 
 function getPromoMaxTwd() {
   const url = new URL(location.href);
-  const raw = (url.searchParams.get("promoMaxTwd") || String(DEFAULT_PROMO_FILTER)).trim();
-  if (raw === "all") {
-    return "all";
-  }
-  const value = Number(raw);
-  return PROMO_FILTER_VALUES.includes(value) ? value : DEFAULT_PROMO_FILTER;
+  return getNormalizedPromoMax(url.searchParams.get("promoMaxTwd") || DEFAULT_PROMO_FILTER);
 }
 
 function initPromoSwitch() {
@@ -506,14 +502,7 @@ function renderBrandFilters(brands) {
         goPage(1, getCategory(), getPromoMaxTwd(), []);
         return;
       }
-
-      const next = new Set(getSelectedBrands());
-      if (next.has(brand)) {
-        next.delete(brand);
-      } else {
-        next.add(brand);
-      }
-      goPage(1, getCategory(), getPromoMaxTwd(), Array.from(next));
+      goPage(1, getCategory(), getPromoMaxTwd(), nextSingleBrandSelection(getSelectedBrands(), brand));
     });
   });
 }

@@ -1,4 +1,5 @@
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+import { calculateAdminFormTotals } from "./admin-totals.js";
 
 function showError(message) {
   const node = document.getElementById("admin-error");
@@ -75,6 +76,7 @@ function renderForms(forms) {
 
   wrapper.innerHTML = forms
     .map((form) => {
+      const totals = calculateAdminFormTotals(form);
       const itemsHtml = Array.isArray(form.items)
         ? form.items
             .map((item) => {
@@ -114,6 +116,7 @@ function renderForms(forms) {
         <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
         <p class="meta">EZWAY：${form.requiresEzway ? "需要" : "不需要"}</p>
         <p class="meta">運費：國際 NT$${formatCurrency(form.shippingInternationalTwd)} / 國內 NT$${formatCurrency(form.shippingDomesticTwd)} / 合計運費 NT$${formatCurrency(form.shippingTotalTwd)}</p>
+        <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)}</p>
         <p class="meta">整單備註：${form.notes || "無"}</p>
         <button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此需求單</button>
         <ul class="admin-form-items">${itemsHtml}</ul>
