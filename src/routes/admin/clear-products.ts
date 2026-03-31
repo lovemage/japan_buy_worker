@@ -1,22 +1,10 @@
 import type { D1DatabaseLike } from "../../types/d1";
+import { verifyPassword } from "./auth";
 
 type Env = {
   DB: D1DatabaseLike;
   IMAGES?: R2Bucket;
 };
-
-const DEFAULT_ADMIN_PASS = "Curry";
-
-async function verifyPassword(db: D1DatabaseLike, password: string): Promise<boolean> {
-  let currentPass = DEFAULT_ADMIN_PASS;
-  try {
-    const row = await db
-      .prepare("SELECT value FROM app_settings WHERE key = 'admin_password'")
-      .first<{ value: string }>();
-    if (row?.value) currentPass = row.value;
-  } catch { /* fallback */ }
-  return password === currentPass;
-}
 
 export async function handleAdminClearSyncProducts(
   request: Request,

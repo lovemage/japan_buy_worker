@@ -52,8 +52,6 @@ function json(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const isAdmin = isAdminAuthorized(request);
-
     if (request.method === "GET" && url.pathname === "/healthz") {
       return json({ ok: true, service: "japan-buy-workers" });
     }
@@ -63,8 +61,34 @@ export default {
     }
 
     if (url.pathname === "/api/admin/logout") {
-      return handleAdminLogout(request);
+      return handleAdminLogout(request, env);
     }
+
+    // Public API routes (no auth needed)
+    if (url.pathname === "/api/products") {
+      return handlePublicProducts(request, env);
+    }
+    if (url.pathname === "/api/product-categories") {
+      return handlePublicProductCategories(request, env);
+    }
+    if (url.pathname === "/api/product-brands") {
+      return handlePublicProductBrands(request, env);
+    }
+    if (url.pathname === "/api/product") {
+      return handlePublicProductDetail(request, env);
+    }
+    if (url.pathname === "/api/requirements") {
+      return handlePublicRequirements(request, env);
+    }
+    if (url.pathname === "/api/requirement") {
+      return handlePublicRequirementDetail(request, env);
+    }
+    if (url.pathname === "/api/pricing") {
+      return handlePublicPricing(request, env);
+    }
+
+    // Admin routes — check session token against DB
+    const isAdmin = await isAdminAuthorized(request, env.DB);
 
     if (url.pathname === "/admin/crawl") {
       if (!isAdmin) {
@@ -144,34 +168,6 @@ export default {
     if (url.pathname === "/api/admin/clear-manual-products") {
       if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
       return handleAdminClearManualProducts(request, env);
-    }
-
-    if (url.pathname === "/api/products") {
-      return handlePublicProducts(request, env);
-    }
-
-    if (url.pathname === "/api/product-categories") {
-      return handlePublicProductCategories(request, env);
-    }
-
-    if (url.pathname === "/api/product-brands") {
-      return handlePublicProductBrands(request, env);
-    }
-
-    if (url.pathname === "/api/product") {
-      return handlePublicProductDetail(request, env);
-    }
-
-    if (url.pathname === "/api/requirements") {
-      return handlePublicRequirements(request, env);
-    }
-
-    if (url.pathname === "/api/requirement") {
-      return handlePublicRequirementDetail(request, env);
-    }
-
-    if (url.pathname === "/api/pricing") {
-      return handlePublicPricing(request, env);
     }
 
     if (request.method === "GET" && (url.pathname === "/admin" || url.pathname === "/admin.html")) {
