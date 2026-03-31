@@ -103,13 +103,13 @@ function showRecognizeLoading(show) {
   if (show) {
     if (loading) loading.classList.remove("hidden");
     if (barFill) { barFill.className = "sync-loading-bar__fill"; void barFill.offsetWidth; barFill.classList.add("phase-1"); }
-    if (loadingText) loadingText.textContent = "正在辨識商品...";
+    if (loadingText) loadingText.textContent = "vovoci AI 處理中";
     setTimeout(() => {
       if (barFill) barFill.classList.replace("phase-1", "phase-2");
-      if (loadingText) loadingText.textContent = "AI 分析中，請稍候...";
     }, 600);
   } else {
     if (barFill) barFill.classList.replace("phase-2", "phase-3");
+    if (loadingText) loadingText.textContent = "vovoci AI 編輯中";
     setTimeout(() => {
       if (loading) loading.classList.add("hidden");
       if (barFill) barFill.className = "sync-loading-bar__fill";
