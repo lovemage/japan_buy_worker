@@ -305,6 +305,32 @@ async function savePricing() {
   }
 }
 
+async function loadGeminiSettings() {
+  const res = await fetch("/api/admin/settings/gemini");
+  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (!res.ok) return;
+  const body = await res.json();
+  const status = document.getElementById("gemini-key-status");
+  if (status) {
+    status.textContent = body.hasKey ? `已設定（${body.maskedKey}）` : "尚未設定";
+  }
+}
+
+async function saveGeminiKey() {
+  const input = document.getElementById("gemini-api-key");
+  const key = input?.value?.trim();
+  if (!key) { showError("請填入 Gemini API Key"); return; }
+  const res = await fetch("/api/admin/settings/gemini", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ geminiApiKey: key }),
+  });
+  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (!res.ok) { showError("儲存 API Key 失敗"); return; }
+  input.value = "";
+  await loadGeminiSettings();
+}
+
 async function logout() {
   await fetch("/api/admin/logout", { method: "POST" });
   location.href = "/admin-login.html";
@@ -327,7 +353,10 @@ function bootstrap() {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
   }
+  const saveGeminiBtn = document.getElementById("admin-save-gemini-key");
+  if (saveGeminiBtn) { saveGeminiBtn.addEventListener("click", saveGeminiKey); }
   loadPricing();
+  loadGeminiSettings();
   loadForms();
 }
 

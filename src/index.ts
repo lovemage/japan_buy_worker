@@ -16,6 +16,9 @@ import {
   handlePublicRequirements,
 } from "./routes/public/requirements";
 import { handleAdminPricing, handlePublicPricing } from "./routes/pricing";
+import { handleAdminProducts } from "./routes/admin/products";
+import { handleAdminRecognize } from "./routes/admin/recognize";
+import { handleAdminGeminiSettings } from "./routes/admin/settings";
 import type { D1DatabaseLike } from "./types/d1";
 
 type Env = {
@@ -75,6 +78,27 @@ export default {
 
     if (url.pathname === "/api/admin/pricing") {
       return handleAdminPricing(request, env);
+    }
+
+    if (url.pathname === "/api/admin/settings/gemini") {
+      if (!isAdmin) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+      return handleAdminGeminiSettings(request, env);
+    }
+
+    if (url.pathname === "/api/admin/recognize") {
+      if (!isAdmin) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+      return handleAdminRecognize(request, env);
+    }
+
+    if (url.pathname === "/api/admin/products") {
+      if (!isAdmin) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+      return handleAdminProducts(request, env);
     }
 
     if (url.pathname === "/api/products") {

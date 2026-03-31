@@ -1360,4 +1360,235 @@ select:disabled {
   .shipping-option {
     padding: 10px 0;
   }
+
+  /* === Admin Mobile Adaptation === */
+
+  /* Stack pricing settings vertically */
+  .admin-form-card .admin-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .admin-form-card .admin-actions label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .admin-form-card .admin-actions input[type="number"],
+  .admin-form-card .admin-actions input[type="password"] {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px; /* prevent iOS zoom */
+  }
+
+  .admin-form-card .admin-actions .button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  /* Admin top actions — stack vertically */
+  section.admin-actions {
+    flex-direction: column;
+  }
+
+  section.admin-actions .button {
+    width: 100%;
+    min-height: 44px;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  /* Admin form card — more padding for touch */
+  .admin-form-card {
+    padding: 14px 12px;
+  }
+
+  .admin-form-card h2 {
+    font-size: 16px;
+  }
+
+  /* Admin form header — stack on very small */
+  .admin-form-header {
+    flex-wrap: wrap;
+  }
+
+  .admin-form-status select {
+    min-height: 40px;
+    font-size: 14px;
+    min-width: 140px;
+  }
+
+  /* Admin item row — stack image above info */
+  .admin-item-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .admin-item-image {
+    width: 100%;
+    height: auto;
+    max-height: 160px;
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Photo recognize — mobile */
+  .photo-preview-item {
+    width: 90px;
+    height: 90px;
+  }
+
+  .photo-preview-item .photo-remove {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    top: 4px;
+    right: 4px;
+    display: grid;
+    place-items: center;
+  }
+
+  .photo-add-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    min-height: 44px;
+    line-height: 24px;
+  }
+
+  .photo-actions {
+    flex-direction: column;
+  }
+
+  .photo-actions .button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  /* Draft form — full width inputs, proper spacing */
+  .recognize-draft label {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .recognize-draft .input-cute {
+    min-height: 44px;
+    font-size: 16px; /* prevent iOS zoom */
+  }
+
+  .recognize-draft textarea.input-cute {
+    min-height: 80px;
+  }
+
+  .recognize-draft h3 {
+    font-size: 16px;
+    margin: 8px 0 12px;
+  }
+
+  #draft-sources {
+    word-break: break-all;
+    font-size: 13px;
+  }
+
+  #draft-sources a {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Photo recognize */
+.photo-upload-area {
+  margin-bottom: 1rem;
+}
+
+.photo-preview-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+  min-height: 0;
+}
+
+.photo-preview-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--line);
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.photo-preview-item:hover {
+  border-color: var(--brand);
+}
+
+.photo-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-preview-item .photo-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background var(--transition-fast);
+}
+
+.photo-preview-item .photo-remove:hover {
+  background: rgba(180,40,40,0.8);
+}
+
+.photo-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.recognize-draft {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.recognize-draft label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.recognize-draft .input-cute {
+  width: 100%;
 }

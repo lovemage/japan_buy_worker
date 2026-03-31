@@ -44,6 +44,71 @@
           <button id="admin-save-pricing" class="button" type="button">儲存價格設定</button>
         </div>
       </section>
+      <section class="admin-form-card">
+        <h2 class="product-card__title">Gemini API 設定</h2>
+        <div class="admin-actions">
+          <label>Gemini API Key
+            <input id="gemini-api-key" type="password" class="input-cute" placeholder="填入 Gemini API Key" />
+          </label>
+          <p id="gemini-key-status" class="meta">尚未設定</p>
+          <button id="admin-save-gemini-key" class="button" type="button">儲存 API Key</button>
+        </div>
+      </section>
+      <section class="admin-form-card" id="photo-recognize-section">
+        <h2 class="product-card__title">拍照辨識上架</h2>
+
+        <div class="photo-upload-area">
+          <div class="photo-preview-row" id="photo-previews"></div>
+          <label class="btn-pill secondary photo-add-btn">
+            拍照 / 選擇圖片（最多 3 張）
+            <input id="photo-input" type="file" accept="image/*" capture="environment" multiple hidden />
+          </label>
+          <p class="meta" id="photo-count">已選 0 / 3 張</p>
+        </div>
+
+        <div class="photo-actions">
+          <button id="btn-recognize-quick" class="button" type="button" disabled>快速導入</button>
+          <button id="btn-recognize-search" class="button secondary" type="button" disabled>聯網搜尋</button>
+        </div>
+        <p id="recognize-status" class="meta"></p>
+
+        <div id="recognize-draft" class="recognize-draft hidden">
+          <h3>商品草稿</h3>
+          <label>日文品名
+            <input id="draft-title-ja" type="text" class="input-cute" />
+          </label>
+          <label>中文品名
+            <input id="draft-title-zh" type="text" class="input-cute" />
+          </label>
+          <label>品牌
+            <input id="draft-brand" type="text" class="input-cute" />
+          </label>
+          <label>分類
+            <input id="draft-category" type="text" class="input-cute" />
+          </label>
+          <label>價格（JPY）
+            <input id="draft-price" type="number" min="0" class="input-cute" />
+          </label>
+          <label>商品描述
+            <textarea id="draft-description" rows="3" class="input-cute"></textarea>
+          </label>
+          <label>規格（JSON）
+            <textarea id="draft-specs" rows="3" class="input-cute"></textarea>
+          </label>
+          <label>尺寸選項（逗號分隔）
+            <input id="draft-sizes" type="text" class="input-cute" placeholder="S, M, L" />
+          </label>
+          <label>顏色選項（逗號分隔）
+            <input id="draft-colors" type="text" class="input-cute" placeholder="紅色, 藍色" />
+          </label>
+          <div id="draft-sources" class="meta hidden"></div>
+          <div class="photo-actions">
+            <button id="btn-confirm-listing" class="button" type="button">確認上架</button>
+            <button id="btn-cancel-draft" class="button secondary" type="button">取消</button>
+          </div>
+          <p id="listing-status" class="meta"></p>
+        </div>
+      </section>
       <section class="admin-actions">
         <button id="admin-crawl" class="button" type="button">執行抓取</button>
         <button id="admin-refresh" class="button secondary" type="button">刷新需求單</button>
@@ -54,5 +119,6 @@
     </main>
 
     <script type="module" src="/assets/app-admin.js"></script>
+    <script type="module" src="/assets/app-admin-recognize.js"></script>
   </body>
 </html>
