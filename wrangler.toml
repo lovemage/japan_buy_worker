@@ -13,3 +13,7 @@ binding = "DB"
 database_name = "japan_buy"
 database_id = "35f83000-fddb-477c-9714-67aa1ba50864"
 migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "japan-buy-images"

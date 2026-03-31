@@ -16,13 +16,16 @@ import {
   handlePublicRequirements,
 } from "./routes/public/requirements";
 import { handleAdminPricing, handlePublicPricing } from "./routes/pricing";
-import { handleAdminProducts } from "./routes/admin/products";
+import { handleAdminProducts, handleAdminProductToggle } from "./routes/admin/products";
+import { handleAdminChangePassword } from "./routes/admin/password";
+import { handleAdminCategories } from "./routes/admin/categories";
 import { handleAdminRecognize } from "./routes/admin/recognize";
 import { handleAdminGeminiSettings } from "./routes/admin/settings";
 import type { D1DatabaseLike } from "./types/d1";
 
 type Env = {
   DB: D1DatabaseLike;
+  IMAGES?: R2Bucket;
   ASSETS?: { fetch: (request: Request) => Promise<Response> };
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_API_TOKEN: string;
@@ -55,7 +58,7 @@ export default {
     }
 
     if (url.pathname === "/api/admin/login") {
-      return handleAdminLogin(request);
+      return handleAdminLogin(request, env);
     }
 
     if (url.pathname === "/api/admin/logout") {
@@ -87,6 +90,16 @@ export default {
       return handleAdminGeminiSettings(request, env);
     }
 
+    if (url.pathname === "/api/admin/change-password") {
+      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
+      return handleAdminChangePassword(request, env);
+    }
+
+    if (url.pathname === "/api/admin/categories") {
+      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
+      return handleAdminCategories(request, env);
+    }
+
     if (url.pathname === "/api/admin/recognize") {
       if (!isAdmin) {
         return json({ ok: false, error: "Unauthorized" }, 401);
@@ -99,6 +112,13 @@ export default {
         return json({ ok: false, error: "Unauthorized" }, 401);
       }
       return handleAdminProducts(request, env);
+    }
+
+    if (url.pathname === "/api/admin/products/toggle") {
+      if (!isAdmin) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+      return handleAdminProductToggle(request, env);
     }
 
     if (url.pathname === "/api/products") {
@@ -133,6 +153,20 @@ export default {
       if (!isAdmin) {
         return Response.redirect(new URL("/admin-login.html", request.url), 302);
       }
+    }
+
+    // R2 image proxy
+    if (url.pathname.startsWith("/api/images/")) {
+      const key = url.pathname.slice("/api/images/".length);
+      if (!env.IMAGES) return json({ ok: false, error: "R2 not configured" }, 500);
+      const object = await env.IMAGES.get(key);
+      if (!object) return new Response("Not Found", { status: 404 });
+      return new Response(object.body, {
+        headers: {
+          "content-type": object.httpMetadata?.contentType || "image/webp",
+          "cache-control": "public, max-age=31536000, immutable",
+        },
+      });
     }
 
     // Static files from /public via Wrangler assets binding.

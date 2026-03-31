@@ -1,6 +1,6 @@
 const MAX_PHOTOS = 3;
 const MAX_IMAGE_SIZE = 800;
-const JPEG_QUALITY = 0.7;
+const WEBP_QUALITY = 0.8;
 
 let selectedImages = [];
 
@@ -46,7 +46,7 @@ function compressImage(file) {
       canvas.height = h;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+      const dataUrl = canvas.toDataURL("image/webp", WEBP_QUALITY);
       const base64 = dataUrl.split(",")[1];
       resolve({ file, dataUrl, base64 });
     };
@@ -204,7 +204,7 @@ async function confirmListing() {
     specs,
     sizeOptions: get("draft-sizes").split(",").map((s) => s.trim()).filter(Boolean),
     colorOptions: get("draft-colors").split(",").map((s) => s.trim()).filter(Boolean),
-    imageDataUrl: selectedImages.length > 0 ? selectedImages[0].dataUrl : "",
+    images: selectedImages.map(img => img.base64),
   };
 
   showListingStatus("上架中...");

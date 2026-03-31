@@ -2,6 +2,7 @@ import type { D1DatabaseLike } from "../../types/d1";
 
 type Env = {
   DB: D1DatabaseLike;
+  IMAGES?: R2Bucket;
 };
 
 type ManualProductRequest = {
@@ -14,8 +15,17 @@ type ManualProductRequest = {
   specs: Record<string, string>;
   sizeOptions: string[];
   colorOptions: string[];
-  imageDataUrl: string;
+  images: string[];
 };
+
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
 
 export async function handleAdminProducts(
   request: Request,
@@ -46,12 +56,32 @@ export async function handleAdminProducts(
   }
 
   const code = `manual-${Date.now()}`;
+  const images = Array.isArray(body.images) ? body.images.filter(Boolean) : [];
+
+  const imageUrls: string[] = [];
+  if (env.IMAGES && images.length > 0) {
+    for (let i = 0; i < images.length; i++) {
+      const raw = images[i];
+      const base64 = raw.includes(",") ? raw.split(",")[1] : raw;
+      const key = `products/${code}/${i}.webp`;
+      const buffer = base64ToArrayBuffer(base64);
+      await env.IMAGES.put(key, buffer, {
+        httpMetadata: { contentType: "image/webp" },
+      });
+      imageUrls.push(key);
+    }
+  } else if (images.length > 0) {
+    for (const img of images) {
+      imageUrls.push(img.startsWith("data:") ? img : `data:image/webp;base64,${img}`);
+    }
+  }
+
   const payload = JSON.stringify({
     description: body.description || "",
     specs: body.specs || {},
     sizeOptions: Array.isArray(body.sizeOptions) ? body.sizeOptions : [],
     colorOptions: Array.isArray(body.colorOptions) ? body.colorOptions : [],
-    gallery: body.imageDataUrl ? [body.imageDataUrl] : [],
+    gallery: imageUrls,
   });
 
   const result = await env.DB
@@ -71,7 +101,7 @@ export async function handleAdminProducts(
       body.category || null,
       body.priceJpyTaxIn ?? null,
       Array.isArray(body.colorOptions) ? body.colorOptions.length : null,
-      body.imageDataUrl || null,
+      imageUrls[0] || null,
       payload
     )
     .run();
@@ -79,7 +109,46 @@ export async function handleAdminProducts(
   const productId = result?.meta?.last_row_id;
 
   return new Response(
-    JSON.stringify({ ok: true, productId, code }),
+    JSON.stringify({ ok: true, productId, code, imageUrls }),
     { status: 201, headers: { "content-type": "application/json" } }
+  );
+}
+
+export async function handleAdminProductToggle(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
+      status: 405, headers: { "content-type": "application/json" },
+    });
+  }
+
+  let body: { id?: number; isActive?: number };
+  try {
+    body = (await request.json()) as { id?: number; isActive?: number };
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  const id = Number(body.id);
+  const isActive = body.isActive === 1 ? 1 : 0;
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  await env.DB
+    .prepare("UPDATE products SET is_active = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(isActive, id)
+    .run();
+
+  return new Response(
+    JSON.stringify({ ok: true, id, isActive }),
+    { status: 200, headers: { "content-type": "application/json" } }
   );
 }

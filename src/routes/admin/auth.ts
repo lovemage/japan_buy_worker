@@ -1,39 +1,48 @@
+import type { D1DatabaseLike } from "../../types/d1";
+
 export const ADMIN_COOKIE_NAME = "admin_session";
 const ADMIN_USER = "admin";
-const ADMIN_PASS = "Curry";
+const DEFAULT_ADMIN_PASS = "Curry";
 const ADMIN_COOKIE_VALUE = "ok";
 
+type Env = {
+  DB: D1DatabaseLike;
+};
+
 function parseCookieHeader(header: string | null): Record<string, string> {
-  if (!header) {
-    return {};
-  }
+  if (!header) return {};
   return header
     .split(";")
     .map((x) => x.trim())
     .filter(Boolean)
     .reduce<Record<string, string>>((acc, item) => {
       const idx = item.indexOf("=");
-      if (idx <= 0) {
-        return acc;
-      }
-      const key = decodeURIComponent(item.slice(0, idx).trim());
-      const value = decodeURIComponent(item.slice(idx + 1).trim());
-      acc[key] = value;
+      if (idx <= 0) return acc;
+      acc[decodeURIComponent(item.slice(0, idx).trim())] = decodeURIComponent(item.slice(idx + 1).trim());
       return acc;
     }, {});
 }
 
 export function isAdminAuthorized(request: Request): boolean {
-  const cookieHeader = request.headers.get("cookie");
-  const cookies = parseCookieHeader(cookieHeader);
+  const cookies = parseCookieHeader(request.headers.get("cookie"));
   return cookies[ADMIN_COOKIE_NAME] === ADMIN_COOKIE_VALUE;
 }
 
-export async function handleAdminLogin(request: Request): Promise<Response> {
+async function getAdminPassword(db: D1DatabaseLike): Promise<string> {
+  try {
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE key = 'admin_password'")
+      .first<{ value: string }>();
+    return row?.value || DEFAULT_ADMIN_PASS;
+  } catch {
+    return DEFAULT_ADMIN_PASS;
+  }
+}
+
+export async function handleAdminLogin(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
-      status: 405,
-      headers: { "content-type": "application/json" },
+      status: 405, headers: { "content-type": "application/json" },
     });
   }
 
@@ -42,17 +51,17 @@ export async function handleAdminLogin(request: Request): Promise<Response> {
     body = (await request.json()) as { username?: string; password?: string };
   } catch {
     return new Response(JSON.stringify({ ok: false, error: "Invalid JSON body" }), {
-      status: 400,
-      headers: { "content-type": "application/json" },
+      status: 400, headers: { "content-type": "application/json" },
     });
   }
 
   const username = (body.username || "").trim();
   const password = (body.password || "").trim();
-  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
+  const adminPass = await getAdminPassword(env.DB);
+
+  if (username !== ADMIN_USER || password !== adminPass) {
     return new Response(JSON.stringify({ ok: false, error: "帳號或密碼錯誤" }), {
-      status: 401,
-      headers: { "content-type": "application/json" },
+      status: 401, headers: { "content-type": "application/json" },
     });
   }
 
@@ -68,8 +77,7 @@ export async function handleAdminLogin(request: Request): Promise<Response> {
 export async function handleAdminLogout(request: Request): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
-      status: 405,
-      headers: { "content-type": "application/json" },
+      status: 405, headers: { "content-type": "application/json" },
     });
   }
   return new Response(JSON.stringify({ ok: true }), {

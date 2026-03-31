@@ -1,62 +1,70 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Japan Buy Admin</title>
-    <link rel="stylesheet" href="/assets/styles.css" />
-  </head>
-  <body>
-    <header class="page-header">
-      <div class="container">
-        <h1>Admin 後台</h1>
-        <a class="button secondary" href="/index.html">返回商品列表</a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Japan Buy Admin</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body class="admin-body">
+  <header class="admin-topbar">
+    <h1 id="admin-topbar-title">新增商品</h1>
+  </header>
+
+  <main class="admin-main" id="admin-main">
+    <section id="admin-error" class="notice hidden"></section>
+
+    <!-- Tab 1: 新增商品 -->
+    <section class="admin-tab-panel" data-tab="products">
+      <div class="tab-sub-nav">
+        <button class="tab-sub-btn is-active" data-subtab="manage">產品管理</button>
+        <button class="tab-sub-btn" data-subtab="manual">手動上架</button>
+        <button class="tab-sub-btn" data-subtab="categories">分類管理</button>
       </div>
-    </header>
-
-    <main class="container">
-      <section id="admin-error" class="notice hidden"></section>
-      <section class="admin-form-card">
-        <h2 class="product-card__title">價格設定</h2>
-        <div class="admin-actions">
-          <label>每筆加價 JPY
-            <input id="markup-jpy" type="number" min="0" step="1" />
-          </label>
-          <label>JPY -> TWD 匯率
-            <input id="jpy-to-twd" type="number" min="0.01" step="0.001" />
-          </label>
-          <label>國際運費 (TWD)
-            <input id="international-shipping-twd" type="number" min="0" step="1" />
-          </label>
-          <label>國內運費 (TWD)
-            <input id="domestic-shipping-twd" type="number" min="0" step="1" />
-          </label>
-          <label>優惠門檻 (TWD)
-            <input id="promo-tag-max-twd" type="number" min="0" step="1" />
-          </label>
-          <label>限時連線代購運費 (TWD)
-            <input id="limited-proxy-shipping-twd" type="number" min="0" step="1" />
-          </label>
-          <label>
-            <input id="shipping-options-enabled" type="checkbox" />
-            顯示運費選項（前端需求單）
-          </label>
-          <button id="admin-save-pricing" class="button" type="button">儲存價格設定</button>
+      <div class="admin-sub-panel" data-subtab-panel="manage">
+        <div class="admin-manage-header">
+          <input id="manage-search" type="text" class="input-cute" placeholder="搜尋商品名稱..." />
         </div>
-      </section>
-      <section class="admin-form-card">
-        <h2 class="product-card__title">Gemini API 設定</h2>
-        <div class="admin-actions">
-          <label>Gemini API Key
-            <input id="gemini-api-key" type="password" class="input-cute" placeholder="填入 Gemini API Key" />
-          </label>
-          <p id="gemini-key-status" class="meta">尚未設定</p>
-          <button id="admin-save-gemini-key" class="button" type="button">儲存 API Key</button>
+        <div id="manage-product-grid" class="manage-product-grid"></div>
+        <div id="manage-paging" class="manage-paging"></div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="manual">
+        <div class="admin-form-card">
+          <div class="photo-upload-area">
+            <div class="photo-preview-row" id="manual-photo-previews"></div>
+            <label class="btn-pill secondary photo-add-btn">
+              選擇商品圖片（最多 3 張）
+              <input id="manual-photo-input" type="file" accept="image/*" multiple hidden />
+            </label>
+            <p class="meta" id="manual-photo-count">已選 0 / 3 張</p>
+          </div>
+          <label>日文品名<input id="manual-title-ja" type="text" class="input-cute" /></label>
+          <label>中文品名<input id="manual-title-zh" type="text" class="input-cute" /></label>
+          <label>品牌<input id="manual-brand" type="text" class="input-cute" /></label>
+          <label>分類<input id="manual-category" type="text" class="input-cute" list="category-datalist" /></label>
+          <datalist id="category-datalist"></datalist>
+          <label>價格（JPY）<input id="manual-price" type="number" min="0" class="input-cute" /></label>
+          <label>商品描述<textarea id="manual-description" rows="3" class="input-cute"></textarea></label>
+          <label>尺寸選項（逗號分隔）<input id="manual-sizes" type="text" class="input-cute" placeholder="S, M, L" /></label>
+          <label>顏色選項（逗號分隔）<input id="manual-colors" type="text" class="input-cute" placeholder="紅色, 藍色" /></label>
+          <button id="manual-submit" class="button" type="button">確認上架</button>
+          <p id="manual-status" class="meta"></p>
         </div>
-      </section>
-      <section class="admin-form-card" id="photo-recognize-section">
-        <h2 class="product-card__title">拍照辨識上架</h2>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="categories">
+        <div class="admin-form-card">
+          <div class="category-add-row">
+            <input id="category-new-name" type="text" class="input-cute" placeholder="新分類名稱" />
+            <button id="category-add-btn" class="button" type="button">新增</button>
+          </div>
+          <div id="category-list" class="category-list"></div>
+        </div>
+      </div>
+    </section>
 
+    <!-- Tab 2: 拍照上架 -->
+    <section class="admin-tab-panel hidden" data-tab="camera">
+      <div class="admin-form-card">
         <div class="photo-upload-area">
           <div class="photo-preview-row" id="photo-previews"></div>
           <label class="btn-pill secondary photo-add-btn">
@@ -65,42 +73,22 @@
           </label>
           <p class="meta" id="photo-count">已選 0 / 3 張</p>
         </div>
-
         <div class="photo-actions">
           <button id="btn-recognize-quick" class="button" type="button" disabled>快速導入</button>
           <button id="btn-recognize-search" class="button secondary" type="button" disabled>聯網搜尋</button>
         </div>
         <p id="recognize-status" class="meta"></p>
-
         <div id="recognize-draft" class="recognize-draft hidden">
           <h3>商品草稿</h3>
-          <label>日文品名
-            <input id="draft-title-ja" type="text" class="input-cute" />
-          </label>
-          <label>中文品名
-            <input id="draft-title-zh" type="text" class="input-cute" />
-          </label>
-          <label>品牌
-            <input id="draft-brand" type="text" class="input-cute" />
-          </label>
-          <label>分類
-            <input id="draft-category" type="text" class="input-cute" />
-          </label>
-          <label>價格（JPY）
-            <input id="draft-price" type="number" min="0" class="input-cute" />
-          </label>
-          <label>商品描述
-            <textarea id="draft-description" rows="3" class="input-cute"></textarea>
-          </label>
-          <label>規格（JSON）
-            <textarea id="draft-specs" rows="3" class="input-cute"></textarea>
-          </label>
-          <label>尺寸選項（逗號分隔）
-            <input id="draft-sizes" type="text" class="input-cute" placeholder="S, M, L" />
-          </label>
-          <label>顏色選項（逗號分隔）
-            <input id="draft-colors" type="text" class="input-cute" placeholder="紅色, 藍色" />
-          </label>
+          <label>日文品名<input id="draft-title-ja" type="text" class="input-cute" /></label>
+          <label>中文品名<input id="draft-title-zh" type="text" class="input-cute" /></label>
+          <label>品牌<input id="draft-brand" type="text" class="input-cute" /></label>
+          <label>分類<input id="draft-category" type="text" class="input-cute" /></label>
+          <label>價格（JPY）<input id="draft-price" type="number" min="0" class="input-cute" /></label>
+          <label>商品描述<textarea id="draft-description" rows="3" class="input-cute"></textarea></label>
+          <label>規格（JSON）<textarea id="draft-specs" rows="3" class="input-cute"></textarea></label>
+          <label>尺寸選項（逗號分隔）<input id="draft-sizes" type="text" class="input-cute" placeholder="S, M, L" /></label>
+          <label>顏色選項（逗號分隔）<input id="draft-colors" type="text" class="input-cute" placeholder="紅色, 藍色" /></label>
           <div id="draft-sources" class="meta hidden"></div>
           <div class="photo-actions">
             <button id="btn-confirm-listing" class="button" type="button">確認上架</button>
@@ -108,17 +96,115 @@
           </div>
           <p id="listing-status" class="meta"></p>
         </div>
-      </section>
-      <section class="admin-actions">
-        <button id="admin-crawl" class="button" type="button">執行抓取</button>
-        <button id="admin-refresh" class="button secondary" type="button">刷新需求單</button>
-        <button id="admin-logout" class="button secondary" type="button">登出</button>
-      </section>
-      <p id="admin-crawl-status" class="meta">抓取狀態：待命</p>
-      <section id="admin-forms" class="admin-forms"></section>
-    </main>
+      </div>
+    </section>
 
-    <script type="module" src="/assets/app-admin.js"></script>
-    <script type="module" src="/assets/app-admin-recognize.js"></script>
-  </body>
+    <!-- Tab 3: 網站同步 -->
+    <section class="admin-tab-panel hidden" data-tab="sync">
+      <div class="admin-form-card">
+        <h2 class="product-card__title">同步目標網站</h2>
+        <p class="meta">來源：fo-online.jp 排行榜</p>
+        <button id="sync-crawl-btn" class="button" type="button">開始同步</button>
+        <div id="sync-loading" class="sync-loading hidden">
+          <div class="sync-loading-bar">
+            <div class="sync-loading-bar__fill" id="sync-bar-fill"></div>
+          </div>
+          <p class="sync-loading-text" id="sync-loading-text">正在同步...</p>
+        </div>
+        <div id="sync-result" class="sync-result hidden">
+          <div class="sync-result-card">
+            <h3 id="sync-result-title">同步完成</h3>
+            <div class="sync-result-stats">
+              <div class="sync-stat">
+                <span class="sync-stat__value" id="sync-crawled">0</span>
+                <span class="sync-stat__label">抓取筆數</span>
+              </div>
+              <div class="sync-stat">
+                <span class="sync-stat__value" id="sync-upserted">0</span>
+                <span class="sync-stat__label">寫入筆數</span>
+              </div>
+              <div class="sync-stat">
+                <span class="sync-stat__value" id="sync-source">-</span>
+                <span class="sync-stat__label">來源</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: 訂單列表 -->
+    <section class="admin-tab-panel hidden" data-tab="orders">
+      <div class="admin-tab-header">
+        <button id="orders-refresh" class="button secondary" type="button">刷新</button>
+      </div>
+      <section id="admin-forms" class="admin-forms"></section>
+    </section>
+
+    <!-- Tab 5: 網站設定 -->
+    <section class="admin-tab-panel hidden" data-tab="settings">
+      <div class="tab-sub-nav">
+        <button class="tab-sub-btn is-active" data-subtab="pricing">匯率設定</button>
+        <button class="tab-sub-btn" data-subtab="apikey">API Key</button>
+        <button class="tab-sub-btn" data-subtab="account">帳號設定</button>
+      </div>
+      <div class="admin-sub-panel" data-subtab-panel="pricing">
+        <div class="admin-form-card">
+          <label>每筆加價 JPY<input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
+          <label>JPY → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
+          <label>國際運費 (TWD)<input id="international-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
+          <label>國內運費 (TWD)<input id="domestic-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
+          <label>優惠門檻 (TWD)<input id="promo-tag-max-twd" type="number" min="0" step="1" class="input-cute" /></label>
+          <label>限時連線代購運費 (TWD)<input id="limited-proxy-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
+          <label><input id="shipping-options-enabled" type="checkbox" /> 顯示運費選項（前端需求單）</label>
+          <button id="admin-save-pricing" class="button" type="button">儲存</button>
+        </div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="apikey">
+        <div class="admin-form-card">
+          <label>Gemini API Key<input id="gemini-api-key" type="password" class="input-cute" placeholder="填入 Gemini API Key" /></label>
+          <p id="gemini-key-status" class="meta">尚未設定</p>
+          <button id="admin-save-gemini-key" class="button" type="button">儲存 API Key</button>
+        </div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="account">
+        <div class="admin-form-card">
+          <label>舊密碼<input id="old-password" type="password" class="input-cute" /></label>
+          <label>新密碼<input id="new-password" type="password" class="input-cute" /></label>
+          <label>確認新密碼<input id="confirm-password" type="password" class="input-cute" /></label>
+          <button id="admin-change-password" class="button" type="button">更改密碼</button>
+          <p id="password-status" class="meta"></p>
+          <hr style="border:none;border-top:1px solid var(--line);margin:12px 0" />
+          <button id="admin-logout" class="button secondary" type="button">登出</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部導航 -->
+  <nav class="admin-bottom-nav" id="admin-bottom-nav">
+    <button class="admin-nav-item is-active" data-tab="products">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/><polyline points="2.32 6.16 12 11 21.68 6.16"/><line x1="12" y1="22.76" x2="12" y2="11"/></svg>
+      <span>商品</span>
+    </button>
+    <button class="admin-nav-item" data-tab="camera">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>拍照</span>
+    </button>
+    <button class="admin-nav-item" data-tab="sync">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span>同步</span>
+    </button>
+    <button class="admin-nav-item" data-tab="orders">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+      <span>訂單</span>
+    </button>
+    <button class="admin-nav-item" data-tab="settings">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>設定</span>
+    </button>
+  </nav>
+
+  <script type="module" src="/assets/app-admin.js"></script>
+</body>
 </html>
