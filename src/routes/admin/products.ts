@@ -150,3 +150,65 @@ export async function handleAdminProductToggle(
     { status: 200, headers: { "content-type": "application/json" } }
   );
 }
+
+export async function handleAdminProductUpdate(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "PATCH") {
+    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
+      status: 405, headers: { "content-type": "application/json" },
+    });
+  }
+
+  let body: {
+    id?: number;
+    titleJa?: string;
+    titleZhTw?: string;
+    brand?: string;
+    category?: string;
+    priceJpyTaxIn?: number | null;
+  };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  const id = Number(body.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  const sets: string[] = [];
+  const params: (string | number | null)[] = [];
+
+  if (body.titleJa !== undefined) { sets.push("title_ja = ?"); params.push((body.titleJa || "").trim()); }
+  if (body.titleZhTw !== undefined) { sets.push("title_zh_tw = ?"); params.push((body.titleZhTw || "").trim() || null); }
+  if (body.brand !== undefined) { sets.push("brand = ?"); params.push((body.brand || "").trim() || null); }
+  if (body.category !== undefined) { sets.push("category = ?"); params.push((body.category || "").trim() || null); }
+  if (body.priceJpyTaxIn !== undefined) { sets.push("price_jpy_tax_in = ?"); params.push(body.priceJpyTaxIn ?? null); }
+
+  if (sets.length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: "沒有要更新的欄位" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  sets.push("updated_at = datetime('now')");
+  params.push(id);
+
+  await env.DB
+    .prepare(`UPDATE products SET ${sets.join(", ")} WHERE id = ?`)
+    .bind(...params)
+    .run();
+
+  return new Response(
+    JSON.stringify({ ok: true, id }),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
+}

@@ -27,6 +27,24 @@
         </div>
         <div id="manage-product-grid" class="manage-product-grid"></div>
         <div id="manage-paging" class="manage-paging"></div>
+        <!-- Edit Modal -->
+        <div id="edit-modal" class="edit-modal hidden">
+          <div class="edit-modal__backdrop"></div>
+          <div class="edit-modal__content">
+            <h3>編輯商品</h3>
+            <input id="edit-id" type="hidden" />
+            <label>日文品名<input id="edit-title-ja" type="text" class="input-cute" /></label>
+            <label>中文品名<input id="edit-title-zh" type="text" class="input-cute" /></label>
+            <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>
+            <label>分類<input id="edit-category" type="text" class="input-cute" /></label>
+            <label>價格（JPY）<input id="edit-price" type="number" min="0" class="input-cute" /></label>
+            <div class="edit-modal__actions">
+              <button id="edit-save" class="button" type="button">儲存</button>
+              <button id="edit-cancel" class="button secondary" type="button">取消</button>
+            </div>
+            <p id="edit-status" class="meta"></p>
+          </div>
+        </div>
       </div>
       <div class="admin-sub-panel hidden" data-subtab-panel="manual">
         <div class="admin-form-card">

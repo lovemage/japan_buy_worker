@@ -1352,6 +1352,68 @@ select:disabled {
   color: var(--muted);
 }
 
+/* Edit Modal */
+.edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.edit-modal.hidden {
+  display: none;
+}
+
+.edit-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 28, 24, 0.5);
+}
+
+.edit-modal__content {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 16px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+}
+
+.edit-modal__content h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.edit-modal__content label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.edit-modal__content .input-cute {
+  font-size: 16px;
+  min-height: 44px;
+}
+
+.edit-modal__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.edit-modal__actions .button {
+  flex: 1;
+  min-height: 44px;
+}
+
 /* Floating Buttons */
 .floating-request-btn {
   position: fixed;

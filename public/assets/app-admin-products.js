@@ -34,6 +34,7 @@ function renderProductGrid(products, paging) {
         <p class="manage-card__price">${formatPrice(p.priceJpyTaxIn)}</p>
         <p class="manage-card__meta">${p.brand || ""}${p.category ? " · " + p.category : ""} · ${source}</p>
         <div class="manage-card__actions">
+          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}">編輯</button>
           <button class="button secondary js-product-toggle" data-id="${p.id}" data-code="${p.code}">${p.isActive === 0 ? "上架" : "下架"}</button>
         </div>
       </div>
@@ -41,6 +42,10 @@ function renderProductGrid(products, paging) {
   }).join("");
 
   applyProductImageFallback(grid);
+
+  grid.querySelectorAll(".js-product-edit").forEach((btn) => {
+    btn.addEventListener("click", () => openEditModal(btn));
+  });
 
   grid.querySelectorAll(".js-product-toggle").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -80,6 +85,69 @@ async function loadManagedProducts() {
   if (!res.ok) { showError("載入商品失敗"); return; }
   const body = await res.json();
   renderProductGrid(body.products || [], body.paging || {});
+}
+
+// === Edit Modal ===
+function openEditModal(btn) {
+  const modal = document.getElementById("edit-modal");
+  if (!modal) return;
+
+  document.getElementById("edit-id").value = btn.getAttribute("data-id") || "";
+  document.getElementById("edit-title-ja").value = btn.getAttribute("data-name-ja") || "";
+  document.getElementById("edit-title-zh").value = btn.getAttribute("data-name-zh") || "";
+  document.getElementById("edit-brand").value = btn.getAttribute("data-brand") || "";
+  document.getElementById("edit-category").value = btn.getAttribute("data-category") || "";
+  document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
+  document.getElementById("edit-status").textContent = "";
+
+  modal.classList.remove("hidden");
+}
+
+function closeEditModal() {
+  const modal = document.getElementById("edit-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+async function saveEdit() {
+  const id = Number(document.getElementById("edit-id")?.value);
+  if (!id) return;
+
+  const status = document.getElementById("edit-status");
+  const payload = {
+    id,
+    titleJa: document.getElementById("edit-title-ja")?.value?.trim() || "",
+    titleZhTw: document.getElementById("edit-title-zh")?.value?.trim() || "",
+    brand: document.getElementById("edit-brand")?.value?.trim() || "",
+    category: document.getElementById("edit-category")?.value?.trim() || "",
+    priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
+  };
+
+  const btn = document.getElementById("edit-save");
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = "儲存中...";
+
+  try {
+    const res = await fetch("/api/admin/products/update", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    const data = await res.json();
+    if (!data.ok) { if (status) status.textContent = `儲存失敗：${data.error}`; return; }
+    closeEditModal();
+    await loadManagedProducts();
+  } catch (err) {
+    if (status) status.textContent = `儲存失敗：${String(err)}`;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function initEditModal() {
+  document.getElementById("edit-cancel")?.addEventListener("click", closeEditModal);
+  document.getElementById("edit-save")?.addEventListener("click", saveEdit);
+  document.querySelector(".edit-modal__backdrop")?.addEventListener("click", closeEditModal);
 }
 
 function initManageSearch() {
@@ -274,6 +342,7 @@ async function addCategory() {
 export function initProducts() {
   // Product management
   initManageSearch();
+  initEditModal();
   loadManagedProducts();
 
   // Manual upload
