@@ -68,12 +68,10 @@ export async function handleAdminProducts(
       await env.IMAGES.put(key, buffer, {
         httpMetadata: { contentType: "image/webp" },
       });
-      imageUrls.push(key);
+      imageUrls.push(`/api/images/${key}`);
     }
-  } else if (images.length > 0) {
-    for (const img of images) {
-      imageUrls.push(img.startsWith("data:") ? img : `data:image/webp;base64,${img}`);
-    }
+  } else {
+    // 無 R2 時不存圖片（base64 太大不適合存 D1）
   }
 
   const payload = JSON.stringify({
