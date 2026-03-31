@@ -91,9 +91,12 @@
           </label>
           <p class="meta" id="photo-count">已選 0 / 3 張</p>
         </div>
-        <div class="photo-actions">
-          <button id="btn-recognize-quick" class="button" type="button" disabled>快速導入</button>
-          <button id="btn-recognize-search" class="button secondary" type="button" disabled>聯網搜尋</button>
+        <button id="btn-recognize-quick" class="button" type="button" disabled>快速導入</button>
+        <div id="recognize-loading" class="sync-loading hidden">
+          <div class="sync-loading-bar">
+            <div class="sync-loading-bar__fill" id="recognize-bar-fill"></div>
+          </div>
+          <p class="sync-loading-text" id="recognize-loading-text">辨識中...</p>
         </div>
         <p id="recognize-status" class="meta"></p>
         <div id="recognize-draft" class="recognize-draft hidden">
@@ -124,10 +127,12 @@
         <p class="meta">來源：fo-online.jp 排行榜</p>
         <button id="sync-crawl-btn" class="button" type="button">開始同步</button>
         <div id="sync-loading" class="sync-loading hidden">
+          <p class="sync-warning">請勿切換頁面或關閉螢幕</p>
           <div class="sync-loading-bar">
             <div class="sync-loading-bar__fill" id="sync-bar-fill"></div>
           </div>
           <p class="sync-loading-text" id="sync-loading-text">正在同步...</p>
+          <p class="sync-progress" id="sync-progress"></p>
         </div>
         <div id="sync-result" class="sync-result hidden">
           <div class="sync-result-card">
@@ -165,6 +170,7 @@
         <button class="tab-sub-btn is-active" data-subtab="pricing">匯率設定</button>
         <button class="tab-sub-btn" data-subtab="apikey">API Key</button>
         <button class="tab-sub-btn" data-subtab="account">帳號設定</button>
+        <button class="tab-sub-btn" data-subtab="danger">資料管理</button>
       </div>
       <div class="admin-sub-panel" data-subtab-panel="pricing">
         <div class="admin-form-card">
@@ -194,6 +200,23 @@
           <p id="password-status" class="meta"></p>
           <hr style="border:none;border-top:1px solid var(--line);margin:12px 0" />
           <button id="admin-logout" class="button secondary" type="button">登出</button>
+        </div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="danger">
+        <div class="admin-form-card">
+          <h3 style="color:#8B2E1C;margin:0 0 8px">危險操作</h3>
+          <p class="meta">以下操作不可復原，需要輸入管理員密碼確認。</p>
+          <div class="danger-action">
+            <p><strong>清空同步商品</strong></p>
+            <p class="meta">刪除所有從網站同步的商品資料（source_site 非 manual 的商品）</p>
+            <button id="btn-clear-sync" class="button danger-btn" type="button">清空同步商品</button>
+          </div>
+          <div class="danger-action">
+            <p><strong>清空拍照商品</strong></p>
+            <p class="meta">刪除所有手動上架的商品資料及 R2 中的照片</p>
+            <button id="btn-clear-manual" class="button danger-btn" type="button">清空拍照商品</button>
+          </div>
+          <p id="danger-status" class="meta"></p>
         </div>
       </div>
     </section>

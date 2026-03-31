@@ -92,11 +92,42 @@ async function logout() {
   location.href = "/admin-login.html";
 }
 
+async function clearProducts(type) {
+  const label = type === "sync" ? "同步商品" : "拍照商品";
+  const endpoint = type === "sync" ? "/api/admin/clear-sync-products" : "/api/admin/clear-manual-products";
+  const status = document.getElementById("danger-status");
+
+  if (!confirm(`確定要清空所有${label}？此操作不可復原！`)) return;
+
+  const password = prompt("請輸入管理員密碼以確認操作：");
+  if (!password) return;
+
+  if (status) status.textContent = "執行中...";
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      if (status) status.textContent = `操作失敗：${data.error}`;
+      return;
+    }
+    if (status) status.textContent = `已清空${label}，共刪除 ${data.deleted} 筆`;
+  } catch (err) {
+    if (status) status.textContent = `操作失敗：${String(err)}`;
+  }
+}
+
 export function initSettings() {
   document.getElementById("admin-save-pricing")?.addEventListener("click", savePricing);
   document.getElementById("admin-save-gemini-key")?.addEventListener("click", saveGeminiKey);
   document.getElementById("admin-change-password")?.addEventListener("click", changePassword);
   document.getElementById("admin-logout")?.addEventListener("click", logout);
+  document.getElementById("btn-clear-sync")?.addEventListener("click", () => clearProducts("sync"));
+  document.getElementById("btn-clear-manual")?.addEventListener("click", () => clearProducts("manual"));
   loadPricing();
   loadGeminiSettings();
 }

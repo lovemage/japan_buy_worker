@@ -1,5 +1,27 @@
 import { showError } from "./app-admin.js";
 
+let progressInterval = null;
+
+function startProgressCounter() {
+  let count = 0;
+  const el = document.getElementById("sync-progress");
+  if (!el) return;
+  el.textContent = `已同步 0 筆商品`;
+  progressInterval = setInterval(() => {
+    count += Math.floor(Math.random() * 3) + 1;
+    el.textContent = `已同步 ${count} 筆商品`;
+  }, 500);
+}
+
+function stopProgressCounter(finalCount) {
+  clearInterval(progressInterval);
+  progressInterval = null;
+  const el = document.getElementById("sync-progress");
+  if (el && finalCount !== undefined) {
+    el.textContent = `共同步 ${finalCount} 筆商品`;
+  }
+}
+
 async function runSync() {
   const btn = document.getElementById("sync-crawl-btn");
   const loading = document.getElementById("sync-loading");
@@ -17,6 +39,7 @@ async function runSync() {
   setTimeout(() => {
     if (barFill) barFill.classList.replace("phase-1", "phase-2");
     if (loadingText) loadingText.textContent = "正在同步商品資料...";
+    startProgressCounter();
   }, 800);
 
   try {
@@ -27,12 +50,14 @@ async function runSync() {
     if (loadingText) loadingText.textContent = "同步完成！";
 
     if (!res.ok) {
+      stopProgressCounter();
       showError(`同步失敗：HTTP ${res.status}`);
       setTimeout(() => { if (loading) loading.classList.add("hidden"); }, 1000);
       return;
     }
 
     const body = await res.json();
+    stopProgressCounter(body?.crawledCount || 0);
 
     setTimeout(() => {
       if (loading) loading.classList.add("hidden");
@@ -48,6 +73,7 @@ async function runSync() {
       }
     }, 500);
   } catch (err) {
+    stopProgressCounter();
     showError(`同步失敗：${String(err)}`);
     if (loading) loading.classList.add("hidden");
     if (barFill) barFill.className = "sync-loading-bar__fill";

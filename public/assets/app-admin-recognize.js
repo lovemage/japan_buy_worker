@@ -16,10 +16,8 @@ function showListingStatus(text) {
 
 function updateButtons() {
   const quickBtn = document.getElementById("btn-recognize-quick");
-  const searchBtn = document.getElementById("btn-recognize-search");
   const hasImages = selectedImages.length > 0;
   if (quickBtn) quickBtn.disabled = !hasImages;
-  if (searchBtn) searchBtn.disabled = !hasImages;
   const count = document.getElementById("photo-count");
   if (count) count.textContent = `已選 ${selectedImages.length} / ${MAX_PHOTOS} 張`;
 }
@@ -97,14 +95,35 @@ async function onPhotosSelected(event) {
   event.target.value = "";
 }
 
-async function doRecognize(mode) {
+function showRecognizeLoading(show) {
+  const loading = document.getElementById("recognize-loading");
+  const barFill = document.getElementById("recognize-bar-fill");
+  const loadingText = document.getElementById("recognize-loading-text");
+
+  if (show) {
+    if (loading) loading.classList.remove("hidden");
+    if (barFill) { barFill.className = "sync-loading-bar__fill"; void barFill.offsetWidth; barFill.classList.add("phase-1"); }
+    if (loadingText) loadingText.textContent = "正在辨識商品...";
+    setTimeout(() => {
+      if (barFill) barFill.classList.replace("phase-1", "phase-2");
+      if (loadingText) loadingText.textContent = "AI 分析中，請稍候...";
+    }, 600);
+  } else {
+    if (barFill) barFill.classList.replace("phase-2", "phase-3");
+    setTimeout(() => {
+      if (loading) loading.classList.add("hidden");
+      if (barFill) barFill.className = "sync-loading-bar__fill";
+    }, 400);
+  }
+}
+
+async function doRecognize() {
   if (selectedImages.length === 0) return;
 
-  showRecognizeStatus(mode === "search" ? "聯網搜尋中，請稍候..." : "辨識中，請稍候...");
+  showRecognizeStatus("");
+  showRecognizeLoading(true);
   const quickBtn = document.getElementById("btn-recognize-quick");
-  const searchBtn = document.getElementById("btn-recognize-search");
   if (quickBtn) quickBtn.disabled = true;
-  if (searchBtn) searchBtn.disabled = true;
 
   try {
     const res = await fetch("/api/admin/recognize", {
@@ -112,9 +131,11 @@ async function doRecognize(mode) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         images: selectedImages.map((img) => img.base64),
-        mode,
+        mode: "quick",
       }),
     });
+
+    showRecognizeLoading(false);
 
     if (res.status === 401) {
       location.href = "/admin-login.html";
@@ -130,6 +151,7 @@ async function doRecognize(mode) {
     showRecognizeStatus("辨識完成！請檢查草稿內容。");
     fillDraft(data.result);
   } catch (err) {
+    showRecognizeLoading(false);
     showRecognizeStatus(`辨識失敗：${String(err)}`);
   } finally {
     updateButtons();
@@ -156,13 +178,7 @@ function fillDraft(result) {
   set("draft-colors", Array.isArray(result.colorOptions) ? result.colorOptions.join(", ") : "");
 
   const sourcesEl = document.getElementById("draft-sources");
-  if (sourcesEl && Array.isArray(result.searchSources) && result.searchSources.length > 0) {
-    sourcesEl.classList.remove("hidden");
-    sourcesEl.innerHTML = "<strong>搜尋來源：</strong>" +
-      result.searchSources.map((s) => `<a href="${s}" target="_blank" rel="noopener">${s}</a>`).join("、");
-  } else if (sourcesEl) {
-    sourcesEl.classList.add("hidden");
-  }
+  if (sourcesEl) sourcesEl.classList.add("hidden");
 }
 
 function cancelDraft() {
@@ -244,10 +260,7 @@ function initPhotoRecognize() {
   if (input) input.addEventListener("change", onPhotosSelected);
 
   const quickBtn = document.getElementById("btn-recognize-quick");
-  if (quickBtn) quickBtn.addEventListener("click", () => doRecognize("quick"));
-
-  const searchBtn = document.getElementById("btn-recognize-search");
-  if (searchBtn) searchBtn.addEventListener("click", () => doRecognize("search"));
+  if (quickBtn) quickBtn.addEventListener("click", doRecognize);
 
   const cancelBtn = document.getElementById("btn-cancel-draft");
   if (cancelBtn) cancelBtn.addEventListener("click", cancelDraft);

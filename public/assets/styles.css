@@ -1205,6 +1205,26 @@ select:disabled {
   transition: width 0.3s ease;
 }
 
+.sync-warning {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8B2E1C;
+  background: #FEF1EE;
+  border: 1px solid #F5C4B8;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.sync-progress {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-top: 4px;
+}
+
 .sync-loading-text {
   text-align: center;
   margin-top: 8px;
@@ -1412,6 +1432,31 @@ select:disabled {
 .edit-modal__actions .button {
   flex: 1;
   min-height: 44px;
+}
+
+/* Danger Actions */
+.danger-action {
+  border: 1px solid #F5C4B8;
+  border-radius: 10px;
+  padding: 12px;
+  background: #FEF8F7;
+  margin-top: 8px;
+}
+
+.danger-action p {
+  margin: 0 0 4px;
+}
+
+.danger-btn {
+  background: #C0392B;
+  color: #fff;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+}
+
+.danger-btn:hover {
+  background: #A93226;
 }
 
 /* Floating Buttons */

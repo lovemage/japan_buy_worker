@@ -21,6 +21,7 @@ import { handleAdminChangePassword } from "./routes/admin/password";
 import { handleAdminCategories } from "./routes/admin/categories";
 import { handleAdminRecognize } from "./routes/admin/recognize";
 import { handleAdminGeminiSettings } from "./routes/admin/settings";
+import { handleAdminClearSyncProducts, handleAdminClearManualProducts } from "./routes/admin/clear-products";
 import type { D1DatabaseLike } from "./types/d1";
 
 type Env = {
@@ -126,6 +127,16 @@ export default {
         return json({ ok: false, error: "Unauthorized" }, 401);
       }
       return handleAdminProductUpdate(request, env);
+    }
+
+    if (url.pathname === "/api/admin/clear-sync-products") {
+      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
+      return handleAdminClearSyncProducts(request, env);
+    }
+
+    if (url.pathname === "/api/admin/clear-manual-products") {
+      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
+      return handleAdminClearManualProducts(request, env);
     }
 
     if (url.pathname === "/api/products") {
