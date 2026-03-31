@@ -8,11 +8,15 @@
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
-    <a class="admin-topbar__back" href="/index.html">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      返回網站
-    </a>
-    <h1 id="admin-topbar-title">新增商品</h1>
+    <div class="admin-topbar__row">
+      <h1 id="admin-topbar-title">新增商品</h1>
+      <div class="admin-topbar__actions" id="admin-topbar-actions">
+        <a class="admin-topbar__link" href="/index.html" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          檢視網站
+        </a>
+      </div>
+    </div>
   </header>
 
   <main class="admin-main" id="admin-main">
@@ -37,6 +41,12 @@
           <div class="edit-modal__content">
             <h3>編輯商品</h3>
             <input id="edit-id" type="hidden" />
+            <input id="edit-code" type="hidden" />
+            <div class="edit-gallery" id="edit-gallery"></div>
+            <label class="btn-pill secondary photo-add-btn" style="margin-bottom:8px">
+              新增圖片
+              <input id="edit-photo-input" type="file" accept="image/*" multiple hidden />
+            </label>
             <label>日文品名<input id="edit-title-ja" type="text" class="input-cute" /></label>
             <label>中文品名<input id="edit-title-zh" type="text" class="input-cute" /></label>
             <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>
@@ -162,9 +172,6 @@
 
     <!-- Tab 4: 訂單列表 -->
     <section class="admin-tab-panel hidden" data-tab="orders">
-      <div class="admin-tab-header">
-        <button id="orders-refresh" class="button secondary" type="button">刷新</button>
-      </div>
       <section id="admin-forms" class="admin-forms"></section>
     </section>
 

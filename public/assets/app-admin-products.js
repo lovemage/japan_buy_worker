@@ -88,11 +88,66 @@ async function loadManagedProducts() {
 }
 
 // === Edit Modal ===
-function openEditModal(btn) {
+let editGallery = [];
+let editNewImages = [];
+
+function renderEditGallery() {
+  const container = document.getElementById("edit-gallery");
+  if (!container) return;
+  const all = [...editGallery];
+  if (all.length === 0 && editNewImages.length === 0) {
+    container.innerHTML = '<p class="meta">尚無圖片</p>';
+    return;
+  }
+  container.innerHTML = all.map((url, idx) => `
+    <div class="edit-gallery__item">
+      <img src="${url}" alt="圖片 ${idx + 1}" />
+      <button class="edit-gallery__remove" data-idx="${idx}" data-type="existing" type="button">&times;</button>
+    </div>
+  `).join("") + editNewImages.map((img, idx) => `
+    <div class="edit-gallery__item" style="border-color:var(--brand)">
+      <img src="${img.dataUrl}" alt="新圖 ${idx + 1}" />
+      <button class="edit-gallery__remove" data-idx="${idx}" data-type="new" type="button">&times;</button>
+    </div>
+  `).join("");
+
+  container.querySelectorAll(".edit-gallery__remove").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const type = btn.getAttribute("data-type");
+      const idx = Number(btn.getAttribute("data-idx"));
+      if (type === "new") {
+        editNewImages.splice(idx, 1);
+        renderEditGallery();
+      } else {
+        const url = editGallery[idx];
+        const id = Number(document.getElementById("edit-id")?.value);
+        if (!url || !id) return;
+        btn.disabled = true;
+        const res = await fetch("/api/admin/products/image-delete", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ id, imageUrl: url }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          editGallery = data.gallery || [];
+          renderEditGallery();
+        } else {
+          showError("刪除圖片失敗");
+        }
+      }
+    });
+  });
+}
+
+async function openEditModal(btn) {
   const modal = document.getElementById("edit-modal");
   if (!modal) return;
 
-  document.getElementById("edit-id").value = btn.getAttribute("data-id") || "";
+  const id = btn.getAttribute("data-id");
+  const code = btn.getAttribute("data-code");
+  document.getElementById("edit-id").value = id || "";
+  document.getElementById("edit-code").value = code || "";
   document.getElementById("edit-title-ja").value = btn.getAttribute("data-name-ja") || "";
   document.getElementById("edit-title-zh").value = btn.getAttribute("data-name-zh") || "";
   document.getElementById("edit-brand").value = btn.getAttribute("data-brand") || "";
@@ -100,12 +155,36 @@ function openEditModal(btn) {
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
   document.getElementById("edit-status").textContent = "";
 
+  editNewImages = [];
+  editGallery = [];
+
   modal.classList.remove("hidden");
+
+  // Fetch product detail to get gallery
+  if (code) {
+    const res = await fetch(`/api/product?code=${encodeURIComponent(code)}`);
+    if (res.ok) {
+      const data = await res.json();
+      editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
+    }
+  }
+  renderEditGallery();
+}
+
+async function onEditPhotos(event) {
+  const files = Array.from(event.target.files || []);
+  for (const file of files.slice(0, 5)) {
+    try { editNewImages.push(await compressImageToWebp(file)); } catch { /* skip */ }
+  }
+  renderEditGallery();
+  event.target.value = "";
 }
 
 function closeEditModal() {
   const modal = document.getElementById("edit-modal");
   if (modal) modal.classList.add("hidden");
+  editNewImages = [];
+  editGallery = [];
 }
 
 async function saveEdit() {
@@ -120,6 +199,8 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
+    gallery: editGallery,
+    newImages: editNewImages.map(img => img.base64),
   };
 
   const btn = document.getElementById("edit-save");
@@ -147,6 +228,7 @@ async function saveEdit() {
 function initEditModal() {
   document.getElementById("edit-cancel")?.addEventListener("click", closeEditModal);
   document.getElementById("edit-save")?.addEventListener("click", saveEdit);
+  document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
   document.querySelector(".edit-modal__backdrop")?.addEventListener("click", closeEditModal);
 }
 

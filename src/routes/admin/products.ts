@@ -168,6 +168,8 @@ export async function handleAdminProductUpdate(
     brand?: string;
     category?: string;
     priceJpyTaxIn?: number | null;
+    gallery?: string[];
+    newImages?: string[];
   };
   try {
     body = (await request.json()) as typeof body;
@@ -184,6 +186,12 @@ export async function handleAdminProductUpdate(
     });
   }
 
+  // Fetch current product for payload merge
+  const current = await env.DB
+    .prepare("SELECT source_product_code, source_payload_json, image_url FROM products WHERE id = ?")
+    .bind(id)
+    .first<{ source_product_code: string; source_payload_json: string | null; image_url: string | null }>();
+
   const sets: string[] = [];
   const params: (string | number | null)[] = [];
 
@@ -192,6 +200,50 @@ export async function handleAdminProductUpdate(
   if (body.brand !== undefined) { sets.push("brand = ?"); params.push((body.brand || "").trim() || null); }
   if (body.category !== undefined) { sets.push("category = ?"); params.push((body.category || "").trim() || null); }
   if (body.priceJpyTaxIn !== undefined) { sets.push("price_jpy_tax_in = ?"); params.push(body.priceJpyTaxIn ?? null); }
+
+  // Handle gallery updates (existing URLs kept + new images uploaded)
+  let finalGallery: string[] | undefined;
+  if (body.gallery !== undefined || (body.newImages && body.newImages.length > 0)) {
+    let existingGallery: string[] = [];
+    if (body.gallery !== undefined) {
+      existingGallery = body.gallery;
+    } else {
+      try {
+        const parsed = current?.source_payload_json ? JSON.parse(current.source_payload_json) : {};
+        existingGallery = Array.isArray(parsed.gallery) ? parsed.gallery : [];
+      } catch { /* empty */ }
+    }
+
+    // Upload new images to R2
+    const newUrls: string[] = [];
+    if (body.newImages && body.newImages.length > 0 && env.IMAGES) {
+      const code = current?.source_product_code || `product-${id}`;
+      const ts = Date.now();
+      for (let i = 0; i < body.newImages.length; i++) {
+        const raw = body.newImages[i];
+        const b64 = raw.includes(",") ? raw.split(",")[1] : raw;
+        const key = `products/${code}/${ts}-${i}.webp`;
+        const buffer = base64ToArrayBuffer(b64);
+        await env.IMAGES.put(key, buffer, { httpMetadata: { contentType: "image/webp" } });
+        newUrls.push(`/api/images/${key}`);
+      }
+    }
+
+    finalGallery = [...existingGallery, ...newUrls];
+
+    // Update source_payload_json with new gallery
+    let payloadObj: Record<string, unknown> = {};
+    try {
+      payloadObj = current?.source_payload_json ? JSON.parse(current.source_payload_json) : {};
+    } catch { /* empty */ }
+    payloadObj.gallery = finalGallery;
+    sets.push("source_payload_json = ?");
+    params.push(JSON.stringify(payloadObj));
+
+    // Update image_url to first gallery image
+    sets.push("image_url = ?");
+    params.push(finalGallery[0] || null);
+  }
 
   if (sets.length === 0) {
     return new Response(JSON.stringify({ ok: false, error: "沒有要更新的欄位" }), {
@@ -208,7 +260,63 @@ export async function handleAdminProductUpdate(
     .run();
 
   return new Response(
-    JSON.stringify({ ok: true, id }),
+    JSON.stringify({ ok: true, id, gallery: finalGallery }),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
+}
+
+export async function handleAdminProductImageDelete(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
+      status: 405, headers: { "content-type": "application/json" },
+    });
+  }
+
+  let body: { id?: number; imageUrl?: string };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  const id = Number(body.id);
+  const imageUrl = (body.imageUrl || "").trim();
+  if (!Number.isInteger(id) || id <= 0 || !imageUrl) {
+    return new Response(JSON.stringify({ ok: false, error: "id and imageUrl required" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  // Delete from R2 if it's an R2 path
+  if (imageUrl.startsWith("/api/images/") && env.IMAGES) {
+    const key = imageUrl.slice("/api/images/".length);
+    await env.IMAGES.delete(key);
+  }
+
+  // Update gallery in source_payload_json
+  const row = await env.DB
+    .prepare("SELECT source_payload_json, image_url FROM products WHERE id = ?")
+    .bind(id)
+    .first<{ source_payload_json: string | null; image_url: string | null }>();
+
+  let payloadObj: Record<string, unknown> = {};
+  try { payloadObj = row?.source_payload_json ? JSON.parse(row.source_payload_json) : {}; } catch { /* */ }
+  const gallery: string[] = Array.isArray(payloadObj.gallery) ? payloadObj.gallery.filter((u: string) => u !== imageUrl) : [];
+  payloadObj.gallery = gallery;
+
+  const newImageUrl = gallery[0] || null;
+  await env.DB
+    .prepare("UPDATE products SET source_payload_json = ?, image_url = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(JSON.stringify(payloadObj), newImageUrl, id)
+    .run();
+
+  return new Response(
+    JSON.stringify({ ok: true, gallery }),
     { status: 200, headers: { "content-type": "application/json" } }
   );
 }

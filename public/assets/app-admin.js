@@ -1,5 +1,5 @@
 import { initSync } from "./app-admin-sync.js";
-import { initOrders } from "./app-admin-orders.js";
+import { initOrders, refreshOrders } from "./app-admin-orders.js";
 import { initProducts } from "./app-admin-products.js";
 import { initSettings } from "./app-admin-settings.js";
 
@@ -27,6 +27,23 @@ export function hideError() {
   if (node) node.classList.add("hidden");
 }
 
+function updateTopbarActions(tab) {
+  const actions = document.getElementById("admin-topbar-actions");
+  if (!actions) return;
+
+  // Keep the "檢視網站" link, add tab-specific buttons
+  const existing = actions.querySelector(".admin-topbar__tab-btn");
+  if (existing) existing.remove();
+
+  if (tab === "orders") {
+    const btn = document.createElement("button");
+    btn.className = "button secondary admin-topbar__action-btn admin-topbar__tab-btn";
+    btn.textContent = "刷新";
+    btn.addEventListener("click", refreshOrders);
+    actions.appendChild(btn);
+  }
+}
+
 function switchTab(tab) {
   if (tab === currentTab) return;
   currentTab = tab;
@@ -42,12 +59,13 @@ function switchTab(tab) {
   const title = document.getElementById("admin-topbar-title");
   if (title) title.textContent = TAB_TITLES[tab] || "";
 
+  updateTopbarActions(tab);
+
   if (!tabInitialized[tab]) {
     tabInitialized[tab] = true;
     if (tab === "orders") initOrders();
     if (tab === "settings") initSettings();
     if (tab === "sync") initSync();
-    // camera tab is initialized by app-admin-recognize.js on import
   }
 }
 
@@ -79,12 +97,10 @@ function bootstrap() {
 
   initSubTabs();
 
-  // Initialize default tab and camera tab
   tabInitialized["products"] = true;
   tabInitialized["camera"] = true;
   initProducts();
 
-  // Dynamic import for camera tab (self-initializing)
   import("./app-admin-recognize.js");
 }
 

@@ -16,7 +16,7 @@ import {
   handlePublicRequirements,
 } from "./routes/public/requirements";
 import { handleAdminPricing, handlePublicPricing } from "./routes/pricing";
-import { handleAdminProducts, handleAdminProductToggle, handleAdminProductUpdate } from "./routes/admin/products";
+import { handleAdminProducts, handleAdminProductToggle, handleAdminProductUpdate, handleAdminProductImageDelete } from "./routes/admin/products";
 import { handleAdminChangePassword } from "./routes/admin/password";
 import { handleAdminCategories } from "./routes/admin/categories";
 import { handleAdminRecognize } from "./routes/admin/recognize";
@@ -127,6 +127,13 @@ export default {
         return json({ ok: false, error: "Unauthorized" }, 401);
       }
       return handleAdminProductUpdate(request, env);
+    }
+
+    if (url.pathname === "/api/admin/products/image-delete") {
+      if (!isAdmin) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+      return handleAdminProductImageDelete(request, env);
     }
 
     if (url.pathname === "/api/admin/clear-sync-products") {

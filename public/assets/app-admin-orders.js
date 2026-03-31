@@ -113,7 +113,10 @@ async function loadForms() {
   renderForms(body.forms || []);
 }
 
+export function refreshOrders() {
+  loadForms();
+}
+
 export function initOrders() {
-  document.getElementById("orders-refresh")?.addEventListener("click", loadForms);
   loadForms();
 }
