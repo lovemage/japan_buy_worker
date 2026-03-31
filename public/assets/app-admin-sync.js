@@ -1,6 +1,22 @@
 import { showError } from "./app-admin.js";
 
 let progressInterval = null;
+let wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+    }
+  } catch { /* not supported or denied */ }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
 
 function startProgressCounter() {
   let count = 0;
@@ -32,6 +48,7 @@ async function runSync() {
   if (btn) btn.disabled = true;
   if (result) result.classList.add("hidden");
   if (loading) loading.classList.remove("hidden");
+  await requestWakeLock();
 
   if (barFill) { barFill.className = "sync-loading-bar__fill"; void barFill.offsetWidth; barFill.classList.add("phase-1"); }
   if (loadingText) loadingText.textContent = "正在連線目標網站...";
@@ -79,6 +96,7 @@ async function runSync() {
     if (barFill) barFill.className = "sync-loading-bar__fill";
   } finally {
     if (btn) btn.disabled = false;
+    releaseWakeLock();
   }
 }
 

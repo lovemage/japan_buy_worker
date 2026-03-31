@@ -1010,6 +1010,22 @@ select:disabled {
   z-index: 30;
 }
 
+.admin-topbar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 32px;
+}
+
+.admin-topbar__back:active {
+  opacity: 0.6;
+}
+
 .admin-topbar h1 {
   font-size: 18px;
   margin: 0;
