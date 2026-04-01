@@ -1,11 +1,11 @@
 import type { RequestContext } from "../../context";
 
 // Country → currency mapping
-export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number }> = {
-  jp: { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓", defaultRate: 0.21 },
-  kr: { currency: "KRW", currencySymbol: "₩", currencyLabel: "韓元", defaultRate: 0.024 },
-  th: { currency: "THB", currencySymbol: "฿", currencyLabel: "泰銖", defaultRate: 1.01 },
-  tw: { currency: "TWD", currencySymbol: "NT$", currencyLabel: "台幣", defaultRate: 1 },
+export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number; defaultMarkup: number }> = {
+  jp: { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓", defaultRate: 0.21, defaultMarkup: 1000 },
+  kr: { currency: "KRW", currencySymbol: "₩", currencyLabel: "韓元", defaultRate: 0.024, defaultMarkup: 5000 },
+  th: { currency: "THB", currencySymbol: "฿", currencyLabel: "泰銖", defaultRate: 1.01, defaultMarkup: 50 },
+  tw: { currency: "TWD", currencySymbol: "NT$", currencyLabel: "台幣", defaultRate: 1, defaultMarkup: 100 },
 };
 
 function json(payload: unknown, status = 200): Response {
@@ -66,10 +66,14 @@ export async function handleStoreInfo(
       .bind(country, "TWD", ctx.storeId)
       .run();
 
-    // Update exchange rate to country default when switching country
+    // Update exchange rate and markup to country defaults when switching country
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'jpy_to_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
       .bind(ctx.storeId, String(conf.defaultRate))
+      .run();
+    await ctx.db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_jpy', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(ctx.storeId, String(conf.defaultMarkup))
       .run();
 
     return json({ ok: true, country, countryConfig: conf });

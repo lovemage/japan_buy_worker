@@ -58,7 +58,7 @@ function renderProductGrid(products, paging) {
     btn.addEventListener("click", () => {
       const code = btn.getAttribute("data-code");
       const base = window.__API_BASE || "";
-      const url = location.origin + base + "/product?code=" + encodeURIComponent(code);
+      const url = location.origin + base + "/product?code=" + encodeURIComponent(code) + "&returnTo=" + encodeURIComponent(base + "/");
       navigator.clipboard.writeText(url).then(() => {
         const orig = btn.textContent;
         btn.textContent = "✓ 已複製";
