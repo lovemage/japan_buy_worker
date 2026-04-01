@@ -214,16 +214,16 @@
           <h3 style="margin:0 0 8px;font-size:14px;">🖼️ 彈窗廣告輪播</h3>
           <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片，會在商店首頁以輪播方式顯示。</p>
           <div id="popup-ad-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;flex-shrink:0;">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+            <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;">
               + 上傳
               <input type="file" id="popup-ad-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
             </label>
-            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
-              <label style="font-size:13px;white-space:nowrap;">輪播秒數</label>
-              <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:70px;" />
-              <button class="button" type="button" onclick="savePopupAdSettings()" style="flex-shrink:0;">儲存</button>
-            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <label style="font-size:13px;white-space:nowrap;">輪播秒數</label>
+            <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:70px;" />
+            <button class="button" type="button" onclick="savePopupAdSettings()">儲存</button>
           </div>
           <p id="popup-ad-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
         </div>
