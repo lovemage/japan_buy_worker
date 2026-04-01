@@ -6,6 +6,17 @@
     <title>商品詳情</title>
     <link rel="stylesheet" href="/assets/styles.css" />
   <script>
+  // Detect store base path from returnTo param or current URL
+  if (!window.__API_BASE) {
+    var params = new URLSearchParams(location.search);
+    var ret = params.get("returnTo") || "";
+    var m = ret.match(/^(\/s\/[a-z0-9][a-z0-9-]*[a-z0-9]|\/s\/[a-z0-9]{1,2})/);
+    if (m) window.__API_BASE = m[1];
+    else {
+      var pm = location.pathname.match(/^(\/s\/[a-z0-9][a-z0-9-]*)/);
+      if (pm) window.__API_BASE = pm[1];
+    }
+  }
   if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };
   </script>
   </head>

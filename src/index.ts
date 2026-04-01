@@ -180,6 +180,18 @@ export default {
       return json({ ok: false, error: "Not configured" }, 500);
     }
 
+    // ── Redirect root-level store pages to tenant path when returnTo hints the store ──
+    if ((url.pathname === "/product" || url.pathname === "/product.html" ||
+         url.pathname === "/request.html" || url.pathname === "/success.html") &&
+        url.searchParams.get("returnTo")) {
+      const returnTo = url.searchParams.get("returnTo") || "";
+      const storeMatch = returnTo.match(/^\/s\/([a-z0-9][a-z0-9-]*)/);
+      if (storeMatch) {
+        const redirectUrl = `/s/${storeMatch[1]}${url.pathname}${url.search}`;
+        return Response.redirect(new URL(redirectUrl, request.url).toString(), 302);
+      }
+    }
+
     // ── Legacy routes: serve bootstrap store at root (backward compat) ──
     // During transition, root-level /api/* routes still work for store_id=1
     if (url.pathname.startsWith("/api/") || url.pathname === "/admin/crawl") {
