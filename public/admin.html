@@ -51,7 +51,7 @@
               新增圖片
               <input id="edit-photo-input" type="file" accept="image/*" multiple hidden />
             </label>
-            <label>日文品名<input id="edit-title-ja" type="text" class="input-cute" /></label>
+            <label><span class="origin-lang-label">原文品名</span><input id="edit-title-ja" type="text" class="input-cute" /></label>
             <label>中文品名<input id="edit-title-zh" type="text" class="input-cute" /></label>
             <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>
             <label>分類<input id="edit-category" type="text" class="input-cute" /></label>
@@ -75,7 +75,7 @@
             </label>
             <p class="meta" id="manual-photo-count">已選 0 / 3 張</p>
           </div>
-          <label>日文品名<input id="manual-title-ja" type="text" class="input-cute" /></label>
+          <label><span class="origin-lang-label">原文品名</span><input id="manual-title-ja" type="text" class="input-cute" /></label>
           <label>中文品名<input id="manual-title-zh" type="text" class="input-cute" /></label>
           <label>品牌<input id="manual-brand" type="text" class="input-cute" /></label>
           <label>分類<input id="manual-category" type="text" class="input-cute" list="category-datalist" /></label>
@@ -120,7 +120,7 @@
         <p id="recognize-status" class="meta"></p>
         <div id="recognize-draft" class="recognize-draft hidden">
           <h3>商品草稿</h3>
-          <label>日文品名<input id="draft-title-ja" type="text" class="input-cute" /></label>
+          <label><span class="origin-lang-label">原文品名</span><input id="draft-title-ja" type="text" class="input-cute" /></label>
           <label>中文品名<input id="draft-title-zh" type="text" class="input-cute" /></label>
           <label>品牌<input id="draft-brand" type="text" class="input-cute" /></label>
           <label>分類<input id="draft-category" type="text" class="input-cute" /></label>
@@ -183,30 +183,48 @@
     <!-- Tab 5: 網站設定 -->
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
-        <button class="tab-sub-btn is-active" data-subtab="country">國家設定</button>
-        <button class="tab-sub-btn" data-subtab="display">商店顯示</button>
-        <button class="tab-sub-btn" data-subtab="pricing">匯率設定</button>
-        <button class="tab-sub-btn" data-subtab="account">帳號設定</button>
-        <button class="tab-sub-btn" data-subtab="danger">資料管理</button>
+        <button class="tab-sub-btn is-active" data-subtab="account">帳號</button>
+        <button class="tab-sub-btn" data-subtab="display">商店匯率設定</button>
+        <button class="tab-sub-btn" data-subtab="pricing">匯率</button>
+        <button class="tab-sub-btn" data-subtab="danger">資料</button>
       </div>
-      <div class="admin-sub-panel" data-subtab-panel="country">
+      <div class="admin-sub-panel" data-subtab-panel="account">
         <div class="admin-form-card">
-          <p style="font-size:13px;color:#666;margin-bottom:12px;">選擇你代購的來源國家，系統會自動設定對應的幣別和匯率。</p>
+          <div style="margin-bottom:12px;padding:10px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #eee;">
+            <p style="font-size:12px;color:#888;margin-bottom:2px;">會員 Email</p>
+            <p id="member-email" style="font-size:14px;font-weight:600;">載入中...</p>
+          </div>
+          <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
+          <p class="meta">顯示在商店首頁的名稱</p>
+          <button id="admin-save-store-name" class="button" type="button" onclick="saveStoreName()">儲存名稱</button>
+          <p id="store-name-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
+
+          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
+          <h3 style="font-size:14px;margin:0 0 8px;">🌏 代購來源國家</h3>
+          <p style="font-size:13px;color:#666;margin-bottom:12px;">選擇後系統自動設定對應幣別和匯率。</p>
           <div id="country-selector" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
-            <button class="country-btn" data-country="jp" onclick="selectCountry('jp')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
-              🇯🇵<br><strong>日本</strong><br><span style="font-size:12px;color:#888;">JPY 日圓</span>
-            </button>
-            <button class="country-btn" data-country="kr" onclick="selectCountry('kr')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
-              🇰🇷<br><strong>韓國</strong><br><span style="font-size:12px;color:#888;">KRW 韓元</span>
-            </button>
-            <button class="country-btn" data-country="th" onclick="selectCountry('th')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
-              🇹🇭<br><strong>泰國</strong><br><span style="font-size:12px;color:#888;">THB 泰銖</span>
-            </button>
-            <button class="country-btn" data-country="tw" onclick="selectCountry('tw')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
-              🇹🇼<br><strong>台灣</strong><br><span style="font-size:12px;color:#888;">TWD 台幣</span>
-            </button>
+            <button class="country-btn" data-country="jp" onclick="selectCountry('jp')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇯🇵<br><strong>日本</strong><br><span style="font-size:12px;color:#888;">JPY 日圓</span></button>
+            <button class="country-btn" data-country="kr" onclick="selectCountry('kr')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇰🇷<br><strong>韓國</strong><br><span style="font-size:12px;color:#888;">KRW 韓元</span></button>
+            <button class="country-btn" data-country="th" onclick="selectCountry('th')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇹🇭<br><strong>泰國</strong><br><span style="font-size:12px;color:#888;">THB 泰銖</span></button>
+            <button class="country-btn" data-country="tw" onclick="selectCountry('tw')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇹🇼<br><strong>台灣</strong><br><span style="font-size:12px;color:#888;">TWD 台幣</span></button>
           </div>
           <p id="country-status" style="font-size:12px;color:#22c55e;margin-top:8px;display:none;">已儲存</p>
+
+          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
+          <h3 style="margin:0 0 8px;font-size:14px;">🖼️ 彈窗廣告輪播</h3>
+          <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片（WebP 格式），會在商店首頁以輪播方式顯示。</p>
+          <div id="popup-ad-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
+          <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;">
+            + 上傳圖片 (WebP)
+            <input type="file" id="popup-ad-upload" accept="image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
+          </label>
+          <div style="margin-top:10px;">
+            <label style="font-size:13px;">輪播秒數
+              <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:80px;display:inline-block;margin-left:4px;" />
+            </label>
+            <button class="button" type="button" style="margin-left:8px;" onclick="savePopupAdSettings()">儲存設定</button>
+          </div>
+          <p id="popup-ad-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
         </div>
       </div>
       <div class="admin-sub-panel hidden" data-subtab-panel="display">
@@ -239,38 +257,7 @@
           <button id="admin-save-pricing" class="button" type="button">儲存</button>
         </div>
       </div>
-      <!-- Gemini API Key removed: managed by platform admin -->
-      <div class="admin-sub-panel hidden" data-subtab-panel="account">
-        <div class="admin-form-card">
-          <div style="margin-bottom:12px;padding:10px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #eee;">
-            <p style="font-size:12px;color:#888;margin-bottom:2px;">會員 Email</p>
-            <p id="member-email" style="font-size:14px;font-weight:600;">載入中...</p>
-          </div>
-          <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
-          <p class="meta">顯示在商店首頁的名稱</p>
-          <button id="admin-save-store-name" class="button" type="button" onclick="saveStoreName()">儲存名稱</button>
-          <p id="store-name-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
-          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
-
-          <h3 style="margin:0 0 8px;font-size:14px;">🖼️ 彈窗廣告輪播</h3>
-          <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片（WebP 格式），會在商店首頁以輪播方式顯示。</p>
-          <div id="popup-ad-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
-          <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;">
-            + 上傳圖片 (WebP)
-            <input type="file" id="popup-ad-upload" accept="image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
-          </label>
-          <div style="margin-top:10px;">
-            <label style="font-size:13px;">輪播秒數
-              <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:80px;display:inline-block;margin-left:4px;" />
-            </label>
-            <button class="button" type="button" style="margin-left:8px;" onclick="savePopupAdSettings()">儲存設定</button>
-          </div>
-          <p id="popup-ad-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
-
-          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
-          <button id="admin-logout" class="button secondary" type="button">登出</button>
-        </div>
-      </div>
+      <!-- Old account panel removed, merged into first panel -->
       <div class="admin-sub-panel hidden" data-subtab-panel="danger">
         <div class="admin-form-card">
           <h3 style="color:#8B2E1C;margin:0 0 8px">危險操作</h3>
@@ -343,6 +330,12 @@
     // Update currency labels based on country
     document.querySelectorAll(".src-currency").forEach(function(el) {
       el.textContent = conf.currency;
+    });
+
+    // Update origin language label based on country
+    var langLabels = { jp: "日文品名", kr: "韓文品名", th: "泰文品名", tw: "中文品名" };
+    document.querySelectorAll(".origin-lang-label").forEach(function(el) {
+      el.textContent = langLabels[country] || "原文品名";
     });
 
     // Plan badge in topbar
