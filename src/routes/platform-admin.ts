@@ -141,5 +141,48 @@ export async function handlePlatformAdmin(
     }
   }
 
+  // Get platform API keys
+  if (url.pathname === "/api/platform-admin/api-keys" && request.method === "GET") {
+    const keys = await db
+      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro')")
+      .all<{ key: string; value: string }>();
+
+    const result: Record<string, string> = {};
+    for (const row of keys.results) {
+      result[row.key] = row.value;
+    }
+    return json({
+      ok: true,
+      starterKey: result["gemini_api_key_starter"] || "",
+      proKey: result["gemini_api_key_pro"] || "",
+    });
+  }
+
+  // Set platform API keys
+  if (url.pathname === "/api/platform-admin/api-keys" && request.method === "POST") {
+    let body: { starterKey?: string; proKey?: string };
+    try {
+      body = (await request.json()) as { starterKey?: string; proKey?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+
+    // Ensure store_id=0 exists for platform settings (no FK issue since we don't reference stores table)
+    if (body.starterKey !== undefined) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'gemini_api_key_starter', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.starterKey)
+        .run();
+    }
+    if (body.proKey !== undefined) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'gemini_api_key_pro', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.proKey)
+        .run();
+    }
+
+    return json({ ok: true });
+  }
+
   return json({ ok: false, error: "Not Found" }, 404);
 }

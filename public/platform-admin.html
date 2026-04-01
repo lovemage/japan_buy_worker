@@ -69,6 +69,23 @@ tr:hover { background: #fafafa; }
     <button onclick="logout()">登出</button>
   </div>
 
+  <!-- API Key Management -->
+  <div style="background:#fff;border-radius:10px;padding:20px;border:1px solid #eee;margin-bottom:24px;">
+    <h3 style="margin:0 0 12px;font-size:16px;">🔑 Gemini API Key 管理</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#666;display:block;margin-bottom:4px;">Starter 方案 API Key</label>
+        <input type="password" id="api-key-starter" placeholder="Gemini API Key for Starter" style="width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:#666;display:block;margin-bottom:4px;">Pro 方案 API Key</label>
+        <input type="password" id="api-key-pro" placeholder="Gemini API Key for Pro" style="width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;">
+      </div>
+    </div>
+    <button onclick="saveApiKeys()" style="margin-top:12px;padding:8px 20px;background:#1a1a1a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">儲存 API Keys</button>
+    <span id="api-key-status" style="font-size:12px;color:#22c55e;margin-left:8px;display:none;">已儲存</span>
+  </div>
+
   <div class="stats">
     <div class="stat-card">
       <div class="stat-num" id="stat-total">0</div>
@@ -148,10 +165,38 @@ function logout() {
   document.getElementById("dashboard").classList.add("hidden");
 }
 
+async function loadApiKeys() {
+  const res = await fetch("/api/platform-admin/api-keys", {
+    headers: { authorization: "Bearer " + adminToken },
+  });
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById("api-key-starter").value = data.starterKey || "";
+    document.getElementById("api-key-pro").value = data.proKey || "";
+  }
+}
+
+async function saveApiKeys() {
+  const starterKey = document.getElementById("api-key-starter").value.trim();
+  const proKey = document.getElementById("api-key-pro").value.trim();
+  const res = await fetch("/api/platform-admin/api-keys", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ starterKey, proKey }),
+  });
+  const data = await res.json();
+  if (data.ok) {
+    var status = document.getElementById("api-key-status");
+    status.style.display = "inline";
+    setTimeout(function() { status.style.display = "none"; }, 3000);
+  }
+}
+
 async function showDashboard() {
   document.getElementById("login-section").style.display = "none";
   document.getElementById("dashboard").classList.remove("hidden");
   await loadStores();
+  await loadApiKeys();
 }
 
 async function loadStores() {

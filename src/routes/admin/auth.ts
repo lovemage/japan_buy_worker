@@ -227,45 +227,46 @@ export async function handleGoogleAuthCallback(
   }
 
   // Register: create new store
-  const result = await db
+  const tempSlug = `store-${Date.now()}`;
+  await db
     .prepare(
       `INSERT INTO stores (slug, name, owner_email, password_hash, password_salt, google_id, is_active, onboarding_step)
-       VALUES (?, ?, ?, '', '', ?, 1, 'email_pending')
-       RETURNING id`
+       VALUES (?, ?, ?, '', '', ?, 1, 'email_pending')`
     )
-    .bind(
-      `store-${Date.now()}`, // temporary slug, user sets real one during onboarding
-      userInfo.name || "My Store",
-      userInfo.email,
-      userInfo.sub
-    )
+    .bind(tempSlug, userInfo.name || "My Store", userInfo.email, userInfo.sub)
+    .run();
+
+  // Fetch the newly created store ID
+  const newStore = await db
+    .prepare("SELECT id FROM stores WHERE google_id = ?")
+    .bind(userInfo.sub)
     .first<{ id: number }>();
 
-  if (!result) return json({ ok: false, error: "Failed to create store" }, 500);
+  if (!newStore) return json({ ok: false, error: "Failed to create store" }, 500);
 
   // Send verification email via Resend
   const emailToken = generateToken();
   const expiresAt = new Date(Date.now() + 3600_000).toISOString(); // 1 hour
   await db
     .prepare("INSERT INTO email_verifications (store_id, token, expires_at) VALUES (?, ?, ?)")
-    .bind(result.id, emailToken, expiresAt)
+    .bind(newStore.id, emailToken, expiresAt)
     .run();
 
-  await sendVerificationEmail(authEnv.RESEND_API_KEY, userInfo.email, emailToken, authEnv.APP_URL);
+  try {
+    await sendVerificationEmail(authEnv.RESEND_API_KEY, userInfo.email, emailToken, authEnv.APP_URL);
+  } catch (e) {
+    console.error("Failed to send verification email:", e);
+  }
 
   // Create session for the new store
-  const sessionToken = await createStoreSession(db, result.id);
+  const sessionToken = await createStoreSession(db, newStore.id);
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      location: `${authEnv.APP_URL}/onboarding`,
-      "set-cookie": [
-        `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`,
-        `oauth_state=; Path=/; HttpOnly; Max-Age=0`,
-      ].join(", "),
-    },
-  });
+  const headers = new Headers();
+  headers.set("location", `${authEnv.APP_URL}/onboarding`);
+  headers.append("set-cookie", `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`);
+  headers.append("set-cookie", `oauth_state=; Path=/; HttpOnly; Max-Age=0`);
+
+  return new Response(null, { status: 302, headers });
 }
 
 // ── Email verification via Resend ──
@@ -277,7 +278,7 @@ async function sendVerificationEmail(
   appUrl: string
 ): Promise<void> {
   const verifyUrl = `${appUrl}/auth/verify-email?token=${token}`;
-  await fetch("https://api.resend.com/emails", {
+  const resp = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       authorization: `Bearer ${apiKey}`,
@@ -295,6 +296,11 @@ async function sendVerificationEmail(
       `,
     }),
   });
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.error(`Resend API error (${resp.status}):`, errText);
+    throw new Error(`Resend failed: ${resp.status} ${errText}`);
+  }
 }
 
 export async function handleVerifyEmail(request: Request, db: D1DatabaseLike, authEnv: AuthEnv): Promise<Response> {
@@ -307,7 +313,16 @@ export async function handleVerifyEmail(request: Request, db: D1DatabaseLike, au
     .bind(token)
     .first<{ store_id: number }>();
 
-  if (!row) return json({ ok: false, error: "Invalid or expired token" }, 400);
+  if (!row) {
+    // Show a user-friendly page instead of raw JSON
+    return new Response(`
+      <html><head><meta charset="UTF-8"><title>vovosnap</title></head>
+      <body style="font-family:sans-serif;text-align:center;padding:60px 20px;">
+        <h2>連結已失效或無效</h2>
+        <p style="color:#888;">請回到 <a href="${authEnv.APP_URL}/onboarding">onboarding 頁面</a> 重新發送驗證信。</p>
+      </body></html>
+    `, { status: 400, headers: { "content-type": "text/html; charset=UTF-8" } });
+  }
 
   await db
     .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'phone_pending', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
@@ -351,8 +366,8 @@ export async function handleResendVerificationEmail(
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
   if (store.email_verified) return json({ ok: true, message: "Already verified" });
 
-  // Delete old tokens and create new one
-  await db.prepare("DELETE FROM email_verifications WHERE store_id = ?").bind(session.store_id).run();
+  // Delete only expired tokens (keep valid ones so old emails still work)
+  await db.prepare("DELETE FROM email_verifications WHERE store_id = ? AND expires_at < datetime('now')").bind(session.store_id).run();
 
   const emailToken = generateToken();
   const expiresAt = new Date(Date.now() + 3600_000).toISOString();
@@ -417,48 +432,51 @@ export async function handleVerifyPhone(
 }
 
 // Verify Firebase ID token using Google's public keys
+function base64UrlDecode(str: string): Uint8Array {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+}
+
 async function verifyFirebaseIdToken(idToken: string, projectId: string): Promise<boolean> {
   try {
-    // Decode header to get kid
-    const [headerB64] = idToken.split(".");
-    const header = JSON.parse(atob(headerB64.replace(/-/g, "+").replace(/_/g, "/")));
+    const parts = idToken.split(".");
+    if (parts.length !== 3) return false;
+
+    const [headerB64, payloadB64, sigB64] = parts;
+
+    // Decode header to get kid and alg
+    const header = JSON.parse(new TextDecoder().decode(base64UrlDecode(headerB64)));
     const kid = header.kid;
+    if (header.alg !== "RS256") return false;
 
-    // Fetch Google's public keys
-    const keysResp = await fetch(
-      "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+    // Fetch Google's JWK public keys (not x509)
+    const jwkResp = await fetch(
+      "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
     );
-    const keys = (await keysResp.json()) as Record<string, string>;
-    const cert = keys[kid];
-    if (!cert) return false;
+    if (!jwkResp.ok) return false;
+    const jwkData = (await jwkResp.json()) as { keys: Array<{ kid: string; kty: string; n: string; e: string; alg: string; use: string }> };
+    const jwk = jwkData.keys.find((k) => k.kid === kid);
+    if (!jwk) return false;
 
-    // Import the public key
-    const pemBody = cert
-      .replace("-----BEGIN CERTIFICATE-----", "")
-      .replace("-----END CERTIFICATE-----", "")
-      .replace(/\s/g, "");
-    const der = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0));
+    // Import the JWK public key
     const key = await crypto.subtle.importKey(
-      "raw",
-      der,
+      "jwk",
+      { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: "RS256", ext: true },
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       false,
       ["verify"]
     );
 
     // Verify signature
-    const [, payloadB64, sigB64] = idToken.split(".");
     const signInput = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-    const signature = Uint8Array.from(
-      atob(sigB64.replace(/-/g, "+").replace(/_/g, "/")),
-      (c) => c.charCodeAt(0)
-    );
+    const signature = base64UrlDecode(sigB64);
 
-    const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, signInput);
+    const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature.buffer as ArrayBuffer, signInput);
     if (!valid) return false;
 
     // Verify claims
-    const payload = JSON.parse(atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/")));
+    const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)));
     const now = Math.floor(Date.now() / 1000);
     if (payload.aud !== projectId) return false;
     if (payload.iss !== `https://securetoken.google.com/${projectId}`) return false;

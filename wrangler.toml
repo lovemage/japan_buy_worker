@@ -1,13 +1,13 @@
 name = "japan-buy-workers"  # TODO: rename to "vovosnap-workers" when ready to deploy
 main = "src/index.ts"
 compatibility_date = "2026-03-13"
-assets = { directory = "./public" }
+assets = { directory = "./public", binding = "ASSETS" }
 
 [vars]
 CRAWL_LIST_PAGES = "100"
 CRAWL_MAX_PAGES = "100"
 CRAWL_TIMEOUT_MS = "120000"
-APP_URL = "https://japan-buy-workers.lovemage.workers.dev"  # 改為自訂域名後更新
+APP_URL = "https://vovosnap.com"
 MAIN_DOMAIN = "vovosnap.com"
 FIREBASE_PROJECT_ID = "vovosnap-f6c12"
 

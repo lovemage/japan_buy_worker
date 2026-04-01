@@ -77,7 +77,7 @@ export async function handleAdminRecognize(
     }
   }
 
-  const apiKey = await getGeminiApiKey(ctx.db, ctx.storeId);
+  const apiKey = await getGeminiApiKey(ctx.db, ctx.storeId, ctx.storePlan);
   if (!apiKey) {
     return new Response(
       JSON.stringify({ ok: false, error: "Gemini API Key 尚未設定，請至 Admin 設定頁填入" }),
