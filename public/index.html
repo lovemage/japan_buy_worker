@@ -102,10 +102,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .feat-text-slide .hl { color: var(--text); font-weight: 600; }
 /* Video area */
 .feat-video-area { position: relative; width: 310px; margin: 0 auto; background: #2c2a25; }
-.feat-video-area img { width: 100%; height: auto; display: block; transition: opacity 0.6s ease; }
-.feat-video-area img.hide { opacity: 0; position: absolute; inset: 0; pointer-events: none; }
-.feat-video-area video { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.6s ease; }
-.feat-video-area video.active { opacity: 1; position: relative; }
+.feat-video-area video { width: 100%; height: auto; display: block; }
 .feat-video-area .feat-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.3px; z-index: 2; }
 
 /* ── Pricing carousel ── */
@@ -323,9 +320,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
     <!-- Video -->
     <div class="feat-video-area">
-      <span class="feat-badge">DEMO</span>
-      <img src="/assets/images/photo_upload.png" alt="AI 辨識上架" id="feat-img" />
-      <video src="/assets/videos/ai-demo.mp4" id="feat-video" muted playsinline loop preload="metadata"></video>
+      <video src="/assets/videos/ai-demo.mp4" id="feat-video" muted playsinline loop preload="auto" autoplay></video>
     </div>
   </div>
 </section>
@@ -521,13 +516,10 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
 // Feature: text rotate 3.5s + video swap after 3s
 (function() {
   var textTrack = document.getElementById("feat-text-track");
-  var img = document.getElementById("feat-img");
-  var video = document.getElementById("feat-video");
   if (!textTrack) return;
   var current = 0;
   var total = 3;
   var timer = null;
-  var videoStarted = false;
 
   function goTo(idx) {
     current = ((idx % total) + total) % total;
@@ -536,21 +528,6 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
 
   function startAuto() { timer = setInterval(function() { goTo(current + 1); }, 3500); }
   function stopAuto() { clearInterval(timer); }
-
-  // Start video after 3s when section is visible
-  var featObs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting && !videoStarted) {
-        videoStarted = true;
-        featObs.unobserve(e.target);
-        setTimeout(function() {
-          if (img) img.classList.add("hide");
-          if (video) { video.classList.add("active"); video.play().catch(function(){}); }
-        }, 3000);
-      }
-    });
-  }, { threshold: 0.3 });
-  featObs.observe(textTrack.closest(".feat-section"));
 
   startAuto();
 
