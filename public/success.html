@@ -54,7 +54,7 @@
 
       <div class="success-actions">
         <button id="copy-order-text" class="btn-pill" type="button">📋 複製訂單資訊</button>
-        <a class="btn-pill secondary" href="/store.html">← 返回商店</a>
+        <a class="btn-pill secondary" id="back-to-store" href="/store.html">← 返回商店</a>
       </div>
     </div>
 
@@ -63,6 +63,11 @@
 
     const _cc = window.__COUNTRY_CONFIG || {};
     const srcSym = _cc.currencySymbol || "¥";
+
+    // Fix back-to-store link
+    const base = window.__API_BASE || "";
+    const backLink = document.getElementById("back-to-store");
+    if (backLink && base) backLink.href = base + "/";
 
     async function loadOrder() {
       const params = new URLSearchParams(location.search);

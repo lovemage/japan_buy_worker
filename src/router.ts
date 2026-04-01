@@ -272,7 +272,7 @@ export async function routeTenantRequest(
   if (subPath === "/product.html" || subPath === "/product") {
     return serveTenantHtml(request, ctx, "product.html", assets);
   }
-  if (subPath === "/success.html") {
+  if (subPath === "/success.html" || subPath === "/success") {
     return serveTenantHtml(request, ctx, "success.html", assets);
   }
 

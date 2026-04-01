@@ -90,40 +90,34 @@ function renderDraftItems() {
 
   const draft = getDraft();
   if (draft.items.length === 0) {
-    wrapper.innerHTML = '<div class="empty-state"><p>目前沒有商品</p><a class="btn-pill secondary" href="/store.html">&larr; 前往商品列表加入</a></div>';
+    wrapper.innerHTML = '<div class="empty-state"><p>目前沒有商品</p><a class="btn-pill secondary" href="' + (window.__API_BASE || '') + '/">← 前往商店加入</a></div>';
     return [];
   }
 
+  const srcSym = (window.__COUNTRY_CONFIG || _cc).currencySymbol || "¥";
   wrapper.innerHTML = draft.items
     .map(
       (item, idx) => `
-      <article class="request-item" data-idx="${idx}">
-        <a href="${item.code ? `/product?code=${encodeURIComponent(item.code)}` : "#"}" target="_blank" rel="noopener noreferrer">
-          <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${item.productNameSnapshot}" data-fallback="product" />
-        </a>
-        <div>
-          <h2 class="product-card__title">
-            <a href="${item.code ? `/product?code=${encodeURIComponent(item.code)}` : "#"}" target="_blank" rel="noopener noreferrer">
-              ${item.productNameSnapshot}
-            </a>
-          </h2>
-          <p class="meta">${_cc.currencySymbol || "¥"}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} / NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
-          <div class="request-item__controls">
-            <label>數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" /></label>
-            <label>尺寸${
+      <article class="request-item" data-idx="${idx}" style="display:flex;gap:10px;padding:12px;background:#fff;border:1px solid #eee;border-radius:10px;margin-bottom:8px;">
+        <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${item.productNameSnapshot}" data-fallback="product" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:14px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.productNameSnapshot}</p>
+          <p style="font-size:12px;color:#888;margin-bottom:6px;">${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" style="width:48px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" /></label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;">尺寸${
               Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0
-                ? `<select data-field="desiredSize">${renderSelectOptions(
+                ? `<select data-field="desiredSize" style="padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;">${renderSelectOptions(
                     item.sizeOptions,
                     item.desiredSize || "",
-                    "請選擇尺寸"
+                    "選擇"
                   )}</select>`
-                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="未抓到尺寸，可手動填寫" />`
+                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" style="width:60px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" />`
             }</label>
-            <label>顏色
-              <input type="text" value="${item.desiredColor || "依商品圖片選擇"}" disabled />
-            </label>
-            <label>備註<input type="text" data-field="note" value="${item.note || ""}" /></label>
-            <button type="button" class="button secondary js-remove-item" data-remove-idx="${idx}">刪除此商品</button>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+            <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" style="flex:1;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px;" />
+            <button type="button" class="js-remove-item" data-remove-idx="${idx}" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;color:#ef4444;">刪除</button>
           </div>
         </div>
       </article>
@@ -434,7 +428,7 @@ async function onSubmit(event) {
 
     clearDraft();
     const code = body.orderCode || String(body.requirementId);
-    location.href = `/success.html?id=${encodeURIComponent(String(body.requirementId))}&code=${encodeURIComponent(code)}`;
+    location.href = `${window.__API_BASE || ""}/success.html?id=${encodeURIComponent(String(body.requirementId))}&code=${encodeURIComponent(code)}`;
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
