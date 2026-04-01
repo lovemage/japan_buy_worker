@@ -212,12 +212,12 @@
 
           <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
           <h3 style="margin:0 0 8px;font-size:14px;">🖼️ 彈窗廣告輪播</h3>
-          <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片（WebP 格式），會在商店首頁以輪播方式顯示。</p>
+          <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片，會在商店首頁以輪播方式顯示。</p>
           <div id="popup-ad-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;flex-shrink:0;">
-              + 上傳圖片 (WebP)
-              <input type="file" id="popup-ad-upload" accept="image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
+              + 上傳
+              <input type="file" id="popup-ad-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
             </label>
             <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
               <label style="font-size:13px;white-space:nowrap;">輪播秒數</label>
@@ -507,12 +507,7 @@
     }
     var promises = [];
     for (var i = 0; i < files.length; i++) {
-      var file = files[i];
-      if (!file.type.includes("webp")) {
-        alert("請上傳 WebP 格式圖片");
-        return;
-      }
-      promises.push(uploadOneAd(file));
+      promises.push(uploadOneAd(files[i]));
     }
     Promise.all(promises).then(function() {
       renderPopupAdPreview();
@@ -522,9 +517,15 @@
 
   function uploadOneAd(file) {
     return new Promise(function(resolve) {
-      var reader = new FileReader();
-      reader.onload = function() {
-        var base64 = reader.result.split(",")[1];
+      // Convert any image to WebP via canvas
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        var dataUrl = canvas.toDataURL("image/webp", 0.85);
+        var base64 = dataUrl.split(",")[1];
         apiFetch("/api/admin/popup-ads/upload", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -536,7 +537,7 @@
           resolve();
         });
       };
-      reader.readAsDataURL(file);
+      img.src = URL.createObjectURL(file);
     });
   }
 
