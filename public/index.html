@@ -85,33 +85,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .fa-2 { animation: flowIn 0.4s ease-out 0.7s both; }
 .fs-3 { animation: flowIn 0.5s ease-out 0.9s both; }
 
-/* ── Feature Carousel ── */
-.feat-section { background: var(--bg-alt); padding: 48px 0 40px; }
-.feat-header { text-align: center; padding: 0 20px; margin-bottom: 28px; }
-.feat-header h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 4px; letter-spacing: -0.3px; }
-.feat-header p { font-size: 13px; color: var(--text-muted); }
-.feat-carousel { position: relative; overflow: hidden; }
-.feat-track { display: flex; transition: transform 0.5s cubic-bezier(0.25,1,0.5,1); }
-.feat-slide { min-width: 100%; padding: 0 20px; box-sizing: border-box; }
-.feat-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-.feat-visual { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5f3ee; }
-.feat-visual img, .feat-visual video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.feat-visual video { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
-.feat-visual video.active { opacity: 1; }
-.feat-visual img.fade-out { opacity: 0; transition: opacity 0.8s ease; }
-.feat-visual .feat-badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.3px; }
-.feat-body { padding: 20px; }
-.feat-label { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--brand); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
-.feat-label svg { width: 14px; height: 14px; }
-.feat-body h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 20px; font-weight: 900; line-height: 1.35; margin-bottom: 10px; letter-spacing: -0.3px; }
-.feat-body p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; }
-.feat-body .hl { color: var(--text); font-weight: 600; }
-.feat-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.feat-pill { font-size: 11px; color: var(--brand-dark); background: var(--brand-light); padding: 4px 10px; border-radius: 20px; font-weight: 600; }
-/* Dots + progress */
-.feat-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; padding: 0 20px; }
-.feat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; position: relative; transition: all 0.25s; }
-.feat-dot.active { background: var(--brand); width: 24px; border-radius: 4px; }
+/* ── Feature: video + text overlay ── */
+.feat-section { background: var(--bg-alt); padding: 36px 0 28px; }
+.feat-header { text-align: center; padding: 0 20px; margin-bottom: 16px; }
+.feat-header h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 20px; font-weight: 900; letter-spacing: -0.3px; margin-bottom: 2px; }
+.feat-header p { font-size: 12px; color: var(--text-muted); }
+.feat-wrap { margin: 0 16px; border-radius: 16px; overflow: hidden; background: var(--bg-card); box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+/* Text carousel on top */
+.feat-text-area { position: relative; overflow: hidden; height: 88px; }
+.feat-text-track { display: flex; transition: transform 0.45s cubic-bezier(0.25,1,0.5,1); height: 100%; }
+.feat-text-slide { min-width: 100%; padding: 12px 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+.feat-label { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: var(--brand); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.feat-label svg { width: 12px; height: 12px; }
+.feat-text-slide h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; font-weight: 900; line-height: 1.3; margin-bottom: 4px; letter-spacing: -0.2px; }
+.feat-text-slide p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.feat-text-slide .hl { color: var(--text); font-weight: 600; }
+/* Video area */
+.feat-video-area { position: relative; width: 100%; aspect-ratio: 4/3; background: #2c2a25; }
+.feat-video-area img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.6s ease; }
+.feat-video-area img.hide { opacity: 0; pointer-events: none; }
+.feat-video-area video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.6s ease; }
+.feat-video-area video.active { opacity: 1; }
+.feat-video-area .feat-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.3px; z-index: 2; }
+/* Dots */
+.feat-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0; }
+.feat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: all 0.25s; }
+.feat-dot.active { background: var(--brand); width: 20px; border-radius: 3px; }
 
 /* ── Pricing carousel ── */
 .plan-carousel { position: relative; overflow: hidden; margin: 0 -20px; padding: 0 20px; }
@@ -182,7 +181,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .btn-hero { padding: 14px 24px; font-size: 14px; }
   .flow-step p { font-size: 11px; }
   .flow-icon { font-size: 28px; }
-  .feat-header h2 { font-size: 20px; }
+  .feat-header h2 { font-size: 18px; }
   .plan { min-width: 240px; }
   .plan-price { font-size: 28px; }
   .section { padding: 40px 16px; }
@@ -280,115 +279,49 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </section>
 
-<!-- Feature Carousel -->
+<!-- Feature: video + rotating text -->
 <section class="feat-section fade-in" id="features">
   <div class="feat-header">
-    <h2>為什麼不繼續用 LINE 群就好？</h2>
+    <h2>為什麼不繼續用 LINE 群？</h2>
     <p>因為你值得更專業的工具</p>
   </div>
-  <div class="feat-carousel">
-    <div class="feat-track" id="feat-track">
-
-      <!-- Slide 1: AI 拍照上架 -->
-      <div class="feat-slide">
-        <div class="feat-card">
-          <div class="feat-visual">
-            <span class="feat-badge">LIVE DEMO</span>
-            <img src="/assets/images/photo_upload.png" alt="AI 辨識上架介面" id="feat-img-1" />
-            <video src="/assets/videos/ai-demo.mp4" id="feat-video-1" muted playsinline loop preload="metadata"></video>
+  <div class="feat-wrap">
+    <!-- Text carousel -->
+    <div class="feat-text-area">
+      <div class="feat-text-track" id="feat-text-track">
+        <div class="feat-text-slide">
+          <div class="feat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            AI 智慧辨識
           </div>
-          <div class="feat-body">
-            <div class="feat-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              AI 智慧辨識
-            </div>
-            <h3>拍一張照片，AI 幫你完成上架</h3>
-            <p>拿起手機拍一張，<span class="hl">AI 自動辨識品牌、品名、規格、價格</span>。你只需確認利潤，一鍵上架。不用再手動打字、查匯率、算售價。</p>
-            <div class="feat-pills">
-              <span class="feat-pill">日韓泰文辨識</span>
-              <span class="feat-pill">即時匯率</span>
-              <span class="feat-pill">30 秒上架</span>
-            </div>
+          <h3>拍照，AI 自動完成上架</h3>
+          <p><span class="hl">30 秒上架一件商品</span>。AI 辨識品牌、品名、規格、價格，自動匯率換算。</p>
+        </div>
+        <div class="feat-text-slide">
+          <div class="feat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            自助下單
           </div>
+          <h3>專屬店面，客人自己逛</h3>
+          <p>分享連結，<span class="hl">客人自己瀏覽下單</span>。你逛街的同時，訂單已經排好。</p>
+        </div>
+        <div class="feat-text-slide">
+          <div class="feat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            訂單彙整
+          </div>
+          <h3>一目瞭然，不再漏單</h3>
+          <p><span class="hl">自動彙整所有訂單</span>，一鍵匯出清單，回國打包不手忙腳亂。</p>
         </div>
       </div>
-
-      <!-- Slide 2: 客人自助下單 -->
-      <div class="feat-slide">
-        <div class="feat-card">
-          <div class="feat-visual" style="background: linear-gradient(135deg, var(--bg-card) 0%, var(--brand-light) 100%); display:flex; align-items:center; justify-content:center;">
-            <svg viewBox="0 0 200 150" fill="none" width="80%">
-              <rect x="30" y="8" width="140" height="134" rx="14" fill="var(--bg-card)" stroke="var(--border)" stroke-width="1.5"/>
-              <rect x="70" y="16" width="60" height="6" rx="3" fill="var(--border)"/>
-              <rect x="40" y="32" width="120" height="32" rx="8" fill="var(--bg-alt)" stroke="var(--border)" stroke-width="0.8"/>
-              <circle cx="56" cy="48" r="10" fill="var(--brand-light)"/>
-              <rect x="72" y="42" width="56" height="5" rx="2.5" fill="var(--text-muted)" opacity="0.4"/>
-              <rect x="72" y="51" width="36" height="4" rx="2" fill="var(--brand)" opacity="0.6"/>
-              <rect x="40" y="70" width="120" height="32" rx="8" fill="var(--bg-alt)" stroke="var(--border)" stroke-width="0.8"/>
-              <circle cx="56" cy="86" r="10" fill="var(--brand-light)"/>
-              <rect x="72" y="80" width="48" height="5" rx="2.5" fill="var(--text-muted)" opacity="0.4"/>
-              <rect x="72" y="89" width="40" height="4" rx="2" fill="var(--brand)" opacity="0.6"/>
-              <rect x="50" y="112" width="100" height="8" rx="4" fill="var(--brand)" opacity="0.8"/>
-              <rect x="50" y="124" width="100" height="8" rx="4" fill="var(--border)" opacity="0.5"/>
-            </svg>
-          </div>
-          <div class="feat-body">
-            <div class="feat-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-              自助下單
-            </div>
-            <h3>你的專屬店面，客人自己來逛</h3>
-            <p>分享連結，<span class="hl">客人自己瀏覽、自己下單</span>。你在日本逛街，台灣的客人正在你的店面挑商品。睡一覺起來，訂單已經排好了。</p>
-            <div class="feat-pills">
-              <span class="feat-pill">一鍵分享</span>
-              <span class="feat-pill">商品標籤分類</span>
-              <span class="feat-pill">即時庫存</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 3: 訂單彙整 -->
-      <div class="feat-slide">
-        <div class="feat-card">
-          <div class="feat-visual" style="background: linear-gradient(135deg, var(--bg-card) 0%, #F5EDE6 100%); display:flex; align-items:center; justify-content:center;">
-            <svg viewBox="0 0 200 150" fill="none" width="80%">
-              <rect x="10" y="8" width="180" height="134" rx="10" fill="var(--bg-card)" stroke="var(--border)" stroke-width="1.5"/>
-              <rect x="20" y="18" width="160" height="22" rx="6" fill="var(--bg-alt)"/>
-              <circle cx="32" cy="29" r="5" fill="var(--brand)" opacity="0.7"/>
-              <rect x="42" y="26" width="36" height="4" rx="2" fill="var(--text-muted)" opacity="0.4"/>
-              <rect x="148" y="24" width="24" height="8" rx="4" fill="var(--brand)" opacity="0.2"/>
-              <rect x="20" y="48" width="160" height="26" rx="6" fill="var(--bg)" stroke="var(--brand)" stroke-width="0.8"/>
-              <circle cx="32" cy="61" r="3.5" fill="var(--brand)"/>
-              <rect x="40" y="55" width="48" height="4" rx="2" fill="var(--text)" opacity="0.3"/>
-              <rect x="40" y="63" width="64" height="3" rx="1.5" fill="var(--text-muted)" opacity="0.25"/>
-              <rect x="148" y="56" width="24" height="8" rx="4" fill="var(--success)" opacity="0.25"/>
-              <rect x="20" y="80" width="160" height="26" rx="6" fill="var(--bg)"/>
-              <circle cx="32" cy="93" r="3.5" fill="var(--accent)" opacity="0.6"/>
-              <rect x="40" y="87" width="40" height="4" rx="2" fill="var(--text)" opacity="0.3"/>
-              <rect x="40" y="95" width="56" height="3" rx="1.5" fill="var(--text-muted)" opacity="0.25"/>
-              <rect x="148" y="88" width="24" height="8" rx="4" fill="var(--accent)" opacity="0.2"/>
-              <rect x="20" y="116" width="72" height="18" rx="6" fill="var(--brand)" opacity="0.15"/>
-              <rect x="100" y="116" width="80" height="18" rx="6" fill="var(--bg-alt)"/>
-            </svg>
-          </div>
-          <div class="feat-body">
-            <div class="feat-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              訂單彙整
-            </div>
-            <h3>所有訂單一目瞭然，不再漏單</h3>
-            <p>不用再翻 LINE 對話找「誰要了什麼」。<span class="hl">自動彙整所有訂單</span>，回國後一鍵匯出清單，打包出貨不再手忙腳亂。</p>
-            <div class="feat-pills">
-              <span class="feat-pill">即時通知</span>
-              <span class="feat-pill">篩選匯出</span>
-              <span class="feat-pill">出貨追蹤</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
+    <!-- Video -->
+    <div class="feat-video-area">
+      <span class="feat-badge">DEMO</span>
+      <img src="/assets/images/photo_upload.png" alt="AI 辨識上架" id="feat-img" />
+      <video src="/assets/videos/ai-demo.mp4" id="feat-video" muted playsinline loop preload="metadata"></video>
+    </div>
+    <!-- Dots -->
     <div class="feat-dots">
       <button class="feat-dot active" data-idx="0"></button>
       <button class="feat-dot" data-idx="1"></button>
@@ -540,39 +473,44 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   document.querySelectorAll(".fade-in").forEach(function(el) { el.classList.add("visible"); });
 }
 
-// Feature carousel: auto-rotate every 3s + touch swipe
+// Feature: text rotate 3.5s + video swap after 3s
 (function() {
-  var track = document.getElementById("feat-track");
+  var textTrack = document.getElementById("feat-text-track");
   var dots = document.querySelectorAll(".feat-dot");
-  if (!track || !dots.length) return;
+  var img = document.getElementById("feat-img");
+  var video = document.getElementById("feat-video");
+  if (!textTrack) return;
   var current = 0;
   var total = 3;
   var timer = null;
-  var video = document.getElementById("feat-video-1");
-  var img = document.getElementById("feat-img-1");
   var videoStarted = false;
 
   function goTo(idx) {
     current = ((idx % total) + total) % total;
-    track.style.transform = "translateX(-" + (current * 100) + "%)";
+    textTrack.style.transform = "translateX(-" + (current * 100) + "%)";
     dots.forEach(function(d, i) { d.classList.toggle("active", i === current); });
-    // Start video when slide 0 is shown, after first rotation back
-    if (current === 0 && !videoStarted && video && img) {
-      videoStarted = true;
-      setTimeout(function() {
-        img.classList.add("fade-out");
-        video.classList.add("active");
-        video.play().catch(function(){});
-      }, 800);
-    }
   }
 
-  function startAuto() { timer = setInterval(function() { goTo(current + 1); }, 3000); }
+  function startAuto() { timer = setInterval(function() { goTo(current + 1); }, 3500); }
   function stopAuto() { clearInterval(timer); }
+
+  // Start video after 3s when section is visible
+  var featObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !videoStarted) {
+        videoStarted = true;
+        featObs.unobserve(e.target);
+        setTimeout(function() {
+          if (img) img.classList.add("hide");
+          if (video) { video.classList.add("active"); video.play().catch(function(){}); }
+        }, 3000);
+      }
+    });
+  }, { threshold: 0.3 });
+  featObs.observe(textTrack.closest(".feat-section"));
 
   startAuto();
 
-  // Dot clicks
   dots.forEach(function(d) {
     d.addEventListener("click", function() {
       stopAuto();
@@ -581,10 +519,11 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     });
   });
 
-  // Touch swipe
+  // Touch swipe on text area
   var startX = 0;
-  track.addEventListener("touchstart", function(e) { startX = e.touches[0].clientX; stopAuto(); }, { passive: true });
-  track.addEventListener("touchend", function(e) {
+  var area = textTrack.parentElement;
+  area.addEventListener("touchstart", function(e) { startX = e.touches[0].clientX; stopAuto(); }, { passive: true });
+  area.addEventListener("touchend", function(e) {
     var diff = startX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 40) goTo(current + (diff > 0 ? 1 : -1));
     startAuto();
