@@ -102,18 +102,21 @@ export async function handleDisplaySettings(
   }
 
   if (request.method === "POST") {
-    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string };
+    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; shippingMethods?: unknown[] };
     try {
-      body = (await request.json()) as { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string };
+      body = (await request.json()) as { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; shippingMethods?: unknown[] };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
-    const settings = {
+    const settings: Record<string, unknown> = {
       viewMode: body.viewMode || "2card",
       promoEnabled: body.promoEnabled !== false,
       promoFilters: body.promoFilters || ["all", "350", "450", "550"],
       checkoutMessage: body.checkoutMessage || "",
     };
+    if (body.shippingMethods !== undefined) {
+      settings.shippingMethods = body.shippingMethods;
+    }
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
       .bind(ctx.storeId, JSON.stringify(settings))

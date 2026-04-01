@@ -72,7 +72,7 @@
 <body class="admin-body">
   <header class="admin-topbar">
     <div class="admin-topbar__row">
-      <a href="/"><img src="/assets/images/logo2.png" alt="VOVOSnap" style="height:28px;" /></a>
+      <a href="/"><img src="/assets/images/logo2.png" alt="VOVOSnap" style="height:34px;" /></a>
       <div class="admin-topbar__actions" id="admin-topbar-actions">
         <span id="plan-badge" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;"></span>
         <a class="admin-topbar__link" href="/store.html" target="_blank" rel="noopener">
@@ -236,6 +236,7 @@
         <button class="tab-sub-btn is-active" data-subtab="account">帳號</button>
         <button class="tab-sub-btn" data-subtab="display">商店</button>
         <button class="tab-sub-btn" data-subtab="pricing">匯率</button>
+        <button class="tab-sub-btn" data-subtab="shipping">運輸</button>
         <button class="tab-sub-btn" data-subtab="danger">資料</button>
       </div>
 
@@ -327,6 +328,18 @@
       </div>
 
       <!-- 資料 -->
+      <!-- 運輸 -->
+      <div class="admin-sub-panel hidden" data-subtab-panel="shipping">
+        <div class="admin-form-card">
+          <h3 class="admin-section-title">運輸方式管理</h3>
+          <p class="meta" style="margin-bottom:12px;">自訂配送方式和運費。客人下單時可選擇這些選項。</p>
+          <div id="shipping-methods-editor" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addShippingMethod()">+ 新增運輸方式</button>
+          <button class="button" type="button" style="margin-top:12px;" onclick="saveShippingMethods()">儲存運輸設定</button>
+          <p id="shipping-methods-status" class="admin-status">已儲存</p>
+        </div>
+      </div>
+
       <div class="admin-sub-panel hidden" data-subtab-panel="danger">
         <div class="admin-form-card">
           <h3 class="danger-title">危險操作</h3>
@@ -377,23 +390,11 @@
     var country = window.__STORE_COUNTRY || "jp";
     var conf = window.__COUNTRY_CONFIG || { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓" };
 
-    // Hide sync tab for non-Pro
-    if (plan !== "pro") {
-      var syncNav = document.querySelector('.admin-nav-item[data-tab="sync"]');
-      if (syncNav) syncNav.style.display = "none";
-      var syncPanel = document.querySelector('.admin-tab-panel[data-tab="sync"]');
-      if (syncPanel) syncPanel.remove();
-    }
-    if (plan === "pro") {
-      var syncBtn = document.getElementById("sync-crawl-btn");
-      if (syncBtn) {
-        var notice = document.createElement("p");
-        notice.className = "meta";
-        notice.style.marginTop = "8px";
-        notice.textContent = "同步功能需聯絡平台管理員開通。";
-        syncBtn.parentNode.insertBefore(notice, syncBtn.nextSibling);
-      }
-    }
+    // Hide sync tab for all plans (feature removed)
+    var syncNav = document.querySelector('.admin-nav-item[data-tab="sync"]');
+    if (syncNav) syncNav.style.display = "none";
+    var syncPanel = document.querySelector('.admin-tab-panel[data-tab="sync"]');
+    if (syncPanel) syncPanel.remove();
 
     // Currency labels
     document.querySelectorAll(".src-currency").forEach(function(el) { el.textContent = conf.currency; });
@@ -613,6 +614,90 @@
       if (d.ok) { var st = document.getElementById("popup-ad-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
   }
+
+  // Shipping methods
+  var shippingMethods = [];
+
+  function loadShippingMethods() {
+    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
+      if (!d.ok) return;
+      shippingMethods = d.shippingMethods || [
+        { name: "集運回台灣", desc: "國際運費 + 國內 7-11 店到店", price: 410, enabled: true },
+        { name: "國際直送", desc: "僅國際運費", price: 350, enabled: true },
+        { name: "限時連線代購", desc: "固定運費", price: 80, enabled: true }
+      ];
+      renderShippingEditor();
+    });
+  }
+
+  function renderShippingEditor() {
+    var el = document.getElementById("shipping-methods-editor");
+    if (!el) return;
+    el.innerHTML = shippingMethods.map(function(m, i) {
+      return '<div style="padding:12px;border:1px solid var(--line,#eee);border-radius:8px;background:var(--bg-card,#fff);">' +
+        '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">' +
+          '<label class="toggle-label" style="flex-shrink:0;"><input type="checkbox" ' + (m.enabled ? 'checked' : '') + ' onchange="shippingMethods[' + i + '].enabled=this.checked"></label>' +
+          '<input type="text" value="' + (m.name || '').replace(/"/g,'&quot;') + '" placeholder="方式名稱" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;" onchange="shippingMethods[' + i + '].name=this.value">' +
+          '<button type="button" onclick="shippingMethods.splice(' + i + ',1);renderShippingEditor()" style="width:28px;height:28px;padding:0;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#ef4444;line-height:28px;text-align:center;">✕</button>' +
+        '</div>' +
+        '<input type="text" value="' + (m.desc || '').replace(/"/g,'&quot;') + '" placeholder="說明" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;color:#666;margin-bottom:4px;" onchange="shippingMethods[' + i + '].desc=this.value">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<span style="font-size:12px;color:#888;">運費 NT$</span>' +
+          '<input type="number" min="0" value="' + (m.price || 0) + '" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="shippingMethods[' + i + '].price=Number(this.value)">' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  function addShippingMethod() {
+    shippingMethods.push({ name: "", desc: "", price: 0, enabled: true });
+    renderShippingEditor();
+  }
+
+  function saveShippingMethods() {
+    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
+      var settings = current.ok ? current : {};
+      settings.shippingMethods = shippingMethods;
+      var mode = "2card";
+      document.querySelectorAll(".view-mode-opt.selected").forEach(function(b) { mode = b.dataset.mode; });
+      var checkoutMsg = (document.getElementById("checkout-message-input") || {}).value || "";
+      apiFetch("/api/admin/display-settings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          viewMode: settings.viewMode || mode,
+          promoEnabled: settings.promoEnabled !== false,
+          promoFilters: settings.promoFilters || promoItems,
+          checkoutMessage: settings.checkoutMessage || checkoutMsg,
+          shippingMethods: shippingMethods
+        }),
+      }).then(function(r){return r.json()}).then(function(d) {
+        if (d.ok) { var st = document.getElementById("shipping-methods-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
+      });
+    });
+  }
+
+  // Load shipping on settings tab
+  setTimeout(loadShippingMethods, 500);
+
+  // Product limit bar
+  (function() {
+    var plan = window.__STORE_PLAN || "free";
+    if (plan === "pro") return;
+    apiFetch("/api/products?limit=1").then(function(r){return r.json()}).then(function(d) {
+      if (!d.ok) return;
+      var total = d.paging ? d.paging.total || 0 : 0;
+      var limit = plan === "starter" ? 50 : 10;
+      var pct = Math.min(100, Math.round(total / limit * 100));
+      var color = pct >= 90 ? "#ef4444" : pct >= 70 ? "#f59e0b" : "#8A9A5B";
+      var bar = document.createElement("div");
+      bar.style.cssText = "padding:8px 12px;background:#f8f9fa;border:1px solid #eee;border-radius:8px;margin-bottom:12px;";
+      bar.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>商品數量</span><span style="font-weight:600;">' + total + ' / ' + limit + '</span></div>' +
+        '<div style="height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;transition:width 0.3s;"></div></div>';
+      var grid = document.getElementById("manage-product-grid");
+      if (grid && grid.parentNode) grid.parentNode.insertBefore(bar, grid);
+    });
+  })();
   </script>
   <script type="module" src="/assets/app-admin.js"></script>
 </body>
