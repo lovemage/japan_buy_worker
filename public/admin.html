@@ -184,7 +184,7 @@
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="account">帳號</button>
-        <button class="tab-sub-btn" data-subtab="display">商店匯率設定</button>
+        <button class="tab-sub-btn" data-subtab="display">商店</button>
         <button class="tab-sub-btn" data-subtab="pricing">匯率</button>
         <button class="tab-sub-btn" data-subtab="danger">資料</button>
       </div>
@@ -214,15 +214,16 @@
           <h3 style="margin:0 0 8px;font-size:14px;">🖼️ 彈窗廣告輪播</h3>
           <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片（WebP 格式），會在商店首頁以輪播方式顯示。</p>
           <div id="popup-ad-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
-          <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;">
-            + 上傳圖片 (WebP)
-            <input type="file" id="popup-ad-upload" accept="image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
-          </label>
-          <div style="margin-top:10px;">
-            <label style="font-size:13px;">輪播秒數
-              <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:80px;display:inline-block;margin-left:4px;" />
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;flex-shrink:0;">
+              + 上傳圖片 (WebP)
+              <input type="file" id="popup-ad-upload" accept="image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
             </label>
-            <button class="button" type="button" style="margin-left:8px;" onclick="savePopupAdSettings()">儲存設定</button>
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+              <label style="font-size:13px;white-space:nowrap;">輪播秒數</label>
+              <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:70px;" />
+              <button class="button" type="button" onclick="savePopupAdSettings()" style="flex-shrink:0;">儲存</button>
+            </div>
           </div>
           <p id="popup-ad-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
         </div>
@@ -253,7 +254,7 @@
           <label>國內運費 (TWD)<input id="domestic-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
           <label>優惠門檻 (TWD)<input id="promo-tag-max-twd" type="number" min="0" step="1" class="input-cute" /></label>
           <label>限時連線代購運費 (TWD)<input id="limited-proxy-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
-          <label><input id="shipping-options-enabled" type="checkbox" /> 顯示運費選項（前端需求單）</label>
+          <label style="display:flex;align-items:center;gap:8px;"><input id="shipping-options-enabled" type="checkbox" style="width:18px;height:18px;flex-shrink:0;" /> 顯示運費選項（前端需求單）</label>
           <button id="admin-save-pricing" class="button" type="button">儲存</button>
         </div>
       </div>
@@ -404,11 +405,11 @@
     var el = document.getElementById("promo-filter-editor");
     if (!el) return;
     el.innerHTML = promoItems.map(function(item, i) {
-      return '<div style="display:flex;gap:6px;align-items:center;">' +
-        '<input type="checkbox" ' + (item.enabled ? 'checked' : '') + ' onchange="promoItems[' + i + '].enabled=this.checked" style="flex-shrink:0;">' +
-        '<input type="text" value="' + (item.value || '') + '" placeholder="數值 (如 350)" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].value=this.value">' +
-        '<input type="text" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤 (如 <350)" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].label=this.value">' +
-        '<button type="button" onclick="promoItems.splice(' + i + ',1);renderPromoEditor()" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#ef4444;">✕</button>' +
+      return '<div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;min-width:0;">' +
+        '<input type="checkbox" ' + (item.enabled ? 'checked' : '') + ' onchange="promoItems[' + i + '].enabled=this.checked" style="flex-shrink:0;width:18px;height:18px;">' +
+        '<input type="text" value="' + (item.value || '') + '" placeholder="數值" style="width:60px;flex-shrink:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].value=this.value">' +
+        '<input type="text" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤" style="flex:1;min-width:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].label=this.value">' +
+        '<button type="button" onclick="promoItems.splice(' + i + ',1);renderPromoEditor()" style="flex-shrink:0;width:28px;height:28px;padding:0;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#ef4444;line-height:28px;text-align:center;">✕</button>' +
       '</div>';
     }).join("");
   }
