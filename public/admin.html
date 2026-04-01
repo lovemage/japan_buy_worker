@@ -222,6 +222,10 @@
       <!-- Gemini API Key removed: managed by platform admin -->
       <div class="admin-sub-panel hidden" data-subtab-panel="account">
         <div class="admin-form-card">
+          <div style="margin-bottom:12px;padding:10px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #eee;">
+            <p style="font-size:12px;color:#888;margin-bottom:2px;">會員 Email</p>
+            <p id="member-email" style="font-size:14px;font-weight:600;">載入中...</p>
+          </div>
           <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
           <p class="meta">顯示在商店首頁的名稱</p>
           <button id="admin-save-store-name" class="button" type="button" onclick="saveStoreName()">儲存名稱</button>
@@ -362,6 +366,8 @@
       if (d.ok && d.store) {
         var nameInput = document.getElementById("store-display-name");
         if (nameInput) nameInput.value = d.store.name || "";
+        var emailEl = document.getElementById("member-email");
+        if (emailEl) emailEl.textContent = d.store.owner_email || "";
         loadPopupAds(d.store);
       }
     });

@@ -22,9 +22,9 @@ export async function handleStoreInfo(
   // GET: return store info including country config
   if (request.method === "GET") {
     const store = await ctx.db
-      .prepare("SELECT id, slug, name, destination_country, display_currency, line_id, plan FROM stores WHERE id = ?")
+      .prepare("SELECT id, slug, name, owner_email, destination_country, display_currency, line_id, plan FROM stores WHERE id = ?")
       .bind(ctx.storeId)
-      .first<{ id: number; slug: string; name: string; destination_country: string; display_currency: string; line_id: string | null; plan: string }>();
+      .first<{ id: number; slug: string; name: string; owner_email: string; destination_country: string; display_currency: string; line_id: string | null; plan: string }>();
 
     if (!store) return json({ ok: false, error: "Store not found" }, 404);
 
