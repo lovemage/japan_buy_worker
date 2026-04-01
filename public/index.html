@@ -142,6 +142,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan.pop .plan-btn { background: var(--brand); color: #fff; border-color: var(--brand); }
 .plan.pop .plan-btn:hover { background: var(--brand-dark); }
 
+/* ── FAQ ── */
+.faq-section { background: var(--bg); }
+.faq-list { max-width: 640px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-q { width: 100%; background: none; border: none; padding: 16px 0; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--text); text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.faq-q::after { content: "+"; font-size: 20px; font-weight: 400; color: var(--text-muted); transition: transform 0.25s; flex-shrink: 0; }
+.faq-item.open .faq-q::after { content: "−"; }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.25,1,0.5,1); }
+.faq-a p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding: 0 0 16px; margin: 0; }
+
 /* ── CTA ── */
 .cta { text-align: center; }
 .cta h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
@@ -400,6 +410,36 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </section>
 
+<!-- FAQ -->
+<section class="section faq-section fade-in">
+  <div class="section-inner">
+    <h2 class="section-title">常見問題</h2>
+    <p class="section-sub">關於 我|我拍 的疑問</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 有沒有交易抽成？</button>
+        <div class="faq-a"><p>沒有！我|我拍 不抽取任何交易手續費。你賺的利潤 100% 是你的，我們只收取月費方案費用。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 運輸方式可以自己定嗎？</button>
+        <div class="faq-a"><p>可以！你可以在後台自訂運輸方式和運費，不管是郵寄、面交、超商取貨都能自己設定。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 有提供第三方支付嗎？</button>
+        <div class="faq-a"><p>沒有喔！代購代買一般為個人經營，我們沒有提供第三方支付。付款方式由你和客人自行約定（例如轉帳、LINE Pay 等）。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 有商品庫存管理嗎？</button>
+        <div class="faq-a"><p>沒有，我|我拍 是一個輕量型需求單網站，專注於拍照上架和接單。如果需要完整的庫存管理功能，可能要找專業的電商平台。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">回國了不想用怎麼辦？</button>
+        <div class="faq-a"><p>目前是以月為單位計價，不續約就不會再扣款。Free 方案則完全免費，隨時可以使用。請選擇適合您的方案就好！</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="section cta fade-in">
   <h2>準備好 我|我拍 了嗎？</h2>
@@ -418,6 +458,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </footer>
 
 <script>
+// FAQ toggle
+function toggleFaq(btn) {
+  var item = btn.parentElement;
+  var wasOpen = item.classList.contains("open");
+  // Close all
+  document.querySelectorAll(".faq-item.open").forEach(function(el) {
+    el.classList.remove("open");
+    el.querySelector(".faq-a").style.maxHeight = null;
+  });
+  // Open clicked (if wasn't open)
+  if (!wasOpen) {
+    item.classList.add("open");
+    var answer = item.querySelector(".faq-a");
+    answer.style.maxHeight = answer.scrollHeight + "px";
+  }
+}
+
 // Plan limits
 fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
   if (!d.ok) return;

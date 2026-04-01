@@ -29,6 +29,7 @@
 
     <header class="page-header">
       <div class="container">
+        <img id="store-logo" class="store-logo" style="display:none;" alt="商店 Logo" />
         <h1 id="store-header-name">商品列表</h1>
         <a href="/" style="font-size:11px;color:#6366f1;text-decoration:none;font-weight:600;">vovosnap</a>
         <p id="last-updated-text" class="meta">資料載入中...</p>
@@ -59,6 +60,12 @@
     <script>
     var h = document.getElementById("store-header-name");
     if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+    // Render store logo
+    var ds = window.__DISPLAY_SETTINGS || {};
+    if (ds.storeLogo) {
+      var logoEl = document.getElementById("store-logo");
+      if (logoEl) { logoEl.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; logoEl.style.display = "block"; }
+    }
     // Render promo filter buttons from admin display settings
     var ds = window.__DISPLAY_SETTINGS || {};
     var promos = ds.promoFilters || [];

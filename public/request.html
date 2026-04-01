@@ -18,10 +18,14 @@
   <body>
     <header class="page-header">
       <div class="container">
+        <img id="store-logo" class="store-logo" style="display:none;" alt="商店 Logo" />
         <h1>需求單</h1>
         <a class="btn-pill secondary" id="back-to-store" href="/store.html">← 返回商店</a>
       </div>
     </header>
+    <script>
+    (function(){ var ds = window.__DISPLAY_SETTINGS || {}; if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = "block"; } } })();
+    </script>
 
     <main class="container">
       <section id="request-error" class="notice hidden"></section>
