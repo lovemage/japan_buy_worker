@@ -75,10 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .feature-text h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.3px; }
 .feature-text p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
 .feature-visual { flex: 0 0 200px; }
-.feature-phone { width: 200px; height: 360px; background: var(--text); border-radius: 24px; padding: 10px; box-shadow: 0 20px 48px rgba(0,0,0,0.12); }
-.feature-screen { width: 100%; height: 100%; background: #fff; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-.feature-screen .icon { font-size: 40px; margin-bottom: 10px; }
-.feature-screen strong { color: var(--brand); }
+.feature-phone-img { width: 220px; border-radius: 20px; box-shadow: 0 20px 48px rgba(0,0,0,0.12); }
 
 /* ── Pricing ── */
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 860px; margin: 0 auto; }
@@ -122,7 +119,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .hero h1 { animation-delay: 2.2s; }
 .hero-sub { animation-delay: 2.5s; }
 .hero-cta { animation-delay: 2.8s; }
-.feature-phone { animation: float 4s ease-in-out infinite; }
+.feature-phone-img { animation: float 4s ease-in-out infinite; }
 .fade-in { opacity: 0; transform: translateY(12px); transition: opacity 0.45s, transform 0.45s cubic-bezier(0.25,1,0.5,1); }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
@@ -136,7 +133,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .how-card { padding: 18px 16px; }
   .feature-inner { flex-direction: column; text-align: center; }
   .feature-visual { flex: none; }
-  .feature-phone { width: 160px; height: 288px; }
+  .feature-phone-img { width: 180px; }
   .pricing-grid { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; gap: 10px; }
   .plan { padding: 22px 18px; }
   .plan-price { font-size: 28px; }
@@ -192,20 +189,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="how-grid">
       <div class="how-card">
         <div class="how-num">1</div>
-        <h3>免費註冊</h3>
-        <p>Google 帳號一鍵註冊，驗證 Email 和手機，設定店名和網址。</p>
+        <h3>設定國家</h3>
+        <p>選擇代購來源國家（日本、韓國、泰國），系統自動設定幣別和匯率。</p>
       </div>
       <div class="how-card">
         <div class="how-num">2</div>
-        <h3>拍照上架</h3>
-        <p>出國時拍照，AI 辨識品名、規格、價格，設定利潤後一鍵上架。</p>
+        <h3>設定利潤</h3>
+        <p>設定每件商品的加價金額，系統自動計算台幣售價，客人看到的就是最終價格。</p>
       </div>
       <div class="how-card">
         <div class="how-num">3</div>
-        <h3>分享接單</h3>
-        <p>分享店面連結到 LINE 群，客人自助瀏覽下單，訂單清單一目了然。</p>
+        <h3>拍照上架</h3>
+        <p>出國時拍照，AI 辨識品名、規格、價格，一鍵上架到你的商店。</p>
       </div>
     </div>
+    <p style="text-align:center;margin-top:20px;">
+      <a href="https://vovosnap.com/s/small/" target="_blank" rel="noopener" style="color:var(--brand);font-size:13px;font-weight:600;text-decoration:none;">查看範例商店 →</a>
+    </p>
   </div>
 </section>
 
@@ -214,20 +214,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <div class="section-inner">
     <div class="feature-inner">
       <div class="feature-text">
-        <h2>📸 拍照即上架</h2>
+        <h2>拍照即上架</h2>
         <p>出國途中看到商品？拿起手機拍一張，AI 自動辨識品牌、品名、規格和建議售價。你只需要確認利潤，一鍵上架。</p>
         <p>不用再手動輸入商品資訊，不用在 LINE 群組裡一張張發照片。你的客人直接到你的店面自助下單。</p>
       </div>
       <div class="feature-visual">
-        <div class="feature-phone">
-          <div class="feature-screen">
-            <div class="icon">📷</div>
-            拍一張照片<br>
-            <strong>AI 自動辨識</strong><br>
-            品名 / 品牌 / 規格 / 價格<br><br>
-            ➜ 一鍵上架
-          </div>
-        </div>
+        <img src="/assets/images/photo_upload.png" alt="拍照即上架介面" class="feature-phone-img" />
       </div>
     </div>
   </div>
