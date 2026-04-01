@@ -29,7 +29,7 @@ import {
   handleAdminClearSyncProducts,
   handleAdminClearManualProducts,
 } from "./routes/admin/clear-products";
-import { handleStoreInfo, handleStoreNameUpdate, handleDisplaySettings, handlePopupAds, handlePopupAdUpload, handlePopupAdDelete, COUNTRY_CONFIG } from "./routes/admin/store-info";
+import { handleStoreInfo, handleStoreNameUpdate, handleDisplaySettings, handlePopupAds, handlePopupAdUpload, handlePopupAdDelete, handleTemplate, COUNTRY_CONFIG } from "./routes/admin/store-info";
 import type { RequestContext } from "./context";
 
 type CrawlEnv = {
@@ -71,11 +71,12 @@ async function serveTenantHtml(
 
   // Fetch store info for context injection
   const storeRow = await ctx.db
-    .prepare("SELECT destination_country, name FROM stores WHERE id = ?")
+    .prepare("SELECT destination_country, name, template FROM stores WHERE id = ?")
     .bind(ctx.storeId)
-    .first<{ destination_country: string; name: string }>();
+    .first<{ destination_country: string; name: string; template: string }>();
   const country = storeRow?.destination_country || "jp";
   const storeName = storeRow?.name || "vovosnap";
+  const template = storeRow?.template || "default";
   const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
 
   // Replace page title: "原標題" → "商店名稱" or "原標題 — 商店名稱"
@@ -105,6 +106,11 @@ window.__DISPLAY_SETTINGS=${displaySettings};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 </script>`;
   html = html.replace("</head>", inject + "\n</head>");
+
+  // Inject template data attribute on <body>
+  if (template && template !== "default") {
+    html = html.replace("<body>", `<body data-template="${template}">`);
+  }
 
   // Rewrite internal navigation links to be store-scoped
   if (ctx.basePath) {
@@ -226,6 +232,10 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/store-name") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleStoreNameUpdate(request, ctx);
+  }
+  if (subPath === "/api/admin/template") {
+    if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleTemplate(request, ctx);
   }
   if (subPath === "/api/admin/popup-ads") {
     // GET is public (store front needs to read ads), POST requires auth

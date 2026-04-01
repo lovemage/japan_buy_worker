@@ -1,0 +1,151 @@
+/* ═══════════════════════════════════════
+   VOVOSnap Store Templates
+   5 light-toned, low-saturation themes
+   ═══════════════════════════════════════ */
+
+/* ── Template: default (原有抹茶暖色) ── */
+/* No overrides needed — uses styles.css :root */
+
+/* ── Template: ink-blue (墨藍) ── */
+[data-template="ink-blue"] {
+  --bg-color: #F4F6F8;
+  --card-bg: #FAFBFC;
+  --primary-color: #4A6178;
+  --primary-hover: #3B5064;
+  --text-color: #2C3E50;
+  --accent-warm: #7A6855;
+  --accent-warm-hover: #665744;
+  --accent-warm-subtle: #F0EBE5;
+  --accent-gold: #9E8A5A;
+  --accent-gold-bg: #F8F4EB;
+  --muted: #7B8A99;
+  --muted-brand: #6B7B8D;
+  --line: #DDE2E8;
+  --shadow: 0 4px 12px rgba(74, 97, 120, 0.08);
+}
+[data-template="ink-blue"] .page-header {
+  border-image: linear-gradient(90deg, #4A6178 0%, #7A6855 60%, #9E8A5A 100%) 1;
+}
+[data-template="ink-blue"] .promo-badge {
+  color: #4A3A1E;
+  background: linear-gradient(135deg, #E8DFC8, #D4C9A8);
+  border-color: #9E8A5A;
+  box-shadow: 0 2px 6px rgba(158, 138, 90, 0.2);
+}
+[data-template="ink-blue"] .btn-pill.secondary {
+  background: #E8ECF0;
+  color: #4A6178;
+  border-color: #CCD3DB;
+}
+[data-template="ink-blue"] .btn-pill.secondary:hover {
+  background: #DCE2E8;
+  color: #3B5064;
+}
+
+/* ── Template: sand (暖沙灰) ── */
+[data-template="sand"] {
+  --bg-color: #F7F5F0;
+  --card-bg: #FDFCF9;
+  --primary-color: #8C7B6B;
+  --primary-hover: #76675A;
+  --text-color: #3E3630;
+  --accent-warm: #A07858;
+  --accent-warm-hover: #8A6548;
+  --accent-warm-subtle: #F2ECE4;
+  --accent-gold: #B09060;
+  --accent-gold-bg: #FAF5EC;
+  --muted: #8A8078;
+  --muted-brand: #7A7068;
+  --line: #E5DFD6;
+  --shadow: 0 4px 12px rgba(140, 123, 107, 0.08);
+}
+[data-template="sand"] .page-header {
+  border-image: linear-gradient(90deg, #8C7B6B 0%, #A07858 60%, #B09060 100%) 1;
+}
+[data-template="sand"] .promo-badge {
+  color: #5A4428;
+  background: linear-gradient(135deg, #EDE3D0, #DDD0B8);
+  border-color: #B09060;
+  box-shadow: 0 2px 6px rgba(176, 144, 96, 0.2);
+}
+[data-template="sand"] .btn-pill.secondary {
+  background: #EDE8E0;
+  color: #6E6258;
+  border-color: #D8D0C5;
+}
+[data-template="sand"] .btn-pill.secondary:hover {
+  background: #E3DCD2;
+  color: #5A4E44;
+}
+
+/* ── Template: moss (苔蘚灰綠) ── */
+[data-template="moss"] {
+  --bg-color: #F3F5F2;
+  --card-bg: #FAFBF9;
+  --primary-color: #6B7F6B;
+  --primary-hover: #5A6D5A;
+  --text-color: #2E3830;
+  --accent-warm: #7A6D58;
+  --accent-warm-hover: #665C48;
+  --accent-warm-subtle: #EDE8E0;
+  --accent-gold: #8E8050;
+  --accent-gold-bg: #F5F2E8;
+  --muted: #788078;
+  --muted-brand: #687868;
+  --line: #DDE2DA;
+  --shadow: 0 4px 12px rgba(107, 127, 107, 0.08);
+}
+[data-template="moss"] .page-header {
+  border-image: linear-gradient(90deg, #6B7F6B 0%, #7A6D58 60%, #8E8050 100%) 1;
+}
+[data-template="moss"] .promo-badge {
+  color: #3E3A20;
+  background: linear-gradient(135deg, #E0DCC8, #D0C8A8);
+  border-color: #8E8050;
+  box-shadow: 0 2px 6px rgba(142, 128, 80, 0.2);
+}
+[data-template="moss"] .btn-pill.secondary {
+  background: #E5EAE3;
+  color: #5A6D5A;
+  border-color: #CDD6CA;
+}
+[data-template="moss"] .btn-pill.secondary:hover {
+  background: #DAE0D7;
+  color: #4A5C4A;
+}
+
+/* ── Template: slate (石板灰藍) ── */
+[data-template="slate"] {
+  --bg-color: #F2F3F5;
+  --card-bg: #F9FAFB;
+  --primary-color: #5E6B7A;
+  --primary-hover: #4D5968;
+  --text-color: #2A3040;
+  --accent-warm: #7A6860;
+  --accent-warm-hover: #665650;
+  --accent-warm-subtle: #EDE8E5;
+  --accent-gold: #8A7E5E;
+  --accent-gold-bg: #F4F2EB;
+  --muted: #7A8090;
+  --muted-brand: #6A7080;
+  --line: #DCDFE5;
+  --shadow: 0 4px 12px rgba(94, 107, 122, 0.08);
+}
+[data-template="slate"] .page-header {
+  border-image: linear-gradient(90deg, #5E6B7A 0%, #7A6860 60%, #8A7E5E 100%) 1;
+}
+[data-template="slate"] .promo-badge {
+  color: #3A3520;
+  background: linear-gradient(135deg, #E0DCC8, #D0C8A8);
+  border-color: #8A7E5E;
+  box-shadow: 0 2px 6px rgba(138, 126, 94, 0.2);
+}
+[data-template="slate"] .btn-pill.secondary {
+  background: #E4E7EC;
+  color: #5E6B7A;
+  border-color: #CDD2DA;
+}
+[data-template="slate"] .btn-pill.secondary:hover {
+  background: #D8DCE3;
+  color: #4D5968;
+}

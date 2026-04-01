@@ -251,3 +251,56 @@ export async function handlePopupAdDelete(
   await ctx.r2.delete(body.key);
   return json({ ok: true });
 }
+
+// ── Template selection ──
+const TEMPLATES: Record<string, { name: string; plans: string[] }> = {
+  default:    { name: "抹茶暖色", plans: ["free", "starter", "pro"] },
+  "ink-blue": { name: "墨藍",   plans: ["starter", "pro"] },
+  sand:       { name: "暖沙灰", plans: ["pro"] },
+  moss:       { name: "苔蘚灰綠", plans: ["pro"] },
+  slate:      { name: "石板灰藍", plans: ["pro"] },
+};
+
+export { TEMPLATES };
+
+export async function handleTemplate(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method === "GET") {
+    const row = await ctx.db
+      .prepare("SELECT template, plan FROM stores WHERE id = ?")
+      .bind(ctx.storeId)
+      .first<{ template: string; plan: string }>();
+    const current = row?.template || "default";
+    const plan = row?.plan || "free";
+    const available = Object.entries(TEMPLATES)
+      .filter(([, v]) => v.plans.includes(plan))
+      .map(([k, v]) => ({ id: k, name: v.name, active: k === current }));
+    return json({ ok: true, current, templates: available });
+  }
+
+  if (request.method === "POST") {
+    const body = await request.json<{ template: string }>();
+    const tpl = body?.template;
+    if (!tpl || !TEMPLATES[tpl]) {
+      return json({ ok: false, error: "Invalid template" }, 400);
+    }
+    // Check plan permission
+    const row = await ctx.db
+      .prepare("SELECT plan FROM stores WHERE id = ?")
+      .bind(ctx.storeId)
+      .first<{ plan: string }>();
+    const plan = row?.plan || "free";
+    if (!TEMPLATES[tpl].plans.includes(plan)) {
+      return json({ ok: false, error: "此模板需要升級方案才能使用" }, 403);
+    }
+    await ctx.db
+      .prepare("UPDATE stores SET template = ?, updated_at = datetime('now') WHERE id = ?")
+      .bind(tpl, ctx.storeId)
+      .run();
+    return json({ ok: true, template: tpl });
+  }
+
+  return json({ ok: false, error: "Method not allowed" }, 405);
+}
