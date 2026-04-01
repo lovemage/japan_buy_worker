@@ -1,9 +1,5 @@
-node_modules/
-.wrangler/
 .env
-.env.*
 .dev.vars
-dist/
-*.log
-backup-*.sql
+node_modules/
 .gstack/
+.wrangler/
