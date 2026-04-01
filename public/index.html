@@ -88,12 +88,33 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .footer { padding: 32px 0; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 13px; }
 
 @media (max-width: 768px) {
-  .hero h1 { font-size: 30px; }
-  .hero .subtitle { font-size: 15px; }
+  .hero { padding: 48px 0 36px; }
+  .hero h1 { font-size: 28px; }
+  .hero .subtitle { font-size: 14px; }
+  .hero-flags { font-size: 22px; letter-spacing: 6px; margin-bottom: 16px; }
   .feature-highlight .container { flex-direction: column; text-align: center; }
-  .steps-grid { grid-template-columns: 1fr; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 360px; }
+  .feature-highlight { padding: 32px 0; }
+  .feature-text h2 { font-size: 22px; }
+  .phone-mockup { width: 180px; height: 320px; }
+  .steps { padding: 40px 0; }
+  .steps h2 { font-size: 22px; margin-bottom: 24px; }
+  .steps-grid { grid-template-columns: 1fr; gap: 12px; }
+  .step { padding: 20px 16px; }
+  .pricing { padding: 40px 0; }
+  .pricing h2 { font-size: 22px; margin-bottom: 8px; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 360px; gap: 12px; }
+  .plan { padding: 24px 18px; }
+  .plan-price { font-size: 32px; }
+  .cta-section { padding: 40px 0; }
+  .cta-section h2 { font-size: 22px; }
   .nav a.hide-mobile { display: none; }
+  .nav .btn { padding: 8px 14px; font-size: 13px; }
+  .header { padding: 12px 0; }
+}
+@media (max-width: 380px) {
+  .hero h1 { font-size: 24px; }
+  .nav .btn-outline { display: none; }
+  .plan-price { font-size: 28px; }
 }
 </style>
 </head>
