@@ -92,7 +92,7 @@ export async function handleDisplaySettings(
       .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
       .bind(ctx.storeId)
       .first<{ value: string }>();
-    const defaults = { viewMode: "2card", promoFilters: ["all", "350", "450", "550"] };
+    const defaults = { viewMode: "2card", promoEnabled: true, promoFilters: ["all", "350", "450", "550"] };
     try {
       const data = row?.value ? JSON.parse(row.value) : defaults;
       return json({ ok: true, ...data });
@@ -102,7 +102,7 @@ export async function handleDisplaySettings(
   }
 
   if (request.method === "POST") {
-    let body: { viewMode?: string; promoFilters?: string[] };
+    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[] };
     try {
       body = (await request.json()) as { viewMode?: string; promoFilters?: string[] };
     } catch {
@@ -110,6 +110,7 @@ export async function handleDisplaySettings(
     }
     const settings = {
       viewMode: body.viewMode || "2card",
+      promoEnabled: body.promoEnabled !== false,
       promoFilters: body.promoFilters || ["all", "350", "450", "550"],
     };
     await ctx.db

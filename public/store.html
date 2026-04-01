@@ -61,16 +61,18 @@
     // Render promo filter buttons from admin display settings
     var ds = window.__DISPLAY_SETTINGS || {};
     var promos = ds.promoFilters || [];
+    // Render promo filters only if enabled
     var promoEl = document.getElementById("promo-switch");
-    if (promoEl && promos.length > 0) {
-      // Support both old string format and new object format
+    if (promoEl && ds.promoEnabled !== false && promos.length > 0) {
       promoEl.innerHTML = promos
-        .filter(function(p) { return typeof p === "string" ? true : p.enabled; })
+        .filter(function(p) { return typeof p === "string" ? true : p.enabled !== false; })
         .map(function(p) {
           var val = typeof p === "string" ? p : p.value;
           var label = typeof p === "string" ? (p === "all" ? "一般" : "&lt;" + p) : (p.label || p.value);
           return '<button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="' + val + '">' + label + '</button>';
         }).join("");
+    } else if (promoEl) {
+      promoEl.style.display = "none";
     }
     </script>
     <!-- Popup ad carousel -->

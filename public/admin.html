@@ -238,10 +238,18 @@
             <button class="btn-pill secondary view-mode-opt" data-mode="2card" onclick="setViewMode('2card')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">雙欄</button>
           </div>
           <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
-          <h3 style="font-size:14px;margin:0 0 8px;">價格篩選按鈕</h3>
-          <p class="meta" style="margin-bottom:12px;">自訂價格篩選器。每項可開關、設定數值和標籤。</p>
-          <div id="promo-filter-editor" style="display:flex;flex-direction:column;gap:8px;"></div>
-          <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <h3 style="font-size:14px;margin:0;">價格篩選按鈕</h3>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+              <span id="promo-toggle-label" style="color:#888;">開啟</span>
+              <input type="checkbox" id="promo-toggle" checked onchange="onPromoToggle()" style="width:18px;height:18px;" />
+            </label>
+          </div>
+          <div id="promo-editor-wrap">
+            <p class="meta" style="margin-bottom:10px;">自訂價格篩選器的數值和顯示標籤。</p>
+            <div id="promo-filter-editor" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
+          </div>
           <button class="button" type="button" style="margin-top:12px;" onclick="saveDisplaySettings()">儲存顯示設定</button>
           <p id="display-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
         </div>
@@ -376,6 +384,7 @@
 
   // Display settings
   var promoItems = [];
+  var promoEnabled = true;
 
   function loadDisplaySettings() {
     apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
@@ -385,13 +394,20 @@
         b.style.borderColor = b.dataset.mode === mode ? "#6366f1" : "#ddd";
         b.style.background = b.dataset.mode === mode ? "#f5f3ff" : "#fff";
       });
+
+      // Load promo toggle state
+      promoEnabled = d.promoEnabled !== false; // default true
+      var toggle = document.getElementById("promo-toggle");
+      if (toggle) toggle.checked = promoEnabled;
+      updatePromoToggleUI();
+
       promoItems = d.promoFilters || [
         { value: "all", label: "一般", enabled: true },
         { value: "350", label: "<350", enabled: true },
         { value: "450", label: "<450", enabled: true },
         { value: "550", label: "<550", enabled: true }
       ];
-      // Migrate old string format to new object format
+      // Migrate old string format
       if (promoItems.length > 0 && typeof promoItems[0] === "string") {
         promoItems = promoItems.map(function(v) {
           return { value: v, label: v === "all" ? "一般" : "<" + v, enabled: true };
@@ -401,14 +417,28 @@
     });
   }
 
+  function onPromoToggle() {
+    promoEnabled = document.getElementById("promo-toggle").checked;
+    updatePromoToggleUI();
+  }
+
+  function updatePromoToggleUI() {
+    var wrap = document.getElementById("promo-editor-wrap");
+    var label = document.getElementById("promo-toggle-label");
+    if (wrap) wrap.style.display = promoEnabled ? "" : "none";
+    if (label) {
+      label.textContent = promoEnabled ? "開啟" : "關閉";
+      label.style.color = promoEnabled ? "#22c55e" : "#999";
+    }
+  }
+
   function renderPromoEditor() {
     var el = document.getElementById("promo-filter-editor");
     if (!el) return;
     el.innerHTML = promoItems.map(function(item, i) {
       return '<div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;min-width:0;">' +
-        '<input type="checkbox" ' + (item.enabled ? 'checked' : '') + ' onchange="promoItems[' + i + '].enabled=this.checked" style="flex-shrink:0;width:18px;height:18px;">' +
-        '<input type="text" value="' + (item.value || '') + '" placeholder="數值" style="width:60px;flex-shrink:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].value=this.value">' +
-        '<input type="text" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤" style="flex:1;min-width:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].label=this.value">' +
+        '<input type="text" value="' + (item.value || '') + '" placeholder="數值 (如 350)" style="width:70px;flex-shrink:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].value=this.value">' +
+        '<input type="text" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤 (如 <350)" style="flex:1;min-width:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].label=this.value">' +
         '<button type="button" onclick="promoItems.splice(' + i + ',1);renderPromoEditor()" style="flex-shrink:0;width:28px;height:28px;padding:0;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#ef4444;line-height:28px;text-align:center;">✕</button>' +
       '</div>';
     }).join("");
@@ -434,7 +464,7 @@
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ viewMode: mode, promoFilters: promoItems }),
+      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) {
         var st = document.getElementById("display-status");
