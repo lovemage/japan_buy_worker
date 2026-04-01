@@ -18,6 +18,14 @@
     }
   }
   if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };
+  // Fetch country config if not injected by serveTenantHtml
+  if (!window.__COUNTRY_CONFIG && window.__API_BASE) {
+    fetch(window.__API_BASE + "/api/admin/store-info").then(function(r){return r.json()}).then(function(d) {
+      if (d.ok && d.store && d.store.countryConfig) {
+        window.__COUNTRY_CONFIG = d.store.countryConfig;
+      }
+    }).catch(function(){});
+  }
   </script>
   </head>
   <body>

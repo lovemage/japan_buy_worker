@@ -1,8 +1,9 @@
 import { clearDraft, getDraft, setDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = {
-  markupJpy: 1000,
-  jpyToTwd: 0.21,
+  markupJpy: _cc.defaultMarkup || 1000,
+  jpyToTwd: _cc.defaultRate || 0.21,
   internationalShippingTwd: 350,
   domesticShippingTwd: 60,
   limitedProxyShippingTwd: 80,
@@ -106,7 +107,7 @@ function renderDraftItems() {
               ${item.productNameSnapshot}
             </a>
           </h2>
-          <p class="meta">&yen;${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} / NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
+          <p class="meta">${_cc.currencySymbol || "¥"}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} / NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
           <div class="request-item__controls">
             <label>數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" /></label>
             <label>尺寸${

@@ -98,7 +98,7 @@ function calcAdjustedPrices(basePrice, pricing) {
 
 function fmtSrcPrice(val) {
   if (val === null) return "";
-  const sym = (_cc.currencySymbol || "¥");
+  const sym = (window.__COUNTRY_CONFIG || _cc).currencySymbol || "¥";
   return `${sym}${val.toLocaleString("en-US")}`;
 }
 
