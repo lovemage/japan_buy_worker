@@ -78,6 +78,46 @@ export async function handleStoreInfo(
   return json({ ok: false, error: "Method Not Allowed" }, 405);
 }
 
+// Display settings (view mode, promo filters)
+export async function handleDisplaySettings(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method === "GET") {
+    const row = await ctx.db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+      .bind(ctx.storeId)
+      .first<{ value: string }>();
+    const defaults = { viewMode: "2card", promoFilters: ["all", "350", "450", "550"] };
+    try {
+      const data = row?.value ? JSON.parse(row.value) : defaults;
+      return json({ ok: true, ...data });
+    } catch {
+      return json({ ok: true, ...defaults });
+    }
+  }
+
+  if (request.method === "POST") {
+    let body: { viewMode?: string; promoFilters?: string[] };
+    try {
+      body = (await request.json()) as { viewMode?: string; promoFilters?: string[] };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    const settings = {
+      viewMode: body.viewMode || "2card",
+      promoFilters: body.promoFilters || ["all", "350", "450", "550"],
+    };
+    await ctx.db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(ctx.storeId, JSON.stringify(settings))
+      .run();
+    return json({ ok: true });
+  }
+
+  return json({ ok: false, error: "Method Not Allowed" }, 405);
+}
+
 // Update store display name
 export async function handleStoreNameUpdate(
   request: Request,

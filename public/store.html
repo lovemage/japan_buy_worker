@@ -42,17 +42,7 @@
         <h1 id="store-header-name">商品列表</h1>
         <a href="/" style="font-size:11px;color:#6366f1;text-decoration:none;font-weight:600;">vovosnap</a>
         <p id="last-updated-text" class="meta">資料載入中...</p>
-        <div class="view-switch" aria-label="檢視切換">
-          <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="list">列表</button>
-          <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="card">單欄</button>
-          <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="2card">雙欄</button>
-        </div>
-        <div id="promo-switch" class="view-switch" aria-label="優惠篩選切換">
-          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="all">一般</button>
-          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="350">&lt;350</button>
-          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="450">&lt;450</button>
-          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="550">&lt;550</button>
-        </div>
+        <div id="promo-switch" class="view-switch" aria-label="優惠篩選切換"></div>
         <section id="brand-filters" class="category-filters brand-filters"></section>
         <section id="category-filters" class="category-filters"></section>
       </div>
@@ -83,6 +73,16 @@
     <script>
     var h = document.getElementById("store-header-name");
     if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+    // Render promo filter buttons from admin display settings
+    var ds = window.__DISPLAY_SETTINGS || {};
+    var promos = ds.promoFilters || ["all","350","450","550"];
+    var promoLabels = { all: "一般", "350": "<350", "450": "<450", "550": "<550" };
+    var promoEl = document.getElementById("promo-switch");
+    if (promoEl && promos.length > 0) {
+      promoEl.innerHTML = promos.map(function(v) {
+        return '<button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="' + v + '">' + (promoLabels[v] || '&lt;' + v) + '</button>';
+      }).join("");
+    }
     </script>
     <!-- Popup ad carousel -->
     <div id="popup-ad-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;">

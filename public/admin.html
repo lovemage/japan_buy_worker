@@ -183,6 +183,7 @@
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="country">國家設定</button>
+        <button class="tab-sub-btn" data-subtab="display">商店顯示</button>
         <button class="tab-sub-btn" data-subtab="pricing">匯率設定</button>
         <button class="tab-sub-btn" data-subtab="account">帳號設定</button>
         <button class="tab-sub-btn" data-subtab="danger">資料管理</button>
@@ -205,6 +206,28 @@
             </button>
           </div>
           <p id="country-status" style="font-size:12px;color:#22c55e;margin-top:8px;display:none;">已儲存</p>
+        </div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="display">
+        <div class="admin-form-card">
+          <h3 style="font-size:14px;margin:0 0 8px;">商品列表檢視模式</h3>
+          <p class="meta" style="margin-bottom:12px;">設定顧客進入商店時的預設檢視方式</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="view-mode-selector">
+            <button class="btn-pill secondary view-mode-opt" data-mode="list" onclick="setViewMode('list')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">列表</button>
+            <button class="btn-pill secondary view-mode-opt" data-mode="card" onclick="setViewMode('card')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">單欄</button>
+            <button class="btn-pill secondary view-mode-opt" data-mode="2card" onclick="setViewMode('2card')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">雙欄</button>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
+          <h3 style="font-size:14px;margin:0 0 8px;">優惠篩選按鈕</h3>
+          <p class="meta" style="margin-bottom:12px;">設定顧客可使用的價格篩選選項</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="promo-filter-selector">
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;"><input type="checkbox" class="promo-opt" value="all" checked> 一般</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;"><input type="checkbox" class="promo-opt" value="350" checked> &lt;350</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;"><input type="checkbox" class="promo-opt" value="450" checked> &lt;450</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;"><input type="checkbox" class="promo-opt" value="550" checked> &lt;550</label>
+          </div>
+          <button class="button" type="button" style="margin-top:12px;" onclick="saveDisplaySettings()">儲存顯示設定</button>
+          <p id="display-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
         </div>
       </div>
       <div class="admin-sub-panel hidden" data-subtab-panel="pricing">
@@ -360,10 +383,52 @@
     });
   }
 
+  // Display settings
+  function loadDisplaySettings() {
+    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
+      if (!d.ok) return;
+      var mode = d.viewMode || "2card";
+      document.querySelectorAll(".view-mode-opt").forEach(function(b) {
+        b.style.borderColor = b.dataset.mode === mode ? "#6366f1" : "#ddd";
+        b.style.background = b.dataset.mode === mode ? "#f5f3ff" : "#fff";
+      });
+      var promos = d.promoFilters || ["all","350","450","550"];
+      document.querySelectorAll(".promo-opt").forEach(function(cb) {
+        cb.checked = promos.includes(cb.value);
+      });
+    });
+  }
+  function setViewMode(mode) {
+    document.querySelectorAll(".view-mode-opt").forEach(function(b) {
+      b.style.borderColor = b.dataset.mode === mode ? "#6366f1" : "#ddd";
+      b.style.background = b.dataset.mode === mode ? "#f5f3ff" : "#fff";
+    });
+  }
+  function saveDisplaySettings() {
+    var mode = "2card";
+    document.querySelectorAll(".view-mode-opt").forEach(function(b) {
+      if (b.style.borderColor === "rgb(99, 102, 241)") mode = b.dataset.mode;
+    });
+    var promos = [];
+    document.querySelectorAll(".promo-opt:checked").forEach(function(cb) { promos.push(cb.value); });
+    apiFetch("/api/admin/display-settings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ viewMode: mode, promoFilters: promos }),
+    }).then(function(r){return r.json()}).then(function(d) {
+      if (d.ok) {
+        var st = document.getElementById("display-status");
+        st.style.display = "block";
+        setTimeout(function(){ st.style.display = "none"; }, 2000);
+      }
+    });
+  }
+
   // Load store name on settings tab
   (function() {
     apiFetch("/api/admin/store-info").then(function(r){return r.json()}).then(function(d) {
       if (d.ok && d.store) {
+        loadDisplaySettings();
         var nameInput = document.getElementById("store-display-name");
         if (nameInput) nameInput.value = d.store.name || "";
         var emailEl = document.getElementById("member-email");

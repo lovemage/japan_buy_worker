@@ -29,7 +29,7 @@ import {
   handleAdminClearSyncProducts,
   handleAdminClearManualProducts,
 } from "./routes/admin/clear-products";
-import { handleStoreInfo, handleStoreNameUpdate, handlePopupAds, handlePopupAdUpload, handlePopupAdDelete, COUNTRY_CONFIG } from "./routes/admin/store-info";
+import { handleStoreInfo, handleStoreNameUpdate, handleDisplaySettings, handlePopupAds, handlePopupAdUpload, handlePopupAdDelete, COUNTRY_CONFIG } from "./routes/admin/store-info";
 import type { RequestContext } from "./context";
 
 type CrawlEnv = {
@@ -86,6 +86,13 @@ async function serveTenantHtml(
     return `<title>${storeName} — ${trimmed}</title>`;
   });
 
+  // Fetch display settings for view mode injection
+  const displayRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+    .bind(ctx.storeId)
+    .first<{ value: string }>();
+  const displaySettings = displayRow?.value || '{"viewMode":"2card","promoFilters":["all","350","450","550"]}';
+
   // Inject store context before </head>
   const inject = `<script>
 window.__API_BASE="${ctx.basePath}";
@@ -94,6 +101,7 @@ window.__STORE_PLAN="${ctx.storePlan}";
 window.__STORE_NAME="${storeName.replace(/"/g, '\\"')}";
 window.__STORE_COUNTRY="${country}";
 window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
+window.__DISPLAY_SETTINGS=${displaySettings};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 </script>`;
   html = html.replace("</head>", inject + "\n</head>");
@@ -209,6 +217,11 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/store-info") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleStoreInfo(request, ctx);
+  }
+  if (subPath === "/api/admin/display-settings") {
+    // GET is public (store front reads it), POST requires auth
+    if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleDisplaySettings(request, ctx);
   }
   if (subPath === "/api/admin/store-name") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

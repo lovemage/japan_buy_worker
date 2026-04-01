@@ -314,8 +314,9 @@ function initPromoSwitch() {
 }
 
 function getViewMode() {
-  const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY) || "2card";
-  return VIEW_MODES.includes(saved) ? saved : "2card";
+  const adminDefault = (window.__DISPLAY_SETTINGS || {}).viewMode || "2card";
+  const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY) || adminDefault;
+  return VIEW_MODES.includes(saved) ? saved : adminDefault;
 }
 
 function applyViewMode(mode) {
