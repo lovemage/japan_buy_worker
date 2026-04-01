@@ -42,8 +42,8 @@ function renderProductGrid(products, paging) {
         <p class="manage-card__price">${formatPrice(p.priceJpyTaxIn)}</p>
         <p class="manage-card__meta">${p.brand || ""}${p.category ? " · " + p.category : ""} · ${source}</p>
         <div class="manage-card__actions">
-          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}">編輯</button>
-          <button class="button secondary js-product-toggle" data-id="${p.id}" data-code="${p.code}">${p.isActive === 0 ? "上架" : "下架"}</button>
+          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}">編輯</button>
+          <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">🔗 網址</button>
         </div>
       </div>
     </div>`;
@@ -55,7 +55,20 @@ function renderProductGrid(products, paging) {
     btn.addEventListener("click", () => openEditModal(btn));
   });
 
-  grid.querySelectorAll(".js-product-toggle").forEach((btn) => {
+  grid.querySelectorAll(".js-copy-url").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const code = btn.getAttribute("data-code");
+      const base = window.__API_BASE || "";
+      const url = location.origin + base + "/product?code=" + encodeURIComponent(code);
+      navigator.clipboard.writeText(url).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = "✓ 已複製";
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      });
+    });
+  });
+
+  grid.querySelectorAll(".js-product-toggle-REMOVED").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-id");
       const isCurrentlyActive = btn.textContent === "下架";
@@ -162,6 +175,29 @@ async function openEditModal(btn) {
   document.getElementById("edit-category").value = btn.getAttribute("data-category") || "";
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
   document.getElementById("edit-status").textContent = "";
+
+  // Set toggle button state
+  const isActive = btn.getAttribute("data-active") !== "0";
+  const toggleBtn = document.getElementById("edit-toggle");
+  if (toggleBtn) {
+    toggleBtn.textContent = isActive ? "下架" : "上架";
+    toggleBtn.style.color = isActive ? "#ef4444" : "#22c55e";
+    toggleBtn.onclick = async function() {
+      toggleBtn.disabled = true;
+      const res = await apiFetch("/api/admin/products/toggle", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: Number(id), isActive: isActive ? 0 : 1 }),
+      });
+      if (res.ok) {
+        modal.classList.add("hidden");
+        await loadManagedProducts();
+      } else {
+        toggleBtn.disabled = false;
+        showError("操作失敗");
+      }
+    };
+  }
 
   editNewImages = [];
   editGallery = [];
