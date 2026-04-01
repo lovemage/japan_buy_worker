@@ -115,6 +115,14 @@
             <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>
             <label>分類<input id="edit-category" type="text" class="input-cute" /></label>
             <label>價格（<span class="src-currency">JPY</span>）<input id="edit-price" type="number" min="0" class="input-cute" /></label>
+            <div id="edit-tags-section" style="display:none;margin:8px 0;">
+              <p style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;">商品標籤</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-hot" /> <span id="edit-tag-hot-label">熱門商品</span></label>
+                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-limited" /> <span id="edit-tag-limited-label">限時發售</span></label>
+                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-popular" /> <span id="edit-tag-popular-label">人氣特賣</span></label>
+              </div>
+            </div>
             <div class="edit-modal__actions">
               <button id="edit-save" class="button" type="button">儲存</button>
               <button id="edit-toggle" class="button secondary" type="button" style="color:#ef4444;">下架</button>
@@ -230,6 +238,41 @@
       <section id="admin-forms" class="admin-forms"></section>
     </section>
 
+    <!-- Tab: 標籤 (Pro only) -->
+    <section class="admin-tab-panel hidden" data-tab="branding">
+      <div class="admin-form-card">
+        <h3 class="admin-section-title">商品標籤</h3>
+        <p class="meta" style="margin-bottom:12px;">自訂商品標籤名稱。Starter 使用預設名稱，Pro 可自訂。</p>
+        <div style="display:flex;flex-direction:column;gap:8px;" id="tag-names-editor">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:20px;">🔥</span>
+            <input type="text" id="tag-name-hot" class="input-cute" value="熱門商品" placeholder="熱門商品" />
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:20px;">⏰</span>
+            <input type="text" id="tag-name-limited" class="input-cute" value="限時發售" placeholder="限時發售" />
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:20px;">💎</span>
+            <input type="text" id="tag-name-popular" class="input-cute" value="人氣特賣" placeholder="人氣特賣" />
+          </div>
+        </div>
+        <button class="button" type="button" style="margin-top:12px;" onclick="saveTagNames()">儲存標籤</button>
+        <p id="tag-names-status" class="admin-status">已儲存</p>
+
+        <hr class="admin-divider" />
+        <h3 class="admin-section-title">商店 Logo</h3>
+        <p class="meta" style="margin-bottom:8px;">上傳 1:1 去背圖片，會顯示在商品列表、商品詳情、需求單右上角。</p>
+        <div id="store-logo-preview" style="margin-bottom:8px;"></div>
+        <label class="upload-btn">
+          上傳 Logo（1:1 去背圖）
+          <input type="file" id="store-logo-upload" accept="image/png,image/webp" style="display:none;" onchange="uploadStoreLogo(this.files[0])" />
+        </label>
+        <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="removeStoreLogo()">移除 Logo</button>
+        <p id="store-logo-status" class="admin-status">已儲存</p>
+      </div>
+    </section>
+
     <!-- Tab 5: 設定 -->
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
@@ -304,6 +347,22 @@
             <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
           </div>
           <hr class="admin-divider">
+          <div class="toggle-row">
+            <h3 class="admin-section-title" style="margin:0;">優惠標籤</h3>
+            <label class="toggle-label">
+              <span id="promo-tag-toggle-label" style="color:#888;">關閉</span>
+              <input type="checkbox" id="promo-tag-toggle" onchange="onPromoTagToggle()" />
+            </label>
+          </div>
+          <div id="promo-tag-wrap" style="display:none;">
+            <p class="meta" style="margin-bottom:8px;">低於此金額（TWD）的商品會顯示「優惠」標籤。</p>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="font-size:13px;">低於 NT$</span>
+              <input type="number" id="promo-tag-threshold" min="0" value="500" class="input-cute" style="width:80px;" />
+            </div>
+          </div>
+
+          <hr class="admin-divider">
           <h3 class="admin-section-title">📝 結帳感謝訊息</h3>
           <p class="meta" style="margin-bottom:8px;">客人送出需求單後顯示的訊息。</p>
           <textarea id="checkout-message-input" rows="4" class="input-cute" placeholder="請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。"></textarea>
@@ -318,11 +377,6 @@
         <div class="admin-form-card">
           <label><span class="currency-label">每筆加價</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
           <label><span class="src-currency">JPY</span> → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
-          <label>國際運費 (TWD)<input id="international-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
-          <label>國內運費 (TWD)<input id="domestic-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
-          <label>優惠門檻 (TWD)<input id="promo-tag-max-twd" type="number" min="0" step="1" class="input-cute" /></label>
-          <label>限時連線代購運費 (TWD)<input id="limited-proxy-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
-          <label class="checkbox-label"><input id="shipping-options-enabled" type="checkbox" /> 顯示運費選項（前端需求單）</label>
           <button id="admin-save-pricing" class="button" type="button">儲存</button>
         </div>
       </div>
@@ -377,6 +431,10 @@
     <button class="admin-nav-item" data-tab="orders">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
       <span>訂單</span>
+    </button>
+    <button class="admin-nav-item" data-tab="branding" id="nav-branding" style="display:none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>標籤</span>
     </button>
     <button class="admin-nav-item" data-tab="settings">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -505,10 +563,12 @@
     var mode = "2card";
     document.querySelectorAll(".view-mode-opt.selected").forEach(function(b) { mode = b.dataset.mode; });
     var checkoutMsg = (document.getElementById("checkout-message-input") || {}).value || "";
+    var promoTagOn = document.getElementById("promo-tag-toggle").checked;
+    var promoTagVal = Number(document.getElementById("promo-tag-threshold").value) || 500;
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg }),
+      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("display-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
@@ -698,6 +758,127 @@
       if (grid && grid.parentNode) grid.parentNode.insertBefore(bar, grid);
     });
   })();
+
+  // Promo tag threshold toggle
+  function onPromoTagToggle() {
+    var on = document.getElementById("promo-tag-toggle").checked;
+    document.getElementById("promo-tag-wrap").style.display = on ? "" : "none";
+    var label = document.getElementById("promo-tag-toggle-label");
+    if (label) { label.textContent = on ? "開啟" : "關閉"; label.style.color = on ? "#22c55e" : "#999"; }
+  }
+
+  // Show branding tab for Pro, tags section for Starter+Pro
+  (function() {
+    var plan = window.__STORE_PLAN || "free";
+    if (plan === "pro") {
+      var navBrand = document.getElementById("nav-branding");
+      if (navBrand) navBrand.style.display = "";
+    }
+    if (plan === "starter" || plan === "pro") {
+      var tagSec = document.getElementById("edit-tags-section");
+      if (tagSec) tagSec.style.display = "";
+    }
+    // Pro can edit tag names, Starter sees readonly
+    if (plan !== "pro") {
+      document.querySelectorAll("#tag-names-editor input").forEach(function(inp) { inp.readOnly = true; inp.style.opacity = "0.6"; });
+    }
+  })();
+
+  // Tag names + store logo
+  function saveTagNames() {
+    var data = {
+      hot: document.getElementById("tag-name-hot").value.trim() || "熱門商品",
+      limited: document.getElementById("tag-name-limited").value.trim() || "限時發售",
+      popular: document.getElementById("tag-name-popular").value.trim() || "人氣特賣",
+    };
+    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
+      current.tagNames = data;
+      return apiFetch("/api/admin/display-settings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(current),
+      });
+    }).then(function(r){return r.json()}).then(function(d) {
+      if (d.ok) { var st = document.getElementById("tag-names-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
+    });
+  }
+
+  function uploadStoreLogo(file) {
+    if (!file) return;
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement("canvas");
+      var size = Math.max(img.naturalWidth, img.naturalHeight);
+      canvas.width = size; canvas.height = size;
+      var ctx2 = canvas.getContext("2d");
+      ctx2.drawImage(img, (size - img.naturalWidth) / 2, (size - img.naturalHeight) / 2);
+      var dataUrl = canvas.toDataURL("image/webp", 0.9);
+      var base64 = dataUrl.split(",")[1];
+      apiFetch("/api/admin/popup-ads/upload", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ image: base64 }),
+      }).then(function(r){return r.json()}).then(function(d) {
+        if (d.ok) {
+          // Save logo key in display settings
+          apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
+            current.storeLogo = d.key;
+            return apiFetch("/api/admin/display-settings", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(current),
+            });
+          }).then(function() {
+            renderStoreLogoPreview(d.key);
+            var st = document.getElementById("store-logo-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000);
+          });
+        }
+      });
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
+  function removeStoreLogo() {
+    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
+      current.storeLogo = "";
+      return apiFetch("/api/admin/display-settings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(current),
+      });
+    }).then(function() {
+      document.getElementById("store-logo-preview").innerHTML = "";
+    });
+  }
+
+  function renderStoreLogoPreview(key) {
+    var el = document.getElementById("store-logo-preview");
+    if (!el || !key) { if (el) el.innerHTML = ""; return; }
+    el.innerHTML = '<img src="' + (window.__API_BASE || "") + '/api/images/' + key + '" style="width:64px;height:64px;object-fit:contain;border:1px solid #eee;border-radius:8px;" />';
+  }
+
+  // Load tag names and logo from settings
+  setTimeout(function() {
+    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
+      if (!d.ok) return;
+      if (d.tagNames) {
+        if (d.tagNames.hot) document.getElementById("tag-name-hot").value = d.tagNames.hot;
+        if (d.tagNames.limited) document.getElementById("tag-name-limited").value = d.tagNames.limited;
+        if (d.tagNames.popular) document.getElementById("tag-name-popular").value = d.tagNames.popular;
+        // Update edit modal tag labels
+        var h = document.getElementById("edit-tag-hot-label"); if (h) h.textContent = d.tagNames.hot || "熱門商品";
+        var l = document.getElementById("edit-tag-limited-label"); if (l) l.textContent = d.tagNames.limited || "限時發售";
+        var p = document.getElementById("edit-tag-popular-label"); if (p) p.textContent = d.tagNames.popular || "人氣特賣";
+      }
+      if (d.storeLogo) renderStoreLogoPreview(d.storeLogo);
+      // Promo tag threshold
+      if (d.promoTagEnabled) {
+        document.getElementById("promo-tag-toggle").checked = true;
+        onPromoTagToggle();
+      }
+      if (d.promoTagThreshold) document.getElementById("promo-tag-threshold").value = d.promoTagThreshold;
+    });
+  }, 600);
   </script>
   <script type="module" src="/assets/app-admin.js"></script>
 </body>
