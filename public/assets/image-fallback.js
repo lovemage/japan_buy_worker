@@ -2,7 +2,13 @@ export const PRODUCT_PLACEHOLDER = "/assets/images/product-placeholder.svg";
 
 export function withProductImageFallback(url) {
   const value = typeof url === "string" ? url.trim() : "";
-  return value || PRODUCT_PLACEHOLDER;
+  if (!value) return PRODUCT_PLACEHOLDER;
+  // Prefix local /api/images/ paths with store base path for multi-tenant routing
+  const base = window.__API_BASE || "";
+  if (base && value.startsWith("/api/images/")) {
+    return base + value;
+  }
+  return value;
 }
 
 export function bindProductImageFallback(image) {

@@ -1,6 +1,13 @@
 import { showError } from "./app-admin.js";
 import { withProductImageFallback, applyProductImageFallback } from "./image-fallback.js";
 
+function prefixImageUrl(url) {
+  if (!url) return url;
+  var base = window.__API_BASE || "";
+  if (base && typeof url === "string" && url.startsWith("/api/images/")) return base + url;
+  return url;
+}
+
 // === Product Management ===
 let managePage = 1;
 let manageSearch = "";
@@ -102,7 +109,7 @@ function renderEditGallery() {
   }
   container.innerHTML = all.map((url, idx) => `
     <div class="edit-gallery__item">
-      <img src="${url}" alt="圖片 ${idx + 1}" />
+      <img src="${prefixImageUrl(url)}" alt="圖片 ${idx + 1}" />
       <button class="edit-gallery__remove" data-idx="${idx}" data-type="existing" type="button">&times;</button>
     </div>
   `).join("") + editNewImages.map((img, idx) => `
