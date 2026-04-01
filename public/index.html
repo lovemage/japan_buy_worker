@@ -6,24 +6,25 @@
 <title>vovosnap — 拍照就開店</title>
 <style>
 :root {
-  --brand: #6366f1;
-  --brand-light: #e0e7ff;
-  --brand-dark: #4338ca;
-  --text: #1e1e2e;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --bg: #ffffff;
-  --bg-alt: #f8fafc;
-  --bg-card: #ffffff;
-  --border: #e2e8f0;
-  --success: #22c55e;
+  --brand: #8A9A5B;
+  --brand-light: #EEF1E6;
+  --brand-dark: #768a4a;
+  --accent: #9E5F38;
+  --text: #3D3A35;
+  --text-secondary: #7A756D;
+  --text-muted: #A09A90;
+  --bg: #F9F7F1;
+  --bg-alt: #F3F0E8;
+  --bg-card: #FFFEFA;
+  --border: #E5E0D6;
+  --success: #8A9A5B;
   --radius: 12px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
 
 /* ── Nav ── */
-.nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 .nav-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
 .nav-logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
 .nav-logo span { color: var(--brand); }
@@ -38,10 +39,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
 
 /* ── Hero ── */
-.hero { position: relative; overflow: hidden; background: var(--text); }
+.hero { position: relative; overflow: hidden; background: #2c2a25; }
 .hero-img { width: 100%; height: 420px; object-fit: cover; opacity: 0.55; display: block; }
 .hero-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; }
-.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(99,102,241,0.9); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; letter-spacing: 0.5px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(138,154,91,0.9); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; letter-spacing: 0.5px; }
 .hero h1 { font-size: 36px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 10px; letter-spacing: -0.5px; }
 .hero h1 em { font-style: normal; color: var(--brand-light); }
 .hero-sub { font-size: 15px; color: rgba(255,255,255,0.8); max-width: 420px; line-height: 1.6; margin-bottom: 24px; }
@@ -49,7 +50,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .btn-hero { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s cubic-bezier(0.25,1,0.5,1); }
 .btn-hero:active { transform: scale(0.97); }
 .btn-hero-primary { background: #fff; color: var(--text); }
-.btn-hero-primary:hover { background: var(--brand-light); }
+.btn-hero-primary:hover { background: #f5f3ec; }
 .btn-hero-primary svg { width: 18px; height: 18px; }
 .btn-hero-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.4); }
 .btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
@@ -81,7 +82,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 860px; margin: 0 auto; }
 .plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px 20px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
 .plan:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.07); }
-.plan.pop { border-color: var(--brand); position: relative; box-shadow: 0 4px 24px rgba(99,102,241,0.12); }
+.plan.pop { border-color: var(--brand); position: relative; box-shadow: 0 4px 24px rgba(138,154,91,0.15); }
 .plan.pop::before { content: "推薦"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--brand); color: #fff; padding: 3px 14px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .plan-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
 .plan-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
