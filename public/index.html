@@ -61,13 +61,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .section-title { font-size: 24px; font-weight: 800; text-align: center; margin-bottom: 6px; letter-spacing: -0.3px; }
 .section-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 32px; }
 
-/* ── How it works ── */
-.how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.how-card { padding: 24px 20px; border-radius: var(--radius); background: var(--bg-alt); border: 1px solid var(--border); transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
-.how-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-.how-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: var(--brand); color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
-.how-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.how-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+/* ── Flow chart ── */
+.flow { display: flex; align-items: flex-start; justify-content: center; gap: 0; }
+.flow-step { flex: 1; max-width: 160px; text-align: center; padding: 12px 8px; }
+.flow-icon { font-size: 32px; margin-bottom: 8px; }
+.flow-step h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.flow-step p { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.flow-arrow { display: flex; align-items: center; font-size: 18px; color: var(--brand); font-weight: 700; padding-top: 16px; }
+@keyframes flowIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.fs-1 { animation: flowIn 0.5s ease-out 0.1s both; }
+.fa-1 { animation: flowIn 0.4s ease-out 0.3s both; }
+.fs-2 { animation: flowIn 0.5s ease-out 0.5s both; }
+.fa-2 { animation: flowIn 0.4s ease-out 0.7s both; }
+.fs-3 { animation: flowIn 0.5s ease-out 0.9s both; }
 
 /* ── Feature ── */
 .feature { background: var(--bg-alt); }
@@ -78,10 +84,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .feature-visual { flex: 0 0 200px; }
 .feature-phone-img { width: 220px; }
 
-/* ── Pricing ── */
-.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 860px; margin: 0 auto; }
-.plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px 20px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
-.plan:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.07); }
+/* ── Pricing carousel ── */
+.plan-carousel { position: relative; overflow: hidden; margin: 0 -20px; padding: 0 20px; }
+.plan-track { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 4px 0 16px; }
+.plan-track::-webkit-scrollbar { display: none; }
+.plan-dots { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
+.plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: all 0.2s; }
+.plan-dot.active { background: var(--brand); width: 20px; border-radius: 4px; }
+
+/* Compare table */
+.compare-table { margin-top: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.compare-table table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 320px; }
+.compare-table th { background: var(--bg-alt); padding: 8px 10px; text-align: center; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+.compare-table th:first-child { text-align: left; }
+.compare-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+.plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 24px 18px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; }
 .plan.pop { border-color: var(--brand); position: relative; box-shadow: 0 4px 24px rgba(138,154,91,0.15); }
 .plan.pop::before { content: "推薦"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--brand); color: #fff; padding: 3px 14px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .plan-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
@@ -129,13 +147,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .hero h1 { font-size: 26px; }
   .hero-sub { font-size: 14px; }
   .btn-hero { padding: 10px 18px; font-size: 13px; }
-  .how-grid { grid-template-columns: 1fr; gap: 10px; }
-  .how-card { padding: 18px 16px; }
+  .flow-step p { font-size: 11px; }
+  .flow-icon { font-size: 28px; }
   .feature-inner { flex-direction: column; text-align: center; }
   .feature-visual { flex: none; }
   .feature-phone-img { width: 180px; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; gap: 10px; }
-  .plan { padding: 22px 18px; }
+  .plan { min-width: 240px; }
   .plan-price { font-size: 28px; }
   .section { padding: 40px 16px; }
   .section-title { font-size: 20px; }
@@ -184,22 +201,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <div class="section-inner">
     <h2 class="section-title">三步驟開店</h2>
     <p class="section-sub">從註冊到接單，不到五分鐘</p>
-    <div class="how-grid">
-      <div class="how-card">
-        <div class="how-num">1</div>
-        <h3>設定國家</h3>
-        <p>選擇代購來源國家（日本、韓國、泰國），系統自動設定幣別和匯率。</p>
-      </div>
-      <div class="how-card">
-        <div class="how-num">2</div>
-        <h3>設定利潤</h3>
-        <p>設定每件商品的加價金額，系統自動計算台幣售價，客人看到的就是最終價格。</p>
-      </div>
-      <div class="how-card">
-        <div class="how-num">3</div>
-        <h3>拍照上架</h3>
-        <p>出國時拍照，AI 辨識品名、規格、價格，一鍵上架到你的商店。</p>
-      </div>
+    <div class="flow">
+      <div class="flow-step fs-1"><div class="flow-icon">🌏</div><h3>設定國家</h3><p>選擇代購來源國家，系統自動設定幣別和匯率</p></div>
+      <div class="flow-arrow fa-1">→</div>
+      <div class="flow-step fs-2"><div class="flow-icon">💰</div><h3>設定利潤</h3><p>設定加價金額，系統自動計算台幣售價</p></div>
+      <div class="flow-arrow fa-2">→</div>
+      <div class="flow-step fs-3"><div class="flow-icon">📸</div><h3>拍照上架</h3><p>AI 辨識品名、規格、價格，一鍵上架</p></div>
     </div>
     <p style="text-align:center;margin-top:20px;">
       <a href="https://vovosnap.com/store" target="_blank" rel="noopener" style="color:var(--brand);font-size:13px;font-weight:600;text-decoration:none;">查看範例商店 →</a>
@@ -228,55 +235,77 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <div class="section-inner">
     <h2 class="section-title">選擇方案</h2>
     <p class="section-sub">所有方案免費開始，隨時升級</p>
-    <div class="pricing-grid">
-      <div class="plan">
-        <div class="plan-name">Free</div>
-        <div class="plan-desc">先試試水溫</div>
-        <div class="plan-price"><span class="cur">NT$</span>0</div>
-        <div class="plan-line"></div>
-        <ul class="plan-list">
-          <li id="limit-free-display">最多 10 件商品</li>
-          <li>手動上架 + AI 辨識（5 次）</li>
-          <li>訂單管理</li>
-          <li>自訂運輸方式</li>
-          <li class="off">商品標籤</li>
-          <li class="off">自訂商店 Logo</li>
-          <li class="off">更換模板</li>
-        </ul>
-        <a href="/auth/google" class="plan-btn">免費註冊</a>
+    <!-- Swipeable plans -->
+    <div class="plan-carousel">
+      <div class="plan-track" id="plan-track">
+        <div class="plan">
+          <div class="plan-name">Free</div>
+          <div class="plan-desc">先試試水溫</div>
+          <div class="plan-price"><span class="cur">NT$</span>0</div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-free-display">最多 10 件商品</li>
+            <li>手動上架 + AI（5 次）</li>
+            <li>訂單管理</li>
+            <li>自訂運輸方式</li>
+            <li class="off">商品標籤</li>
+            <li class="off">商店 Logo</li>
+          </ul>
+          <a href="/auth/google" class="plan-btn">免費註冊</a>
+        </div>
+        <div class="plan pop">
+          <div class="plan-name">Starter</div>
+          <div class="plan-desc">認真經營代購</div>
+          <div class="plan-price"><span class="cur">NT$</span>690<span class="per">/月</span></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-starter-display">最多 50 件商品</li>
+            <li>AI 無限上架</li>
+            <li>訂單管理</li>
+            <li>自訂運輸方式</li>
+            <li>商品標籤</li>
+            <li class="off">商店 Logo</li>
+          </ul>
+          <a href="/auth/google" class="plan-btn">免費試用</a>
+        </div>
+        <div class="plan">
+          <div class="plan-name">Pro</div>
+          <div class="plan-desc">全職代購</div>
+          <div class="plan-price"><span class="cur">NT$</span>1,280<span class="per">/月</span></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-pro-display">不限商品數量</li>
+            <li>AI 無限上架</li>
+            <li>訂單管理</li>
+            <li>自訂運輸方式</li>
+            <li>自訂標籤名稱</li>
+            <li>商店 Logo + 換模板</li>
+          </ul>
+          <a href="/auth/google" class="plan-btn">免費試用</a>
+        </div>
       </div>
-      <div class="plan pop">
-        <div class="plan-name">Starter</div>
-        <div class="plan-desc">認真經營代購</div>
-        <div class="plan-price"><span class="cur">NT$</span>690<span class="per">/月</span></div>
-        <div class="plan-line"></div>
-        <ul class="plan-list">
-          <li id="limit-starter-display">最多 50 件商品</li>
-          <li>AI 圖片辨識無限上架</li>
-          <li>訂單管理</li>
-          <li>自訂運輸方式</li>
-          <li>商品標籤（熱門/限時/人氣）</li>
-          <li class="off">自訂商店 Logo</li>
-          <li class="off">更換模板</li>
-        </ul>
-        <a href="/auth/google" class="plan-btn">免費試用</a>
+      <div class="plan-dots">
+        <button class="plan-dot" onclick="scrollPlan(0)"></button>
+        <button class="plan-dot active" onclick="scrollPlan(1)"></button>
+        <button class="plan-dot" onclick="scrollPlan(2)"></button>
       </div>
-      <div class="plan">
-        <div class="plan-name">Pro</div>
-        <div class="plan-desc">全職代購</div>
-        <div class="plan-price"><span class="cur">NT$</span>1,280<span class="per">/月</span></div>
-        <div class="plan-line"></div>
-        <ul class="plan-list">
-          <li id="limit-pro-display">不限商品數量</li>
-          <li>AI 圖片辨識無限上架</li>
-          <li>訂單管理</li>
-          <li>自訂運輸方式</li>
-          <li>商品標籤（可自訂名稱）</li>
-          <li>自訂商店 Logo</li>
-          <li>更換店面模板</li>
-        </ul>
-        <a href="/auth/google" class="plan-btn">免費試用</a>
-      </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="compare-table">
+      <table>
+        <thead><tr><th>功能</th><th>Free</th><th>Starter</th><th>Pro</th></tr></thead>
+        <tbody>
+          <tr><td>商品數量</td><td>10</td><td>50</td><td>無限</td></tr>
+          <tr><td>AI 辨識</td><td>5 次</td><td>無限</td><td>無限</td></tr>
+          <tr><td>訂單管理</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>自訂運輸</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>商品標籤</td><td>—</td><td>預設</td><td>自訂</td></tr>
+          <tr><td>商店 Logo</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>換模板</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>子網域</td><td>—</td><td>—</td><td>✓</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -310,6 +339,30 @@ fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
   if (s && l.starter > 0) s.textContent = "最多 " + l.starter + " 件商品";
   if (p) p.textContent = (l.pro && l.pro > 0) ? "最多 " + l.pro + " 件商品" : "不限商品數量";
 }).catch(function(){});
+
+// Plan carousel
+function scrollPlan(idx) {
+  var track = document.getElementById("plan-track");
+  if (!track) return;
+  var cards = track.querySelectorAll(".plan");
+  if (cards[idx]) cards[idx].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  document.querySelectorAll(".plan-dot").forEach(function(d, i) { d.classList.toggle("active", i === idx); });
+}
+// Auto-scroll to Starter (center) on load
+setTimeout(function() { scrollPlan(1); }, 300);
+// Update dots on scroll
+var planTrack = document.getElementById("plan-track");
+if (planTrack) {
+  planTrack.addEventListener("scroll", function() {
+    var cards = planTrack.querySelectorAll(".plan");
+    var center = planTrack.scrollLeft + planTrack.clientWidth / 2;
+    var closest = 0;
+    cards.forEach(function(c, i) {
+      if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - center) < Math.abs(cards[closest].offsetLeft + cards[closest].offsetWidth / 2 - center)) closest = i;
+    });
+    document.querySelectorAll(".plan-dot").forEach(function(d, i) { d.classList.toggle("active", i === closest); });
+  });
+}
 
 // Scroll reveal
 var obs = new IntersectionObserver(function(entries) {
