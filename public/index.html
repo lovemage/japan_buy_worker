@@ -101,16 +101,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .feat-text-slide p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .feat-text-slide .hl { color: var(--text); font-weight: 600; }
 /* Video area */
-.feat-video-area { position: relative; width: 100%; aspect-ratio: 4/3; background: #2c2a25; }
-.feat-video-area img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.6s ease; }
-.feat-video-area img.hide { opacity: 0; pointer-events: none; }
-.feat-video-area video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.6s ease; }
-.feat-video-area video.active { opacity: 1; }
+.feat-video-area { position: relative; width: 310px; margin: 0 auto; background: #2c2a25; }
+.feat-video-area img { width: 100%; height: auto; display: block; transition: opacity 0.6s ease; }
+.feat-video-area img.hide { opacity: 0; position: absolute; inset: 0; pointer-events: none; }
+.feat-video-area video { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.6s ease; }
+.feat-video-area video.active { opacity: 1; position: relative; }
 .feat-video-area .feat-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.3px; z-index: 2; }
-/* Dots */
-.feat-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0; }
-.feat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: all 0.25s; }
-.feat-dot.active { background: var(--brand); width: 20px; border-radius: 3px; }
 
 /* ── Pricing carousel ── */
 .plan-carousel { position: relative; overflow: hidden; margin: 0 -20px; padding: 0 20px; }
@@ -321,12 +317,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <img src="/assets/images/photo_upload.png" alt="AI 辨識上架" id="feat-img" />
       <video src="/assets/videos/ai-demo.mp4" id="feat-video" muted playsinline loop preload="metadata"></video>
     </div>
-    <!-- Dots -->
-    <div class="feat-dots">
-      <button class="feat-dot active" data-idx="0"></button>
-      <button class="feat-dot" data-idx="1"></button>
-      <button class="feat-dot" data-idx="2"></button>
-    </div>
   </div>
 </section>
 
@@ -476,7 +466,6 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
 // Feature: text rotate 3.5s + video swap after 3s
 (function() {
   var textTrack = document.getElementById("feat-text-track");
-  var dots = document.querySelectorAll(".feat-dot");
   var img = document.getElementById("feat-img");
   var video = document.getElementById("feat-video");
   if (!textTrack) return;
@@ -488,7 +477,6 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   function goTo(idx) {
     current = ((idx % total) + total) % total;
     textTrack.style.transform = "translateX(-" + (current * 100) + "%)";
-    dots.forEach(function(d, i) { d.classList.toggle("active", i === current); });
   }
 
   function startAuto() { timer = setInterval(function() { goTo(current + 1); }, 3500); }
@@ -510,14 +498,6 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   featObs.observe(textTrack.closest(".feat-section"));
 
   startAuto();
-
-  dots.forEach(function(d) {
-    d.addEventListener("click", function() {
-      stopAuto();
-      goTo(parseInt(this.dataset.idx));
-      startAuto();
-    });
-  });
 
   // Touch swipe on text area
   var startX = 0;
