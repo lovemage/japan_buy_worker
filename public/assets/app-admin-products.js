@@ -252,10 +252,14 @@ async function openEditModal(btn) {
 }
 
 async function onEditPhotos(event) {
+  const maxImages = window.__MAX_IMAGES || 3;
+  const currentCount = editGallery.length + editNewImages.length;
+  const remaining = Math.max(0, maxImages - currentCount);
   const files = Array.from(event.target.files || []);
-  for (const file of files.slice(0, 5)) {
+  for (const file of files.slice(0, remaining)) {
     try { editNewImages.push(await compressImageToWebp(file)); } catch { /* skip */ }
   }
+  if (files.length > remaining) { alert(`目前方案最多 ${maxImages} 張圖片`); }
   renderEditGallery();
   event.target.value = "";
 }

@@ -71,11 +71,12 @@ async function serveTenantHtml(
 
   // Fetch store info for context injection
   const storeRow = await ctx.db
-    .prepare("SELECT destination_country, name, template FROM stores WHERE id = ?")
+    .prepare("SELECT destination_country, name, description, template FROM stores WHERE id = ?")
     .bind(ctx.storeId)
-    .first<{ destination_country: string; name: string; template: string }>();
+    .first<{ destination_country: string; name: string; description: string; template: string }>();
   const country = storeRow?.destination_country || "jp";
   const storeName = storeRow?.name || "vovosnap";
+  const storeDesc = storeRow?.description || "";
   const template = storeRow?.template || "default";
   const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
 
@@ -99,7 +100,9 @@ async function serveTenantHtml(
 window.__API_BASE="${ctx.basePath}";
 window.__STORE_SLUG="${ctx.storeSlug}";
 window.__STORE_PLAN="${ctx.storePlan}";
+window.__MAX_IMAGES=${{ free: 3, starter: 4, pro: 8 }[ctx.storePlan] || 3};
 window.__STORE_NAME="${storeName.replace(/"/g, '\\"')}";
+window.__STORE_DESC="${storeDesc.replace(/"/g, '\\"')}";
 window.__STORE_COUNTRY="${country}";
 window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
 window.__DISPLAY_SETTINGS=${displaySettings};

@@ -185,3 +185,91 @@
   background: #D8DCE3;
   color: #4D5968;
 }
+
+/* ── Template: bold-gold (白黃黑) ── */
+[data-template="bold-gold"] {
+  --bg-color: #FAFAF5;
+  --card-bg: #FFFFFF;
+  --primary-color: #C8A415;
+  --primary-hover: #B08E0A;
+  --text-color: #1A1A1A;
+  --accent-warm: #2A2A2A;
+  --accent-warm-hover: #1A1A1A;
+  --accent-warm-subtle: #F5F0D8;
+  --accent-gold: #C8A415;
+  --accent-gold-bg: #FFF9E0;
+  --muted: #6A6A6A;
+  --muted-brand: #8A8A5A;
+  --line: #E8E4D0;
+  --shadow: 0 4px 12px rgba(30, 30, 20, 0.08);
+  --btn-secondary: #3A3A3A;
+  --btn-secondary-hover: #2A2A2A;
+  --btn-added: #2A7A3A;
+  --card-border: rgba(200, 164, 21, 0.15);
+  --brand-shadow-sm: rgba(200, 164, 21, 0.15);
+  --brand-shadow-md: rgba(200, 164, 21, 0.22);
+  --brand-shadow-lg: rgba(200, 164, 21, 0.3);
+  --focus-ring: rgba(200, 164, 21, 0.12);
+}
+[data-template="bold-gold"] .page-header {
+  border-image: linear-gradient(90deg, #C8A415 0%, #2A2A2A 100%) 1;
+}
+[data-template="bold-gold"] .promo-badge {
+  color: #1A1A1A;
+  background: linear-gradient(135deg, #FFE066, #FFCC00);
+  border-color: #C8A415;
+  box-shadow: 0 2px 6px rgba(200, 164, 21, 0.3);
+}
+[data-template="bold-gold"] .btn-pill.secondary {
+  background: #F0ECE0;
+  color: #2A2A2A;
+  border-color: #D8D0B8;
+}
+[data-template="bold-gold"] .btn-pill.secondary:hover {
+  background: #E8E2D0;
+  color: #1A1A1A;
+}
+
+/* ── Template: bold-ocean (白藍黑) ── */
+[data-template="bold-ocean"] {
+  --bg-color: #F5F8FA;
+  --card-bg: #FFFFFF;
+  --primary-color: #2563EB;
+  --primary-hover: #1D4ED8;
+  --text-color: #1A1A2E;
+  --accent-warm: #1E293B;
+  --accent-warm-hover: #0F172A;
+  --accent-warm-subtle: #E0ECFF;
+  --accent-gold: #3B82F6;
+  --accent-gold-bg: #EFF6FF;
+  --muted: #64748B;
+  --muted-brand: #4A6FA5;
+  --line: #D4DEE8;
+  --shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+  --btn-secondary: #334155;
+  --btn-secondary-hover: #1E293B;
+  --btn-added: #16A34A;
+  --card-border: rgba(37, 99, 235, 0.1);
+  --brand-shadow-sm: rgba(37, 99, 235, 0.12);
+  --brand-shadow-md: rgba(37, 99, 235, 0.18);
+  --brand-shadow-lg: rgba(37, 99, 235, 0.25);
+  --focus-ring: rgba(37, 99, 235, 0.1);
+}
+[data-template="bold-ocean"] .page-header {
+  border-image: linear-gradient(90deg, #2563EB 0%, #1E293B 100%) 1;
+}
+[data-template="bold-ocean"] .promo-badge {
+  color: #1E3A8A;
+  background: linear-gradient(135deg, #93C5FD, #60A5FA);
+  border-color: #3B82F6;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+[data-template="bold-ocean"] .btn-pill.secondary {
+  background: #E8EEF5;
+  color: #334155;
+  border-color: #CBD5E1;
+}
+[data-template="bold-ocean"] .btn-pill.secondary:hover {
+  background: #DCE4EE;
+  color: #1E293B;
+}

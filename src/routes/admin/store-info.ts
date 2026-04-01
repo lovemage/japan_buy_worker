@@ -22,9 +22,9 @@ export async function handleStoreInfo(
   // GET: return store info including country config
   if (request.method === "GET") {
     const store = await ctx.db
-      .prepare("SELECT id, slug, name, owner_email, destination_country, display_currency, line_id, plan, plan_expires_at FROM stores WHERE id = ?")
+      .prepare("SELECT id, slug, name, description, owner_email, destination_country, display_currency, line_id, plan, plan_expires_at FROM stores WHERE id = ?")
       .bind(ctx.storeId)
-      .first<{ id: number; slug: string; name: string; owner_email: string; destination_country: string; display_currency: string; line_id: string | null; plan: string; plan_expires_at: string | null }>();
+      .first<{ id: number; slug: string; name: string; description: string; owner_email: string; destination_country: string; display_currency: string; line_id: string | null; plan: string; plan_expires_at: string | null }>();
 
     if (!store) return json({ ok: false, error: "Store not found" }, 404);
 
@@ -134,9 +134,9 @@ export async function handleStoreNameUpdate(
 ): Promise<Response> {
   if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
 
-  let body: { name?: string };
+  let body: { name?: string; description?: string };
   try {
-    body = (await request.json()) as { name?: string };
+    body = (await request.json()) as { name?: string; description?: string };
   } catch {
     return json({ ok: false, error: "Invalid JSON" }, 400);
   }
@@ -144,9 +144,11 @@ export async function handleStoreNameUpdate(
   const name = (body.name || "").trim();
   if (!name || name.length > 100) return json({ ok: false, error: "Name required (max 100 chars)" }, 400);
 
+  const description = (body.description || "").trim().slice(0, 200);
+
   await ctx.db
-    .prepare("UPDATE stores SET name = ?, updated_at = datetime('now') WHERE id = ?")
-    .bind(name, ctx.storeId)
+    .prepare("UPDATE stores SET name = ?, description = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(name, description, ctx.storeId)
     .run();
 
   return json({ ok: true });
@@ -254,11 +256,13 @@ export async function handlePopupAdDelete(
 
 // ── Template selection ──
 const TEMPLATES: Record<string, { name: string; plans: string[] }> = {
-  default:    { name: "抹茶暖色", plans: ["free", "starter", "pro"] },
-  "ink-blue": { name: "墨藍",   plans: ["starter", "pro"] },
-  sand:       { name: "暖沙灰", plans: ["pro"] },
-  moss:       { name: "苔蘚灰綠", plans: ["pro"] },
-  slate:      { name: "石板灰藍", plans: ["pro"] },
+  default:      { name: "抹茶暖色", plans: ["free", "starter", "pro"] },
+  "ink-blue":   { name: "墨藍",     plans: ["starter", "pro"] },
+  sand:         { name: "暖沙灰",   plans: ["pro"] },
+  moss:         { name: "苔蘚灰綠", plans: ["pro"] },
+  slate:        { name: "石板灰藍", plans: ["pro"] },
+  "bold-gold":  { name: "白黃黑",   plans: ["pro"] },
+  "bold-ocean": { name: "白藍黑",   plans: ["pro"] },
 };
 
 export { TEMPLATES };

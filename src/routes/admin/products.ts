@@ -70,7 +70,9 @@ export async function handleAdminProducts(
   }
 
   const code = `manual-${Date.now()}`;
-  const images = Array.isArray(body.images) ? body.images.filter(Boolean) : [];
+  const galleryLimitsManual: Record<string, number> = { free: 3, starter: 4, pro: 8 };
+  const maxImg = galleryLimitsManual[ctx.storePlan] || 3;
+  const images = (Array.isArray(body.images) ? body.images.filter(Boolean) : []).slice(0, maxImg);
 
   const imageUrls: string[] = [];
   if (ctx.r2 && images.length > 0) {
@@ -251,6 +253,13 @@ export async function handleAdminProductUpdate(
     }
 
     finalGallery = [...existingGallery, ...newUrls];
+
+    // Enforce gallery limit per plan: free=3, starter=4, pro=8
+    const galleryLimits: Record<string, number> = { free: 3, starter: 4, pro: 8 };
+    const maxImages = galleryLimits[ctx.storePlan] || 3;
+    if (finalGallery.length > maxImages) {
+      finalGallery = finalGallery.slice(0, maxImages);
+    }
 
     // Update source_payload_json with new gallery
     let payloadObj: Record<string, unknown> = {};

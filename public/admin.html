@@ -298,7 +298,9 @@
           </div>
           <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
           <p class="meta">顯示在商店首頁的名稱</p>
-          <button class="button" type="button" onclick="saveStoreName()">儲存名稱</button>
+          <label style="margin-top:10px;">網站介紹<input id="store-description" type="text" class="input-cute" placeholder="日韓代購，品質保證" maxlength="200" /></label>
+          <p class="meta">顯示在商店名稱下方（最多 200 字）</p>
+          <button class="button" type="button" onclick="saveStoreName()">儲存</button>
           <p id="store-name-status" class="admin-status">已儲存</p>
 
           <hr class="admin-divider" />
@@ -333,8 +335,8 @@
       <div class="admin-sub-panel hidden" data-subtab-panel="display">
         <div class="admin-form-card" style="margin-bottom:12px;">
           <h3 class="admin-section-title">🎨 商店模板</h3>
-          <p class="meta" style="margin-bottom:12px;">選擇商店配色風格（Starter 可選 2 款，Pro 可選 5 款）</p>
-          <div id="template-selector" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;"></div>
+          <p class="meta" style="margin-bottom:12px;">選擇商店配色風格（Starter 可選 2 款，Pro 可選 7 款）</p>
+          <div id="template-selector" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
           <p id="template-status" class="admin-status">已套用</p>
         </div>
         <div class="admin-form-card">
@@ -508,11 +510,13 @@
 
   // Template selector
   var TPL_COLORS = {
-    "default":  "#8A9A5B",
-    "ink-blue": "#4A6178",
-    "sand":     "#8C7B6B",
-    "moss":     "#6B7F6B",
-    "slate":    "#5E6B7A"
+    "default":    "#8A9A5B",
+    "ink-blue":   "#4A6178",
+    "sand":       "#8C7B6B",
+    "moss":       "#6B7F6B",
+    "slate":      "#5E6B7A",
+    "bold-gold":  "linear-gradient(135deg, #C8A415, #1A1A1A)",
+    "bold-ocean": "linear-gradient(135deg, #2563EB, #1A1A2E)"
   };
 
   function loadTemplates() {
@@ -525,7 +529,9 @@
         { id: "ink-blue", name: "墨藍" },
         { id: "sand", name: "暖沙灰" },
         { id: "moss", name: "苔蘚灰綠" },
-        { id: "slate", name: "石板灰藍" }
+        { id: "slate", name: "石板灰藍" },
+        { id: "bold-gold", name: "白黃黑" },
+        { id: "bold-ocean", name: "白藍黑" }
       ];
       var available = d.templates.map(function(t){ return t.id; });
       el.innerHTML = allTpls.map(function(t) {
@@ -643,6 +649,8 @@
         loadDisplaySettings();
         var nameInput = document.getElementById("store-display-name");
         if (nameInput) nameInput.value = d.store.name || "";
+        var descInput = document.getElementById("store-description");
+        if (descInput) descInput.value = d.store.description || "";
         var emailEl = document.getElementById("member-email");
         if (emailEl) emailEl.textContent = d.store.owner_email || "";
         var expiresEl = document.getElementById("plan-expires");
@@ -659,11 +667,12 @@
 
   function saveStoreName() {
     var name = document.getElementById("store-display-name").value.trim();
+    var description = (document.getElementById("store-description")?.value || "").trim();
     if (!name) return;
     apiFetch("/api/admin/store-name", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: name }),
+      body: JSON.stringify({ name: name, description: description }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("store-name-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });

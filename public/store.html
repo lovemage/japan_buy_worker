@@ -32,6 +32,7 @@
         <div class="header-top">
           <div class="header-left">
             <h1 id="store-header-name">商品列表</h1>
+            <p id="store-desc" class="store-desc" style="display:none;"></p>
             <a href="/" style="font-size:11px;color:#6366f1;text-decoration:none;font-weight:600;">vovosnap</a>
             <p id="last-updated-text" class="meta">資料載入中...</p>
           </div>
@@ -94,6 +95,10 @@
     <script>
     var h = document.getElementById("store-header-name");
     if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+    if (window.__STORE_DESC) {
+      var descEl = document.getElementById("store-desc");
+      if (descEl) { descEl.textContent = window.__STORE_DESC; descEl.style.display = "block"; }
+    }
     // Render store logo
     var ds = window.__DISPLAY_SETTINGS || {};
     if (ds.storeLogo) {
