@@ -3,178 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>vovosnap — 出國代購，拍照就開店</title>
+<title>vovosnap — 拍照就開店</title>
 <style>
+:root {
+  --brand: #6366f1;
+  --brand-light: #e0e7ff;
+  --brand-dark: #4338ca;
+  --text: #1e1e2e;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --bg: #ffffff;
+  --bg-alt: #f8fafc;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --success: #22c55e;
+  --radius: 12px;
+}
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #fff; }
-.container { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
 
-/* Header */
-.header { padding: 16px 0; border-bottom: 1px solid #eee; position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 100; }
-.header .container { display: flex; justify-content: space-between; align-items: center; }
-.logo { font-size: 22px; font-weight: 700; color: #1a1a1a; text-decoration: none; }
-.logo span { color: #6366f1; }
-.nav { display: flex; gap: 8px; align-items: center; }
-.nav a { font-size: 14px; font-weight: 500; color: #555; text-decoration: none; padding: 8px 14px; border-radius: 6px; transition: all 0.15s; }
-.nav a:hover { background: #f5f5f5; color: #1a1a1a; }
-.btn { display: inline-block; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
-.btn:active { transform: scale(0.97); }
-.btn-outline { background: transparent; color: #1a1a1a; border: 1.5px solid #ddd; }
-.btn-outline:hover { border-color: #999; transform: translateY(-1px); }
-.btn-primary { background: #1a1a1a; color: #fff; }
-.btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.btn-google { background: #fff; color: #333; border: 1.5px solid #ddd; display: inline-flex; align-items: center; gap: 8px; }
-.btn-google:hover { border-color: #6366f1; background: #fafafa; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.12); }
-.btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+/* ── Nav ── */
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
+.nav-logo span { color: var(--brand); }
+.nav-actions { display: flex; gap: 8px; align-items: center; }
+.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
+.nav-link:hover { background: var(--bg-alt); color: var(--text); }
+.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s cubic-bezier(0.25,1,0.5,1); }
+.btn-sm:active { transform: scale(0.97); }
+.btn-fill { background: var(--brand); color: #fff; }
+.btn-fill:hover { background: var(--brand-dark); }
+.btn-ghost { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
 
-/* Hero */
-.hero { padding: 80px 0 60px; text-align: center; }
-.hero h1 { font-size: 46px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
-.hero h1 .accent { color: #6366f1; }
-.hero .subtitle { font-size: 18px; color: #666; max-width: 560px; margin: 0 auto 12px; line-height: 1.6; }
-.hero-flags { font-size: 28px; margin-bottom: 24px; letter-spacing: 8px; }
-.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+/* ── Hero ── */
+.hero { position: relative; overflow: hidden; background: var(--text); }
+.hero-img { width: 100%; height: 420px; object-fit: cover; opacity: 0.55; display: block; }
+.hero-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(99,102,241,0.9); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; letter-spacing: 0.5px; }
+.hero h1 { font-size: 36px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 10px; letter-spacing: -0.5px; }
+.hero h1 em { font-style: normal; color: var(--brand-light); }
+.hero-sub { font-size: 15px; color: rgba(255,255,255,0.8); max-width: 420px; line-height: 1.6; margin-bottom: 24px; }
+.hero-cta { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.btn-hero { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s cubic-bezier(0.25,1,0.5,1); }
+.btn-hero:active { transform: scale(0.97); }
+.btn-hero-primary { background: #fff; color: var(--text); }
+.btn-hero-primary:hover { background: var(--brand-light); }
+.btn-hero-primary svg { width: 18px; height: 18px; }
+.btn-hero-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.4); }
+.btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
 
-/* Feature highlight */
-.feature-highlight { padding: 48px 0; background: linear-gradient(135deg, #f8f7ff 0%, #f0f9ff 100%); }
-.feature-highlight .container { display: flex; gap: 40px; align-items: center; }
+/* ── Section shared ── */
+.section { padding: 56px 20px; }
+.section-inner { max-width: 960px; margin: 0 auto; }
+.section-title { font-size: 24px; font-weight: 800; text-align: center; margin-bottom: 6px; letter-spacing: -0.3px; }
+.section-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 32px; }
+
+/* ── How it works ── */
+.how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.how-card { padding: 24px 20px; border-radius: var(--radius); background: var(--bg-alt); border: 1px solid var(--border); transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
+.how-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+.how-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: var(--brand); color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+.how-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.how-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ── Feature ── */
+.feature { background: var(--bg-alt); }
+.feature-inner { display: flex; gap: 40px; align-items: center; }
 .feature-text { flex: 1; }
-.feature-text h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-.feature-text p { font-size: 15px; color: #555; line-height: 1.7; margin-bottom: 16px; }
-.feature-visual { flex: 1; display: flex; justify-content: center; }
-.phone-mockup { width: 220px; height: 400px; background: #1a1a1a; border-radius: 28px; padding: 12px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-.phone-screen { width: 100%; height: 100%; background: #fff; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-.phone-screen .cam-icon { font-size: 48px; margin-bottom: 12px; }
-.phone-screen .phone-text { font-size: 13px; color: #666; line-height: 1.5; }
-.phone-screen .phone-text strong { color: #6366f1; }
+.feature-text h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.3px; }
+.feature-text p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+.feature-visual { flex: 0 0 200px; }
+.feature-phone { width: 200px; height: 360px; background: var(--text); border-radius: 24px; padding: 10px; box-shadow: 0 20px 48px rgba(0,0,0,0.12); }
+.feature-screen { width: 100%; height: 100%; background: #fff; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.feature-screen .icon { font-size: 40px; margin-bottom: 10px; }
+.feature-screen strong { color: var(--brand); }
 
-/* Steps */
-.steps { padding: 64px 0; }
-.steps h2 { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 40px; }
-.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.step { background: #fafafa; border-radius: 12px; padding: 28px 24px; border: 1px solid #eee; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-.step:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); transform: translateY(-2px); }
-.step-num { display: inline-block; width: 32px; height: 32px; background: #6366f1; color: #fff; border-radius: 50%; text-align: center; line-height: 32px; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
-.step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-.step p { font-size: 14px; color: #666; line-height: 1.6; }
+/* ── Pricing ── */
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 860px; margin: 0 auto; }
+.plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px 20px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
+.plan:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.07); }
+.plan.pop { border-color: var(--brand); position: relative; box-shadow: 0 4px 24px rgba(99,102,241,0.12); }
+.plan.pop::before { content: "推薦"; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--brand); color: #fff; padding: 3px 14px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.plan-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.plan-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.plan-price { font-size: 34px; font-weight: 800; margin-bottom: 2px; letter-spacing: -1px; }
+.plan-price .cur { font-size: 16px; font-weight: 600; vertical-align: top; }
+.plan-price .per { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+.plan-line { height: 1px; background: var(--border); margin: 14px 0; }
+.plan-list { list-style: none; flex: 1; margin-bottom: 18px; }
+.plan-list li { padding: 5px 0; font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 7px; }
+.plan-list li::before { content: "✓"; color: var(--brand); font-weight: 700; flex-shrink: 0; }
+.plan-list li.off { color: var(--text-muted); opacity: 0.5; }
+.plan-list li.off::before { content: "—"; color: var(--text-muted); }
+.plan-btn { display: block; width: 100%; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; border: 1.5px solid var(--border); color: var(--text); background: var(--bg); transition: all 0.2s; cursor: pointer; margin-top: auto; }
+.plan-btn:hover { border-color: var(--brand); color: var(--brand); }
+.plan.pop .plan-btn { background: var(--brand); color: #fff; border-color: var(--brand); }
+.plan.pop .plan-btn:hover { background: var(--brand-dark); }
 
-/* Pricing */
-.pricing { padding: 64px 0; background: #fafafa; }
-.pricing h2 { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-.pricing .pricing-sub { text-align: center; font-size: 15px; color: #888; margin-bottom: 40px; }
-.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
-.plan { background: #fff; border: 2px solid #eee; border-radius: 14px; padding: 32px 24px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-.plan:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
-.plan.featured { border-color: #6366f1; position: relative; box-shadow: 0 8px 30px rgba(99,102,241,0.12); }
-.plan.featured:hover { box-shadow: 0 12px 40px rgba(99,102,241,0.18); }
-.plan.featured::before { content: "最受歡迎"; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #6366f1; color: #fff; padding: 4px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-.plan-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.plan-desc { font-size: 13px; color: #888; margin-bottom: 16px; }
-.plan-price { font-size: 40px; font-weight: 800; margin-bottom: 4px; }
-.plan-price .currency { font-size: 18px; font-weight: 600; vertical-align: top; margin-right: 2px; }
-.plan-price .period { font-size: 14px; font-weight: 400; color: #888; }
-.plan-divider { height: 1px; background: #eee; margin: 16px 0; }
-.plan-features { list-style: none; flex: 1; margin-bottom: 20px; }
-.plan-features li { padding: 7px 0; font-size: 14px; color: #555; display: flex; align-items: flex-start; gap: 8px; }
-.plan-features li::before { content: "✓"; color: #6366f1; font-weight: 700; flex-shrink: 0; }
-.plan-features li.disabled { color: #ccc; }
-.plan-features li.disabled::before { content: "—"; color: #ddd; }
-.plan-cta { margin-top: auto; }
-.plan-cta .btn { width: 100%; text-align: center; }
+/* ── CTA ── */
+.cta { text-align: center; }
+.cta h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.cta p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
 
-/* CTA */
-.cta-section { padding: 64px 0; text-align: center; }
-.cta-section h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-.cta-section p { font-size: 15px; color: #666; margin-bottom: 24px; }
+/* ── Footer ── */
+.footer { padding: 24px 20px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); }
+.footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
+.footer a:hover { color: var(--brand); }
 
-/* Animations */
-@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.3); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
-.hero h1 { animation: fadeUp 0.6s ease-out; }
-.hero .subtitle { animation: fadeUp 0.6s ease-out 0.1s both; }
-.hero-cta { animation: fadeUp 0.6s ease-out 0.2s both; }
-.phone-mockup { animation: float 4s ease-in-out infinite; }
-.plan.featured .btn { animation: pulse 2.5s ease-in-out infinite; }
-.fade-in { opacity: 0; transform: translateY(16px); transition: opacity 0.5s, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+/* ── Animations ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.hero-overlay > * { animation: fadeUp 0.5s ease-out both; }
+.hero-badge { animation-delay: 0s; }
+.hero h1 { animation-delay: 0.08s; }
+.hero-sub { animation-delay: 0.16s; }
+.hero-cta { animation-delay: 0.24s; }
+.feature-phone { animation: float 4s ease-in-out infinite; }
+.fade-in { opacity: 0; transform: translateY(12px); transition: opacity 0.45s, transform 0.45s cubic-bezier(0.25,1,0.5,1); }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
-/* Footer */
-.footer { padding: 32px 0; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 13px; }
-
+/* ── Mobile ── */
 @media (max-width: 768px) {
-  .hero { padding: 48px 0 36px; }
-  .hero h1 { font-size: 28px; }
-  .hero .subtitle { font-size: 14px; }
-  .hero-flags { font-size: 22px; letter-spacing: 6px; margin-bottom: 16px; }
-  .feature-highlight .container { flex-direction: column; text-align: center; }
-  .feature-highlight { padding: 32px 0; }
-  .feature-text h2 { font-size: 22px; }
-  .phone-mockup { width: 180px; height: 320px; }
-  .steps { padding: 40px 0; }
-  .steps h2 { font-size: 22px; margin-bottom: 24px; }
-  .steps-grid { grid-template-columns: 1fr; gap: 12px; }
-  .step { padding: 20px 16px; }
-  .pricing { padding: 40px 0; }
-  .pricing h2 { font-size: 22px; margin-bottom: 8px; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 360px; gap: 12px; }
-  .plan { padding: 24px 18px; }
-  .plan-price { font-size: 32px; }
-  .cta-section { padding: 40px 0; }
-  .cta-section h2 { font-size: 22px; }
-  .nav a.hide-mobile { display: none; }
-  .nav .btn { padding: 8px 14px; font-size: 13px; }
-  .header { padding: 12px 0; }
+  .hero-img { height: 320px; }
+  .hero h1 { font-size: 26px; }
+  .hero-sub { font-size: 14px; }
+  .btn-hero { padding: 10px 18px; font-size: 13px; }
+  .how-grid { grid-template-columns: 1fr; gap: 10px; }
+  .how-card { padding: 18px 16px; }
+  .feature-inner { flex-direction: column; text-align: center; }
+  .feature-visual { flex: none; }
+  .feature-phone { width: 160px; height: 288px; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; gap: 10px; }
+  .plan { padding: 22px 18px; }
+  .plan-price { font-size: 28px; }
+  .section { padding: 40px 16px; }
+  .section-title { font-size: 20px; }
+  .nav-link { display: none; }
 }
 @media (max-width: 380px) {
-  .hero h1 { font-size: 24px; }
-  .nav .btn-outline { display: none; }
-  .plan-price { font-size: 28px; }
+  .hero h1 { font-size: 22px; }
+  .btn-ghost { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- Header -->
-<header class="header">
-  <div class="container">
-    <a href="/" class="logo">vovo<span>snap</span></a>
-    <div class="nav">
-      <a href="#pricing" class="hide-mobile">方案</a>
-      <a href="/auth/google" class="btn btn-outline">註冊</a>
-      <a href="/auth/google" class="btn btn-primary">會員登入</a>
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">vovo<span>snap</span></a>
+    <div class="nav-actions">
+      <a href="#pricing" class="nav-link">方案</a>
+      <a href="/auth/google" class="btn-sm btn-ghost">註冊</a>
+      <a href="/auth/google" class="btn-sm btn-fill">登入</a>
     </div>
   </div>
-</header>
+</nav>
 
 <!-- Hero -->
 <section class="hero">
-  <div class="container">
-    <div class="hero-flags">🇯🇵 🇰🇷 🇹🇭</div>
-    <h1>拍照就開店<br><span class="accent">代購從此不一樣</span></h1>
-    <p class="subtitle">AI 自動辨識商品，一拍即上架。你的代購店面，30 秒就能開張。不用綁金流，客人自助下單，訂單自動彙整。</p>
+  <img src="/assets/images/image.png" alt="代購者在唐吉訶德掃貨" class="hero-img" />
+  <div class="hero-overlay">
+    <div class="hero-badge">🇯🇵 🇰🇷 🇹🇭 代購開店平台</div>
+    <h1>拍照就開店<br><em>代購從此不一樣</em></h1>
+    <p class="hero-sub">AI 辨識商品，一拍即上架。30 秒擁有你的代購店面，客人自助下單，訂單自動彙整。</p>
     <div class="hero-cta">
-      <a href="/auth/google" class="btn btn-google">
+      <a href="/auth/google" class="btn-hero btn-hero-primary">
         <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        使用 Google 帳號免費開始
+        Google 免費開始
       </a>
+      <a href="#pricing" class="btn-hero btn-hero-outline">查看方案</a>
     </div>
   </div>
 </section>
 
-<!-- Feature Highlight -->
-<section class="feature-highlight fade-in">
-  <div class="container">
-    <div class="feature-text">
-      <h2>📸 拍照即上架</h2>
-      <p>出國途中看到商品？拿起手機拍一張照片，AI 自動辨識品牌、品名、規格和建議售價。你只需要確認利潤，一鍵上架。</p>
-      <p>不用再一個個手動輸入商品資訊，不用在 LINE 群組裡一張張發照片。你的客人直接到你的店面自助瀏覽下單。</p>
+<!-- How it works -->
+<section class="section fade-in">
+  <div class="section-inner">
+    <h2 class="section-title">三步驟開店</h2>
+    <p class="section-sub">從註冊到接單，不到五分鐘</p>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <h3>免費註冊</h3>
+        <p>Google 帳號一鍵註冊，驗證 Email 和手機，設定店名和網址。</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <h3>拍照上架</h3>
+        <p>出國時拍照，AI 辨識品名、規格、價格，設定利潤後一鍵上架。</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <h3>分享接單</h3>
+        <p>分享店面連結到 LINE 群，客人自助瀏覽下單，訂單清單一目了然。</p>
+      </div>
     </div>
-    <div class="feature-visual">
-      <div class="phone-mockup">
-        <div class="phone-screen">
-          <div class="cam-icon">📷</div>
-          <div class="phone-text">
+  </div>
+</section>
+
+<!-- Feature -->
+<section class="section feature fade-in">
+  <div class="section-inner">
+    <div class="feature-inner">
+      <div class="feature-text">
+        <h2>📸 拍照即上架</h2>
+        <p>出國途中看到商品？拿起手機拍一張，AI 自動辨識品牌、品名、規格和建議售價。你只需要確認利潤，一鍵上架。</p>
+        <p>不用再手動輸入商品資訊，不用在 LINE 群組裡一張張發照片。你的客人直接到你的店面自助下單。</p>
+      </div>
+      <div class="feature-visual">
+        <div class="feature-phone">
+          <div class="feature-screen">
+            <div class="icon">📷</div>
             拍一張照片<br>
             <strong>AI 自動辨識</strong><br>
             品名 / 品牌 / 規格 / 價格<br><br>
@@ -186,122 +231,80 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </section>
 
-<!-- Steps -->
-<section class="steps fade-in">
-  <div class="container">
-    <h2>三步驟，開始你的代購事業</h2>
-    <div class="steps-grid">
-      <div class="step">
-        <div class="step-num">1</div>
-        <h3>免費註冊</h3>
-        <p>用 Google 帳號一鍵註冊，驗證 Email 和手機號碼，設定你的店面名稱和網址。</p>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <h3>拍照上架</h3>
-        <p>出國時拍照，AI 辨識商品資訊，設定利潤後一鍵上架。每件商品不到 1 分鐘。</p>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <h3>分享接單</h3>
-        <p>分享你的店面連結到 LINE 群組，客人自助瀏覽下單。訂單清單一目了然，不再漏單。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- Pricing -->
-<section class="pricing fade-in" id="pricing">
-  <div class="container">
-    <h2>選擇適合你的方案</h2>
-    <p class="pricing-sub">所有方案都可以免費開始，隨時升級</p>
+<section class="section fade-in" id="pricing">
+  <div class="section-inner">
+    <h2 class="section-title">選擇方案</h2>
+    <p class="section-sub">所有方案免費開始，隨時升級</p>
     <div class="pricing-grid">
-
-      <!-- Free -->
       <div class="plan">
         <div class="plan-name">Free</div>
-        <div class="plan-desc">剛開始代購，先試試水溫</div>
-        <div class="plan-price"><span class="currency">NT$</span>0</div>
-        <div class="plan-divider"></div>
-        <ul class="plan-features">
+        <div class="plan-desc">先試試水溫</div>
+        <div class="plan-price"><span class="cur">NT$</span>0</div>
+        <div class="plan-line"></div>
+        <ul class="plan-list">
           <li id="limit-free-display">最多 10 件商品</li>
           <li>基本店面頁面</li>
           <li>訂單管理</li>
-          <li>手動上架商品</li>
-          <li>AI 圖片辨識上架</li>
-          <li class="disabled">更換店面模板</li>
+          <li>手動上架</li>
+          <li>AI 圖片辨識</li>
+          <li class="off">更換模板</li>
         </ul>
-        <div class="plan-cta">
-          <a href="/auth/google" class="btn btn-outline" style="width:100%;">免費註冊</a>
-        </div>
+        <a href="/auth/google" class="plan-btn">免費註冊</a>
       </div>
-
-      <!-- Starter -->
-      <div class="plan featured">
+      <div class="plan pop">
         <div class="plan-name">Starter</div>
-        <div class="plan-desc">認真經營代購的你</div>
-        <div class="plan-price"><span class="currency">NT$</span>690<span class="period">/月</span></div>
-        <div class="plan-divider"></div>
-        <ul class="plan-features">
+        <div class="plan-desc">認真經營代購</div>
+        <div class="plan-price"><span class="cur">NT$</span>690<span class="per">/月</span></div>
+        <div class="plan-line"></div>
+        <ul class="plan-list">
           <li id="limit-starter-display">最多 50 件商品</li>
           <li>基本店面頁面</li>
           <li>訂單管理</li>
-          <li>手動上架商品</li>
+          <li>手動上架</li>
           <li>AI 圖片辨識自動上架</li>
-          <li class="disabled">更換店面模板</li>
+          <li class="off">更換模板</li>
         </ul>
-        <div class="plan-cta">
-          <a href="/auth/google" class="btn btn-primary" style="width:100%;">免費試用</a>
-        </div>
+        <a href="/auth/google" class="plan-btn">免費試用</a>
       </div>
-
-      <!-- Pro -->
       <div class="plan">
         <div class="plan-name">Pro</div>
-        <div class="plan-desc">全職代購，不受限制</div>
-        <div class="plan-price"><span class="currency">NT$</span>1,280<span class="period">/月</span></div>
-        <div class="plan-divider"></div>
-        <ul class="plan-features">
+        <div class="plan-desc">全職代購</div>
+        <div class="plan-price"><span class="cur">NT$</span>1,280<span class="per">/月</span></div>
+        <div class="plan-line"></div>
+        <ul class="plan-list">
           <li id="limit-pro-display">不限商品數量</li>
           <li>自訂子網域</li>
           <li>訂單管理</li>
-          <li>手動上架商品</li>
+          <li>手動上架</li>
           <li>AI 圖片辨識自動上架</li>
           <li>更換店面模板</li>
         </ul>
-        <div class="plan-cta">
-          <a href="/auth/google" class="btn btn-primary" style="width:100%;">免費試用</a>
-        </div>
+        <a href="/auth/google" class="plan-btn">免費試用</a>
       </div>
-
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section class="cta-section fade-in">
-  <div class="container">
-    <h2>準備好開始了嗎？</h2>
-    <p>免費註冊，30 秒開店。不需要信用卡。</p>
-    <a href="/auth/google" class="btn btn-google">
-      <svg viewBox="0 0 24 24" style="width:18px;height:18px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      使用 Google 帳號開始
-    </a>
-  </div>
+<section class="section cta fade-in">
+  <h2>準備好開始了嗎？</h2>
+  <p>免費註冊，30 秒開店，不需要信用卡。</p>
+  <a href="/auth/google" class="btn-hero btn-hero-primary" style="background:var(--brand);color:#fff;">
+    <svg viewBox="0 0 24 24" style="width:18px;height:18px;"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Google 免費開始
+  </a>
 </section>
 
 <!-- Footer -->
 <footer class="footer">
-  <div class="container">
-    <p>
-      <a href="/privacy.html" style="color:#888;text-decoration:none;margin-right:16px;">隱私權政策</a>
-      <a href="/terms.html" style="color:#888;text-decoration:none;">服務條款</a>
-    </p>
-    <p style="margin-top:8px;">&copy; 2026 vovosnap. All rights reserved.</p>
-  </div>
+  <a href="/privacy.html">隱私權政策</a>
+  <a href="/terms.html">服務條款</a>
+  <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
 </footer>
 
 <script>
+// Plan limits
 fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
   if (!d.ok) return;
   var l = d.limits;
@@ -314,12 +317,10 @@ fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
 }).catch(function(){});
 
 // Scroll reveal
-var observer = new IntersectionObserver(function(entries) {
-  entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add("visible"); observer.unobserve(e.target); } });
-}, { threshold: 0.15 });
-document.querySelectorAll(".fade-in").forEach(function(el) { observer.observe(el); });
-
-// Respect reduced motion
+var obs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll(".fade-in").forEach(function(el) { obs.observe(el); });
 if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   document.querySelectorAll(".fade-in").forEach(function(el) { el.classList.add("visible"); });
 }
