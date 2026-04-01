@@ -2,40 +2,71 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>vovosnap — 平台管理</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #f8f9fa; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #f8f9fa; padding-bottom: 72px; }
+
+/* Login */
 .login-wrap { max-width: 360px; margin: 80px auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #eee; }
-.login-wrap h1 { font-size: 20px; margin-bottom: 16px; }
+.login-wrap h1 { font-size: 20px; margin-bottom: 4px; }
+.login-wrap h1 span { color: #6366f1; }
+.login-wrap .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
 .login-wrap input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
 .login-wrap button { width: 100%; padding: 10px; background: #1a1a1a; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .login-wrap .error { color: #ef4444; font-size: 13px; margin-bottom: 8px; display: none; }
 
-.dashboard { max-width: 1100px; margin: 0 auto; padding: 20px; }
-.dashboard.hidden { display: none; }
-.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.topbar h1 { font-size: 22px; font-weight: 700; }
-.topbar h1 span { color: #6366f1; }
-.topbar button { padding: 8px 16px; background: #eee; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+/* Dashboard layout */
+.dashboard { display: none; }
+.dashboard.active { display: block; }
+.page-content { max-width: 1100px; margin: 0 auto; padding: 16px; }
+.page-content.hidden { display: none; }
 
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #eee; text-align: center; }
-.stat-num { font-size: 32px; font-weight: 800; color: #1a1a1a; }
-.stat-label { font-size: 13px; color: #888; margin-top: 4px; }
+/* Header */
+.header { background: #fff; border-bottom: 1px solid #eee; padding: 12px 16px; position: sticky; top: 0; z-index: 50; }
+.header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 18px; font-weight: 700; }
+.header h1 span { color: #6366f1; }
+.header .logout-btn { padding: 6px 14px; background: #f5f5f5; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; color: #666; }
 
-.filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.filter-btn { padding: 6px 14px; border: 1.5px solid #ddd; background: #fff; border-radius: 20px; font-size: 13px; cursor: pointer; }
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #eee; text-align: center; }
+.stat-num { font-size: 28px; font-weight: 800; }
+.stat-label { font-size: 12px; color: #888; margin-top: 2px; }
+
+/* Cards */
+.card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #eee; margin-bottom: 12px; }
+.card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.card label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
+.card input[type="password"], .card input[type="text"] { width: 100%; padding: 8px 10px; border: 1.5px solid #ddd; border-radius: 6px; font-size: 13px; margin-bottom: 8px; }
+.card .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn { padding: 8px 18px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-dark { background: #1a1a1a; color: #fff; }
+.btn-dark:hover { background: #333; }
+.toast { font-size: 12px; color: #22c55e; margin-left: 8px; display: none; }
+
+/* Filters */
+.filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.filter-btn { padding: 5px 12px; border: 1.5px solid #ddd; background: #fff; border-radius: 16px; font-size: 12px; cursor: pointer; }
 .filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #eee; }
-th { background: #fafafa; text-align: left; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #666; border-bottom: 1px solid #eee; }
-td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
-tr:last-child td { border-bottom: none; }
-tr:hover { background: #fafafa; }
+/* Member list (mobile-friendly cards) */
+.member-list { display: flex; flex-direction: column; gap: 8px; }
+.member-card { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 14px; }
+.member-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.member-name { font-size: 14px; font-weight: 700; }
+.member-email { font-size: 12px; color: #888; }
+.member-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #666; }
+.member-meta span { display: flex; align-items: center; gap: 4px; }
+.member-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.member-actions button { padding: 4px 10px; border: 1px solid #ddd; background: #fff; border-radius: 4px; font-size: 11px; cursor: pointer; }
+.member-actions button:hover { background: #f5f5f5; }
+.member-actions button.active-plan { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
-.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+/* Badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .badge-free { background: #f3f4f6; color: #6b7280; }
 .badge-starter { background: #dbeafe; color: #1d4ed8; }
 .badge-pro { background: #ede9fe; color: #6d28d9; }
@@ -43,109 +74,132 @@ tr:hover { background: #fafafa; }
 .badge-onboarding { background: #fef3c7; color: #92400e; }
 .badge-inactive { background: #fee2e2; color: #991b1b; }
 
-.actions select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+/* Bottom nav */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #eee; display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0 6px; cursor: pointer; border: none; background: none; color: #999; font-size: 10px; gap: 2px; transition: color 0.15s; }
+.nav-item.active { color: #6366f1; }
+.nav-item svg { width: 22px; height: 22px; }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
-  table { font-size: 12px; }
-  th, td { padding: 8px 10px; }
+  .card .row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
 <!-- Login -->
-<div class="login-wrap" id="login-section">
-  <h1>🔐 平台管理員</h1>
+<div id="login-section" class="login-wrap">
+  <h1>vovo<span>snap</span></h1>
+  <p class="sub">平台管理員登入</p>
   <div class="error" id="login-error"></div>
+  <input type="email" id="admin-email" placeholder="管理員 Email" onkeydown="if(event.key==='Enter')document.getElementById('admin-password').focus()">
   <input type="password" id="admin-password" placeholder="管理員密碼" onkeydown="if(event.key==='Enter')login()">
   <button onclick="login()">登入</button>
 </div>
 
 <!-- Dashboard -->
-<div class="dashboard hidden" id="dashboard">
-  <div class="topbar">
-    <h1>vovo<span>snap</span> 管理後台</h1>
-    <button onclick="logout()">登出</button>
+<div id="dashboard" class="dashboard">
+  <div class="header">
+    <div class="header-inner">
+      <h1>vovo<span>snap</span></h1>
+      <button class="logout-btn" onclick="logout()">登出</button>
+    </div>
   </div>
 
-  <!-- API Key Management -->
-  <div style="background:#fff;border-radius:10px;padding:20px;border:1px solid #eee;margin-bottom:24px;">
-    <h3 style="margin:0 0 12px;font-size:16px;">🔑 Gemini API Key 管理</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div>
-        <label style="font-size:13px;font-weight:600;color:#666;display:block;margin-bottom:4px;">Starter 方案 API Key</label>
-        <input type="password" id="api-key-starter" placeholder="Gemini API Key for Starter" style="width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;">
+  <!-- Tab: 總覽 -->
+  <div class="page-content" id="page-overview">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總會員</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-free">0</div><div class="stat-label">Free</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-starter">0</div><div class="stat-label">Starter</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-pro">0</div><div class="stat-label">Pro</div></div>
+    </div>
+  </div>
+
+  <!-- Tab: 會員 -->
+  <div class="page-content hidden" id="page-members">
+    <div class="filters" id="member-filters">
+      <button class="filter-btn active" onclick="filterStores('all', this)">全部</button>
+      <button class="filter-btn" onclick="filterStores('free', this)">Free</button>
+      <button class="filter-btn" onclick="filterStores('starter', this)">Starter</button>
+      <button class="filter-btn" onclick="filterStores('pro', this)">Pro</button>
+      <button class="filter-btn" onclick="filterStores('onboarding', this)">Onboarding</button>
+    </div>
+    <div class="member-list" id="member-list"></div>
+  </div>
+
+  <!-- Tab: API Keys -->
+  <div class="page-content hidden" id="page-keys">
+    <div class="card">
+      <h3>🔑 Gemini API Key</h3>
+      <div class="row">
+        <div>
+          <label>Starter 方案</label>
+          <input type="password" id="api-key-starter" placeholder="Starter API Key">
+        </div>
+        <div>
+          <label>Pro 方案</label>
+          <input type="password" id="api-key-pro" placeholder="Pro API Key">
+        </div>
       </div>
-      <div>
-        <label style="font-size:13px;font-weight:600;color:#666;display:block;margin-bottom:4px;">Pro 方案 API Key</label>
-        <input type="password" id="api-key-pro" placeholder="Gemini API Key for Pro" style="width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;">
-      </div>
-    </div>
-    <button onclick="saveApiKeys()" style="margin-top:12px;padding:8px 20px;background:#1a1a1a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">儲存 API Keys</button>
-    <span id="api-key-status" style="font-size:12px;color:#22c55e;margin-left:8px;display:none;">已儲存</span>
-  </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-num" id="stat-total">0</div>
-      <div class="stat-label">總會員數</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-free">0</div>
-      <div class="stat-label">Free</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-starter">0</div>
-      <div class="stat-label">Starter</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-pro">0</div>
-      <div class="stat-label">Pro</div>
+      <button class="btn btn-dark" onclick="saveApiKeys()">儲存</button>
+      <span class="toast" id="api-key-toast">已儲存</span>
     </div>
   </div>
 
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all" onclick="filterStores('all', this)">全部</button>
-    <button class="filter-btn" data-filter="free" onclick="filterStores('free', this)">Free</button>
-    <button class="filter-btn" data-filter="starter" onclick="filterStores('starter', this)">Starter</button>
-    <button class="filter-btn" data-filter="pro" onclick="filterStores('pro', this)">Pro</button>
-    <button class="filter-btn" data-filter="onboarding" onclick="filterStores('onboarding', this)">Onboarding 中</button>
+  <!-- Tab: 設定 -->
+  <div class="page-content hidden" id="page-settings">
+    <div class="card">
+      <h3>⚙️ 平台設定</h3>
+      <p style="font-size:13px;color:#888;">平台管理員限定 Email：</p>
+      <p style="font-size:13px;margin-top:4px;">lovemage@gmail.com, aistorm0910@gmail.com</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+      <button class="btn btn-dark" onclick="logout()">登出</button>
+    </div>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>店面名稱</th>
-        <th>Slug</th>
-        <th>Email</th>
-        <th>方案</th>
-        <th>到期日</th>
-        <th>狀態</th>
-        <th>商品數</th>
-        <th>訂單數</th>
-        <th>註冊時間</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody id="stores-tbody"></tbody>
-  </table>
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-page="overview" onclick="switchPage('overview', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>總覽</span>
+    </button>
+    <button class="nav-item" data-page="members" onclick="switchPage('members', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>會員</span>
+    </button>
+    <button class="nav-item" data-page="keys" onclick="switchPage('keys', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      <span>API</span>
+    </button>
+    <button class="nav-item" data-page="settings" onclick="switchPage('settings', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>設定</span>
+    </button>
+  </nav>
 </div>
 
 <script>
 let adminToken = sessionStorage.getItem("platform_admin_token") || "";
 let allStores = [];
 
+function switchPage(page, btn) {
+  document.querySelectorAll(".page-content").forEach(p => p.classList.add("hidden"));
+  document.getElementById("page-" + page).classList.remove("hidden");
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  btn.classList.add("active");
+}
+
 async function login() {
+  const email = document.getElementById("admin-email").value.trim();
   const pw = document.getElementById("admin-password").value;
   const errEl = document.getElementById("login-error");
   errEl.style.display = "none";
-
   const res = await fetch("/api/platform-admin/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ password: pw }),
+    body: JSON.stringify({ email, password: pw }),
   });
   const data = await res.json();
   if (data.ok) {
@@ -162,13 +216,80 @@ function logout() {
   adminToken = "";
   sessionStorage.removeItem("platform_admin_token");
   document.getElementById("login-section").style.display = "";
-  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("active");
+}
+
+async function showDashboard() {
+  document.getElementById("login-section").style.display = "none";
+  document.getElementById("dashboard").classList.add("active");
+  await loadStores();
+  await loadApiKeys();
+}
+
+async function loadStores() {
+  const res = await fetch("/api/platform-admin/stores", { headers: { authorization: "Bearer " + adminToken } });
+  const data = await res.json();
+  if (!data.ok) { if (data.error === "Unauthorized") logout(); return; }
+  allStores = data.stores.filter(s => s.id > 0); // exclude platform row
+  document.getElementById("stat-total").textContent = allStores.length;
+  document.getElementById("stat-free").textContent = allStores.filter(s => s.plan === "free").length;
+  document.getElementById("stat-starter").textContent = allStores.filter(s => s.plan === "starter").length;
+  document.getElementById("stat-pro").textContent = allStores.filter(s => s.plan === "pro").length;
+  renderStores(allStores);
+}
+
+function filterStores(filter, btn) {
+  document.querySelectorAll("#member-filters .filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  if (filter === "all") renderStores(allStores);
+  else if (filter === "onboarding") renderStores(allStores.filter(s => s.onboarding_step !== "complete"));
+  else renderStores(allStores.filter(s => s.plan === filter));
+}
+
+function renderStores(stores) {
+  document.getElementById("member-list").innerHTML = stores.map(s => {
+    const planClass = "badge-" + s.plan;
+    const statusBadge = s.onboarding_step !== "complete"
+      ? '<span class="badge badge-onboarding">' + s.onboarding_step + '</span>'
+      : s.is_active ? '<span class="badge badge-active">啟用</span>' : '<span class="badge badge-inactive">停用</span>';
+    const created = new Date(s.created_at).toLocaleDateString("zh-TW");
+    const expires = s.plan_expires_at ? new Date(s.plan_expires_at).toLocaleDateString("zh-TW") : "";
+
+    return '<div class="member-card">' +
+      '<div class="member-top">' +
+        '<div><div class="member-name">' + s.name + '</div><div class="member-email">' + s.owner_email + '</div></div>' +
+        '<div><span class="badge ' + planClass + '">' + s.plan.toUpperCase() + '</span> ' + statusBadge + '</div>' +
+      '</div>' +
+      '<div class="member-meta">' +
+        '<span>🔗 <a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a></span>' +
+        '<span>📦 ' + (s.product_count || 0) + ' 商品</span>' +
+        '<span>📋 ' + (s.order_count || 0) + ' 訂單</span>' +
+        '<span>📅 ' + created + '</span>' +
+        (expires ? '<span>⏰ ' + expires + '</span>' : '') +
+      '</div>' +
+      '<div class="member-actions">' +
+        '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
+        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'starter\')">Starter</button>' +
+        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'pro\')">Pro</button>' +
+        (s.is_active ? '<button onclick="updateStore(' + s.id + ',\'deactivate\')" style="color:#ef4444;">停用</button>' : '<button onclick="updateStore(' + s.id + ',\'activate\')" style="color:#22c55e;">啟用</button>') +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+async function updateStore(storeId, action) {
+  const res = await fetch("/api/platform-admin/stores/" + storeId, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ action }),
+  });
+  const data = await res.json();
+  if (data.ok) await loadStores();
+  else alert(data.error || "操作失敗");
 }
 
 async function loadApiKeys() {
-  const res = await fetch("/api/platform-admin/api-keys", {
-    headers: { authorization: "Bearer " + adminToken },
-  });
+  const res = await fetch("/api/platform-admin/api-keys", { headers: { authorization: "Bearer " + adminToken } });
   const data = await res.json();
   if (data.ok) {
     document.getElementById("api-key-starter").value = data.starterKey || "";
@@ -177,114 +298,21 @@ async function loadApiKeys() {
 }
 
 async function saveApiKeys() {
-  const starterKey = document.getElementById("api-key-starter").value.trim();
-  const proKey = document.getElementById("api-key-pro").value.trim();
   const res = await fetch("/api/platform-admin/api-keys", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
-    body: JSON.stringify({ starterKey, proKey }),
+    body: JSON.stringify({
+      starterKey: document.getElementById("api-key-starter").value.trim(),
+      proKey: document.getElementById("api-key-pro").value.trim(),
+    }),
   });
-  const data = await res.json();
-  if (data.ok) {
-    var status = document.getElementById("api-key-status");
-    status.style.display = "inline";
-    setTimeout(function() { status.style.display = "none"; }, 3000);
+  if ((await res.json()).ok) {
+    var t = document.getElementById("api-key-toast");
+    t.style.display = "inline";
+    setTimeout(function(){ t.style.display = "none"; }, 2000);
   }
 }
 
-async function showDashboard() {
-  document.getElementById("login-section").style.display = "none";
-  document.getElementById("dashboard").classList.remove("hidden");
-  await loadStores();
-  await loadApiKeys();
-}
-
-async function loadStores() {
-  const res = await fetch("/api/platform-admin/stores", {
-    headers: { authorization: `Bearer ${adminToken}` },
-  });
-  const data = await res.json();
-  if (!data.ok) {
-    if (data.error === "Unauthorized") { logout(); return; }
-    return;
-  }
-
-  allStores = data.stores;
-
-  // Stats
-  document.getElementById("stat-total").textContent = allStores.length;
-  document.getElementById("stat-free").textContent = allStores.filter(s => s.plan === "free").length;
-  document.getElementById("stat-starter").textContent = allStores.filter(s => s.plan === "starter").length;
-  document.getElementById("stat-pro").textContent = allStores.filter(s => s.plan === "pro").length;
-
-  renderStores(allStores);
-}
-
-function filterStores(filter, btn) {
-  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-
-  if (filter === "all") {
-    renderStores(allStores);
-  } else if (filter === "onboarding") {
-    renderStores(allStores.filter(s => s.onboarding_step !== "complete"));
-  } else {
-    renderStores(allStores.filter(s => s.plan === filter));
-  }
-}
-
-function renderStores(stores) {
-  const tbody = document.getElementById("stores-tbody");
-  tbody.innerHTML = stores.map(s => {
-    const planBadge = `<span class="badge badge-${s.plan}">${s.plan.toUpperCase()}</span>`;
-    const statusBadge = s.onboarding_step !== "complete"
-      ? `<span class="badge badge-onboarding">${s.onboarding_step}</span>`
-      : s.is_active
-        ? '<span class="badge badge-active">啟用</span>'
-        : '<span class="badge badge-inactive">停用</span>';
-    const expires = s.plan_expires_at ? new Date(s.plan_expires_at).toLocaleDateString("zh-TW") : "—";
-    const created = new Date(s.created_at).toLocaleDateString("zh-TW");
-
-    return `<tr>
-      <td>${s.id}</td>
-      <td>${s.name}</td>
-      <td><a href="/s/${s.slug}/" target="_blank">${s.slug}</a></td>
-      <td>${s.owner_email}</td>
-      <td>${planBadge}</td>
-      <td>${expires}</td>
-      <td>${statusBadge}</td>
-      <td>${s.product_count || 0}</td>
-      <td>${s.order_count || 0}</td>
-      <td>${created}</td>
-      <td>
-        <select onchange="updateStore(${s.id}, this.value); this.value='';">
-          <option value="">操作...</option>
-          <option value="free">設為 Free</option>
-          <option value="starter">設為 Starter</option>
-          <option value="pro">設為 Pro</option>
-          ${s.is_active ? '<option value="deactivate">停用</option>' : '<option value="activate">啟用</option>'}
-        </select>
-      </td>
-    </tr>`;
-  }).join("");
-}
-
-async function updateStore(storeId, action) {
-  if (!action) return;
-  const res = await fetch(`/api/platform-admin/stores/${storeId}`, {
-    method: "PATCH",
-    headers: { "content-type": "application/json", authorization: `Bearer ${adminToken}` },
-    body: JSON.stringify({ action }),
-  });
-  const data = await res.json();
-  if (data.ok) {
-    await loadStores();
-  } else {
-    alert(data.error || "操作失敗");
-  }
-}
-
-// Auto-login if token exists
 if (adminToken) showDashboard();
 </script>
 </body>

@@ -36,6 +36,12 @@ async function verifyToken(token: string, password: string): Promise<boolean> {
   return token === expected;
 }
 
+// Allowed platform admin emails
+const PLATFORM_ADMIN_EMAILS = [
+  "lovemage@gmail.com",
+  "aistorm0910@gmail.com",
+];
+
 export async function handlePlatformAdmin(
   request: Request,
   db: D1DatabaseLike,
@@ -52,13 +58,18 @@ export async function handlePlatformAdmin(
     return json({ ok: false, error: "Assets not configured" }, 500);
   }
 
-  // Login
+  // Login (requires email + password, email must be in whitelist)
   if (url.pathname === "/api/platform-admin/login" && request.method === "POST") {
-    let body: { password?: string };
+    let body: { email?: string; password?: string };
     try {
-      body = (await request.json()) as { password?: string };
+      body = (await request.json()) as { email?: string; password?: string };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+
+    const email = (body.email || "").trim().toLowerCase();
+    if (!PLATFORM_ADMIN_EMAILS.includes(email)) {
+      return json({ ok: false, error: "此 Email 無管理員權限" }, 403);
     }
 
     if (!platformPassword || body.password !== platformPassword) {
