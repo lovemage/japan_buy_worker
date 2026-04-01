@@ -69,19 +69,24 @@ async function serveTenantHtml(
 
   let html = await resp.text();
 
-  // Fetch store country for context injection
+  // Fetch store info for context injection
   const storeRow = await ctx.db
-    .prepare("SELECT destination_country FROM stores WHERE id = ?")
+    .prepare("SELECT destination_country, name FROM stores WHERE id = ?")
     .bind(ctx.storeId)
-    .first<{ destination_country: string }>();
+    .first<{ destination_country: string; name: string }>();
   const country = storeRow?.destination_country || "jp";
+  const storeName = storeRow?.name || "vovosnap";
   const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
+
+  // Replace page title with store name
+  html = html.replace(/<title>[^<]*<\/title>/, `<title>${storeName}</title>`);
 
   // Inject store context before </head>
   const inject = `<script>
 window.__API_BASE="${ctx.basePath}";
 window.__STORE_SLUG="${ctx.storeSlug}";
 window.__STORE_PLAN="${ctx.storePlan}";
+window.__STORE_NAME="${storeName.replace(/"/g, '\\"')}";
 window.__STORE_COUNTRY="${country}";
 window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};

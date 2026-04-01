@@ -188,7 +188,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <div class="plan-price"><span class="currency">NT$</span>0</div>
         <div class="plan-divider"></div>
         <ul class="plan-features">
-          <li>最多 20 件商品</li>
+          <li id="limit-free-display">最多 10 件商品</li>
           <li>基本店面頁面</li>
           <li>訂單管理</li>
           <li>手動上架商品</li>
@@ -207,7 +207,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <div class="plan-price"><span class="currency">NT$</span>690<span class="period">/月</span></div>
         <div class="plan-divider"></div>
         <ul class="plan-features">
-          <li>最多 50 件商品</li>
+          <li id="limit-starter-display">最多 50 件商品</li>
           <li>基本店面頁面</li>
           <li>訂單管理</li>
           <li>手動上架商品</li>
@@ -226,7 +226,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <div class="plan-price"><span class="currency">NT$</span>1,280<span class="period">/月</span></div>
         <div class="plan-divider"></div>
         <ul class="plan-features">
-          <li>不限商品數量</li>
+          <li id="limit-pro-display">不限商品數量</li>
           <li>自訂子網域</li>
           <li>訂單管理</li>
           <li>手動上架商品</li>
@@ -265,5 +265,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </footer>
 
+<script>
+fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
+  if (!d.ok) return;
+  var l = d.limits;
+  var f = document.getElementById("limit-free-display");
+  var s = document.getElementById("limit-starter-display");
+  var p = document.getElementById("limit-pro-display");
+  if (f && l.free > 0) f.textContent = "最多 " + l.free + " 件商品";
+  if (s && l.starter > 0) s.textContent = "最多 " + l.starter + " 件商品";
+  if (p) p.textContent = (l.pro && l.pro > 0) ? "最多 " + l.pro + " 件商品" : "不限商品數量";
+}).catch(function(){});
+</script>
 </body>
 </html>

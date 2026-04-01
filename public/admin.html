@@ -9,8 +9,12 @@
 <body class="admin-body">
   <header class="admin-topbar">
     <div class="admin-topbar__row">
-      <h1 id="admin-topbar-title">新增商品</h1>
-      <div class="admin-topbar__actions" id="admin-topbar-actions">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <h1 id="admin-topbar-title">新增商品</h1>
+        <a href="/" style="font-size:12px;color:#6366f1;text-decoration:none;font-weight:600;">vovosnap</a>
+      </div>
+      <div class="admin-topbar__actions" id="admin-topbar-actions" style="display:flex;align-items:center;gap:10px;">
+        <span id="plan-badge" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;background:#f3f4f6;color:#6b7280;"></span>
         <a class="admin-topbar__link" href="/store.html" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           檢視網站
@@ -85,9 +89,9 @@
       </div>
       <div class="admin-sub-panel hidden" data-subtab-panel="categories">
         <div class="admin-form-card">
-          <div class="category-add-row">
-            <input id="category-new-name" type="text" class="input-cute" placeholder="新分類名稱" />
-            <button id="category-add-btn" class="button" type="button">新增</button>
+          <div class="category-add-row" style="display:flex;gap:8px;">
+            <input id="category-new-name" type="text" class="input-cute" placeholder="新分類名稱" style="flex:1;min-width:0;" />
+            <button id="category-add-btn" class="button" type="button" style="flex-shrink:0;white-space:nowrap;">新增</button>
           </div>
           <div id="category-list" class="category-list"></div>
         </div>
@@ -316,6 +320,16 @@
     document.querySelectorAll(".src-currency").forEach(function(el) {
       el.textContent = conf.currency;
     });
+
+    // Plan badge in topbar
+    var badge = document.getElementById("plan-badge");
+    if (badge) {
+      badge.textContent = plan.toUpperCase();
+      var colors = { free: "#f3f4f6:#6b7280", starter: "#dbeafe:#1d4ed8", pro: "#ede9fe:#6d28d9" };
+      var c = (colors[plan] || colors.free).split(":");
+      badge.style.background = c[0];
+      badge.style.color = c[1];
+    }
 
     // Highlight active country button
     document.querySelectorAll(".country-btn").forEach(function(btn) {

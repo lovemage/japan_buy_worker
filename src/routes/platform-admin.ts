@@ -195,5 +195,59 @@ export async function handlePlatformAdmin(
     return json({ ok: true });
   }
 
+  // Get/Set system prompt for recognize
+  if (url.pathname === "/api/platform-admin/system-prompt" && request.method === "GET") {
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'recognize_prompt'")
+      .first<{ value: string }>();
+    return json({ ok: true, prompt: row?.value || "" });
+  }
+
+  if (url.pathname === "/api/platform-admin/system-prompt" && request.method === "POST") {
+    let body: { prompt?: string };
+    try {
+      body = (await request.json()) as { prompt?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    await db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'recognize_prompt', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(body.prompt || "")
+      .run();
+    return json({ ok: true });
+  }
+
+  // Get/Set plan product limits
+  if (url.pathname === "/api/platform-admin/plan-limits" && request.method === "GET") {
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
+      .first<{ value: string }>();
+    const defaults = { free: 10, starter: 50, pro: -1 };
+    try {
+      return json({ ok: true, limits: row?.value ? JSON.parse(row.value) : defaults });
+    } catch {
+      return json({ ok: true, limits: defaults });
+    }
+  }
+
+  if (url.pathname === "/api/platform-admin/plan-limits" && request.method === "POST") {
+    let body: { free?: number; starter?: number; pro?: number };
+    try {
+      body = (await request.json()) as { free?: number; starter?: number; pro?: number };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    const limits = {
+      free: body.free ?? 10,
+      starter: body.starter ?? 50,
+      pro: body.pro ?? -1,
+    };
+    await db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'plan_limits', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(JSON.stringify(limits))
+      .run();
+    return json({ ok: true });
+  }
+
   return json({ ok: false, error: "Not Found" }, 404);
 }

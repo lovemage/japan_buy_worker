@@ -41,18 +41,20 @@ export async function handleAdminProducts(
     });
   }
 
-  // Plan product limits: Free=20, Starter=50, Pro=unlimited
-  const planLimits: Record<string, number> = { free: 20, starter: 50 };
+  // Plan product limits: read from platform config (store_id=0)
+  const limitsRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
+    .first<{ value: string }>();
+  const planLimits = limitsRow?.value ? JSON.parse(limitsRow.value) : { free: 10, starter: 50, pro: -1 };
   const limit = planLimits[ctx.storePlan];
-  if (limit) {
+  if (limit && limit > 0) {
     const countRow = await ctx.db
       .prepare("SELECT COUNT(1) as c FROM products WHERE store_id = ?")
       .bind(ctx.storeId)
       .first<{ c: number }>();
     if ((countRow?.c || 0) >= limit) {
-      const planName = ctx.storePlan === "free" ? "Free" : "Starter";
       return new Response(
-        JSON.stringify({ ok: false, error: `${planName} 方案最多 ${limit} 件商品。升級方案以解鎖更多商品。` }),
+        JSON.stringify({ ok: false, error: `${ctx.storePlan.toUpperCase()} 方案最多 ${limit} 件商品。升級方案以解鎖更多商品。` }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
     }

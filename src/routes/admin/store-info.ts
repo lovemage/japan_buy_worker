@@ -2,9 +2,9 @@ import type { RequestContext } from "../../context";
 
 // Country → currency mapping
 export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number }> = {
-  jp: { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓", defaultRate: 0.22 },
+  jp: { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓", defaultRate: 0.21 },
   kr: { currency: "KRW", currencySymbol: "₩", currencyLabel: "韓元", defaultRate: 0.024 },
-  th: { currency: "THB", currencySymbol: "฿", currencyLabel: "泰銖", defaultRate: 0.9 },
+  th: { currency: "THB", currencySymbol: "฿", currencyLabel: "泰銖", defaultRate: 1.01 },
   tw: { currency: "TWD", currencySymbol: "NT$", currencyLabel: "台幣", defaultRate: 1 },
 };
 
@@ -66,18 +66,11 @@ export async function handleStoreInfo(
       .bind(country, "TWD", ctx.storeId)
       .run();
 
-    // Set default exchange rate for this country if not already set
-    const existingRate = await ctx.db
-      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'exchange_rate'")
-      .bind(ctx.storeId)
-      .first<{ value: string }>();
-
-    if (!existingRate) {
-      await ctx.db
-        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'exchange_rate', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
-        .bind(ctx.storeId, String(conf.defaultRate))
-        .run();
-    }
+    // Update exchange rate to country default when switching country
+    await ctx.db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'jpy_to_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(ctx.storeId, String(conf.defaultRate))
+      .run();
 
     return json({ ok: true, country, countryConfig: conf });
   }

@@ -1,4 +1,5 @@
 import type { RequestContext } from "../../context";
+import type { D1DatabaseLike } from "../../types/d1";
 import { getGeminiApiKey } from "./settings";
 
 type RecognizeRequest = {
@@ -19,11 +20,20 @@ type RecognizeResult = {
   searchSources: string[];
 };
 
-const RECOGNIZE_PROMPT = `你是日本商品辨識專家。分析以下日本商品包裝照片，提取商品資訊並翻譯為繁體中文。
+const DEFAULT_RECOGNIZE_PROMPT = `你是商品辨識專家。分析以下商品包裝照片，提取商品資訊並翻譯為繁體中文。
 
-請回傳以下 JSON 格式：
+重要安全規則：
+如果圖片中的商品為以下類型，必須回傳 {"rejected": true, "reason": "辨識失敗：此商品無法上架"}：
+- 管制藥品、毒品、違禁品
+- 武器、彈藥
+- 仿冒品、明顯的假冒商品
+- 色情或暴力內容
+- 任何違反法律的商品
+
+若商品合法，請回傳以下 JSON 格式：
 {
-  "titleJa": "日文商品名（從包裝上讀取）",
+  "rejected": false,
+  "titleJa": "原文商品名（從包裝上讀取）",
   "titleZhTw": "繁體中文商品名（翻譯）",
   "brand": "品牌名",
   "category": "商品分類（例如：保養品、零食、日用品、服飾、文具等）",
@@ -36,12 +46,19 @@ const RECOGNIZE_PROMPT = `你是日本商品辨識專家。分析以下日本商
 }
 
 注意事項：
-- 如果包裝上有價格標籤，填入 priceJpy（整數日圓）
+- 如果包裝上有價格標籤，填入 priceJpy（整數）
 - 如果無法辨識的欄位，用空字串或空陣列
 - specs 只列出能從包裝上看到的規格
 - sizeOptions/colorOptions 只列出包裝上標示的選項
-- 品牌名保留日文/英文原文
+- 品牌名保留原文
 - category 用繁體中文`;
+
+async function getRecognizePrompt(db: D1DatabaseLike): Promise<string> {
+  const row = await db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'recognize_prompt'")
+    .first<{ value: string }>();
+  return row?.value || DEFAULT_RECOGNIZE_PROMPT;
+}
 
 const SEARCH_PROMPT_SUFFIX = `
 
@@ -102,9 +119,10 @@ export async function handleAdminRecognize(
   }
 
   const mode = body.mode === "search" ? "search" : "quick";
+  const basePrompt = await getRecognizePrompt(ctx.db);
   const prompt = mode === "search"
-    ? RECOGNIZE_PROMPT + SEARCH_PROMPT_SUFFIX
-    : RECOGNIZE_PROMPT;
+    ? basePrompt + SEARCH_PROMPT_SUFFIX
+    : basePrompt;
 
   const imageParts = body.images.map((b64) => ({
     inline_data: { mime_type: "image/jpeg" as const, data: b64 },
@@ -168,15 +186,25 @@ export async function handleAdminRecognize(
     );
   }
 
-  let result: RecognizeResult;
+  let parsed: Record<string, unknown>;
   try {
-    result = JSON.parse(rawText) as RecognizeResult;
+    parsed = JSON.parse(rawText);
   } catch {
     return new Response(
       JSON.stringify({ ok: false, error: "Gemini 回傳格式解析失敗", raw: rawText.slice(0, 500) }),
       { status: 502, headers: { "content-type": "application/json" } }
     );
   }
+
+  // Check if the product was rejected (illegal/prohibited)
+  if (parsed.rejected) {
+    return new Response(
+      JSON.stringify({ ok: false, error: (parsed.reason as string) || "辨識失敗：此商品無法上架" }),
+      { status: 403, headers: { "content-type": "application/json" } }
+    );
+  }
+
+  const result = parsed as RecognizeResult;
 
   // Increment AI recognize counter (for free plan tracking)
   await ctx.db

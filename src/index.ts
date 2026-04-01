@@ -97,6 +97,15 @@ export default {
       return handlePlatformAdmin(request, env.DB, env.PLATFORM_ADMIN_PASSWORD || "", env.ASSETS);
     }
 
+    // ── Public API: plan limits (for landing page) ──
+    if (url.pathname === "/api/plan-limits") {
+      const row = await env.DB
+        .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
+        .first<{ value: string }>();
+      const limits = row?.value ? JSON.parse(row.value) : { free: 10, starter: 50, pro: -1 };
+      return json({ ok: true, limits });
+    }
+
     // ── Auth routes (platform-level, not tenant-scoped) ──
     if (url.pathname === "/auth/google") {
       return handleGoogleAuthRedirect(getAuthEnv(env));

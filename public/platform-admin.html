@@ -151,7 +151,36 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <!-- Tab: 設定 -->
   <div class="page-content hidden" id="page-settings">
     <div class="card">
-      <h3>⚙️ 平台設定</h3>
+      <h3>📦 方案商品上限</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:10px;">設定各方案最多可上架的商品數量。此設定也會同步顯示在首頁方案介紹。Pro 設為 -1 代表無限制。</p>
+      <div class="row">
+        <div>
+          <label>Free 上限</label>
+          <input type="number" id="limit-free" min="1" value="10" class="input-cute" style="width:100%;">
+        </div>
+        <div>
+          <label>Starter 上限</label>
+          <input type="number" id="limit-starter" min="1" value="50" class="input-cute" style="width:100%;">
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <label>Pro 上限 <span style="font-size:11px;color:#888;">(-1 = 無限制)</span></label>
+        <input type="number" id="limit-pro" value="-1" class="input-cute" style="width:120px;">
+      </div>
+      <button class="btn btn-dark" style="margin-top:10px;" onclick="savePlanLimits()">儲存</button>
+      <span class="toast" id="plan-limits-toast">已儲存</span>
+    </div>
+
+    <div class="card">
+      <h3>🤖 AI 辨識 System Prompt</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">自訂 AI 辨識的系統提示詞。包含違法商品過濾規則。留空使用預設值。</p>
+      <textarea id="system-prompt" rows="12" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace;resize:vertical;"></textarea>
+      <button class="btn btn-dark" style="margin-top:8px;" onclick="saveSystemPrompt()">儲存</button>
+      <span class="toast" id="prompt-toast">已儲存</span>
+    </div>
+
+    <div class="card">
+      <h3>⚙️ 管理員資訊</h3>
       <p style="font-size:13px;color:#888;">平台管理員限定 Email：</p>
       <p style="font-size:13px;margin-top:4px;">lovemage@gmail.com, aistorm0910@gmail.com</p>
       <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
@@ -224,6 +253,8 @@ async function showDashboard() {
   document.getElementById("dashboard").classList.add("active");
   await loadStores();
   await loadApiKeys();
+  await loadSystemPrompt();
+  await loadPlanLimits();
 }
 
 async function loadStores() {
@@ -311,6 +342,44 @@ async function saveApiKeys() {
     t.style.display = "inline";
     setTimeout(function(){ t.style.display = "none"; }, 2000);
   }
+}
+
+// System prompt management
+async function loadSystemPrompt() {
+  var res = await fetch("/api/platform-admin/system-prompt", { headers: { authorization: "Bearer " + adminToken } });
+  var data = await res.json();
+  if (data.ok) document.getElementById("system-prompt").value = data.prompt || "";
+}
+async function saveSystemPrompt() {
+  var res = await fetch("/api/platform-admin/system-prompt", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ prompt: document.getElementById("system-prompt").value }),
+  });
+  if ((await res.json()).ok) { var t = document.getElementById("prompt-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000); }
+}
+
+// Plan limits management
+async function loadPlanLimits() {
+  var res = await fetch("/api/platform-admin/plan-limits", { headers: { authorization: "Bearer " + adminToken } });
+  var data = await res.json();
+  if (data.ok && data.limits) {
+    document.getElementById("limit-free").value = data.limits.free || 10;
+    document.getElementById("limit-starter").value = data.limits.starter || 50;
+    document.getElementById("limit-pro").value = data.limits.pro ?? -1;
+  }
+}
+async function savePlanLimits() {
+  var res = await fetch("/api/platform-admin/plan-limits", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({
+      free: Number(document.getElementById("limit-free").value),
+      starter: Number(document.getElementById("limit-starter").value),
+      pro: Number(document.getElementById("limit-pro").value),
+    }),
+  });
+  if ((await res.json()).ok) { var t = document.getElementById("plan-limits-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000); }
 }
 
 if (adminToken) showDashboard();
