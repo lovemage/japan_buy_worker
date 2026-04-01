@@ -305,6 +305,11 @@
             <div id="promo-filter-editor" style="display:flex;flex-direction:column;gap:8px;"></div>
             <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
           </div>
+          <hr class="admin-divider">
+          <h3 class="admin-section-title">📝 結帳感謝訊息</h3>
+          <p class="meta" style="margin-bottom:8px;">客人送出需求單後顯示的訊息。</p>
+          <textarea id="checkout-message-input" rows="4" class="input-cute" placeholder="請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。"></textarea>
+
           <button class="button" type="button" style="margin-top:12px;" onclick="saveDisplaySettings()">儲存顯示設定</button>
           <p id="display-status" class="admin-status">已儲存</p>
         </div>
@@ -460,6 +465,9 @@
         });
       }
       renderPromoEditor();
+      // Checkout message
+      var msgInput = document.getElementById("checkout-message-input");
+      if (msgInput && d.checkoutMessage) msgInput.value = d.checkoutMessage;
     });
   }
 
@@ -498,10 +506,11 @@
   function saveDisplaySettings() {
     var mode = "2card";
     document.querySelectorAll(".view-mode-opt.selected").forEach(function(b) { mode = b.dataset.mode; });
+    var checkoutMsg = (document.getElementById("checkout-message-input") || {}).value || "";
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems }),
+      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("display-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });

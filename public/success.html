@@ -3,31 +3,133 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>需求單送出成功</title>
+    <title>訂單確認</title>
     <link rel="stylesheet" href="/assets/styles.css" />
     <script>if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };</script>
+    <style>
+      .success-wrap { max-width: 480px; margin: 0 auto; padding: 24px 16px 80px; }
+      .success-header { text-align: center; padding: 32px 0 20px; }
+      .success-icon { font-size: 48px; margin-bottom: 12px; }
+      .success-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+      .success-header .order-code { font-size: 14px; color: #6366f1; font-weight: 600; }
+
+      .success-msg { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; margin-bottom: 16px; font-size: 14px; color: #166534; line-height: 1.7; }
+      .success-msg strong { display: block; margin-bottom: 4px; }
+
+      .order-summary { background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+      .order-summary-title { padding: 12px 14px; background: #fafafa; font-size: 13px; font-weight: 600; color: #666; border-bottom: 1px solid #eee; }
+      .order-item { padding: 10px 14px; border-bottom: 1px solid #f5f5f5; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
+      .order-item:last-child { border-bottom: none; }
+      .order-item .name { flex: 1; min-width: 0; }
+      .order-item .spec { color: #888; font-size: 12px; }
+      .order-item .price { text-align: right; white-space: nowrap; font-weight: 600; }
+      .order-totals { padding: 12px 14px; background: #fafafa; border-top: 1px solid #eee; }
+      .order-totals .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+      .order-totals .row.total { font-size: 16px; font-weight: 700; color: #1a1a1a; padding-top: 8px; border-top: 1px solid #eee; margin-top: 6px; }
+
+      .success-actions { display: flex; flex-direction: column; gap: 8px; }
+      .success-actions .btn-pill { text-align: center; text-decoration: none; }
+    </style>
   </head>
   <body>
-    <main class="container success-page">
-      <img src="/assets/images/success-shiba.png" alt="成功送出" class="success-page__mascot" />
-      <h1>需求單已建立</h1>
-      <p id="success-id" class="meta">單號載入中...</p>
-      <p class="meta">
-        請加入官方 Line，貼上以下訂單資訊，與客服確認代購流程與付款。
-      </p>
-      <a
-        class="btn-pill"
-        href="https://lin.ee/CnwC6Nt"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        加入官方 Line
-      </a>
+    <div class="success-wrap">
+      <div class="success-header">
+        <div class="success-icon">✅</div>
+        <h1>感謝您的訂購！</h1>
+        <p class="order-code" id="success-id">單號載入中...</p>
+      </div>
+
+      <div class="success-msg" id="checkout-message">
+        <strong>感謝您支持本商店服務</strong>
+        請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。
+      </div>
+
+      <div class="order-summary">
+        <div class="order-summary-title">訂單明細</div>
+        <div id="order-items"></div>
+        <div class="order-totals" id="order-totals"></div>
+      </div>
+
       <section id="success-error" class="notice hidden"></section>
-      <section id="success-detail" class="detail-spec-box success-page__detail"></section>
-      <button id="copy-order-text" class="btn-pill secondary" type="button">複製訂單資訊</button>
-      <a class="btn-pill secondary" href="/store.html">&larr; 返回商品列表</a>
-    </main>
-    <script type="module" src="/assets/app-success.js"></script>
+
+      <div class="success-actions">
+        <button id="copy-order-text" class="btn-pill" type="button">📋 複製訂單資訊</button>
+        <a class="btn-pill secondary" href="/store.html">← 返回商店</a>
+      </div>
+    </div>
+
+    <script type="module">
+    import { applyProductImageFallback } from "./assets/image-fallback.js";
+
+    const _cc = window.__COUNTRY_CONFIG || {};
+    const srcSym = _cc.currencySymbol || "¥";
+
+    async function loadOrder() {
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+      if (!id) { document.getElementById("success-id").textContent = "缺少訂單 ID"; return; }
+
+      const res = await apiFetch("/api/requirement?id=" + encodeURIComponent(id));
+      if (!res.ok) { document.getElementById("success-error").textContent = "載入失敗"; document.getElementById("success-error").classList.remove("hidden"); return; }
+      const data = await res.json();
+      if (!data.ok || !data.requirement) { document.getElementById("success-error").textContent = "找不到訂單"; document.getElementById("success-error").classList.remove("hidden"); return; }
+
+      const order = data.requirement;
+      document.getElementById("success-id").textContent = "訂單編號：" + (order.orderCode || order.id);
+
+      // Render items
+      const itemsEl = document.getElementById("order-items");
+      const items = order.items || [];
+      itemsEl.innerHTML = items.map(function(item) {
+        const spec = [item.desiredSize, item.desiredColor].filter(Boolean).join(" / ");
+        return '<div class="order-item">' +
+          '<div class="name">' + (item.productNameSnapshot || "商品") +
+            (spec ? '<div class="spec">' + spec + ' × ' + item.quantity + '</div>' : '<div class="spec">× ' + item.quantity + '</div>') +
+          '</div>' +
+          '<div class="price">NT$' + Number(item.subtotalTwd || 0).toLocaleString() + '</div>' +
+        '</div>';
+      }).join("");
+
+      // Render totals
+      const totalsEl = document.getElementById("order-totals");
+      const itemTotal = items.reduce(function(sum, i) { return sum + (Number(i.subtotalTwd) || 0); }, 0);
+      const shipping = Number(order.shippingTotalTwd) || 0;
+      totalsEl.innerHTML =
+        '<div class="row"><span>商品小計</span><span>NT$' + itemTotal.toLocaleString() + '</span></div>' +
+        (shipping > 0 ? '<div class="row"><span>運費</span><span>NT$' + shipping.toLocaleString() + '</span></div>' : '') +
+        '<div class="row total"><span>合計</span><span>NT$' + (itemTotal + shipping).toLocaleString() + '</span></div>';
+
+      // Copy button
+      document.getElementById("copy-order-text").addEventListener("click", function() {
+        var text = "【訂單確認】\n訂單編號：" + (order.orderCode || order.id) + "\n";
+        text += "姓名：" + (order.customerName || "") + "\n";
+        text += "電話：" + (order.memberPhone || "") + "\n";
+        text += "Line：" + (order.lineId || "") + "\n\n";
+        items.forEach(function(item) {
+          text += "• " + (item.productNameSnapshot || "") + " × " + item.quantity + " = NT$" + Number(item.subtotalTwd || 0).toLocaleString() + "\n";
+        });
+        text += "\n商品小計：NT$" + itemTotal.toLocaleString();
+        if (shipping > 0) text += "\n運費：NT$" + shipping.toLocaleString();
+        text += "\n合計：NT$" + (itemTotal + shipping).toLocaleString();
+        navigator.clipboard.writeText(text).then(function() {
+          var btn = document.getElementById("copy-order-text");
+          btn.textContent = "✓ 已複製";
+          setTimeout(function() { btn.textContent = "📋 複製訂單資訊"; }, 2000);
+        });
+      });
+
+      // Load custom checkout message from store settings
+      try {
+        const msgRes = await apiFetch("/api/admin/display-settings");
+        const msgData = await msgRes.json();
+        if (msgData.ok && msgData.checkoutMessage) {
+          document.getElementById("checkout-message").innerHTML =
+            '<strong>感謝您支持本商店服務</strong>' + msgData.checkoutMessage.replace(/\n/g, '<br>');
+        }
+      } catch(e) {}
+    }
+
+    loadOrder();
+    </script>
   </body>
 </html>

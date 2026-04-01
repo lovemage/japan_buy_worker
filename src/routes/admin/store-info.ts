@@ -102,9 +102,9 @@ export async function handleDisplaySettings(
   }
 
   if (request.method === "POST") {
-    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[] };
+    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string };
     try {
-      body = (await request.json()) as { viewMode?: string; promoFilters?: string[] };
+      body = (await request.json()) as { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
@@ -112,6 +112,7 @@ export async function handleDisplaySettings(
       viewMode: body.viewMode || "2card",
       promoEnabled: body.promoEnabled !== false,
       promoFilters: body.promoFilters || ["all", "350", "450", "550"],
+      checkoutMessage: body.checkoutMessage || "",
     };
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
