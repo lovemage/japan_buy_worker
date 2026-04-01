@@ -113,13 +113,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .footer a:hover { color: var(--brand); }
 
 /* ── Animations ── */
-@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-.hero-overlay > * { animation: fadeUp 0.5s ease-out both; }
-.hero-badge { animation-delay: 0s; }
-.hero h1 { animation-delay: 0.08s; }
-.hero-sub { animation-delay: 0.16s; }
-.hero-cta { animation-delay: 0.24s; }
+@keyframes heroImgReveal { from { opacity: 0; transform: scale(1.05); } to { opacity: 0.55; transform: scale(1); } }
+.hero-img { opacity: 0; animation: heroImgReveal 1.2s ease-out 0.3s both; }
+.hero-overlay > * { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.25,1,0.5,1) both; }
+.hero-badge { animation-delay: 2s; }
+.hero h1 { animation-delay: 2.2s; }
+.hero-sub { animation-delay: 2.5s; }
+.hero-cta { animation-delay: 2.8s; }
 .feature-phone { animation: float 4s ease-in-out infinite; }
 .fade-in { opacity: 0; transform: translateY(12px); transition: opacity 0.45s, transform 0.45s cubic-bezier(0.25,1,0.5,1); }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
@@ -167,7 +169,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <!-- Hero -->
 <section class="hero">
-  <img src="/assets/images/image.png" alt="代購者在唐吉訶德掃貨" class="hero-img" />
+  <img src="/assets/images/hero-image.jpg" alt="VOVOSnap — 拍照上架 隨拍隨賣" class="hero-img" />
   <div class="hero-overlay">
     <div class="hero-badge">🇯🇵 🇰🇷 🇹🇭 代購開店平台</div>
     <h1>拍照就開店<br><em>代購從此不一樣</em></h1>
