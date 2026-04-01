@@ -1701,10 +1701,35 @@ select:disabled {
 .floating-nav-buttons {
   position: fixed;
   right: 20px;
-  bottom: 78px;
+  bottom: 80px;
   z-index: 41;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+}
+
+.floating-nav-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: var(--card-bg);
+  color: var(--text-color);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.floating-nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+}
+
+.floating-nav-btn:active {
+  transform: translateY(0);
 }
 
 /* Category & View Filters */

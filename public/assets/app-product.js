@@ -212,7 +212,9 @@ function renderDraftCount() {
   if (!countNode) {
     return;
   }
-  countNode.textContent = String(getDraft().items.length);
+  const count = getDraft().items.length;
+  countNode.textContent = String(count);
+  countNode.style.display = count > 0 ? "" : "none";
 }
 
 function initBackLink() {
