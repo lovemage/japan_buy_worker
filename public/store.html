@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vovosnap 商品列表</title>
     <link rel="stylesheet" href="/assets/styles.css" />
+    <script>if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };</script>
   </head>
   <body>
     <div id="loading-overlay" class="loading-overlay" aria-live="polite" aria-label="載入中">
