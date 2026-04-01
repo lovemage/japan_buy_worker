@@ -38,7 +38,8 @@
 
     <header class="page-header">
       <div class="container">
-        <h1>Japan Buy 商品列表</h1>
+        <h1 id="store-header-name">商品列表</h1>
+        <a href="/" style="font-size:11px;color:#6366f1;text-decoration:none;font-weight:600;">vovosnap</a>
         <p id="last-updated-text" class="meta">資料載入中...</p>
         <div class="view-switch" aria-label="檢視切換">
           <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="list">列表</button>
@@ -78,6 +79,10 @@
       需求單（<span id="floating-draft-count">0</span>）
     </a>
 
+    <script>
+    var h = document.getElementById("store-header-name");
+    if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+    </script>
     <!-- Popup ad carousel -->
     <div id="popup-ad-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;">
       <div style="position:relative;max-width:90vw;max-height:80vh;">
