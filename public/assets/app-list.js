@@ -555,8 +555,8 @@ async function bootstrap() {
       category,
     });
     const [categoryRes, brandRes] = await Promise.all([
-      fetch("/api/product-categories"),
-      fetch(`/api/product-brands?${brandParams.toString()}`),
+      apiFetch("/api/product-categories"),
+      apiFetch(`/api/product-brands?${brandParams.toString()}`),
     ]);
     const categoryBody = categoryRes.ok ? await categoryRes.json() : null;
     const brandBody = brandRes.ok ? await brandRes.json() : null;
@@ -565,7 +565,7 @@ async function bootstrap() {
     renderBrandFilters(brands);
     renderCategoryFilters(categories);
 
-    const pricingRes = await fetch("/api/pricing");
+    const pricingRes = await apiFetch("/api/pricing");
     const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
     const pricing = pricingBody?.pricing || DEFAULT_PRICING;
     const page = getPage();
@@ -578,7 +578,7 @@ async function bootstrap() {
       category,
       brands: selectedBrands,
     });
-    const res = await fetch(`/api/products?${params.toString()}`);
+    const res = await apiFetch(`/api/products?${params.toString()}`);
     if (!res.ok) {
       throw new Error(`Load failed: ${res.status}`);
     }

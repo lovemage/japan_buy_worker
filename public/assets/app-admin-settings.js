@@ -1,7 +1,7 @@
 import { showError } from "./app-admin.js";
 
 async function loadPricing() {
-  const res = await fetch("/api/admin/pricing");
+  const res = await apiFetch("/api/admin/pricing");
   if (res.status === 401) { location.href = "/admin-login.html"; return; }
   if (!res.ok) return;
   const body = await res.json();
@@ -19,7 +19,7 @@ async function loadPricing() {
 
 async function savePricing() {
   const get = (id) => Number(document.getElementById(id)?.value || 0);
-  const res = await fetch("/api/admin/pricing", {
+  const res = await apiFetch("/api/admin/pricing", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -37,7 +37,7 @@ async function savePricing() {
 }
 
 async function loadGeminiSettings() {
-  const res = await fetch("/api/admin/settings/gemini");
+  const res = await apiFetch("/api/admin/settings/gemini");
   if (res.status === 401) { location.href = "/admin-login.html"; return; }
   if (!res.ok) return;
   const body = await res.json();
@@ -49,7 +49,7 @@ async function saveGeminiKey() {
   const input = document.getElementById("gemini-api-key");
   const key = input?.value?.trim();
   if (!key) { showError("請填入 Gemini API Key"); return; }
-  const res = await fetch("/api/admin/settings/gemini", {
+  const res = await apiFetch("/api/admin/settings/gemini", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ geminiApiKey: key }),
@@ -70,7 +70,7 @@ async function changePassword() {
   if (newPw !== confirmPw) { if (status) status.textContent = "新密碼與確認密碼不一致"; return; }
   if (newPw.length < 4) { if (status) status.textContent = "新密碼至少 4 個字元"; return; }
 
-  const res = await fetch("/api/admin/change-password", {
+  const res = await apiFetch("/api/admin/change-password", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw }),
@@ -88,7 +88,7 @@ async function changePassword() {
 }
 
 async function logout() {
-  await fetch("/api/admin/logout", { method: "POST" });
+  await apiFetch("/api/admin/logout", { method: "POST" });
   location.href = "/admin-login.html";
 }
 

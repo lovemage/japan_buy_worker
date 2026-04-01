@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vovosnap — 設定你的店面</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #f8f9fa; min-height: 100vh; }
+.container { max-width: 480px; margin: 0 auto; padding: 40px 20px; }
+.logo { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 32px; }
+.logo span { color: #6366f1; }
+.card { background: #fff; border-radius: 12px; padding: 32px 24px; border: 1px solid #eee; margin-bottom: 16px; }
+.card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.card p { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 16px; }
+
+/* Steps indicator */
+.steps { display: flex; gap: 4px; margin-bottom: 32px; }
+.steps .dot { flex: 1; height: 4px; border-radius: 2px; background: #e5e7eb; }
+.steps .dot.active { background: #6366f1; }
+.steps .dot.done { background: #22c55e; }
+
+/* Forms */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+.form-group input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; }
+.form-group input:focus { outline: none; border-color: #6366f1; }
+.form-group .hint { font-size: 12px; color: #999; margin-top: 4px; }
+.form-group .error { font-size: 12px; color: #ef4444; margin-top: 4px; display: none; }
+
+.btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; width: 100%; text-align: center; }
+.btn-primary { background: #1a1a1a; color: #fff; }
+.btn-primary:hover { background: #333; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+.btn-secondary { background: #f5f5f5; color: #333; margin-top: 8px; }
+.btn-secondary:hover { background: #eee; }
+
+.status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-done { background: #dcfce7; color: #166534; }
+
+.hidden { display: none !important; }
+.loading { text-align: center; padding: 20px; color: #888; }
+
+/* Phone input */
+#phone-container { min-height: 50px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">vovo<span>snap</span></div>
+
+  <div class="steps">
+    <div class="dot" id="dot-1"></div>
+    <div class="dot" id="dot-2"></div>
+    <div class="dot" id="dot-3"></div>
+  </div>
+
+  <div class="loading" id="loading">載入中...</div>
+
+  <!-- Step 1: Email Verification -->
+  <div class="card hidden" id="step-email">
+    <h2>📧 驗證 Email</h2>
+    <p>我們已發送驗證信到 <strong id="user-email"></strong>。請檢查你的信箱並點擊驗證連結。</p>
+    <button class="btn btn-secondary" id="resend-email-btn" onclick="resendEmail()">重新發送驗證信</button>
+    <p id="resend-status" style="font-size:13px;color:#22c55e;margin-top:8px;" class="hidden">已重新發送!</p>
+  </div>
+
+  <!-- Step 2: Phone Verification -->
+  <div class="card hidden" id="step-phone">
+    <h2>📱 驗證手機號碼</h2>
+    <p>輸入你的手機號碼，我們會發送簡訊驗證碼。</p>
+    <div class="form-group">
+      <label>手機號碼</label>
+      <input type="tel" id="phone-input" placeholder="+886 912345678" />
+    </div>
+    <button class="btn btn-primary" id="send-code-btn" onclick="sendPhoneCode()">發送驗證碼</button>
+
+    <div class="hidden" id="verify-code-section" style="margin-top:16px;">
+      <div class="form-group">
+        <label>驗證碼</label>
+        <input type="text" id="code-input" placeholder="123456" maxlength="6" />
+      </div>
+      <button class="btn btn-primary" onclick="verifyPhoneCode()">驗證</button>
+    </div>
+    <p id="phone-error" class="error"></p>
+    <div id="recaptcha-container"></div>
+  </div>
+
+  <!-- Step 3: Store Setup -->
+  <div class="card hidden" id="step-store">
+    <h2>🏪 設定你的店面</h2>
+    <p>最後一步! 設定你的店面名稱和網址。</p>
+    <div class="form-group">
+      <label>店面名稱</label>
+      <input type="text" id="store-name" placeholder="小美日本代購" maxlength="100" />
+    </div>
+    <div class="form-group">
+      <label>店面網址 (slug)</label>
+      <input type="text" id="store-slug" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
+      <div class="hint" id="slug-preview">你的店面網址：vovosnap.com/s/<span id="slug-display">...</span></div>
+      <div class="error" id="slug-error"></div>
+    </div>
+    <div class="form-group">
+      <label>LINE ID（選填）</label>
+      <input type="text" id="store-line" placeholder="@xiaomei_buy" />
+    </div>
+    <button class="btn btn-primary" onclick="completeSetup()">完成開店!</button>
+    <p id="setup-error" style="font-size:13px;color:#ef4444;margin-top:8px;" class="hidden"></p>
+  </div>
+
+  <!-- Complete -->
+  <div class="card hidden" id="step-complete">
+    <h2 style="text-align:center;">🎉 恭喜開店成功!</h2>
+    <p style="text-align:center;">你的 vovosnap 店面已經準備好了。</p>
+    <a id="go-to-store" href="#" class="btn btn-primary" style="display:block;text-decoration:none;margin-top:16px;">進入我的店面</a>
+  </div>
+</div>
+
+<!-- Firebase SDK v12 modular -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-du36pezrcL6l_RWxoAxGnl3rQIrMPro",
+  authDomain: "vovosnap-f6c12.firebaseapp.com",
+  projectId: "vovosnap-f6c12",
+  storageBucket: "vovosnap-f6c12.firebasestorage.app",
+  messagingSenderId: "201485964855",
+  appId: "1:201485964855:web:c14b0ce08584ff01a0d1b2",
+  measurementId: "G-E3TD4YZSWY"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+auth.languageCode = "zh-TW";
+
+let currentStore = null;
+let confirmationResult = null;
+
+// Initialize Firebase (project ID injected from env at build or fetched from API)
+async function initFirebase() {
+  const configResp = await fetch("/auth/me", { credentials: "same-origin" });
+  const configData = await configResp.json();
+  if (!configData.ok) {
+    // Not logged in — show login prompt instead of redirect loop
+    document.getElementById("loading").innerHTML =
+      '<p style="margin-bottom:16px;">請先登入</p>' +
+      '<a href="/auth/google" style="display:inline-block;padding:10px 20px;background:#1a1a1a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">使用 Google 登入</a>';
+    return;
+  }
+  currentStore = configData.store;
+  return configData;
+}
+
+async function init() {
+  const data = await initFirebase();
+  if (!data) return;
+
+  document.getElementById("loading").classList.add("hidden");
+
+  const step = currentStore.onboarding_step;
+  updateDots(step);
+
+  if (step === "email_pending") {
+    document.getElementById("user-email").textContent = currentStore.owner_email;
+    document.getElementById("step-email").classList.remove("hidden");
+    // Poll for email verification
+    pollEmailVerification();
+  } else if (step === "phone_pending") {
+    document.getElementById("step-phone").classList.remove("hidden");
+    setupRecaptcha();
+  } else if (step === "store_setup") {
+    document.getElementById("step-store").classList.remove("hidden");
+  } else if (step === "complete") {
+    document.getElementById("step-complete").classList.remove("hidden");
+    document.getElementById("go-to-store").href = "/s/" + currentStore.slug + "/admin";
+  }
+}
+
+function updateDots(step) {
+  const steps = ["email_pending", "phone_pending", "store_setup", "complete"];
+  const idx = steps.indexOf(step);
+  for (let i = 0; i < 3; i++) {
+    const dot = document.getElementById("dot-" + (i + 1));
+    dot.className = "dot";
+    if (i < idx) dot.classList.add("done");
+    else if (i === idx) dot.classList.add("active");
+  }
+}
+
+// Email verification polling
+async function pollEmailVerification() {
+  const check = async () => {
+    const resp = await fetch("/auth/me", { credentials: "same-origin" });
+    const data = await resp.json();
+    if (data.ok && data.store.onboarding_step !== "email_pending") {
+      window.location.reload();
+    }
+  };
+  setInterval(check, 5000);
+}
+
+async function resendEmail() {
+  const btn = document.getElementById("resend-email-btn");
+  btn.disabled = true;
+  btn.textContent = "發送中...";
+  await fetch("/auth/resend-verification", { method: "POST" });
+  btn.textContent = "重新發送驗證信";
+  btn.disabled = false;
+  document.getElementById("resend-status").classList.remove("hidden");
+  setTimeout(() => document.getElementById("resend-status").classList.add("hidden"), 3000);
+}
+
+// Phone verification (Firebase v12 modular)
+function setupRecaptcha() {
+  try {
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+      size: "invisible",
+      callback: () => { console.log("reCAPTCHA solved"); },
+    });
+  } catch (e) {
+    console.warn("RecaptchaVerifier init:", e);
+  }
+}
+
+async function sendPhoneCode() {
+  const phone = document.getElementById("phone-input").value.trim();
+  if (!phone) return;
+
+  const btn = document.getElementById("send-code-btn");
+  btn.disabled = true;
+  btn.textContent = "發送中...";
+  const errEl = document.getElementById("phone-error");
+  errEl.style.display = "none";
+
+  try {
+    if (!window.recaptchaVerifier) setupRecaptcha();
+    confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+    document.getElementById("verify-code-section").classList.remove("hidden");
+    btn.textContent = "已發送";
+  } catch (e) {
+    errEl.textContent = "發送失敗: " + (e.message || e);
+    errEl.style.display = "block";
+    btn.textContent = "發送驗證碼";
+    btn.disabled = false;
+    // Reset reCAPTCHA on error
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = null;
+    }
+  }
+}
+
+async function verifyPhoneCode() {
+  const code = document.getElementById("code-input").value.trim();
+  if (!code || !confirmationResult) return;
+
+  const errEl = document.getElementById("phone-error");
+  errEl.style.display = "none";
+
+  try {
+    const result = await confirmationResult.confirm(code);
+    const idToken = await result.user.getIdToken();
+    const phone = document.getElementById("phone-input").value.trim();
+
+    const resp = await fetch("/auth/verify-phone", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ idToken, phoneNumber: phone }),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      window.location.reload();
+    } else {
+      errEl.textContent = data.error || "驗證失敗";
+      errEl.style.display = "block";
+    }
+  } catch (e) {
+    errEl.textContent = "驗證碼錯誤";
+    errEl.style.display = "block";
+  }
+}
+
+// Store setup
+document.getElementById("store-slug")?.addEventListener("input", function() {
+  document.getElementById("slug-display").textContent = this.value || "...";
+});
+
+async function completeSetup() {
+  const name = document.getElementById("store-name").value.trim();
+  const slug = document.getElementById("store-slug").value.trim();
+  const lineId = document.getElementById("store-line").value.trim();
+  const errEl = document.getElementById("setup-error");
+  errEl.classList.add("hidden");
+
+  if (!name) { errEl.textContent = "請輸入店面名稱"; errEl.classList.remove("hidden"); return; }
+  if (!slug || slug.length < 3) { errEl.textContent = "網址至少 3 個字元"; errEl.classList.remove("hidden"); return; }
+
+  const resp = await fetch("/auth/complete-onboarding", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ slug, name, lineId: lineId || undefined }),
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    document.getElementById("step-store").classList.add("hidden");
+    document.getElementById("step-complete").classList.remove("hidden");
+    document.getElementById("go-to-store").href = data.redirectUrl || "/s/" + slug + "/admin";
+    updateDots("complete");
+  } else {
+    errEl.textContent = data.error || "設定失敗";
+    errEl.classList.remove("hidden");
+  }
+}
+
+// Expose functions to HTML onclick handlers (module scope is not global)
+window.resendEmail = resendEmail;
+window.sendPhoneCode = sendPhoneCode;
+window.verifyPhoneCode = verifyPhoneCode;
+window.completeSetup = completeSetup;
+
+init();
+</script>
+</body>
+</html>

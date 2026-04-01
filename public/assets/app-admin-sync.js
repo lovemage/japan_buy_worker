@@ -60,7 +60,7 @@ async function runSync() {
   }, 800);
 
   try {
-    const res = await fetch("/admin/crawl", { method: "POST" });
+    const res = await apiFetch("/admin/crawl", { method: "POST" });
     if (res.status === 401) { location.href = "/admin-login.html"; return; }
 
     if (barFill) barFill.classList.replace("phase-2", "phase-3");

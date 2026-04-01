@@ -89,7 +89,7 @@ function renderDraftItems() {
 
   const draft = getDraft();
   if (draft.items.length === 0) {
-    wrapper.innerHTML = '<div class="empty-state"><p>目前沒有商品</p><a class="btn-pill secondary" href="/index.html">&larr; 前往商品列表加入</a></div>';
+    wrapper.innerHTML = '<div class="empty-state"><p>目前沒有商品</p><a class="btn-pill secondary" href="/store.html">&larr; 前往商品列表加入</a></div>';
     return [];
   }
 
@@ -260,7 +260,7 @@ async function hydrateDraftWithOptions() {
     if (hasSize && hasColor) {
       continue;
     }
-    const res = await fetch(`/api/product?code=${encodeURIComponent(item.code)}`);
+    const res = await apiFetch(`/api/product?code=${encodeURIComponent(item.code)}`);
     if (!res.ok) {
       continue;
     }
@@ -416,7 +416,7 @@ async function onSubmit(event) {
   }
 
   try {
-    const res = await fetch("/api/requirements", {
+    const res = await apiFetch("/api/requirements", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -443,7 +443,7 @@ async function onSubmit(event) {
 }
 
 async function bootstrap() {
-  const pricingRes = await fetch("/api/pricing");
+  const pricingRes = await apiFetch("/api/pricing");
   const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
   pricingConfig = pricingBody?.pricing || DEFAULT_PRICING;
 

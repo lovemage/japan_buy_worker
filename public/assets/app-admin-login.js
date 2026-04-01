@@ -12,7 +12,7 @@ async function onSubmit(event) {
   const username = (document.getElementById("username")?.value || "").trim();
   const password = (document.getElementById("password")?.value || "").trim();
 
-  const res = await fetch("/api/admin/login", {
+  const res = await apiFetch("/api/admin/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ username, password }),

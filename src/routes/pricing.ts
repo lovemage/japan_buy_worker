@@ -1,9 +1,6 @@
+import type { RequestContext } from "../context";
 import type { D1DatabaseLike } from "../types/d1";
-import { isAdminAuthorized } from "./admin/auth";
-
-type Env = {
-  DB: D1DatabaseLike;
-};
+// Auth is now handled by the router before dispatching to this handler
 
 type SettingRow = {
   key: string;
@@ -32,7 +29,7 @@ CREATE TABLE IF NOT EXISTS app_settings (
     .run();
 }
 
-export async function getPricingConfig(db: D1DatabaseLike): Promise<{
+export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Promise<{
   markupJpy: number;
   jpyToTwd: number;
   internationalShippingTwd: number;
@@ -44,51 +41,52 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
   await ensureSettingsTable(db);
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('markup_jpy', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_jpy', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_MARKUP_JPY))
+    .bind(storeId, String(DEFAULT_MARKUP_JPY))
     .run();
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('jpy_to_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'jpy_to_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_JPY_TO_TWD))
+    .bind(storeId, String(DEFAULT_JPY_TO_TWD))
     .run();
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('international_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'international_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_INTL_SHIPPING_TWD))
+    .bind(storeId, String(DEFAULT_INTL_SHIPPING_TWD))
     .run();
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('domestic_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'domestic_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_DOMESTIC_SHIPPING_TWD))
+    .bind(storeId, String(DEFAULT_DOMESTIC_SHIPPING_TWD))
     .run();
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_PROMO_TAG_MAX_TWD))
+    .bind(storeId, String(DEFAULT_PROMO_TAG_MAX_TWD))
     .run();
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_LIMITED_PROXY_SHIPPING_TWD))
+    .bind(storeId, String(DEFAULT_LIMITED_PROXY_SHIPPING_TWD))
     .run();
   await db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('shipping_options_enabled', ?, datetime('now')) ON CONFLICT(key) DO NOTHING"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'shipping_options_enabled', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
     )
-    .bind(String(DEFAULT_SHIPPING_OPTIONS_ENABLED))
+    .bind(storeId, String(DEFAULT_SHIPPING_OPTIONS_ENABLED))
     .run();
 
   const rows = await db
     .prepare(
-      "SELECT key, value FROM app_settings WHERE key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled')"
+      "SELECT key, value FROM app_settings WHERE store_id = ? AND key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled')"
     )
+    .bind(storeId)
     .all<SettingRow>();
   const result = Array.isArray(rows?.results) ? rows.results : [];
   const markupRaw = result.find((x) => x.key === "markup_jpy")?.value;
@@ -130,30 +128,23 @@ export async function getPricingConfig(db: D1DatabaseLike): Promise<{
   };
 }
 
-export async function handlePublicPricing(request: Request, env: Env): Promise<Response> {
+export async function handlePublicPricing(request: Request, ctx: RequestContext): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
       status: 405,
       headers: { "content-type": "application/json" },
     });
   }
-  const config = await getPricingConfig(env.DB);
+  const config = await getPricingConfig(ctx.db, ctx.storeId);
   return new Response(JSON.stringify({ ok: true, pricing: config }), {
     status: 200,
     headers: { "content-type": "application/json" },
   });
 }
 
-export async function handleAdminPricing(request: Request, env: Env): Promise<Response> {
-  if (!isAdminAuthorized(request)) {
-    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
-      status: 401,
-      headers: { "content-type": "application/json" },
-    });
-  }
-
+export async function handleAdminPricing(request: Request, ctx: RequestContext): Promise<Response> {
   if (request.method === "GET") {
-    const config = await getPricingConfig(env.DB);
+    const config = await getPricingConfig(ctx.db, ctx.storeId);
     return new Response(JSON.stringify({ ok: true, pricing: config }), {
       status: 200,
       headers: { "content-type": "application/json" },
@@ -253,48 +244,48 @@ export async function handleAdminPricing(request: Request, env: Env): Promise<Re
     );
   }
 
-  await ensureSettingsTable(env.DB);
-  await env.DB
+  await ensureSettingsTable(ctx.db);
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('markup_jpy', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_jpy', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(markupJpy))
+    .bind(ctx.storeId, String(markupJpy))
     .run();
-  await env.DB
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('jpy_to_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'jpy_to_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(jpyToTwd))
+    .bind(ctx.storeId, String(jpyToTwd))
     .run();
-  await env.DB
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('international_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'international_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(internationalShippingTwd))
+    .bind(ctx.storeId, String(internationalShippingTwd))
     .run();
-  await env.DB
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('domestic_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'domestic_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(domesticShippingTwd))
+    .bind(ctx.storeId, String(domesticShippingTwd))
     .run();
-  await env.DB
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(promoTagMaxTwd))
+    .bind(ctx.storeId, String(promoTagMaxTwd))
     .run();
-  await env.DB
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(limitedProxyShippingTwd))
+    .bind(ctx.storeId, String(limitedProxyShippingTwd))
     .run();
-  await env.DB
+  await ctx.db
     .prepare(
-      "INSERT INTO app_settings (key, value, updated_at) VALUES ('shipping_options_enabled', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'shipping_options_enabled', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
-    .bind(String(shippingOptionsEnabled))
+    .bind(ctx.storeId, String(shippingOptionsEnabled))
     .run();
 
   return new Response(

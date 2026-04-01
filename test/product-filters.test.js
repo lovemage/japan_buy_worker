@@ -20,6 +20,7 @@ test('parseBrandFilters returns empty array for blank input', () => {
 
 test('buildProductWhereClause composes category, promo, and brand filters', () => {
   const built = buildProductWhereClause({
+    storeId: 1,
     category: 'Tシャツ',
     maxBaseJpy: 800,
     brands: ['BREEZE', 'ALGY'],
@@ -27,24 +28,26 @@ test('buildProductWhereClause composes category, promo, and brand filters', () =
 
   assert.equal(
     built.whereSql,
-    "WHERE p.is_active = 1 AND p.category = ? AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ? AND p.brand IN (?, ?)"
+    "WHERE p.store_id = ? AND p.is_active = 1 AND p.category = ? AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ? AND p.brand IN (?, ?)"
   );
-  assert.deepEqual(built.params, ['Tシャツ', 800, 'BREEZE', 'ALGY']);
+  assert.deepEqual(built.params, [1, 'Tシャツ', 800, 'BREEZE', 'ALGY']);
 });
 
 test('buildProductWhereClause omits optional clauses when filters are empty', () => {
   const built = buildProductWhereClause({
+    storeId: 1,
     category: '',
     maxBaseJpy: null,
     brands: [],
   });
 
-  assert.equal(built.whereSql, 'WHERE p.is_active = 1');
-  assert.deepEqual(built.params, []);
+  assert.equal(built.whereSql, 'WHERE p.store_id = ? AND p.is_active = 1');
+  assert.deepEqual(built.params, [1]);
 });
 
 test('buildProductWhereClause includes promo filtering for brand aggregations', () => {
   const built = buildProductWhereClause({
+    storeId: 1,
     category: 'ワンピース',
     maxBaseJpy: 666,
     brands: [],
@@ -52,7 +55,7 @@ test('buildProductWhereClause includes promo filtering for brand aggregations', 
 
   assert.equal(
     built.whereSql,
-    'WHERE p.is_active = 1 AND p.category = ? AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?'
+    'WHERE p.store_id = ? AND p.is_active = 1 AND p.category = ? AND p.price_jpy_tax_in IS NOT NULL AND p.price_jpy_tax_in <= ?'
   );
-  assert.deepEqual(built.params, ['ワンピース', 666]);
+  assert.deepEqual(built.params, [1, 'ワンピース', 666]);
 });

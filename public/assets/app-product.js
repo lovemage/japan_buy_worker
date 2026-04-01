@@ -223,7 +223,7 @@ function initBackLink() {
 async function bootstrap() {
   renderDraftCount();
   initBackLink();
-  const pricingRes = await fetch("/api/pricing");
+  const pricingRes = await apiFetch("/api/pricing");
   const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
   const pricing = pricingBody?.pricing || DEFAULT_PRICING;
 
@@ -234,7 +234,7 @@ async function bootstrap() {
     return;
   }
 
-  const res = await fetch(`/api/product?code=${encodeURIComponent(code)}`);
+  const res = await apiFetch(`/api/product?code=${encodeURIComponent(code)}`);
   if (!res.ok) {
     setError(`商品載入失敗：${res.status}`);
     return;

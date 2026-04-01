@@ -78,7 +78,7 @@ function renderForms(forms) {
     select.addEventListener("change", async () => {
       const formId = Number(select.getAttribute("data-form-id"));
       hideError();
-      const res = await fetch("/api/admin/requirements", {
+      const res = await apiFetch("/api/admin/requirements", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ id: formId, status: select.value }),
@@ -96,7 +96,7 @@ function renderForms(forms) {
       if (!Number.isInteger(id) || id <= 0) return;
       if (!confirm(`確定刪除需求單 #${id}？此操作無法復原。`)) return;
       hideError();
-      const res = await fetch(`/api/admin/requirements?id=${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/admin/requirements?id=${id}`, { method: "DELETE" });
       if (res.status === 401) { location.href = "/admin-login.html"; return; }
       if (!res.ok) { showError(`刪除失敗：${res.status}`); return; }
       await loadForms();
@@ -106,7 +106,7 @@ function renderForms(forms) {
 
 async function loadForms() {
   hideError();
-  const res = await fetch("/api/admin/requirements");
+  const res = await apiFetch("/api/admin/requirements");
   if (res.status === 401) { location.href = "/admin-login.html"; return; }
   if (!res.ok) { showError(`讀取失敗：${res.status}`); return; }
   const body = await res.json();

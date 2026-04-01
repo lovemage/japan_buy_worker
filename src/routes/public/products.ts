@@ -1,11 +1,7 @@
-import type { D1DatabaseLike } from "../../types/d1";
+import type { RequestContext } from "../../context";
 import { getPricingConfig } from "../pricing";
 import { buildProductWhereClause, parseBrandFilters } from "./product-filters";
 import { parseStoredProductPayload } from "../../jobs/product-records";
-
-type Env = {
-  DB: D1DatabaseLike;
-};
 
 type ProductRow = {
   id: number;
@@ -59,7 +55,7 @@ function mapProduct(item: ProductRow) {
 
 export async function handlePublicProducts(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
@@ -76,7 +72,7 @@ export async function handlePublicProducts(
   const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
   const hasCategory = category.length > 0;
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
-  const pricing = await getPricingConfig(env.DB);
+  const pricing = await getPricingConfig(ctx.db, ctx.storeId);
   const markup = Number(pricing.markupJpy);
   const rate = Number(pricing.jpyToTwd);
   const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
@@ -89,6 +85,7 @@ export async function handlePublicProducts(
       ? Math.max(0, Math.floor(promoThreshold / rate - markup))
       : Number.MAX_SAFE_INTEGER;
   const where = buildProductWhereClause({
+    storeId: ctx.storeId,
     category,
     maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
     brands,
@@ -112,13 +109,13 @@ ${where.whereSql}
 ORDER BY updated_at DESC
 LIMIT ? OFFSET ?
 `;
-  const rows = await env.DB
+  const rows = await ctx.db
     .prepare(listSql)
     .bind(...where.params, limit, offset)
     .all<ProductRow>();
 
   const products = Array.isArray(rows?.results) ? rows.results : [];
-  const totalRow = await env.DB
+  const totalRow = await ctx.db
     .prepare(`SELECT COUNT(1) as total FROM products p ${where.whereSql}`)
     .bind(...where.params)
     .first<{ total: number }>();
@@ -138,7 +135,7 @@ SELECT
 FROM products p
 ${where.whereSql}
 `;
-  const totalSkuRow = await env.DB
+  const totalSkuRow = await ctx.db
     .prepare(totalSkuSql)
     .bind(...where.params)
     .first<{ total_sku: number }>();
@@ -163,7 +160,7 @@ ${where.whereSql}
 
 export async function handlePublicProductCategories(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
@@ -172,16 +169,17 @@ export async function handlePublicProductCategories(
     });
   }
 
-  const rows = await env.DB
+  const rows = await ctx.db
     .prepare(
       `
 SELECT category, COUNT(1) as total
 FROM products
-WHERE is_active = 1 AND category IS NOT NULL AND category != ''
+WHERE store_id = ? AND is_active = 1 AND category IS NOT NULL AND category != ''
 GROUP BY category
 ORDER BY total DESC, category ASC
 `
     )
+    .bind(ctx.storeId)
     .all<CategoryRow>();
   const categories = Array.isArray(rows?.results)
     ? rows.results
@@ -197,7 +195,7 @@ ORDER BY total DESC, category ASC
 
 export async function handlePublicProductBrands(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
@@ -210,7 +208,7 @@ export async function handlePublicProductBrands(
   const category = (url.searchParams.get("category") || "").trim();
   const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
-  const pricing = await getPricingConfig(env.DB);
+  const pricing = await getPricingConfig(ctx.db, ctx.storeId);
   const markup = Number(pricing.markupJpy);
   const rate = Number(pricing.jpyToTwd);
   const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
@@ -223,12 +221,13 @@ export async function handlePublicProductBrands(
       ? Math.max(0, Math.floor(promoThreshold / rate - markup))
       : Number.MAX_SAFE_INTEGER;
   const where = buildProductWhereClause({
+    storeId: ctx.storeId,
     category,
     maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
     brands: [],
   });
 
-  const rows = await env.DB
+  const rows = await ctx.db
     .prepare(
       `
 SELECT p.brand, COUNT(1) as total
@@ -254,7 +253,7 @@ ORDER BY total DESC, p.brand ASC
 
 export async function handlePublicProductDetail(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
@@ -272,7 +271,7 @@ export async function handlePublicProductDetail(
     });
   }
 
-  const product = await env.DB
+  const product = await ctx.db
     .prepare(
       `
 SELECT
@@ -288,11 +287,11 @@ SELECT
   last_crawled_at,
   source_payload_json
 FROM products
-WHERE is_active = 1 AND source_product_code = ?
+WHERE store_id = ? AND is_active = 1 AND source_product_code = ?
 LIMIT 1
 `
     )
-    .bind(code)
+    .bind(ctx.storeId, code)
     .first<ProductRow>();
 
   if (!product) {

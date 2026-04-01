@@ -1,14 +1,24 @@
-import type { D1DatabaseLike } from "../../types/d1";
-import { verifyPassword } from "./auth";
+import type { RequestContext } from "../../context";
 
-type Env = {
-  DB: D1DatabaseLike;
-  IMAGES?: R2Bucket;
-};
+function toHex(buf: ArrayBuffer): string {
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function verifyStorePassword(ctx: RequestContext, password: string): Promise<boolean> {
+  const store = await ctx.db
+    .prepare("SELECT password_hash, password_salt FROM stores WHERE id = ?")
+    .bind(ctx.storeId)
+    .first<{ password_hash: string; password_salt: string }>();
+  if (!store?.password_hash || !store?.password_salt) return false;
+
+  const data = new TextEncoder().encode(store.password_salt + password);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return toHex(digest) === store.password_hash;
+}
 
 export async function handleAdminClearSyncProducts(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -32,15 +42,16 @@ export async function handleAdminClearSyncProducts(
     });
   }
 
-  const valid = await verifyPassword(env.DB, password);
+  const valid = await verifyStorePassword(ctx, password);
   if (!valid) {
     return new Response(JSON.stringify({ ok: false, error: "密碼錯誤" }), {
       status: 401, headers: { "content-type": "application/json" },
     });
   }
 
-  const result = await env.DB
-    .prepare("DELETE FROM products WHERE source_site != 'manual'")
+  const result = await ctx.db
+    .prepare("DELETE FROM products WHERE source_site != 'manual' AND store_id = ?")
+    .bind(ctx.storeId)
     .run();
 
   return new Response(
@@ -51,7 +62,7 @@ export async function handleAdminClearSyncProducts(
 
 export async function handleAdminClearManualProducts(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -75,7 +86,7 @@ export async function handleAdminClearManualProducts(
     });
   }
 
-  const valid = await verifyPassword(env.DB, password);
+  const valid = await verifyStorePassword(ctx, password);
   if (!valid) {
     return new Response(JSON.stringify({ ok: false, error: "密碼錯誤" }), {
       status: 401, headers: { "content-type": "application/json" },
@@ -83,22 +94,24 @@ export async function handleAdminClearManualProducts(
   }
 
   // Delete R2 images for manual products
-  if (env.IMAGES) {
-    const rows = await env.DB
-      .prepare("SELECT source_product_code FROM products WHERE source_site = 'manual'")
+  if (ctx.r2) {
+    const rows = await ctx.db
+      .prepare("SELECT source_product_code FROM products WHERE source_site = 'manual' AND store_id = ?")
+      .bind(ctx.storeId)
       .all<{ source_product_code: string }>();
     const codes = Array.isArray(rows?.results) ? rows.results : [];
     for (const row of codes) {
-      const prefix = `products/${row.source_product_code}/`;
-      const listed = await env.IMAGES.list({ prefix });
+      const prefix = `${ctx.storeId}/products/${row.source_product_code}/`;
+      const listed = await ctx.r2.list({ prefix });
       for (const obj of listed.objects) {
-        await env.IMAGES.delete(obj.key);
+        await ctx.r2.delete(obj.key);
       }
     }
   }
 
-  const result = await env.DB
-    .prepare("DELETE FROM products WHERE source_site = 'manual'")
+  const result = await ctx.db
+    .prepare("DELETE FROM products WHERE source_site = 'manual' AND store_id = ?")
+    .bind(ctx.storeId)
     .run();
 
   return new Response(

@@ -14,6 +14,7 @@ export function parseBrandFilters(raw: string | null | undefined): string[] {
 }
 
 type BuildWhereInput = {
+  storeId: number;
   category: string;
   maxBaseJpy: number | null;
   brands: string[];
@@ -23,8 +24,8 @@ export function buildProductWhereClause(input: BuildWhereInput): {
   whereSql: string;
   params: Array<string | number>;
 } {
-  const clauses = ['p.is_active = 1'];
-  const params: Array<string | number> = [];
+  const clauses = ['p.store_id = ?', 'p.is_active = 1'];
+  const params: Array<string | number> = [input.storeId];
 
   if (input.category.trim()) {
     clauses.push('p.category = ?');

@@ -1,196 +1,196 @@
+// vovosnap — Multi-tenant SaaS for proxy buyers
+// Top-level request dispatcher
+
+import type { D1DatabaseLike } from "./types/d1";
+import type { RequestContext } from "./context";
+import { resolveStore, resolveStoreBySubdomain, getEffectivePlan } from "./context";
+import { routeTenantRequest } from "./router";
 import {
+  handleGoogleAuthRedirect,
+  handleGoogleAuthCallback,
+  handleVerifyEmail,
+  handleResendVerificationEmail,
+  handleVerifyPhone,
+  handleCompleteOnboarding,
+  handleGetCurrentStore,
   handleAdminLogin,
   handleAdminLogout,
   isAdminAuthorized,
 } from "./routes/admin/auth";
-import { handleAdminCrawl } from "./routes/admin/crawl";
-import { handleAdminRequirements } from "./routes/admin/requirements";
-import {
-  handlePublicProductBrands,
-  handlePublicProductCategories,
-  handlePublicProductDetail,
-  handlePublicProducts,
-} from "./routes/public/products";
-import {
-  handlePublicRequirementDetail,
-  handlePublicRequirements,
-} from "./routes/public/requirements";
-import { handleAdminPricing, handlePublicPricing } from "./routes/pricing";
-import { handleAdminProducts, handleAdminProductToggle, handleAdminProductUpdate, handleAdminProductImageDelete } from "./routes/admin/products";
-import { handleAdminChangePassword } from "./routes/admin/password";
-import { handleAdminCategories } from "./routes/admin/categories";
-import { handleAdminRecognize } from "./routes/admin/recognize";
-import { handleAdminGeminiSettings } from "./routes/admin/settings";
-import { handleAdminClearSyncProducts, handleAdminClearManualProducts } from "./routes/admin/clear-products";
-import type { D1DatabaseLike } from "./types/d1";
+import { handlePlatformAdmin } from "./routes/platform-admin";
 
 type Env = {
   DB: D1DatabaseLike;
-  IMAGES?: R2Bucket;
+  IMAGES?: any;
   ASSETS?: { fetch: (request: Request) => Promise<Response> };
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_API_TOKEN: string;
   CRAWL_LIST_PAGES?: string;
   CRAWL_MAX_PAGES?: string;
   CRAWL_TIMEOUT_MS?: string;
+  // Auth providers
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  RESEND_API_KEY: string;
+  FIREBASE_PROJECT_ID: string;
+  APP_URL: string;
+  PLATFORM_ADMIN_PASSWORD?: string;
+  // Multi-tenant domain
+  MAIN_DOMAIN?: string; // e.g. "vovosnap.com"
 };
 
-function json(
-  payload: unknown,
-  status = 200,
-  headers: Record<string, string> = {}
-): Response {
+function json(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: {
-      "content-type": "application/json",
-      ...headers,
-    },
+    headers: { "content-type": "application/json", ...headers },
   });
+}
+
+function getAuthEnv(env: Env) {
+  return {
+    GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
+    RESEND_API_KEY: env.RESEND_API_KEY,
+    FIREBASE_PROJECT_ID: env.FIREBASE_PROJECT_ID,
+    APP_URL: env.APP_URL,
+  };
+}
+
+function getCrawlEnv(env: Env) {
+  return {
+    CLOUDFLARE_ACCOUNT_ID: env.CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_API_TOKEN: env.CLOUDFLARE_API_TOKEN,
+    CRAWL_LIST_PAGES: env.CRAWL_LIST_PAGES,
+    CRAWL_MAX_PAGES: env.CRAWL_MAX_PAGES,
+    CRAWL_TIMEOUT_MS: env.CRAWL_TIMEOUT_MS,
+  };
+}
+
+function buildCtxFromStore(
+  store: { id: number; slug: string; plan: string; plan_expires_at: string | null },
+  env: Env,
+  basePath: string
+): RequestContext {
+  return {
+    storeId: store.id,
+    storeSlug: store.slug,
+    storePlan: getEffectivePlan(store as any),
+    db: env.DB,
+    r2: env.IMAGES ?? null,
+    basePath,
+  };
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const mainDomain = env.MAIN_DOMAIN || "vovosnap.com";
+    const hostname = url.hostname;
+
+    // ── Health check ──
     if (request.method === "GET" && url.pathname === "/healthz") {
-      return json({ ok: true, service: "japan-buy-workers" });
+      return json({ ok: true, service: "vovosnap" });
     }
 
+    // ── Platform admin ──
+    if (url.pathname.startsWith("/platform-admin") || url.pathname.startsWith("/api/platform-admin")) {
+      return handlePlatformAdmin(request, env.DB, env.PLATFORM_ADMIN_PASSWORD || "", env.ASSETS);
+    }
+
+    // ── Auth routes (platform-level, not tenant-scoped) ──
+    if (url.pathname === "/auth/google") {
+      return handleGoogleAuthRedirect(getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/google/callback") {
+      return handleGoogleAuthCallback(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/verify-email") {
+      return handleVerifyEmail(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/resend-verification") {
+      return handleResendVerificationEmail(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/verify-phone") {
+      return handleVerifyPhone(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/complete-onboarding") {
+      return handleCompleteOnboarding(request, env.DB);
+    }
+    if (url.pathname === "/auth/me") {
+      return handleGetCurrentStore(request, env.DB);
+    }
+
+    // ── Legacy login/logout (bootstrap store compat) ──
     if (url.pathname === "/api/admin/login") {
       return handleAdminLogin(request, env);
     }
-
     if (url.pathname === "/api/admin/logout") {
       return handleAdminLogout(request, env);
     }
 
-    // Public API routes (no auth needed)
-    if (url.pathname === "/api/products") {
-      return handlePublicProducts(request, env);
-    }
-    if (url.pathname === "/api/product-categories") {
-      return handlePublicProductCategories(request, env);
-    }
-    if (url.pathname === "/api/product-brands") {
-      return handlePublicProductBrands(request, env);
-    }
-    if (url.pathname === "/api/product") {
-      return handlePublicProductDetail(request, env);
-    }
-    if (url.pathname === "/api/requirements") {
-      return handlePublicRequirements(request, env);
-    }
-    if (url.pathname === "/api/requirement") {
-      return handlePublicRequirementDetail(request, env);
-    }
-    if (url.pathname === "/api/pricing") {
-      return handlePublicPricing(request, env);
-    }
-
-    // Admin routes — check session token against DB
-    const isAdmin = await isAdminAuthorized(request, env.DB);
-
-    if (url.pathname === "/admin/crawl") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
+    // ── Subdomain tenant routing: {slug}.vovosnap.com ──
+    if (hostname !== mainDomain && hostname.endsWith(`.${mainDomain}`)) {
+      const slug = hostname.replace(`.${mainDomain}`, "");
+      const store = await resolveStoreBySubdomain(env.DB, slug);
+      if (!store || !store.is_active) {
+        return json({ ok: false, error: "Store not found" }, 404);
       }
-      return handleAdminCrawl(request, env);
+      const ctx = buildCtxFromStore(store, env, ""); // empty basePath for subdomain
+      return routeTenantRequest(request, ctx, url.pathname, getCrawlEnv(env), env.ASSETS);
     }
 
-    if (url.pathname === "/api/admin/requirements") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
+    // ── Path-based tenant routing: /s/{slug}/* ──
+    const tenantMatch = url.pathname.match(/^\/s\/([a-z0-9][a-z0-9-]*[a-z0-9]|[a-z0-9]{1,2})(\/.*)?$/);
+    if (tenantMatch) {
+      const slug = tenantMatch[1];
+      const subPath = tenantMatch[2] || "/";
+      const store = await resolveStore(env.DB, slug);
+      if (!store || !store.is_active) {
+        return json({ ok: false, error: "Store not found" }, 404);
       }
-      return handleAdminRequirements(request, env);
+      const ctx = buildCtxFromStore(store, env, `/s/${slug}`);
+      return routeTenantRequest(request, ctx, subPath, getCrawlEnv(env), env.ASSETS);
     }
 
-    if (url.pathname === "/api/admin/pricing") {
-      return handleAdminPricing(request, env);
-    }
-
-    if (url.pathname === "/api/admin/settings/gemini") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
+    // ── Onboarding page ──
+    if (url.pathname === "/onboarding" || url.pathname === "/onboarding.html") {
+      if (env.ASSETS) {
+        // Serve onboarding.html (will be created in Phase 6)
+        const resp = await env.ASSETS.fetch(new Request(new URL("/onboarding.html", request.url).toString(), request));
+        if (resp.ok) return resp;
       }
-      return handleAdminGeminiSettings(request, env);
+      return json({ ok: false, error: "Onboarding page not found" }, 404);
     }
 
-    if (url.pathname === "/api/admin/change-password") {
-      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
-      return handleAdminChangePassword(request, env);
-    }
-
-    if (url.pathname === "/api/admin/categories") {
-      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
-      return handleAdminCategories(request, env);
-    }
-
-    if (url.pathname === "/api/admin/recognize") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
+    // ── Landing page (platform root) ──
+    if (url.pathname === "/" || url.pathname === "/index.html") {
+      // index.html IS the landing page now (renamed from landing.html)
+      if (env.ASSETS) {
+        return env.ASSETS.fetch(request);
       }
-      return handleAdminRecognize(request, env);
+      return json({ ok: false, error: "Not configured" }, 500);
     }
 
-    if (url.pathname === "/api/admin/products") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
-      }
-      return handleAdminProducts(request, env);
-    }
-
-    if (url.pathname === "/api/admin/products/toggle") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
-      }
-      return handleAdminProductToggle(request, env);
-    }
-
-    if (url.pathname === "/api/admin/products/update") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
-      }
-      return handleAdminProductUpdate(request, env);
-    }
-
-    if (url.pathname === "/api/admin/products/image-delete") {
-      if (!isAdmin) {
-        return json({ ok: false, error: "Unauthorized" }, 401);
-      }
-      return handleAdminProductImageDelete(request, env);
-    }
-
-    if (url.pathname === "/api/admin/clear-sync-products") {
-      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
-      return handleAdminClearSyncProducts(request, env);
-    }
-
-    if (url.pathname === "/api/admin/clear-manual-products") {
-      if (!isAdmin) return json({ ok: false, error: "Unauthorized" }, 401);
-      return handleAdminClearManualProducts(request, env);
-    }
-
-    if (request.method === "GET" && (url.pathname === "/admin" || url.pathname === "/admin.html")) {
-      if (!isAdmin) {
-        return Response.redirect(new URL("/admin-login.html", request.url), 302);
+    // ── Legacy routes: serve bootstrap store at root (backward compat) ──
+    // During transition, root-level /api/* routes still work for store_id=1
+    if (url.pathname.startsWith("/api/") || url.pathname === "/admin/crawl") {
+      const store = await resolveStore(env.DB, "default");
+      if (store) {
+        const ctx = buildCtxFromStore(store, env, "");
+        return routeTenantRequest(request, ctx, url.pathname, getCrawlEnv(env), env.ASSETS);
       }
     }
 
-    // R2 image proxy
-    if (url.pathname.startsWith("/api/images/")) {
-      const key = url.pathname.slice("/api/images/".length);
-      if (!env.IMAGES) return json({ ok: false, error: "R2 not configured" }, 500);
-      const object = await env.IMAGES.get(key);
-      if (!object) return new Response("Not Found", { status: 404 });
-      return new Response(object.body, {
-        headers: {
-          "content-type": object.httpMetadata?.contentType || "image/webp",
-          "cache-control": "public, max-age=31536000, immutable",
-        },
-      });
+    // ── Legacy HTML pages at root (backward compat for bootstrap store) ──
+    if (url.pathname === "/admin" || url.pathname === "/admin.html") {
+      const isAdmin = await isAdminAuthorized(request, env.DB);
+      if (!isAdmin) {
+        return Response.redirect(new URL("/admin-login.html", request.url).toString(), 302);
+      }
+      // Fall through to ASSETS
     }
 
-    // Static files from /public via Wrangler assets binding.
+    // ── Static assets ──
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }

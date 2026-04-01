@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Japan Buy 商品列表</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div id="loading-overlay" class="loading-overlay" aria-live="polite" aria-label="載入中">
+      <svg class="loading-logo" viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JAPAN BUY">
+        <!-- J -->
+        <text class="loading-letter" x="30" y="130" style="animation-delay: 0s">J</text>
+        <!-- A -->
+        <text class="loading-letter" x="110" y="130" style="animation-delay: 0.1s">A</text>
+        <!-- P -->
+        <text class="loading-letter" x="195" y="130" style="animation-delay: 0.2s">P</text>
+        <!-- A -->
+        <text class="loading-letter" x="280" y="130" style="animation-delay: 0.3s">A</text>
+        <!-- N -->
+        <text class="loading-letter" x="365" y="130" style="animation-delay: 0.4s">N</text>
+
+        <!-- Decorative elements -->
+        <circle class="loading-dot" cx="455" cy="55" r="6" style="animation-delay: 0.15s" />
+        <circle class="loading-dot" cx="475" cy="40" r="4" style="animation-delay: 0.35s" />
+        <circle class="loading-dot" cx="490" cy="60" r="5" style="animation-delay: 0.55s" />
+
+        <!-- Sparkle star left -->
+        <path class="loading-sparkle" d="M50 30 L53 40 L63 43 L53 46 L50 56 L47 46 L37 43 L47 40Z" style="animation-delay: 0.5s" />
+        <!-- Sparkle star right -->
+        <path class="loading-sparkle" d="M440 100 L443 110 L453 113 L443 116 L440 126 L437 116 L427 113 L437 110Z" style="animation-delay: 0.8s" />
+
+        <!-- BUY subtitle -->
+        <text class="loading-subtitle" x="260" y="175">B U Y</text>
+      </svg>
+      <p class="loading-hint">商品載入中</p>
+    </div>
+
+    <header class="page-header">
+      <div class="container">
+        <h1>Japan Buy 商品列表</h1>
+        <p id="last-updated-text" class="meta">資料載入中...</p>
+        <div class="view-switch" aria-label="檢視切換">
+          <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="list">列表</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="card">單欄</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-view-mode="2card">雙欄</button>
+        </div>
+        <div id="promo-switch" class="view-switch" aria-label="優惠篩選切換">
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="all">一般</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="350">&lt;350</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="450">&lt;450</button>
+          <button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="550">&lt;550</button>
+        </div>
+        <section id="brand-filters" class="category-filters brand-filters"></section>
+        <section id="category-filters" class="category-filters"></section>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="list-error" class="notice hidden"></section>
+      <section id="product-grid" class="product-grid" aria-live="polite"></section>
+      <section id="pagination" class="pagination hidden" aria-live="polite">
+        <button id="page-prev" class="btn-pill secondary" type="button">&larr; 上一頁</button>
+        <p id="page-indicator" class="meta"></p>
+        <button id="page-next" class="btn-pill secondary" type="button">下一頁 &rarr;</button>
+      </section>
+    </main>
+    <section id="promo-modal" class="promo-modal hidden" aria-hidden="true">
+      <div class="promo-modal__content">
+        <img id="promo-image" src="/assets/images/popup.jpg" alt="活動彈窗" />
+      </div>
+    </section>
+    <div class="floating-nav-buttons" aria-label="分頁快捷按鈕">
+      <button id="float-page-prev" class="btn-pill secondary" type="button">&larr; 上一頁</button>
+      <button id="float-page-next" class="btn-pill secondary" type="button">下一頁 &rarr;</button>
+    </div>
+    <a class="floating-request-btn" href="/request.html">
+      需求單（<span id="floating-draft-count">0</span>）
+    </a>
+
+    <script type="module" src="/assets/app-list.js"></script>
+  </body>
+</html>

@@ -1,9 +1,4 @@
-import type { D1DatabaseLike } from "../../types/d1";
-import { isAdminAuthorized } from "./auth";
-
-type Env = {
-  DB: D1DatabaseLike;
-};
+import type { RequestContext } from "../../context";
 
 const VALID_STATUSES = ["pending", "ordered", "shipped", "cancelled"] as const;
 type RequirementStatus = (typeof VALID_STATUSES)[number];
@@ -46,14 +41,8 @@ type ItemRow = {
 
 export async function handleAdminRequirements(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
-  if (!isAdminAuthorized(request)) {
-    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
-      status: 401,
-      headers: { "content-type": "application/json" },
-    });
-  }
   if (request.method === "PATCH") {
     let body: { id?: number; status?: string };
     try {
@@ -78,11 +67,11 @@ export async function handleAdminRequirements(
         { status: 400, headers: { "content-type": "application/json" } }
       );
     }
-    await env.DB
+    await ctx.db
       .prepare(
-        "UPDATE requirement_forms SET status = ?, updated_at = datetime('now') WHERE id = ?"
+        "UPDATE requirement_forms SET status = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?"
       )
-      .bind(status, id)
+      .bind(status, id, ctx.storeId)
       .run();
     return new Response(JSON.stringify({ ok: true, id, status }), {
       status: 200,
@@ -99,9 +88,9 @@ export async function handleAdminRequirements(
         headers: { "content-type": "application/json" },
       });
     }
-    const exists = await env.DB
-      .prepare("SELECT id FROM requirement_forms WHERE id = ?")
-      .bind(id)
+    const exists = await ctx.db
+      .prepare("SELECT id FROM requirement_forms WHERE id = ? AND store_id = ?")
+      .bind(id, ctx.storeId)
       .first<{ id: number }>();
     if (!exists?.id) {
       return new Response(JSON.stringify({ ok: false, error: "Requirement not found" }), {
@@ -109,7 +98,7 @@ export async function handleAdminRequirements(
         headers: { "content-type": "application/json" },
       });
     }
-    await env.DB.prepare("DELETE FROM requirement_forms WHERE id = ?").bind(id).run();
+    await ctx.db.prepare("DELETE FROM requirement_forms WHERE id = ? AND store_id = ?").bind(id, ctx.storeId).run();
     return new Response(JSON.stringify({ ok: true, deletedId: id }), {
       status: 200,
       headers: { "content-type": "application/json" },
@@ -122,7 +111,7 @@ export async function handleAdminRequirements(
     });
   }
 
-  const formsResult = await env.DB
+  const formsResult = await ctx.db
     .prepare(
       `
 SELECT
@@ -143,10 +132,12 @@ SELECT
   status,
   created_at
 FROM requirement_forms
+WHERE store_id = ?
 ORDER BY created_at DESC, id DESC
 LIMIT 100
 `
     )
+    .bind(ctx.storeId)
     .all<FormRow>();
   const forms = Array.isArray(formsResult?.results) ? formsResult.results : [];
 
@@ -180,7 +171,7 @@ LEFT JOIN products p ON p.id = ri.product_id
 WHERE ri.requirement_form_id IN (${placeholders})
 ORDER BY ri.id DESC
 `;
-  const itemsResult = await env.DB
+  const itemsResult = await ctx.db
     .prepare(itemsSql)
     .bind(...ids)
     .all<ItemRow>();

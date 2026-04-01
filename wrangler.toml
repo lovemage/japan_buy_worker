@@ -1,4 +1,4 @@
-name = "japan-buy-workers"
+name = "japan-buy-workers"  # TODO: rename to "vovosnap-workers" when ready to deploy
 main = "src/index.ts"
 compatibility_date = "2026-03-13"
 assets = { directory = "./public" }
@@ -7,6 +7,15 @@ assets = { directory = "./public" }
 CRAWL_LIST_PAGES = "100"
 CRAWL_MAX_PAGES = "100"
 CRAWL_TIMEOUT_MS = "120000"
+APP_URL = "https://japan-buy-workers.lovemage.workers.dev"  # 改為自訂域名後更新
+MAIN_DOMAIN = "vovosnap.com"
+FIREBASE_PROJECT_ID = "vovosnap-f6c12"
+
+# Secrets (set via: wrangler secret put <KEY>):
+# GOOGLE_CLIENT_ID
+# GOOGLE_CLIENT_SECRET
+# RESEND_API_KEY
+# PLATFORM_ADMIN_PASSWORD
 
 [[d1_databases]]
 binding = "DB"

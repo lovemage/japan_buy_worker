@@ -126,7 +126,7 @@ async function doRecognize() {
   if (quickBtn) quickBtn.disabled = true;
 
   try {
-    const res = await fetch("/api/admin/recognize", {
+    const res = await apiFetch("/api/admin/recognize", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -228,7 +228,7 @@ async function confirmListing() {
   if (btn) btn.disabled = true;
 
   try {
-    const res = await fetch("/api/admin/products", {
+    const res = await apiFetch("/api/admin/products", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),

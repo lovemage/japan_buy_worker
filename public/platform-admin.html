@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vovosnap — 平台管理</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #f8f9fa; }
+.login-wrap { max-width: 360px; margin: 80px auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #eee; }
+.login-wrap h1 { font-size: 20px; margin-bottom: 16px; }
+.login-wrap input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
+.login-wrap button { width: 100%; padding: 10px; background: #1a1a1a; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.login-wrap .error { color: #ef4444; font-size: 13px; margin-bottom: 8px; display: none; }
+
+.dashboard { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.dashboard.hidden { display: none; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.topbar h1 { font-size: 22px; font-weight: 700; }
+.topbar h1 span { color: #6366f1; }
+.topbar button { padding: 8px 16px; background: #eee; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #eee; text-align: center; }
+.stat-num { font-size: 32px; font-weight: 800; color: #1a1a1a; }
+.stat-label { font-size: 13px; color: #888; margin-top: 4px; }
+
+.filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn { padding: 6px 14px; border: 1.5px solid #ddd; background: #fff; border-radius: 20px; font-size: 13px; cursor: pointer; }
+.filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #eee; }
+th { background: #fafafa; text-align: left; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #666; border-bottom: 1px solid #eee; }
+td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: #fafafa; }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-free { background: #f3f4f6; color: #6b7280; }
+.badge-starter { background: #dbeafe; color: #1d4ed8; }
+.badge-pro { background: #ede9fe; color: #6d28d9; }
+.badge-active { background: #dcfce7; color: #166534; }
+.badge-onboarding { background: #fef3c7; color: #92400e; }
+.badge-inactive { background: #fee2e2; color: #991b1b; }
+
+.actions select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+
+@media (max-width: 768px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  table { font-size: 12px; }
+  th, td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="login-section">
+  <h1>🔐 平台管理員</h1>
+  <div class="error" id="login-error"></div>
+  <input type="password" id="admin-password" placeholder="管理員密碼" onkeydown="if(event.key==='Enter')login()">
+  <button onclick="login()">登入</button>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard hidden" id="dashboard">
+  <div class="topbar">
+    <h1>vovo<span>snap</span> 管理後台</h1>
+    <button onclick="logout()">登出</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">總會員數</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-free">0</div>
+      <div class="stat-label">Free</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-starter">0</div>
+      <div class="stat-label">Starter</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-pro">0</div>
+      <div class="stat-label">Pro</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all" onclick="filterStores('all', this)">全部</button>
+    <button class="filter-btn" data-filter="free" onclick="filterStores('free', this)">Free</button>
+    <button class="filter-btn" data-filter="starter" onclick="filterStores('starter', this)">Starter</button>
+    <button class="filter-btn" data-filter="pro" onclick="filterStores('pro', this)">Pro</button>
+    <button class="filter-btn" data-filter="onboarding" onclick="filterStores('onboarding', this)">Onboarding 中</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>店面名稱</th>
+        <th>Slug</th>
+        <th>Email</th>
+        <th>方案</th>
+        <th>到期日</th>
+        <th>狀態</th>
+        <th>商品數</th>
+        <th>訂單數</th>
+        <th>註冊時間</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="stores-tbody"></tbody>
+  </table>
+</div>
+
+<script>
+let adminToken = sessionStorage.getItem("platform_admin_token") || "";
+let allStores = [];
+
+async function login() {
+  const pw = document.getElementById("admin-password").value;
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+
+  const res = await fetch("/api/platform-admin/login", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ password: pw }),
+  });
+  const data = await res.json();
+  if (data.ok) {
+    adminToken = data.token;
+    sessionStorage.setItem("platform_admin_token", adminToken);
+    showDashboard();
+  } else {
+    errEl.textContent = data.error || "密碼錯誤";
+    errEl.style.display = "block";
+  }
+}
+
+function logout() {
+  adminToken = "";
+  sessionStorage.removeItem("platform_admin_token");
+  document.getElementById("login-section").style.display = "";
+  document.getElementById("dashboard").classList.add("hidden");
+}
+
+async function showDashboard() {
+  document.getElementById("login-section").style.display = "none";
+  document.getElementById("dashboard").classList.remove("hidden");
+  await loadStores();
+}
+
+async function loadStores() {
+  const res = await fetch("/api/platform-admin/stores", {
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  const data = await res.json();
+  if (!data.ok) {
+    if (data.error === "Unauthorized") { logout(); return; }
+    return;
+  }
+
+  allStores = data.stores;
+
+  // Stats
+  document.getElementById("stat-total").textContent = allStores.length;
+  document.getElementById("stat-free").textContent = allStores.filter(s => s.plan === "free").length;
+  document.getElementById("stat-starter").textContent = allStores.filter(s => s.plan === "starter").length;
+  document.getElementById("stat-pro").textContent = allStores.filter(s => s.plan === "pro").length;
+
+  renderStores(allStores);
+}
+
+function filterStores(filter, btn) {
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  if (filter === "all") {
+    renderStores(allStores);
+  } else if (filter === "onboarding") {
+    renderStores(allStores.filter(s => s.onboarding_step !== "complete"));
+  } else {
+    renderStores(allStores.filter(s => s.plan === filter));
+  }
+}
+
+function renderStores(stores) {
+  const tbody = document.getElementById("stores-tbody");
+  tbody.innerHTML = stores.map(s => {
+    const planBadge = `<span class="badge badge-${s.plan}">${s.plan.toUpperCase()}</span>`;
+    const statusBadge = s.onboarding_step !== "complete"
+      ? `<span class="badge badge-onboarding">${s.onboarding_step}</span>`
+      : s.is_active
+        ? '<span class="badge badge-active">啟用</span>'
+        : '<span class="badge badge-inactive">停用</span>';
+    const expires = s.plan_expires_at ? new Date(s.plan_expires_at).toLocaleDateString("zh-TW") : "—";
+    const created = new Date(s.created_at).toLocaleDateString("zh-TW");
+
+    return `<tr>
+      <td>${s.id}</td>
+      <td>${s.name}</td>
+      <td><a href="/s/${s.slug}/" target="_blank">${s.slug}</a></td>
+      <td>${s.owner_email}</td>
+      <td>${planBadge}</td>
+      <td>${expires}</td>
+      <td>${statusBadge}</td>
+      <td>${s.product_count || 0}</td>
+      <td>${s.order_count || 0}</td>
+      <td>${created}</td>
+      <td>
+        <select onchange="updateStore(${s.id}, this.value); this.value='';">
+          <option value="">操作...</option>
+          <option value="free">設為 Free</option>
+          <option value="starter">設為 Starter</option>
+          <option value="pro">設為 Pro</option>
+          ${s.is_active ? '<option value="deactivate">停用</option>' : '<option value="activate">啟用</option>'}
+        </select>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+async function updateStore(storeId, action) {
+  if (!action) return;
+  const res = await fetch(`/api/platform-admin/stores/${storeId}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: `Bearer ${adminToken}` },
+    body: JSON.stringify({ action }),
+  });
+  const data = await res.json();
+  if (data.ok) {
+    await loadStores();
+  } else {
+    alert(data.error || "操作失敗");
+  }
+}
+
+// Auto-login if token exists
+if (adminToken) showDashboard();
+</script>
+</body>
+</html>

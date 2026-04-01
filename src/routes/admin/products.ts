@@ -1,9 +1,4 @@
-import type { D1DatabaseLike } from "../../types/d1";
-
-type Env = {
-  DB: D1DatabaseLike;
-  IMAGES?: R2Bucket;
-};
+import type { RequestContext } from "../../context";
 
 type ManualProductRequest = {
   titleJa: string;
@@ -29,7 +24,7 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 
 export async function handleAdminProducts(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -46,6 +41,23 @@ export async function handleAdminProducts(
     });
   }
 
+  // Plan product limits: Free=20, Starter=50, Pro=unlimited
+  const planLimits: Record<string, number> = { free: 20, starter: 50 };
+  const limit = planLimits[ctx.storePlan];
+  if (limit) {
+    const countRow = await ctx.db
+      .prepare("SELECT COUNT(1) as c FROM products WHERE store_id = ?")
+      .bind(ctx.storeId)
+      .first<{ c: number }>();
+    if ((countRow?.c || 0) >= limit) {
+      const planName = ctx.storePlan === "free" ? "Free" : "Starter";
+      return new Response(
+        JSON.stringify({ ok: false, error: `${planName} 方案最多 ${limit} 件商品。升級方案以解鎖更多商品。` }),
+        { status: 403, headers: { "content-type": "application/json" } }
+      );
+    }
+  }
+
   const titleJa = (body.titleJa || "").trim();
   const titleZhTw = (body.titleZhTw || "").trim();
   if (!titleJa && !titleZhTw) {
@@ -59,13 +71,13 @@ export async function handleAdminProducts(
   const images = Array.isArray(body.images) ? body.images.filter(Boolean) : [];
 
   const imageUrls: string[] = [];
-  if (env.IMAGES && images.length > 0) {
+  if (ctx.r2 && images.length > 0) {
     for (let i = 0; i < images.length; i++) {
       const raw = images[i];
       const base64 = raw.includes(",") ? raw.split(",")[1] : raw;
-      const key = `products/${code}/${i}.webp`;
+      const key = `${ctx.storeId}/products/${code}/${i}.webp`;
       const buffer = base64ToArrayBuffer(base64);
-      await env.IMAGES.put(key, buffer, {
+      await ctx.r2.put(key, buffer, {
         httpMetadata: { contentType: "image/webp" },
       });
       imageUrls.push(`/api/images/${key}`);
@@ -82,15 +94,16 @@ export async function handleAdminProducts(
     gallery: imageUrls,
   });
 
-  const result = await env.DB
+  const result = await ctx.db
     .prepare(
       `INSERT INTO products (
-        source_site, source_product_code, title_ja, title_zh_tw,
+        store_id, source_site, source_product_code, title_ja, title_zh_tw,
         brand, category, price_jpy_tax_in, color_count,
         image_url, is_active, last_crawled_at, source_payload_json
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), ?)`
     )
     .bind(
+      ctx.storeId,
       "manual",
       code,
       titleJa || titleZhTw,
@@ -114,7 +127,7 @@ export async function handleAdminProducts(
 
 export async function handleAdminProductToggle(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -140,9 +153,9 @@ export async function handleAdminProductToggle(
     });
   }
 
-  await env.DB
-    .prepare("UPDATE products SET is_active = ?, updated_at = datetime('now') WHERE id = ?")
-    .bind(isActive, id)
+  await ctx.db
+    .prepare("UPDATE products SET is_active = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?")
+    .bind(isActive, id, ctx.storeId)
     .run();
 
   return new Response(
@@ -153,7 +166,7 @@ export async function handleAdminProductToggle(
 
 export async function handleAdminProductUpdate(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "PATCH") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -187,9 +200,9 @@ export async function handleAdminProductUpdate(
   }
 
   // Fetch current product for payload merge
-  const current = await env.DB
-    .prepare("SELECT source_product_code, source_payload_json, image_url FROM products WHERE id = ?")
-    .bind(id)
+  const current = await ctx.db
+    .prepare("SELECT source_product_code, source_payload_json, image_url FROM products WHERE id = ? AND store_id = ?")
+    .bind(id, ctx.storeId)
     .first<{ source_product_code: string; source_payload_json: string | null; image_url: string | null }>();
 
   const sets: string[] = [];
@@ -216,15 +229,15 @@ export async function handleAdminProductUpdate(
 
     // Upload new images to R2
     const newUrls: string[] = [];
-    if (body.newImages && body.newImages.length > 0 && env.IMAGES) {
+    if (body.newImages && body.newImages.length > 0 && ctx.r2) {
       const code = current?.source_product_code || `product-${id}`;
       const ts = Date.now();
       for (let i = 0; i < body.newImages.length; i++) {
         const raw = body.newImages[i];
         const b64 = raw.includes(",") ? raw.split(",")[1] : raw;
-        const key = `products/${code}/${ts}-${i}.webp`;
+        const key = `${ctx.storeId}/products/${code}/${ts}-${i}.webp`;
         const buffer = base64ToArrayBuffer(b64);
-        await env.IMAGES.put(key, buffer, { httpMetadata: { contentType: "image/webp" } });
+        await ctx.r2.put(key, buffer, { httpMetadata: { contentType: "image/webp" } });
         newUrls.push(`/api/images/${key}`);
       }
     }
@@ -252,10 +265,10 @@ export async function handleAdminProductUpdate(
   }
 
   sets.push("updated_at = datetime('now')");
-  params.push(id);
+  params.push(id, ctx.storeId);
 
-  await env.DB
-    .prepare(`UPDATE products SET ${sets.join(", ")} WHERE id = ?`)
+  await ctx.db
+    .prepare(`UPDATE products SET ${sets.join(", ")} WHERE id = ? AND store_id = ?`)
     .bind(...params)
     .run();
 
@@ -267,7 +280,7 @@ export async function handleAdminProductUpdate(
 
 export async function handleAdminProductImageDelete(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -293,15 +306,15 @@ export async function handleAdminProductImageDelete(
   }
 
   // Delete from R2 if it's an R2 path
-  if (imageUrl.startsWith("/api/images/") && env.IMAGES) {
+  if (imageUrl.startsWith("/api/images/") && ctx.r2) {
     const key = imageUrl.slice("/api/images/".length);
-    await env.IMAGES.delete(key);
+    await ctx.r2.delete(key);
   }
 
   // Update gallery in source_payload_json
-  const row = await env.DB
-    .prepare("SELECT source_payload_json, image_url FROM products WHERE id = ?")
-    .bind(id)
+  const row = await ctx.db
+    .prepare("SELECT source_payload_json, image_url FROM products WHERE id = ? AND store_id = ?")
+    .bind(id, ctx.storeId)
     .first<{ source_payload_json: string | null; image_url: string | null }>();
 
   let payloadObj: Record<string, unknown> = {};
@@ -310,9 +323,9 @@ export async function handleAdminProductImageDelete(
   payloadObj.gallery = gallery;
 
   const newImageUrl = gallery[0] || null;
-  await env.DB
-    .prepare("UPDATE products SET source_payload_json = ?, image_url = ?, updated_at = datetime('now') WHERE id = ?")
-    .bind(JSON.stringify(payloadObj), newImageUrl, id)
+  await ctx.db
+    .prepare("UPDATE products SET source_payload_json = ?, image_url = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?")
+    .bind(JSON.stringify(payloadObj), newImageUrl, id, ctx.storeId)
     .run();
 
   return new Response(

@@ -1,22 +1,19 @@
-import type { D1DatabaseLike } from "../../types/d1";
-
-type Env = {
-  DB: D1DatabaseLike;
-};
+import type { RequestContext } from "../../context";
 
 export async function handleAdminCategories(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method === "GET") {
-    const rows = await env.DB
+    const rows = await ctx.db
       .prepare(
         `SELECT category, COUNT(1) as total
          FROM products
-         WHERE is_active = 1 AND category IS NOT NULL AND TRIM(category) != ''
+         WHERE is_active = 1 AND category IS NOT NULL AND TRIM(category) != '' AND store_id = ?
          GROUP BY category
          ORDER BY total DESC, category ASC`
       )
+      .bind(ctx.storeId)
       .all<{ category: string; total: number }>();
     const categories = Array.isArray(rows?.results)
       ? rows.results.map((r) => ({ name: r.category, total: r.total }))
@@ -38,14 +35,14 @@ export async function handleAdminCategories(
     }
     let existingList: string[] = [];
     try {
-      const row = await env.DB.prepare("SELECT value FROM app_settings WHERE key = 'custom_categories'").first<{ value: string }>();
+      const row = await ctx.db.prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'custom_categories'").bind(ctx.storeId).first<{ value: string }>();
       if (row?.value) existingList = JSON.parse(row.value);
     } catch { /* empty */ }
     if (!existingList.includes(name)) {
       existingList.push(name);
-      await env.DB
-        .prepare("INSERT INTO app_settings (key, value, updated_at) VALUES ('custom_categories', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
-        .bind(JSON.stringify(existingList))
+      await ctx.db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'custom_categories', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(ctx.storeId, JSON.stringify(existingList))
         .run();
     }
     return new Response(JSON.stringify({ ok: true, name }), {
@@ -64,16 +61,16 @@ export async function handleAdminCategories(
         status: 400, headers: { "content-type": "application/json" },
       });
     }
-    const result = await env.DB
-      .prepare("UPDATE products SET category = ?, updated_at = datetime('now') WHERE category = ?")
-      .bind(newName, oldName)
+    const result = await ctx.db
+      .prepare("UPDATE products SET category = ?, updated_at = datetime('now') WHERE category = ? AND store_id = ?")
+      .bind(newName, oldName, ctx.storeId)
       .run();
     try {
-      const row = await env.DB.prepare("SELECT value FROM app_settings WHERE key = 'custom_categories'").first<{ value: string }>();
+      const row = await ctx.db.prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'custom_categories'").bind(ctx.storeId).first<{ value: string }>();
       if (row?.value) {
         let list: string[] = JSON.parse(row.value);
         list = list.map((c) => c === oldName ? newName : c);
-        await env.DB.prepare("INSERT INTO app_settings (key, value, updated_at) VALUES ('custom_categories', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')").bind(JSON.stringify(list)).run();
+        await ctx.db.prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'custom_categories', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')").bind(ctx.storeId, JSON.stringify(list)).run();
       }
     } catch { /* ignore */ }
     return new Response(JSON.stringify({ ok: true, updated: result?.meta?.changes || 0 }), {
@@ -89,15 +86,15 @@ export async function handleAdminCategories(
         status: 400, headers: { "content-type": "application/json" },
       });
     }
-    await env.DB
-      .prepare("UPDATE products SET category = NULL, updated_at = datetime('now') WHERE category = ?")
-      .bind(name)
+    await ctx.db
+      .prepare("UPDATE products SET category = NULL, updated_at = datetime('now') WHERE category = ? AND store_id = ?")
+      .bind(name, ctx.storeId)
       .run();
     try {
-      const row = await env.DB.prepare("SELECT value FROM app_settings WHERE key = 'custom_categories'").first<{ value: string }>();
+      const row = await ctx.db.prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'custom_categories'").bind(ctx.storeId).first<{ value: string }>();
       if (row?.value) {
         const list: string[] = JSON.parse(row.value).filter((c: string) => c !== name);
-        await env.DB.prepare("INSERT INTO app_settings (key, value, updated_at) VALUES ('custom_categories', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')").bind(JSON.stringify(list)).run();
+        await ctx.db.prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'custom_categories', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')").bind(ctx.storeId, JSON.stringify(list)).run();
       }
     } catch { /* ignore */ }
     return new Response(JSON.stringify({ ok: true }), {

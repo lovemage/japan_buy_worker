@@ -1,9 +1,5 @@
-import type { D1DatabaseLike } from "../../types/d1";
+import type { RequestContext } from "../../context";
 import { getGeminiApiKey } from "./settings";
-
-type Env = {
-  DB: D1DatabaseLike;
-};
 
 type RecognizeRequest = {
   images: string[]; // base64 encoded JPEG, max 3
@@ -58,7 +54,7 @@ const SEARCH_PROMPT_SUFFIX = `
 
 export async function handleAdminRecognize(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -66,7 +62,22 @@ export async function handleAdminRecognize(
     });
   }
 
-  const apiKey = await getGeminiApiKey(env.DB);
+  // Free plan: 5 AI recognize uses total
+  if (ctx.storePlan === "free") {
+    const usage = await ctx.db
+      .prepare("SELECT COALESCE((SELECT value FROM app_settings WHERE store_id = ? AND key = 'ai_recognize_count'), '0') as cnt")
+      .bind(ctx.storeId)
+      .first<{ cnt: string }>();
+    const count = parseInt(usage?.cnt || "0", 10);
+    if (count >= 5) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Free 方案的 AI 辨識次數已用完（5 次）。升級方案以解鎖無限使用。" }),
+        { status: 403, headers: { "content-type": "application/json" } }
+      );
+    }
+  }
+
+  const apiKey = await getGeminiApiKey(ctx.db, ctx.storeId);
   if (!apiKey) {
     return new Response(
       JSON.stringify({ ok: false, error: "Gemini API Key 尚未設定，請至 Admin 設定頁填入" }),
@@ -166,6 +177,17 @@ export async function handleAdminRecognize(
       { status: 502, headers: { "content-type": "application/json" } }
     );
   }
+
+  // Increment AI recognize counter (for free plan tracking)
+  await ctx.db
+    .prepare(
+      `INSERT INTO app_settings (store_id, key, value, updated_at)
+       VALUES (?, 'ai_recognize_count', '1', datetime('now'))
+       ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
+    )
+    .bind(ctx.storeId)
+    .run()
+    .catch(() => {}); // non-blocking
 
   return new Response(
     JSON.stringify({ ok: true, mode, result }),

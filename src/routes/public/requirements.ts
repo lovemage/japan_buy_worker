@@ -1,8 +1,5 @@
+import type { RequestContext } from "../../context";
 import type { D1DatabaseLike } from "../../types/d1";
-
-type Env = {
-  DB: D1DatabaseLike;
-};
 
 type RequirementItemInput = {
   productId?: number | null;
@@ -65,12 +62,12 @@ function generateOrderCode(): string {
   return `${dd}${mm}${rand}`;
 }
 
-async function generateUniqueOrderCode(db: D1DatabaseLike, maxRetries = 10): Promise<string> {
+async function generateUniqueOrderCode(db: D1DatabaseLike, storeId: number, maxRetries = 10): Promise<string> {
   for (let i = 0; i < maxRetries; i++) {
     const code = generateOrderCode();
     const exists = await db
-      .prepare("SELECT 1 FROM requirement_forms WHERE order_code = ? LIMIT 1")
-      .bind(code)
+      .prepare("SELECT 1 FROM requirement_forms WHERE order_code = ? AND store_id = ? LIMIT 1")
+      .bind(code, storeId)
       .first();
     if (!exists) {
       return code;
@@ -98,7 +95,7 @@ type RequirementItemRow = {
 
 export async function handlePublicRequirements(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -144,12 +141,13 @@ export async function handlePublicRequirements(
     return badRequest("item quantity must be >= 1");
   }
 
-  const orderCode = await generateUniqueOrderCode(env.DB);
+  const orderCode = await generateUniqueOrderCode(ctx.db, ctx.storeId);
 
-  const insertedForm = await env.DB
+  const insertedForm = await ctx.db
     .prepare(
       `
 INSERT INTO requirement_forms (
+  store_id,
   customer_name,
   contact,
   member_phone,
@@ -166,11 +164,12 @@ INSERT INTO requirement_forms (
   order_code,
   created_at,
   updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, datetime('now'), datetime('now'))
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, datetime('now'), datetime('now'))
 RETURNING id, order_code
 `
     )
     .bind(
+      ctx.storeId,
       body.memberName.trim(),
       body.lineId.trim(),
       body.memberPhone.trim(),
@@ -204,7 +203,7 @@ RETURNING id, order_code
       return badRequest("productNameSnapshot is required");
     }
 
-    const inserted = await env.DB
+    const inserted = await ctx.db
       .prepare(
         `
 INSERT INTO requirement_items (
@@ -260,7 +259,7 @@ INSERT INTO requirement_items (
 
 export async function handlePublicRequirementDetail(
   request: Request,
-  env: Env
+  ctx: RequestContext
 ): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
@@ -275,7 +274,7 @@ export async function handlePublicRequirementDetail(
     return badRequest("id is required");
   }
 
-  const form = await env.DB
+  const form = await ctx.db
     .prepare(
       `
 SELECT
@@ -294,11 +293,11 @@ SELECT
   notes,
   created_at
 FROM requirement_forms
-WHERE id = ?
+WHERE id = ? AND store_id = ?
 LIMIT 1
 `
     )
-    .bind(id)
+    .bind(id, ctx.storeId)
     .first<RequirementFormRow>();
   if (!form) {
     return new Response(JSON.stringify({ ok: false, error: "requirement not found" }), {
@@ -307,7 +306,7 @@ LIMIT 1
     });
   }
 
-  const itemsRes = await env.DB
+  const itemsRes = await ctx.db
     .prepare(
       `
 SELECT

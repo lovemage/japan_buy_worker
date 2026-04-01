@@ -99,7 +99,7 @@ async function bootstrap() {
     return;
   }
 
-  const res = await fetch(`/api/requirement?id=${encodeURIComponent(id)}`);
+  const res = await apiFetch(`/api/requirement?id=${encodeURIComponent(id)}`);
   if (!res.ok) {
     showError(`讀取需求單失敗：${res.status}`);
     return;

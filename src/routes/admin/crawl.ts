@@ -1,11 +1,9 @@
-import { isAdminAuthorized } from "./auth";
 import { crawlProducts } from "../../jobs/crawl-products";
 import { normalizeProducts } from "../../jobs/normalize-products";
 import { upsertProducts } from "../../jobs/upsert-products";
-import type { D1DatabaseLike } from "../../types/d1";
+import type { RequestContext } from "../../context";
 
-type Env = {
-  DB: D1DatabaseLike;
+type CrawlEnv = {
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_API_TOKEN: string;
   CRAWL_LIST_PAGES?: string;
@@ -13,31 +11,25 @@ type Env = {
   CRAWL_TIMEOUT_MS?: string;
 };
 
-export async function handleAdminCrawl(request: Request, env: Env): Promise<Response> {
+export async function handleAdminCrawl(request: Request, ctx: RequestContext, crawlEnv: CrawlEnv): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
       status: 405,
       headers: { "content-type": "application/json" },
     });
   }
-  if (!isAdminAuthorized(request)) {
-    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
-      status: 401,
-      headers: { "content-type": "application/json" },
-    });
-  }
 
   try {
     const crawled = await crawlProducts({
-      CLOUDFLARE_ACCOUNT_ID: env.CLOUDFLARE_ACCOUNT_ID,
-      CLOUDFLARE_API_TOKEN: env.CLOUDFLARE_API_TOKEN,
-      CRAWL_LIST_PAGES: env.CRAWL_LIST_PAGES,
-      CRAWL_MAX_PAGES: env.CRAWL_MAX_PAGES,
-      CRAWL_TIMEOUT_MS: env.CRAWL_TIMEOUT_MS,
+      CLOUDFLARE_ACCOUNT_ID: crawlEnv.CLOUDFLARE_ACCOUNT_ID,
+      CLOUDFLARE_API_TOKEN: crawlEnv.CLOUDFLARE_API_TOKEN,
+      CRAWL_LIST_PAGES: crawlEnv.CRAWL_LIST_PAGES,
+      CRAWL_MAX_PAGES: crawlEnv.CRAWL_MAX_PAGES,
+      CRAWL_TIMEOUT_MS: crawlEnv.CRAWL_TIMEOUT_MS,
     });
 
     const normalized = normalizeProducts(crawled.products);
-    const writeResult = await upsertProducts(env.DB, normalized);
+    const writeResult = await upsertProducts(ctx.db, normalized, ctx.storeId);
 
     return new Response(
       JSON.stringify({

@@ -53,7 +53,7 @@ function renderProductGrid(products, paging) {
       const isCurrentlyActive = btn.textContent === "下架";
       btn.disabled = true;
       try {
-        const res = await fetch("/api/admin/products/toggle", {
+        const res = await apiFetch("/api/admin/products/toggle", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ id: Number(id), isActive: isCurrentlyActive ? 0 : 1 }),
@@ -81,7 +81,7 @@ function renderProductGrid(products, paging) {
 async function loadManagedProducts() {
   const params = new URLSearchParams({ limit: "20", offset: String((managePage - 1) * 20) });
   if (manageSearch) params.set("search", manageSearch);
-  const res = await fetch(`/api/products?${params}`);
+  const res = await apiFetch(`/api/products?${params}`);
   if (!res.ok) { showError("載入商品失敗"); return; }
   const body = await res.json();
   renderProductGrid(body.products || [], body.paging || {});
@@ -123,7 +123,7 @@ function renderEditGallery() {
         const id = Number(document.getElementById("edit-id")?.value);
         if (!url || !id) return;
         btn.disabled = true;
-        const res = await fetch("/api/admin/products/image-delete", {
+        const res = await apiFetch("/api/admin/products/image-delete", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ id, imageUrl: url }),
@@ -162,7 +162,7 @@ async function openEditModal(btn) {
 
   // Fetch product detail to get gallery
   if (code) {
-    const res = await fetch(`/api/product?code=${encodeURIComponent(code)}`);
+    const res = await apiFetch(`/api/product?code=${encodeURIComponent(code)}`);
     if (res.ok) {
       const data = await res.json();
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
@@ -208,7 +208,7 @@ async function saveEdit() {
   if (status) status.textContent = "儲存中...";
 
   try {
-    const res = await fetch("/api/admin/products/update", {
+    const res = await apiFetch("/api/admin/products/update", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -338,7 +338,7 @@ async function submitManualProduct() {
   if (btn) btn.disabled = true;
 
   try {
-    const res = await fetch("/api/admin/products", {
+    const res = await apiFetch("/api/admin/products", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -356,7 +356,7 @@ async function submitManualProduct() {
 }
 
 async function loadCategories() {
-  const res = await fetch("/api/admin/categories");
+  const res = await apiFetch("/api/admin/categories");
   if (!res.ok) return;
   const body = await res.json();
   const list = document.getElementById("category-list");
@@ -389,7 +389,7 @@ async function loadCategories() {
       const oldName = btn.getAttribute("data-name");
       const newName = prompt(`將「${oldName}」重新命名為：`, oldName);
       if (!newName || newName.trim() === oldName) return;
-      await fetch("/api/admin/categories", {
+      await apiFetch("/api/admin/categories", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ oldName, newName: newName.trim() }),
@@ -402,7 +402,7 @@ async function loadCategories() {
     btn.addEventListener("click", async () => {
       const name = btn.getAttribute("data-name");
       if (!confirm(`確定刪除分類「${name}」？該分類下的商品將歸為未分類。`)) return;
-      await fetch(`/api/admin/categories?name=${encodeURIComponent(name)}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/categories?name=${encodeURIComponent(name)}`, { method: "DELETE" });
       await loadCategories();
     });
   });
@@ -412,7 +412,7 @@ async function addCategory() {
   const input = document.getElementById("category-new-name");
   const name = input?.value?.trim();
   if (!name) return;
-  await fetch("/api/admin/categories", {
+  await apiFetch("/api/admin/categories", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ name }),
