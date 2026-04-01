@@ -120,6 +120,7 @@ function renderDraftCount() {
   }
   if (floatingCountNode) {
     floatingCountNode.textContent = count;
+    floatingCountNode.style.display = parseInt(count) > 0 ? "" : "none";
   }
 }
 
@@ -461,6 +462,14 @@ function renderFloatingPagination(paging) {
   next.onclick = () => goPage(paging.page + 1);
 }
 
+function closeDrawer() {
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("drawer-overlay");
+  if (drawer) drawer.classList.remove("open");
+  if (overlay) overlay.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
 function renderCategoryFilters(categories) {
   const wrapper = document.getElementById("category-filters");
   if (!wrapper) {
@@ -480,6 +489,7 @@ function renderCategoryFilters(categories) {
   wrapper.querySelectorAll("button[data-category]").forEach((button) => {
     button.addEventListener("click", () => {
       const category = (button.getAttribute("data-category") || "").trim();
+      closeDrawer();
       goPage(1, category);
     });
   });
@@ -506,6 +516,7 @@ function renderBrandFilters(brands) {
   wrapper.querySelectorAll("button[data-brand]").forEach((button) => {
     button.addEventListener("click", () => {
       const brand = (button.getAttribute("data-brand") || "").trim();
+      closeDrawer();
       if (!brand) {
         goPage(1, getCategory(), getPromoMaxTwd(), []);
         return;

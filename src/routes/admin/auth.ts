@@ -417,6 +417,15 @@ export async function handleVerifyPhone(
     return json({ ok: false, error: "Invalid Firebase token" }, 400);
   }
 
+  // Check if phone number is already used by another store
+  const existing = await db
+    .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
+    .bind(phoneNumber, session.store_id)
+    .first<{ id: number }>();
+  if (existing) {
+    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+  }
+
   // Update store with verified phone
   await db
     .prepare(
