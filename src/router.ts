@@ -29,7 +29,7 @@ import {
   handleAdminClearSyncProducts,
   handleAdminClearManualProducts,
 } from "./routes/admin/clear-products";
-import { handleStoreInfo, COUNTRY_CONFIG } from "./routes/admin/store-info";
+import { handleStoreInfo, handleStoreNameUpdate, handlePopupAds, handlePopupAdUpload, handlePopupAdDelete, COUNTRY_CONFIG } from "./routes/admin/store-info";
 import type { RequestContext } from "./context";
 
 type CrawlEnv = {
@@ -199,6 +199,23 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/store-info") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleStoreInfo(request, ctx);
+  }
+  if (subPath === "/api/admin/store-name") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleStoreNameUpdate(request, ctx);
+  }
+  if (subPath === "/api/admin/popup-ads") {
+    // GET is public (store front needs to read ads), POST requires auth
+    if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handlePopupAds(request, ctx);
+  }
+  if (subPath === "/api/admin/popup-ads/upload") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handlePopupAdUpload(request, ctx);
+  }
+  if (subPath === "/api/admin/popup-ads/delete") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handlePopupAdDelete(request, ctx);
   }
   if (subPath === "/api/admin/clear-sync-products") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
