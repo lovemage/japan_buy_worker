@@ -23,6 +23,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
 
+/* ── Hero fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+
 /* ── Nav ── */
 .nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 .nav-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -39,21 +42,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
 
 /* ── Hero ── */
-.hero { position: relative; overflow: hidden; background: #2c2a25; }
-.hero-img { width: 100%; height: 420px; object-fit: cover; opacity: 0.55; display: block; }
-.hero-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; }
-.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(138,154,91,0.9); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; letter-spacing: 0.5px; }
-.hero h1 { font-size: 36px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 10px; letter-spacing: -0.5px; }
-.hero h1 em { font-style: normal; color: var(--brand-light); }
-.hero-sub { font-size: 15px; color: rgba(255,255,255,0.8); max-width: 420px; line-height: 1.6; margin-bottom: 24px; }
-.hero-cta { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.btn-hero { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s cubic-bezier(0.25,1,0.5,1); }
-.btn-hero:active { transform: scale(0.97); }
-.btn-hero-primary { background: #fff; color: var(--text); }
-.btn-hero-primary:hover { background: #f5f3ec; }
-.btn-hero-primary svg { width: 18px; height: 18px; }
-.btn-hero-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.4); }
-.btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+.hero { position: relative; overflow: hidden; background: #2c2a25; min-height: 540px; }
+.hero-img { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; display: block; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(44,42,37,0.82) 0%, rgba(138,154,91,0.45) 50%, rgba(158,95,56,0.5) 100%); z-index: 1; }
+.hero-overlay { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 80px 24px 64px; min-height: 540px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); color: #fff; padding: 8px 18px; border-radius: 24px; font-size: 13px; font-weight: 700; margin-bottom: 24px; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; }
+.hero h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 8px; letter-spacing: -1px; }
+.hero h1 em { font-style: normal; display: block; font-size: 28px; font-weight: 400; color: rgba(255,255,255,0.7); letter-spacing: 2px; margin-top: 8px; }
+.hero-sub { font-size: 16px; color: rgba(255,255,255,0.85); max-width: 480px; line-height: 1.7; margin-bottom: 36px; font-weight: 400; }
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.btn-hero { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; border-radius: 14px; font-size: 16px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: all 0.25s cubic-bezier(0.25,1,0.5,1); }
+.btn-hero:active { transform: scale(0.96); }
+.btn-hero-primary { background: var(--brand); color: #fff; box-shadow: 0 8px 32px rgba(138,154,91,0.4), 0 2px 8px rgba(0,0,0,0.2); }
+.btn-hero-primary:hover { background: var(--brand-dark); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(138,154,91,0.5), 0 4px 12px rgba(0,0,0,0.25); }
+.btn-hero-primary svg { width: 20px; height: 20px; }
+.btn-hero-outline { background: rgba(255,255,255,0.1); color: #fff; border: 2px solid rgba(255,255,255,0.35); backdrop-filter: blur(4px); }
+.btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+.hero-decoration { position: absolute; z-index: 1; pointer-events: none; }
+.hero-deco-circle { width: 300px; height: 300px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); top: -80px; right: -60px; }
+.hero-deco-circle-2 { width: 200px; height: 200px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.06); bottom: -40px; left: -30px; }
 
 /* ── Section shared ── */
 .section { padding: 56px 20px; }
@@ -63,11 +70,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 /* ── Flow chart ── */
 .flow { display: flex; align-items: flex-start; justify-content: center; gap: 0; }
-.flow-step { flex: 1; max-width: 160px; text-align: center; padding: 12px 8px; }
-.flow-icon { font-size: 32px; margin-bottom: 8px; }
-.flow-step h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.flow-step { flex: 1; max-width: 180px; text-align: center; padding: 12px 8px; }
+.flow-icon { width: 56px; height: 56px; margin: 0 auto 14px; background: var(--brand-light); border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
+.flow-icon svg { width: 28px; height: 28px; }
+.flow-step:hover .flow-icon { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(138,154,91,0.2); }
+.flow-step h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
 .flow-step p { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
-.flow-arrow { display: flex; align-items: center; font-size: 18px; color: var(--brand); font-weight: 700; padding-top: 16px; }
+.flow-arrow { display: flex; align-items: center; padding-top: 20px; color: var(--brand); }
+.flow-arrow svg { width: 20px; height: 20px; opacity: 0.5; }
 @keyframes flowIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .fs-1 { animation: flowIn 0.5s ease-out 0.1s both; }
 .fa-1 { animation: flowIn 0.4s ease-out 0.3s both; }
@@ -131,22 +141,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 /* ── Animations ── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes heroImgReveal { from { opacity: 0; transform: scale(1.05); } to { opacity: 0.55; transform: scale(1); } }
-.hero-img { opacity: 0; animation: heroImgReveal 1.2s ease-out 0.3s both; }
-.hero-overlay > * { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.25,1,0.5,1) both; }
-.hero-badge { animation-delay: 2s; }
-.hero h1 { animation-delay: 2.2s; }
-.hero-sub { animation-delay: 2.5s; }
-.hero-cta { animation-delay: 2.8s; }
+@keyframes heroImgReveal { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
+@keyframes heroKenBurns { from { transform: scale(1); } to { transform: scale(1.08); } }
+@keyframes heroTitleIn { from { opacity: 0; transform: translateY(30px) scale(0.95); letter-spacing: 4px; } to { opacity: 1; transform: translateY(0) scale(1); letter-spacing: -1px; } }
+.hero-img { opacity: 0; animation: heroImgReveal 1.6s ease-out 0.2s both, heroKenBurns 20s ease-in-out 1.8s infinite alternate; }
+.hero-overlay > * { opacity: 0; animation: fadeUp 0.8s cubic-bezier(0.25,1,0.5,1) both; }
+.hero-badge { animation-delay: 0.4s; }
+.hero h1 { animation: heroTitleIn 1s cubic-bezier(0.25,1,0.5,1) 0.6s both; }
+.hero-sub { animation-delay: 0.9s; }
+.hero-cta { animation-delay: 1.2s; }
 .fade-in { opacity: 0; transform: translateY(12px); transition: opacity 0.45s, transform 0.45s cubic-bezier(0.25,1,0.5,1); }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .hero-img { height: 320px; }
-  .hero h1 { font-size: 26px; }
+  .hero { min-height: 440px; }
+  .hero-overlay { min-height: 440px; padding: 60px 20px 48px; }
+  .hero h1 { font-size: 38px; }
+  .hero h1 em { font-size: 20px; }
   .hero-sub { font-size: 14px; }
-  .btn-hero { padding: 10px 18px; font-size: 13px; }
+  .btn-hero { padding: 14px 24px; font-size: 14px; }
   .flow-step p { font-size: 11px; }
   .flow-icon { font-size: 28px; }
   .feature-inner { flex-direction: column; text-align: center; }
@@ -159,7 +173,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .nav-link { display: none; }
 }
 @media (max-width: 380px) {
-  .hero h1 { font-size: 22px; }
+  .hero h1 { font-size: 30px; }
+  .hero h1 em { font-size: 17px; }
   .btn-ghost { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -182,13 +197,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <!-- Hero -->
 <section class="hero">
   <img src="/assets/images/hero-image.jpg" alt="VOVOSnap — 拍照上架 隨拍隨賣" class="hero-img" />
+  <div class="hero-decoration hero-deco-circle"></div>
+  <div class="hero-decoration hero-deco-circle-2"></div>
   <div class="hero-overlay">
     <div class="hero-badge">🇯🇵 🇰🇷 🇹🇭 拍照開店平台</div>
-    <h1>拍照就開店<br><em>代購從此不一樣</em></h1>
+    <h1>拍照就開店<em>代購從此不一樣</em></h1>
     <p class="hero-sub">AI 辨識商品，一拍即上架。30 秒擁有你的代購店面，客人自助下單，訂單自動彙整。</p>
     <div class="hero-cta">
       <a href="/auth/google" class="btn-hero btn-hero-primary">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <svg viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Google 免費開始
       </a>
       <a href="#pricing" class="btn-hero btn-hero-outline">查看方案</a>
@@ -202,11 +219,43 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <h2 class="section-title">三步驟開店</h2>
     <p class="section-sub">從註冊到接單，不到五分鐘</p>
     <div class="flow">
-      <div class="flow-step fs-1"><div class="flow-icon">🌏</div><h3>設定國家</h3><p>選擇代購來源國家，系統自動設定幣別和匯率</p></div>
-      <div class="flow-arrow fa-1">→</div>
-      <div class="flow-step fs-2"><div class="flow-icon">💰</div><h3>設定利潤</h3><p>設定加價金額，系統自動計算台幣售價</p></div>
-      <div class="flow-arrow fa-2">→</div>
-      <div class="flow-step fs-3"><div class="flow-icon">📸</div><h3>拍照上架</h3><p>AI 辨識品名、規格、價格，一鍵上架</p></div>
+      <div class="flow-step fs-1">
+        <div class="flow-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M2 12h20"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/>
+            <circle cx="17" cy="7" r="3" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.2"/>
+            <path d="M17 5.5v1.5h1.2" stroke="#fff" stroke-width="1"/>
+          </svg>
+        </div>
+        <h3>設定國家</h3><p>選擇代購來源國家，系統自動設定幣別和匯率</p>
+      </div>
+      <div class="flow-arrow fa-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div class="flow-step fs-2">
+        <div class="flow-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            <path d="M8.5 2.5l1 1.5M15.5 2.5l-1 1.5M8.5 21.5l1-1.5M15.5 21.5l-1-1.5" stroke="var(--accent)" stroke-width="1.2" opacity="0.6"/>
+          </svg>
+        </div>
+        <h3>設定利潤</h3><p>設定加價金額，系統自動計算台幣售價</p>
+      </div>
+      <div class="flow-arrow fa-2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div class="flow-step fs-3">
+        <div class="flow-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+            <path d="M20 3l1.5-1M20 3l-1.5-1M20 3v-2" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>拍照上架</h3><p>AI 辨識品名、規格、價格，一鍵上架</p>
+      </div>
     </div>
     <p style="text-align:center;margin-top:20px;">
       <a href="https://vovosnap.com/store" target="_blank" rel="noopener" style="color:var(--brand);font-size:13px;font-weight:600;text-decoration:none;">查看範例商店 →</a>
