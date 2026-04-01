@@ -22,6 +22,15 @@
   --muted-brand: #6B7B8D;
   --line: #DDE2E8;
   --shadow: 0 4px 12px rgba(74, 97, 120, 0.08);
+  /* Derived */
+  --btn-secondary: #5A7088;
+  --btn-secondary-hover: #4A6078;
+  --btn-added: #4A7A6A;
+  --card-border: rgba(74, 97, 120, 0.1);
+  --brand-shadow-sm: rgba(74, 97, 120, 0.15);
+  --brand-shadow-md: rgba(74, 97, 120, 0.2);
+  --brand-shadow-lg: rgba(74, 97, 120, 0.28);
+  --focus-ring: rgba(74, 97, 120, 0.1);
 }
 [data-template="ink-blue"] .page-header {
   border-image: linear-gradient(90deg, #4A6178 0%, #7A6855 60%, #9E8A5A 100%) 1;
@@ -58,6 +67,15 @@
   --muted-brand: #7A7068;
   --line: #E5DFD6;
   --shadow: 0 4px 12px rgba(140, 123, 107, 0.08);
+  /* Derived */
+  --btn-secondary: #7A6E62;
+  --btn-secondary-hover: #6A5E52;
+  --btn-added: #6A8A68;
+  --card-border: rgba(140, 123, 107, 0.12);
+  --brand-shadow-sm: rgba(140, 123, 107, 0.15);
+  --brand-shadow-md: rgba(140, 123, 107, 0.2);
+  --brand-shadow-lg: rgba(140, 123, 107, 0.28);
+  --focus-ring: rgba(140, 123, 107, 0.1);
 }
 [data-template="sand"] .page-header {
   border-image: linear-gradient(90deg, #8C7B6B 0%, #A07858 60%, #B09060 100%) 1;
@@ -94,6 +112,15 @@
   --muted-brand: #687868;
   --line: #DDE2DA;
   --shadow: 0 4px 12px rgba(107, 127, 107, 0.08);
+  /* Derived */
+  --btn-secondary: #5E7060;
+  --btn-secondary-hover: #4E6050;
+  --btn-added: #4A7A5A;
+  --card-border: rgba(107, 127, 107, 0.1);
+  --brand-shadow-sm: rgba(107, 127, 107, 0.15);
+  --brand-shadow-md: rgba(107, 127, 107, 0.2);
+  --brand-shadow-lg: rgba(107, 127, 107, 0.28);
+  --focus-ring: rgba(107, 127, 107, 0.1);
 }
 [data-template="moss"] .page-header {
   border-image: linear-gradient(90deg, #6B7F6B 0%, #7A6D58 60%, #8E8050 100%) 1;
@@ -130,6 +157,15 @@
   --muted-brand: #6A7080;
   --line: #DCDFE5;
   --shadow: 0 4px 12px rgba(94, 107, 122, 0.08);
+  /* Derived */
+  --btn-secondary: #58657A;
+  --btn-secondary-hover: #48556A;
+  --btn-added: #4A7A6A;
+  --card-border: rgba(94, 107, 122, 0.1);
+  --brand-shadow-sm: rgba(94, 107, 122, 0.15);
+  --brand-shadow-md: rgba(94, 107, 122, 0.2);
+  --brand-shadow-lg: rgba(94, 107, 122, 0.28);
+  --focus-ring: rgba(94, 107, 122, 0.1);
 }
 [data-template="slate"] .page-header {
   border-image: linear-gradient(90deg, #5E6B7A 0%, #7A6860 60%, #8A7E5E 100%) 1;

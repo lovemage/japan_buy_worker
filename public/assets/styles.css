@@ -25,6 +25,16 @@
   --line: #E5E0D6;
   --brand: var(--primary-color);
 
+  /* Derived: button/card/shadow colors that follow primary */
+  --btn-secondary: #6B7A5A;
+  --btn-secondary-hover: #5A6A4A;
+  --btn-added: #3b8f5a;
+  --card-border: rgba(138, 154, 91, 0.1);
+  --brand-shadow-sm: rgba(138, 154, 91, 0.2);
+  --brand-shadow-md: rgba(138, 154, 91, 0.25);
+  --brand-shadow-lg: rgba(138, 154, 91, 0.3);
+  --focus-ring: rgba(138, 154, 91, 0.1);
+
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --transition-fast: 150ms var(--ease-out-quart);
   --transition-normal: 250ms var(--ease-out-quart);
@@ -65,7 +75,7 @@ body {
   background: var(--card-bg);
   border-radius: 16px;
   box-shadow: var(--shadow);
-  border: 1px solid rgba(138, 154, 91, 0.1);
+  border: 1px solid var(--card-border);
   padding: 16px;
 }
 
@@ -83,35 +93,35 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(138, 154, 91, 0.25);
+  box-shadow: 0 2px 8px var(--brand-shadow-md);
   text-decoration: none;
 }
 
 .btn-pill:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(138, 154, 91, 0.3);
+  box-shadow: 0 4px 12px var(--brand-shadow-lg);
 }
 
 .btn-pill:active {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(138, 154, 91, 0.2);
+  box-shadow: 0 1px 4px var(--brand-shadow-sm);
 }
 
 .btn-pill.secondary {
-  background: #eef2e6;
-  color: #5f6a55;
+  background: var(--bg-color);
+  color: var(--btn-secondary);
   box-shadow: none;
-  border: 1px solid #d9e0cc;
+  border: 1px solid var(--line);
 }
 
 .btn-pill.secondary:hover {
-  background: #e3ead6;
-  color: #3f4936;
+  background: var(--line);
+  color: var(--btn-secondary-hover);
 }
 
 .btn-pill.secondary:active {
-  background: #dbe2ce;
+  background: var(--line);
 }
 
 .btn-pill:disabled,
@@ -137,7 +147,7 @@ body {
   outline: none;
   border-color: var(--primary-color);
   background: #fff;
-  box-shadow: 0 0 0 4px rgba(138, 154, 91, 0.1);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 .container {
@@ -202,15 +212,15 @@ body {
 }
 
 .button.secondary {
-  background: #58677b;
+  background: var(--btn-secondary);
 }
 
 .button.secondary:hover {
-  background: #4a586b;
+  background: var(--btn-secondary-hover);
 }
 
 .button.is-added {
-  background: #3b8f5a;
+  background: var(--btn-added);
   transform: scale(1.04);
   transition: transform 0.15s ease, background 0.15s ease;
 }
@@ -262,7 +272,7 @@ body {
 
 .product-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(140, 120, 90, 0.14);
+  box-shadow: 0 8px 24px var(--brand-shadow-sm);
 }
 
 .product-card__media {
@@ -686,7 +696,7 @@ select:disabled {
 
 .detail-thumb-btn.is-active .detail-thumb {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(138, 154, 91, 0.2);
+  box-shadow: 0 0 0 3px var(--brand-shadow-sm);
 }
 
 /* --- Meta Info --- */
@@ -848,12 +858,12 @@ select:disabled {
 
 .detail-add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(138, 154, 91, 0.3);
+  box-shadow: 0 4px 16px var(--brand-shadow-lg);
 }
 
 .detail-add-btn:active {
   transform: translateY(1px);
-  box-shadow: 0 1px 4px rgba(138, 154, 91, 0.2);
+  box-shadow: 0 1px 4px var(--brand-shadow-sm);
 }
 
 .detail-add-btn__check {
@@ -861,9 +871,9 @@ select:disabled {
 }
 
 .detail-add-btn.is-added {
-  background: #3b8f5a;
+  background: var(--btn-added);
   transform: scale(1);
-  box-shadow: 0 4px 16px rgba(59, 143, 90, 0.3);
+  box-shadow: 0 4px 16px var(--brand-shadow-lg);
 }
 
 .detail-add-btn.is-added .detail-add-btn__text {
@@ -1619,7 +1629,7 @@ select:disabled {
   background: var(--brand);
   color: #fff;
   border-color: var(--brand);
-  box-shadow: 0 2px 8px rgba(138, 154, 91, 0.25);
+  box-shadow: 0 2px 8px var(--brand-shadow-md);
 }
 
 
@@ -1655,7 +1665,7 @@ select:disabled {
 .view-switch__btn.is-active {
   background: var(--brand);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(138, 154, 91, 0.24);
+  box-shadow: 0 2px 8px var(--brand-shadow-md);
 }
 
 /* Promo Modal */
