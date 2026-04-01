@@ -51,7 +51,7 @@
     <!-- Drawer -->
     <aside class="drawer" id="drawer">
       <div class="drawer-header">
-        <h2>篩選</h2>
+        <h2 id="drawer-title"><img id="drawer-logo" class="drawer-logo" style="display:none;" alt="" /><span>篩選</span></h2>
         <button class="drawer-close" id="drawer-close" aria-label="關閉">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -97,8 +97,13 @@
     // Render store logo
     var ds = window.__DISPLAY_SETTINGS || {};
     if (ds.storeLogo) {
+      var logoSrc = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo;
       var logoEl = document.getElementById("store-logo");
-      if (logoEl) { logoEl.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; logoEl.style.display = "block"; }
+      if (logoEl) { logoEl.src = logoSrc; logoEl.style.display = "block"; }
+      var drawerLogo = document.getElementById("drawer-logo");
+      if (drawerLogo) { drawerLogo.src = logoSrc; drawerLogo.style.display = "inline-block"; }
+      var drawerTitle = document.getElementById("drawer-title");
+      if (drawerTitle) { var span = drawerTitle.querySelector("span"); if (span) span.style.display = "none"; }
     }
     // Drawer toggle
     (function() {

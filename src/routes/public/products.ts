@@ -15,6 +15,7 @@ type ProductRow = {
   image_url: string | null;
   last_crawled_at: string | null;
   source_payload_json: string | null;
+  tags: string | null;
 };
 
 type CategoryRow = {
@@ -50,6 +51,7 @@ function mapProduct(item: ProductRow) {
     displayImageUrl: toDisplayImageUrl(item.image_url),
     lastCrawledAt: item.last_crawled_at,
     gallery: payload.gallery,
+    tags: (() => { try { return JSON.parse(item.tags || "[]"); } catch { return []; } })(),
   };
 }
 
@@ -103,7 +105,8 @@ SELECT
   p.color_count,
   p.image_url,
   p.last_crawled_at,
-  p.source_payload_json
+  p.source_payload_json,
+  p.tags
 FROM products p
 ${where.whereSql}
 ORDER BY updated_at DESC
@@ -285,7 +288,8 @@ SELECT
   color_count,
   image_url,
   last_crawled_at,
-  source_payload_json
+  source_payload_json,
+  tags
 FROM products
 WHERE store_id = ? AND is_active = 1 AND source_product_code = ?
 LIMIT 1

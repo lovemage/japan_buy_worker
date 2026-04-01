@@ -67,7 +67,7 @@ function renderProductGrid(products, paging) {
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
         <p class="manage-card__meta">${p.brand || ""}${p.category ? " · " + p.category : ""}</p>
         <div class="manage-card__actions">
-          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}">編輯</button>
+          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
           <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">🔗 網址</button>
         </div>
       </div>
@@ -225,6 +225,16 @@ async function openEditModal(btn) {
     };
   }
 
+  // Populate tag checkboxes
+  const tagStr = btn.getAttribute("data-tags") || "";
+  const tagSet = new Set(tagStr.split(",").filter(Boolean));
+  const hotCb = document.getElementById("edit-tag-hot");
+  const limitedCb = document.getElementById("edit-tag-limited");
+  const popularCb = document.getElementById("edit-tag-popular");
+  if (hotCb) hotCb.checked = tagSet.has("hot");
+  if (limitedCb) limitedCb.checked = tagSet.has("limited");
+  if (popularCb) popularCb.checked = tagSet.has("popular");
+
   editNewImages = [];
   editGallery = [];
 
@@ -262,6 +272,11 @@ async function saveEdit() {
   if (!id) return;
 
   const status = document.getElementById("edit-status");
+  const tags = [];
+  if (document.getElementById("edit-tag-hot")?.checked) tags.push("hot");
+  if (document.getElementById("edit-tag-limited")?.checked) tags.push("limited");
+  if (document.getElementById("edit-tag-popular")?.checked) tags.push("popular");
+
   const payload = {
     id,
     titleJa: document.getElementById("edit-title-ja")?.value?.trim() || "",
@@ -271,6 +286,7 @@ async function saveEdit() {
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
     gallery: editGallery,
     newImages: editNewImages.map(img => img.base64),
+    tags,
   };
 
   const btn = document.getElementById("edit-save");

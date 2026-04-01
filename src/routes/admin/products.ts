@@ -185,6 +185,7 @@ export async function handleAdminProductUpdate(
     priceJpyTaxIn?: number | null;
     gallery?: string[];
     newImages?: string[];
+    tags?: string[];
   };
   try {
     body = (await request.json()) as typeof body;
@@ -215,6 +216,11 @@ export async function handleAdminProductUpdate(
   if (body.brand !== undefined) { sets.push("brand = ?"); params.push((body.brand || "").trim() || null); }
   if (body.category !== undefined) { sets.push("category = ?"); params.push((body.category || "").trim() || null); }
   if (body.priceJpyTaxIn !== undefined) { sets.push("price_jpy_tax_in = ?"); params.push(body.priceJpyTaxIn ?? null); }
+  if (body.tags !== undefined) {
+    const validTags = ["hot", "limited", "popular"];
+    const filtered = (body.tags || []).filter(t => validTags.includes(t));
+    sets.push("tags = ?"); params.push(JSON.stringify(filtered));
+  }
 
   // Handle gallery updates (existing URLs kept + new images uploaded)
   let finalGallery: string[] | undefined;

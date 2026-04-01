@@ -12,6 +12,14 @@ const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
 const PROMO_FILTER_VALUES = ["all", 350, 450, 550];
 const DEFAULT_PROMO_FILTER = "all";
+
+// Tag labels from display settings or defaults
+const TAG_DEFAULTS = { hot: "熱門商品", limited: "限時發售", popular: "人氣特賣" };
+function getTagLabel(key) {
+  const ds = window.__DISPLAY_SETTINGS || {};
+  const names = ds.tagNames || {};
+  return names[key] || TAG_DEFAULTS[key] || key;
+}
 const CATEGORY_TOKEN_MAP = {
   "all item": "全部商品",
   "tops": "上衣",
@@ -188,6 +196,7 @@ function renderProducts(products, pricing, promoMaxTwd) {
       <article class="product-card ${gallery.length > 1 ? "has-gallery" : ""}" data-product-card data-gallery="${galleryPayload}">
         <div class="product-card__media image-loading" data-image-loading-wrap>
           ${isPromo ? '<span class="promo-badge">優惠</span>' : ""}
+          ${(item.tags || []).map(t => `<span class="product-tag product-tag--${escapeHtml(t)}">${getTagLabel(t)}</span>`).join("")}
           <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" data-image-loading="1" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>

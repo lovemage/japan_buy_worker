@@ -245,7 +245,8 @@ body {
   padding: 16px 16px 12px;
   border-bottom: 1px solid var(--line);
 }
-.drawer-header h2 { font-size: 16px; font-weight: 700; margin: 0; }
+.drawer-header h2 { font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; }
+.drawer-logo { width: 35px; height: 35px; object-fit: contain; border-radius: 8px; }
 
 .drawer-close {
   width: 32px; height: 32px; border: none; background: none;
@@ -387,23 +388,46 @@ body {
   transition: opacity 0.25s var(--ease-out-quart);
 }
 
-.promo-badge {
+/* Product badges container: stack vertically at top-left */
+.product-card__media {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-top: 0;
+}
+.promo-badge,
+.product-tag {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  left: 8px;
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 700;
+}
+.promo-badge {
+  top: 8px;
   color: #6B4A00;
   background: linear-gradient(135deg, #FFE066, #FFCC33);
   border: 1px solid var(--accent-gold);
   box-shadow: 0 2px 6px rgba(212, 150, 10, 0.25);
 }
+
+/* Product tags: stacked below promo badge */
+.product-tag { color: #fff; font-size: 10px; letter-spacing: 0.3px; }
+.product-tag:nth-of-type(1) { top: 8px; }
+.product-tag:nth-of-type(2) { top: 32px; }
+.product-tag:nth-of-type(3) { top: 56px; }
+/* If promo badge exists, push tags down */
+.promo-badge ~ .product-tag:nth-of-type(1) { top: 34px; }
+.promo-badge ~ .product-tag:nth-of-type(2) { top: 58px; }
+.promo-badge ~ .product-tag:nth-of-type(3) { top: 82px; }
+.product-tag--hot { background: #e53e3e; }
+.product-tag--limited { background: #d97706; }
+.product-tag--popular { background: var(--primary-color); }
 
 .product-card img {
   width: 100%;
