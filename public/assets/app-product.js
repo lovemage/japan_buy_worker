@@ -1,6 +1,7 @@
 import { addItem, getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
-const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21 };
+const _cc = window.__COUNTRY_CONFIG || {};
+const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: _cc.defaultRate || 0.21 };
 
 function setError(message) {
   const node = document.getElementById("detail-error");
@@ -11,16 +12,22 @@ function setError(message) {
   node.classList.remove("hidden");
 }
 
-function calcAdjustedPrices(baseJpy, pricing) {
-  const base = Number(baseJpy);
+function calcAdjustedPrices(basePrice, pricing) {
+  const base = Number(basePrice);
   if (!Number.isFinite(base)) {
-    return { jpy: null, twd: null };
+    return { src: null, twd: null };
   }
   const markup = Number(pricing?.markupJpy ?? DEFAULT_PRICING.markupJpy);
   const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
-  const jpy = Math.round(base + (Number.isFinite(markup) ? markup : DEFAULT_PRICING.markupJpy));
-  const twd = Math.round(jpy * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd));
-  return { jpy, twd };
+  const src = Math.round(base + (Number.isFinite(markup) ? markup : DEFAULT_PRICING.markupJpy));
+  const twd = Math.round(src * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd));
+  return { src, twd };
+}
+
+function fmtSrcPrice(val) {
+  if (val === null) return "";
+  const sym = (_cc.currencySymbol || "¥");
+  return `${sym}${val.toLocaleString("en-US")}`;
 }
 
 function renderProduct(item, pricing) {
@@ -86,7 +93,7 @@ function renderProduct(item, pricing) {
     if (adjusted.twd !== null) {
       priceBlock.innerHTML =
         `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` +
-        `<p class="detail-price-jpy">&yen;${adjusted.jpy.toLocaleString("en-US")}（含代購費）</p>`;
+        `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`;
     } else {
       priceBlock.innerHTML = `<p class="detail-price-twd">價格未提供</p>`;
     }
@@ -141,7 +148,7 @@ function renderProduct(item, pricing) {
         imageUrl: mainImage,
         selectedImageUrl,
         quantity,
-        priceJpyTaxIn: adjusted.jpy,
+        priceJpyTaxIn: adjusted.src,
         unitPriceTwd: adjusted.twd,
         sizeOptions: Array.isArray(item.sizeOptions) ? item.sizeOptions : [],
         colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],

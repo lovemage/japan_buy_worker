@@ -4,7 +4,8 @@ import { buildListQueryParams } from "./list-query.js";
 import { getNormalizedPromoMax, nextSingleBrandSelection } from "./list-state.js";
 
 const PAGE_SIZE = 20;
-const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: 0.21, promoTagMaxTwd: 500 };
+const _cc = window.__COUNTRY_CONFIG || {};
+const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: _cc.defaultRate || 0.21, promoTagMaxTwd: 500 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 const LIST_RETURN_STATE_KEY = "japan-buy-list-return-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
@@ -83,16 +84,22 @@ function buildProductGallery(item) {
   return images;
 }
 
-function calcAdjustedPrices(baseJpy, pricing) {
-  const base = Number(baseJpy);
+function calcAdjustedPrices(basePrice, pricing) {
+  const base = Number(basePrice);
   if (!Number.isFinite(base)) {
-    return { jpy: null, twd: null };
+    return { src: null, twd: null };
   }
   const markup = Number(pricing?.markupJpy ?? DEFAULT_PRICING.markupJpy);
   const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
-  const jpy = Math.round(base + (Number.isFinite(markup) ? markup : DEFAULT_PRICING.markupJpy));
-  const twd = Math.round(jpy * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd));
-  return { jpy, twd };
+  const src = Math.round(base + (Number.isFinite(markup) ? markup : DEFAULT_PRICING.markupJpy));
+  const twd = Math.round(src * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd));
+  return { src, twd };
+}
+
+function fmtSrcPrice(val) {
+  if (val === null) return "";
+  const sym = (_cc.currencySymbol || "¥");
+  return `${sym}${val.toLocaleString("en-US")}`;
 }
 
 function setError(message) {
@@ -187,7 +194,7 @@ function renderProducts(products, pricing, promoMaxTwd) {
         <div class="product-card__body">
           <h2 class="product-card__title">${escapeHtml(title)}</h2>
           <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
-          <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${adjusted.jpy !== null ? ` <span class="meta" style="font-weight:400">(&yen;${adjusted.jpy.toLocaleString("en-US")})</span>` : ""}</p>
+          <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${adjusted.src !== null ? ` <span class="meta" style="font-weight:400">(${fmtSrcPrice(adjusted.src)})</span>` : ""}</p>
           <p class="product-card__category">${escapeHtml(translateCategoryLabel(item.category))}${item.colorCount ? ` · ${item.colorCount} 色` : ""}</p>
           <a class="button" data-product-detail-link="1" href="/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">查看詳情</a>
         </div>

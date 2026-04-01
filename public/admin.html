@@ -51,7 +51,7 @@
             <label>中文品名<input id="edit-title-zh" type="text" class="input-cute" /></label>
             <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>
             <label>分類<input id="edit-category" type="text" class="input-cute" /></label>
-            <label>價格（JPY）<input id="edit-price" type="number" min="0" class="input-cute" /></label>
+            <label>價格（<span class="src-currency">JPY</span>）<input id="edit-price" type="number" min="0" class="input-cute" /></label>
             <div class="edit-modal__actions">
               <button id="edit-save" class="button" type="button">儲存</button>
               <button id="edit-cancel" class="button secondary" type="button">取消</button>
@@ -75,7 +75,7 @@
           <label>品牌<input id="manual-brand" type="text" class="input-cute" /></label>
           <label>分類<input id="manual-category" type="text" class="input-cute" list="category-datalist" /></label>
           <datalist id="category-datalist"></datalist>
-          <label>價格（JPY）<input id="manual-price" type="number" min="0" class="input-cute" /></label>
+          <label>價格（<span class="src-currency">JPY</span>）<input id="manual-price" type="number" min="0" class="input-cute" /></label>
           <label>商品描述<textarea id="manual-description" rows="3" class="input-cute"></textarea></label>
           <label>尺寸選項（逗號分隔）<input id="manual-sizes" type="text" class="input-cute" placeholder="S, M, L" /></label>
           <label>顏色選項（逗號分隔）<input id="manual-colors" type="text" class="input-cute" placeholder="紅色, 藍色" /></label>
@@ -119,7 +119,7 @@
           <label>中文品名<input id="draft-title-zh" type="text" class="input-cute" /></label>
           <label>品牌<input id="draft-brand" type="text" class="input-cute" /></label>
           <label>分類<input id="draft-category" type="text" class="input-cute" /></label>
-          <label>價格（JPY）<input id="draft-price" type="number" min="0" class="input-cute" /></label>
+          <label>價格（<span class="src-currency">JPY</span>）<input id="draft-price" type="number" min="0" class="input-cute" /></label>
           <label>商品描述<textarea id="draft-description" rows="3" class="input-cute"></textarea></label>
           <label>規格（JSON）<textarea id="draft-specs" rows="3" class="input-cute"></textarea></label>
           <label>尺寸選項（逗號分隔）<input id="draft-sizes" type="text" class="input-cute" placeholder="S, M, L" /></label>
@@ -178,15 +178,35 @@
     <!-- Tab 5: 網站設定 -->
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
-        <button class="tab-sub-btn is-active" data-subtab="pricing">匯率設定</button>
-        <!-- API Key tab removed: managed by platform admin -->
+        <button class="tab-sub-btn is-active" data-subtab="country">國家設定</button>
+        <button class="tab-sub-btn" data-subtab="pricing">匯率設定</button>
         <button class="tab-sub-btn" data-subtab="account">帳號設定</button>
         <button class="tab-sub-btn" data-subtab="danger">資料管理</button>
       </div>
-      <div class="admin-sub-panel" data-subtab-panel="pricing">
+      <div class="admin-sub-panel" data-subtab-panel="country">
         <div class="admin-form-card">
-          <label>每筆加價 JPY<input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
-          <label>JPY → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
+          <p style="font-size:13px;color:#666;margin-bottom:12px;">選擇你代購的來源國家，系統會自動設定對應的幣別和匯率。</p>
+          <div id="country-selector" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+            <button class="country-btn" data-country="jp" onclick="selectCountry('jp')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
+              🇯🇵<br><strong>日本</strong><br><span style="font-size:12px;color:#888;">JPY 日圓</span>
+            </button>
+            <button class="country-btn" data-country="kr" onclick="selectCountry('kr')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
+              🇰🇷<br><strong>韓國</strong><br><span style="font-size:12px;color:#888;">KRW 韓元</span>
+            </button>
+            <button class="country-btn" data-country="th" onclick="selectCountry('th')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
+              🇹🇭<br><strong>泰國</strong><br><span style="font-size:12px;color:#888;">THB 泰銖</span>
+            </button>
+            <button class="country-btn" data-country="tw" onclick="selectCountry('tw')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">
+              🇹🇼<br><strong>台灣</strong><br><span style="font-size:12px;color:#888;">TWD 台幣</span>
+            </button>
+          </div>
+          <p id="country-status" style="font-size:12px;color:#22c55e;margin-top:8px;display:none;">已儲存</p>
+        </div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="pricing">
+        <div class="admin-form-card">
+          <label><span class="currency-label">每筆加價</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
+          <label><span class="src-currency">JPY</span> → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
           <label>國際運費 (TWD)<input id="international-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
           <label>國內運費 (TWD)<input id="domestic-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
           <label>優惠門檻 (TWD)<input id="promo-tag-max-twd" type="number" min="0" step="1" class="input-cute" /></label>
@@ -252,9 +272,12 @@
   </nav>
 
   <script>
-  // Plan-based feature gating (window.__STORE_PLAN injected by server)
+  // Plan-based feature gating + country currency labels
   document.addEventListener("DOMContentLoaded", function() {
     var plan = window.__STORE_PLAN || "free";
+    var country = window.__STORE_COUNTRY || "jp";
+    var conf = window.__COUNTRY_CONFIG || { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓" };
+
     // Hide sync tab for non-Pro users
     if (plan !== "pro") {
       var syncNav = document.querySelector('.admin-nav-item[data-tab="sync"]');
@@ -262,7 +285,6 @@
       var syncPanel = document.querySelector('.admin-tab-panel[data-tab="sync"]');
       if (syncPanel) syncPanel.remove();
     }
-    // Show sync notice for Pro users (need admin activation)
     if (plan === "pro") {
       var syncBtn = document.getElementById("sync-crawl-btn");
       if (syncBtn) {
@@ -273,7 +295,36 @@
         syncBtn.parentNode.insertBefore(notice, syncBtn.nextSibling);
       }
     }
+
+    // Update currency labels based on country
+    document.querySelectorAll(".src-currency").forEach(function(el) {
+      el.textContent = conf.currency;
+    });
+
+    // Highlight active country button
+    document.querySelectorAll(".country-btn").forEach(function(btn) {
+      if (btn.dataset.country === country) {
+        btn.style.borderColor = "#6366f1";
+        btn.style.background = "#f5f3ff";
+      }
+    });
   });
+
+  // Country selection
+  function selectCountry(code) {
+    apiFetch("/api/admin/store-info", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ destinationCountry: code }),
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data.ok) {
+        var st = document.getElementById("country-status");
+        st.style.display = "block";
+        st.textContent = "已儲存，重新載入中...";
+        setTimeout(function() { location.reload(); }, 800);
+      }
+    });
+  }
   </script>
   <script type="module" src="/assets/app-admin.js"></script>
 </body>

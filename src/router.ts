@@ -29,6 +29,7 @@ import {
   handleAdminClearSyncProducts,
   handleAdminClearManualProducts,
 } from "./routes/admin/clear-products";
+import { handleStoreInfo, COUNTRY_CONFIG } from "./routes/admin/store-info";
 import type { RequestContext } from "./context";
 
 type CrawlEnv = {
@@ -68,9 +69,23 @@ async function serveTenantHtml(
 
   let html = await resp.text();
 
+  // Fetch store country for context injection
+  const storeRow = await ctx.db
+    .prepare("SELECT destination_country FROM stores WHERE id = ?")
+    .bind(ctx.storeId)
+    .first<{ destination_country: string }>();
+  const country = storeRow?.destination_country || "jp";
+  const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
+
   // Inject store context before </head>
-  const inject = `<script>window.__API_BASE="${ctx.basePath}";window.__STORE_SLUG="${ctx.storeSlug}";window.__STORE_PLAN="${ctx.storePlan}";</script>
-<script>window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};</script>`;
+  const inject = `<script>
+window.__API_BASE="${ctx.basePath}";
+window.__STORE_SLUG="${ctx.storeSlug}";
+window.__STORE_PLAN="${ctx.storePlan}";
+window.__STORE_COUNTRY="${country}";
+window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
+window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
+</script>`;
   html = html.replace("</head>", inject + "\n</head>");
 
   // Rewrite internal navigation links to be store-scoped
@@ -180,6 +195,10 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/products/image-delete") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleAdminProductImageDelete(request, ctx);
+  }
+  if (subPath === "/api/admin/store-info") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleStoreInfo(request, ctx);
   }
   if (subPath === "/api/admin/clear-sync-products") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

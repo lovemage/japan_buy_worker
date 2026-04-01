@@ -6,9 +6,10 @@ let managePage = 1;
 let manageSearch = "";
 let manageDebounce = null;
 
-function formatPrice(jpy) {
-  if (!jpy && jpy !== 0) return "-";
-  return `¥${Number(jpy).toLocaleString("en-US")}`;
+function formatPrice(price) {
+  if (!price && price !== 0) return "-";
+  const sym = (window.__COUNTRY_CONFIG || {}).currencySymbol || "¥";
+  return `${sym}${Number(price).toLocaleString("en-US")}`;
 }
 
 function renderProductGrid(products, paging) {
