@@ -78,8 +78,13 @@ async function serveTenantHtml(
   const storeName = storeRow?.name || "vovosnap";
   const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
 
-  // Replace page title with store name
-  html = html.replace(/<title>[^<]*<\/title>/, `<title>${storeName}</title>`);
+  // Replace page title: "原標題" → "商店名稱" or "原標題 — 商店名稱"
+  html = html.replace(/<title>([^<]*)<\/title>/, (_, orig) => {
+    const trimmed = orig.trim();
+    // If original title is generic/default, just use store name
+    if (!trimmed || trimmed === "vovosnap 商品列表") return `<title>${storeName}</title>`;
+    return `<title>${storeName} — ${trimmed}</title>`;
+  });
 
   // Inject store context before </head>
   const inject = `<script>
