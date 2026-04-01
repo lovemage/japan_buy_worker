@@ -3,18 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Japan Buy Admin</title>
+  <title>vovosnap 管理後台</title>
   <link rel="stylesheet" href="/assets/styles.css" />
+  <style>
+    .admin-section-title { font-size: 14px; font-weight: 700; margin: 0 0 8px; }
+    .admin-section-desc { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .admin-divider { border: none; border-top: 1px solid var(--line, #eee); margin: 16px 0; }
+    .admin-info-box { margin-bottom: 12px; padding: 10px 14px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee; }
+    .admin-info-box .label { font-size: 12px; color: #888; margin-bottom: 2px; }
+    .admin-info-box .value { font-size: 14px; font-weight: 600; }
+    .admin-status { font-size: 12px; color: #22c55e; margin-top: 8px; display: none; }
+    .country-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .country-btn { padding: 14px; border: 2px solid #eee; border-radius: 10px; background: #fff; cursor: pointer; font-size: 14px; text-align: center; }
+    .country-btn strong { display: block; }
+    .country-btn .sub { font-size: 12px; color: #888; }
+    .country-btn.selected { border-color: #6366f1; background: #f5f3ff; }
+    .view-mode-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .view-mode-opt { padding: 8px 16px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; }
+    .view-mode-opt.selected { border-color: #6366f1; background: #f5f3ff; }
+    .promo-row { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; min-width: 0; }
+    .promo-row input[type="text"] { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+    .promo-row .val { width: 70px; flex-shrink: 0; }
+    .promo-row .lbl { flex: 1; min-width: 0; }
+    .promo-row .del { flex-shrink: 0; width: 28px; height: 28px; padding: 0; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; color: #ef4444; line-height: 28px; text-align: center; }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .toggle-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+    .toggle-label input { width: 18px; height: 18px; }
+    .ad-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .ad-thumb { position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid #eee; }
+    .ad-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .ad-thumb .rm { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; cursor: pointer; font-size: 12px; line-height: 20px; padding: 0; }
+    .upload-btn { display: inline-block; padding: 8px 16px; background: var(--bg-light, #f5f5f5); border: 1.5px dashed #ccc; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .ad-controls { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .ad-controls label { font-size: 13px; white-space: nowrap; }
+    .ad-controls .input-cute { width: 70px; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; }
+    .checkbox-label input { width: 18px; height: 18px; flex-shrink: 0; }
+    .danger-title { color: #991b1b; margin: 0 0 8px; font-size: 14px; font-weight: 700; }
+  </style>
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
     <div class="admin-topbar__row">
       <div style="display:flex;flex-direction:column;gap:2px;">
-        <h1 id="admin-topbar-title">新增商品</h1>
+        <h1 id="admin-topbar-title">商品管理</h1>
         <a href="/" style="font-size:12px;color:#6366f1;text-decoration:none;font-weight:600;">vovosnap</a>
       </div>
-      <div class="admin-topbar__actions" id="admin-topbar-actions" style="display:flex;align-items:center;gap:10px;">
-        <span id="plan-badge" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;background:#f3f4f6;color:#6b7280;"></span>
+      <div class="admin-topbar__actions" id="admin-topbar-actions">
+        <span id="plan-badge" class="admin-info-box" style="padding:3px 10px;margin:0;border:0;font-size:11px;font-weight:600;"></span>
         <a class="admin-topbar__link" href="/store.html" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           檢視網站
@@ -26,7 +62,7 @@
   <main class="admin-main" id="admin-main">
     <section id="admin-error" class="notice hidden"></section>
 
-    <!-- Tab 1: 新增商品 -->
+    <!-- Tab 1: 商品 -->
     <section class="admin-tab-panel" data-tab="products">
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="manage">產品管理</button>
@@ -39,7 +75,6 @@
         </div>
         <div id="manage-product-grid" class="manage-product-grid"></div>
         <div id="manage-paging" class="manage-paging"></div>
-        <!-- Edit Modal -->
         <div id="edit-modal" class="edit-modal hidden">
           <div class="edit-modal__backdrop"></div>
           <div class="edit-modal__content">
@@ -90,7 +125,7 @@
       </div>
       <div class="admin-sub-panel hidden" data-subtab-panel="categories">
         <div class="admin-form-card">
-          <div class="category-add-row" style="display:flex;gap:8px;">
+          <div style="display:flex;gap:8px;">
             <input id="category-new-name" type="text" class="input-cute" placeholder="新分類名稱" style="flex:7;min-width:0;" />
             <button id="category-add-btn" class="button" type="button" style="flex:3;white-space:nowrap;">新增</button>
           </div>
@@ -142,7 +177,7 @@
     <!-- Tab 3: 網站同步 -->
     <section class="admin-tab-panel hidden" data-tab="sync">
       <div class="admin-form-card">
-        <h2 class="product-card__title">同步目標網站</h2>
+        <h2 class="admin-section-title">同步目標網站</h2>
         <p class="meta">來源：fo-online.jp 排行榜</p>
         <button id="sync-crawl-btn" class="button" type="button">開始同步</button>
         <div id="sync-loading" class="sync-loading hidden">
@@ -157,18 +192,9 @@
           <div class="sync-result-card">
             <h3 id="sync-result-title">同步完成</h3>
             <div class="sync-result-stats">
-              <div class="sync-stat">
-                <span class="sync-stat__value" id="sync-crawled">0</span>
-                <span class="sync-stat__label">抓取筆數</span>
-              </div>
-              <div class="sync-stat">
-                <span class="sync-stat__value" id="sync-upserted">0</span>
-                <span class="sync-stat__label">寫入筆數</span>
-              </div>
-              <div class="sync-stat">
-                <span class="sync-stat__value" id="sync-source">-</span>
-                <span class="sync-stat__label">來源</span>
-              </div>
+              <div class="sync-stat"><span class="sync-stat__value" id="sync-crawled">0</span><span class="sync-stat__label">抓取筆數</span></div>
+              <div class="sync-stat"><span class="sync-stat__value" id="sync-upserted">0</span><span class="sync-stat__label">寫入筆數</span></div>
+              <div class="sync-stat"><span class="sync-stat__value" id="sync-source">-</span><span class="sync-stat__label">來源</span></div>
             </div>
           </div>
         </div>
@@ -180,7 +206,7 @@
       <section id="admin-forms" class="admin-forms"></section>
     </section>
 
-    <!-- Tab 5: 網站設定 -->
+    <!-- Tab 5: 設定 -->
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="account">帳號</button>
@@ -188,61 +214,63 @@
         <button class="tab-sub-btn" data-subtab="pricing">匯率</button>
         <button class="tab-sub-btn" data-subtab="danger">資料</button>
       </div>
+
+      <!-- 帳號 -->
       <div class="admin-sub-panel" data-subtab-panel="account">
         <div class="admin-form-card">
-          <div style="margin-bottom:12px;padding:10px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #eee;">
-            <p style="font-size:12px;color:#888;margin-bottom:2px;">會員 Email</p>
-            <p id="member-email" style="font-size:14px;font-weight:600;">載入中...</p>
+          <div class="admin-info-box">
+            <p class="label">會員 Email</p>
+            <p class="value" id="member-email">載入中...</p>
           </div>
           <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
           <p class="meta">顯示在商店首頁的名稱</p>
-          <button id="admin-save-store-name" class="button" type="button" onclick="saveStoreName()">儲存名稱</button>
-          <p id="store-name-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
+          <button class="button" type="button" onclick="saveStoreName()">儲存名稱</button>
+          <p id="store-name-status" class="admin-status">已儲存</p>
 
-          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
-          <h3 style="font-size:14px;margin:0 0 8px;">🌏 代購來源國家</h3>
-          <p style="font-size:13px;color:#666;margin-bottom:12px;">選擇後系統自動設定對應幣別和匯率。</p>
-          <div id="country-selector" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
-            <button class="country-btn" data-country="jp" onclick="selectCountry('jp')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇯🇵<br><strong>日本</strong><br><span style="font-size:12px;color:#888;">JPY 日圓</span></button>
-            <button class="country-btn" data-country="kr" onclick="selectCountry('kr')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇰🇷<br><strong>韓國</strong><br><span style="font-size:12px;color:#888;">KRW 韓元</span></button>
-            <button class="country-btn" data-country="th" onclick="selectCountry('th')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇹🇭<br><strong>泰國</strong><br><span style="font-size:12px;color:#888;">THB 泰銖</span></button>
-            <button class="country-btn" data-country="tw" onclick="selectCountry('tw')" style="padding:14px;border:2px solid #eee;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;text-align:center;">🇹🇼<br><strong>台灣</strong><br><span style="font-size:12px;color:#888;">TWD 台幣</span></button>
+          <hr class="admin-divider" />
+          <h3 class="admin-section-title">🌏 代購來源國家</h3>
+          <p class="admin-section-desc">選擇後系統自動設定對應幣別和匯率。</p>
+          <div class="country-grid" id="country-selector">
+            <button class="country-btn" data-country="jp" onclick="selectCountry('jp')">🇯🇵<strong>日本</strong><span class="sub">JPY 日圓</span></button>
+            <button class="country-btn" data-country="kr" onclick="selectCountry('kr')">🇰🇷<strong>韓國</strong><span class="sub">KRW 韓元</span></button>
+            <button class="country-btn" data-country="th" onclick="selectCountry('th')">🇹🇭<strong>泰國</strong><span class="sub">THB 泰銖</span></button>
+            <button class="country-btn" data-country="tw" onclick="selectCountry('tw')">🇹🇼<strong>台灣</strong><span class="sub">TWD 台幣</span></button>
           </div>
-          <p id="country-status" style="font-size:12px;color:#22c55e;margin-top:8px;display:none;">已儲存</p>
+          <p id="country-status" class="admin-status">已儲存</p>
 
-          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0" />
-          <h3 style="margin:0 0 8px;font-size:14px;">🖼️ 彈窗廣告輪播</h3>
+          <hr class="admin-divider" />
+          <h3 class="admin-section-title">🖼️ 彈窗廣告輪播</h3>
           <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片，會在商店首頁以輪播方式顯示。</p>
-          <div id="popup-ad-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-            <label style="display:inline-block;padding:8px 16px;background:var(--bg-light,#f5f5f5);border:1.5px dashed #ccc;border-radius:8px;cursor:pointer;font-size:13px;">
-              + 上傳
-              <input type="file" id="popup-ad-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
-            </label>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <label style="font-size:13px;white-space:nowrap;">輪播秒數</label>
-            <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:70px;" />
+          <div class="ad-preview" id="popup-ad-preview"></div>
+          <label class="upload-btn">
+            + 上傳
+            <input type="file" id="popup-ad-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadPopupAds(this.files)" />
+          </label>
+          <div class="ad-controls">
+            <label>輪播秒數</label>
+            <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" />
             <button class="button" type="button" onclick="savePopupAdSettings()">儲存</button>
           </div>
-          <p id="popup-ad-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
+          <p id="popup-ad-status" class="admin-status">已儲存</p>
         </div>
       </div>
+
+      <!-- 商店 -->
       <div class="admin-sub-panel hidden" data-subtab-panel="display">
         <div class="admin-form-card">
-          <h3 style="font-size:14px;margin:0 0 8px;">商品列表檢視模式</h3>
+          <h3 class="admin-section-title">商品列表檢視模式</h3>
           <p class="meta" style="margin-bottom:12px;">設定顧客進入商店時的預設檢視方式</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="view-mode-selector">
-            <button class="btn-pill secondary view-mode-opt" data-mode="list" onclick="setViewMode('list')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">列表</button>
-            <button class="btn-pill secondary view-mode-opt" data-mode="card" onclick="setViewMode('card')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">單欄</button>
-            <button class="btn-pill secondary view-mode-opt" data-mode="2card" onclick="setViewMode('2card')" style="padding:8px 16px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">雙欄</button>
+          <div class="view-mode-grid" id="view-mode-selector">
+            <button class="view-mode-opt" data-mode="list" onclick="setViewMode('list')">列表</button>
+            <button class="view-mode-opt" data-mode="card" onclick="setViewMode('card')">單欄</button>
+            <button class="view-mode-opt" data-mode="2card" onclick="setViewMode('2card')">雙欄</button>
           </div>
-          <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <h3 style="font-size:14px;margin:0;">價格篩選按鈕</h3>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+          <hr class="admin-divider">
+          <div class="toggle-row">
+            <h3 class="admin-section-title" style="margin:0;">價格篩選按鈕</h3>
+            <label class="toggle-label">
               <span id="promo-toggle-label" style="color:#888;">開啟</span>
-              <input type="checkbox" id="promo-toggle" checked onchange="onPromoToggle()" style="width:18px;height:18px;" />
+              <input type="checkbox" id="promo-toggle" checked onchange="onPromoToggle()" />
             </label>
           </div>
           <div id="promo-editor-wrap">
@@ -251,9 +279,11 @@
             <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
           </div>
           <button class="button" type="button" style="margin-top:12px;" onclick="saveDisplaySettings()">儲存顯示設定</button>
-          <p id="display-status" class="meta" style="color:#22c55e;display:none;">已儲存</p>
+          <p id="display-status" class="admin-status">已儲存</p>
         </div>
       </div>
+
+      <!-- 匯率 -->
       <div class="admin-sub-panel hidden" data-subtab-panel="pricing">
         <div class="admin-form-card">
           <label><span class="currency-label">每筆加價</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
@@ -262,14 +292,15 @@
           <label>國內運費 (TWD)<input id="domestic-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
           <label>優惠門檻 (TWD)<input id="promo-tag-max-twd" type="number" min="0" step="1" class="input-cute" /></label>
           <label>限時連線代購運費 (TWD)<input id="limited-proxy-shipping-twd" type="number" min="0" step="1" class="input-cute" /></label>
-          <label style="display:flex;align-items:center;gap:8px;"><input id="shipping-options-enabled" type="checkbox" style="width:18px;height:18px;flex-shrink:0;" /> 顯示運費選項（前端需求單）</label>
+          <label class="checkbox-label"><input id="shipping-options-enabled" type="checkbox" /> 顯示運費選項（前端需求單）</label>
           <button id="admin-save-pricing" class="button" type="button">儲存</button>
         </div>
       </div>
-      <!-- Old account panel removed, merged into first panel -->
+
+      <!-- 資料 -->
       <div class="admin-sub-panel hidden" data-subtab-panel="danger">
         <div class="admin-form-card">
-          <h3 style="color:#8B2E1C;margin:0 0 8px">危險操作</h3>
+          <h3 class="danger-title">危險操作</h3>
           <p class="meta">以下操作不可復原，需要輸入管理員密碼確認。</p>
           <div class="danger-action">
             <p><strong>清空同步商品</strong></p>
@@ -312,13 +343,12 @@
   </nav>
 
   <script>
-  // Plan-based feature gating + country currency labels
   document.addEventListener("DOMContentLoaded", function() {
     var plan = window.__STORE_PLAN || "free";
     var country = window.__STORE_COUNTRY || "jp";
     var conf = window.__COUNTRY_CONFIG || { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓" };
 
-    // Hide sync tab for non-Pro users
+    // Hide sync tab for non-Pro
     if (plan !== "pro") {
       var syncNav = document.querySelector('.admin-nav-item[data-tab="sync"]');
       if (syncNav) syncNav.style.display = "none";
@@ -336,18 +366,16 @@
       }
     }
 
-    // Update currency labels based on country
-    document.querySelectorAll(".src-currency").forEach(function(el) {
-      el.textContent = conf.currency;
-    });
+    // Currency labels
+    document.querySelectorAll(".src-currency").forEach(function(el) { el.textContent = conf.currency; });
 
-    // Update origin language label based on country
+    // Origin language label
     var langLabels = { jp: "日文品名", kr: "韓文品名", th: "泰文品名", tw: "中文品名" };
     document.querySelectorAll(".origin-lang-label").forEach(function(el) {
       el.textContent = langLabels[country] || "原文品名";
     });
 
-    // Plan badge in topbar
+    // Plan badge
     var badge = document.getElementById("plan-badge");
     if (badge) {
       badge.textContent = plan.toUpperCase();
@@ -357,16 +385,12 @@
       badge.style.color = c[1];
     }
 
-    // Highlight active country button
+    // Country selector highlight
     document.querySelectorAll(".country-btn").forEach(function(btn) {
-      if (btn.dataset.country === country) {
-        btn.style.borderColor = "#6366f1";
-        btn.style.background = "#f5f3ff";
-      }
+      if (btn.dataset.country === country) btn.classList.add("selected");
     });
   });
 
-  // Country selection
   function selectCountry(code) {
     apiFetch("/api/admin/store-info", {
       method: "POST",
@@ -391,23 +415,18 @@
       if (!d.ok) return;
       var mode = d.viewMode || "2card";
       document.querySelectorAll(".view-mode-opt").forEach(function(b) {
-        b.style.borderColor = b.dataset.mode === mode ? "#6366f1" : "#ddd";
-        b.style.background = b.dataset.mode === mode ? "#f5f3ff" : "#fff";
+        b.classList.toggle("selected", b.dataset.mode === mode);
       });
-
-      // Load promo toggle state
-      promoEnabled = d.promoEnabled !== false; // default true
+      promoEnabled = d.promoEnabled !== false;
       var toggle = document.getElementById("promo-toggle");
       if (toggle) toggle.checked = promoEnabled;
       updatePromoToggleUI();
-
       promoItems = d.promoFilters || [
         { value: "all", label: "一般", enabled: true },
         { value: "350", label: "<350", enabled: true },
         { value: "450", label: "<450", enabled: true },
         { value: "550", label: "<550", enabled: true }
       ];
-      // Migrate old string format
       if (promoItems.length > 0 && typeof promoItems[0] === "string") {
         promoItems = promoItems.map(function(v) {
           return { value: v, label: v === "all" ? "一般" : "<" + v, enabled: true };
@@ -426,55 +445,42 @@
     var wrap = document.getElementById("promo-editor-wrap");
     var label = document.getElementById("promo-toggle-label");
     if (wrap) wrap.style.display = promoEnabled ? "" : "none";
-    if (label) {
-      label.textContent = promoEnabled ? "開啟" : "關閉";
-      label.style.color = promoEnabled ? "#22c55e" : "#999";
-    }
+    if (label) { label.textContent = promoEnabled ? "開啟" : "關閉"; label.style.color = promoEnabled ? "#22c55e" : "#999"; }
   }
 
   function renderPromoEditor() {
     var el = document.getElementById("promo-filter-editor");
     if (!el) return;
     el.innerHTML = promoItems.map(function(item, i) {
-      return '<div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;min-width:0;">' +
-        '<input type="text" value="' + (item.value || '') + '" placeholder="數值 (如 350)" style="width:70px;flex-shrink:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].value=this.value">' +
-        '<input type="text" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤 (如 <350)" style="flex:1;min-width:0;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="promoItems[' + i + '].label=this.value">' +
-        '<button type="button" onclick="promoItems.splice(' + i + ',1);renderPromoEditor()" style="flex-shrink:0;width:28px;height:28px;padding:0;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#ef4444;line-height:28px;text-align:center;">✕</button>' +
+      return '<div class="promo-row">' +
+        '<input type="text" class="val" value="' + (item.value || '') + '" placeholder="數值" onchange="promoItems[' + i + '].value=this.value">' +
+        '<input type="text" class="lbl" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤" onchange="promoItems[' + i + '].label=this.value">' +
+        '<button type="button" class="del" onclick="promoItems.splice(' + i + ',1);renderPromoEditor()">✕</button>' +
       '</div>';
     }).join("");
   }
 
-  function addPromoFilter() {
-    promoItems.push({ value: "", label: "", enabled: true });
-    renderPromoEditor();
-  }
+  function addPromoFilter() { promoItems.push({ value: "", label: "", enabled: true }); renderPromoEditor(); }
 
   function setViewMode(mode) {
     document.querySelectorAll(".view-mode-opt").forEach(function(b) {
-      b.style.borderColor = b.dataset.mode === mode ? "#6366f1" : "#ddd";
-      b.style.background = b.dataset.mode === mode ? "#f5f3ff" : "#fff";
+      b.classList.toggle("selected", b.dataset.mode === mode);
     });
   }
 
   function saveDisplaySettings() {
     var mode = "2card";
-    document.querySelectorAll(".view-mode-opt").forEach(function(b) {
-      if (b.style.borderColor === "rgb(99, 102, 241)") mode = b.dataset.mode;
-    });
+    document.querySelectorAll(".view-mode-opt.selected").forEach(function(b) { mode = b.dataset.mode; });
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems }),
     }).then(function(r){return r.json()}).then(function(d) {
-      if (d.ok) {
-        var st = document.getElementById("display-status");
-        st.style.display = "block";
-        setTimeout(function(){ st.style.display = "none"; }, 2000);
-      }
+      if (d.ok) { var st = document.getElementById("display-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
   }
 
-  // Load store name on settings tab
+  // Store info load
   (function() {
     apiFetch("/api/admin/store-info").then(function(r){return r.json()}).then(function(d) {
       if (d.ok && d.store) {
@@ -496,18 +502,14 @@
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name: name }),
     }).then(function(r){return r.json()}).then(function(d) {
-      if (d.ok) {
-        var st = document.getElementById("store-name-status");
-        st.style.display = "block";
-        setTimeout(function(){ st.style.display = "none"; }, 2000);
-      }
+      if (d.ok) { var st = document.getElementById("store-name-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
   }
 
-  // Popup ad management
+  // Popup ads
   var popupAdImages = [];
 
-  function loadPopupAds(store) {
+  function loadPopupAds() {
     apiFetch("/api/admin/popup-ads").then(function(r){return r.json()}).then(function(d) {
       if (d.ok) {
         popupAdImages = d.images || [];
@@ -522,32 +524,23 @@
     var container = document.getElementById("popup-ad-preview");
     if (!container) return;
     container.innerHTML = popupAdImages.map(function(img, i) {
-      return '<div style="position:relative;width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid #eee;">' +
-        '<img src="' + (window.__API_BASE||"") + '/api/images/' + img + '" style="width:100%;height:100%;object-fit:cover;" />' +
-        '<button onclick="deletePopupAd(' + i + ')" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:20px;padding:0;">×</button>' +
+      return '<div class="ad-thumb">' +
+        '<img src="' + (window.__API_BASE||"") + '/api/images/' + img + '" />' +
+        '<button class="rm" onclick="deletePopupAd(' + i + ')">×</button>' +
       '</div>';
     }).join("");
   }
 
   function uploadPopupAds(files) {
     if (!files || !files.length) return;
-    if (popupAdImages.length + files.length > 3) {
-      alert("最多 3 張廣告圖片");
-      return;
-    }
+    if (popupAdImages.length + files.length > 3) { alert("最多 3 張廣告圖片"); return; }
     var promises = [];
-    for (var i = 0; i < files.length; i++) {
-      promises.push(uploadOneAd(files[i]));
-    }
-    Promise.all(promises).then(function() {
-      renderPopupAdPreview();
-      savePopupAdSettings();
-    });
+    for (var i = 0; i < files.length; i++) promises.push(uploadOneAd(files[i]));
+    Promise.all(promises).then(function() { renderPopupAdPreview(); savePopupAdSettings(); });
   }
 
   function uploadOneAd(file) {
     return new Promise(function(resolve) {
-      // Convert any image to WebP via canvas
       var img = new Image();
       img.onload = function() {
         var canvas = document.createElement("canvas");
@@ -561,9 +554,7 @@
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ image: base64 }),
         }).then(function(r){return r.json()}).then(function(d) {
-          if (d.ok) {
-            popupAdImages.push(d.key);
-          }
+          if (d.ok) popupAdImages.push(d.key);
           resolve();
         });
       };
@@ -575,11 +566,7 @@
     var key = popupAdImages[index];
     popupAdImages.splice(index, 1);
     renderPopupAdPreview();
-    apiFetch("/api/admin/popup-ads/delete", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ key: key }),
-    });
+    apiFetch("/api/admin/popup-ads/delete", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: key }) });
     savePopupAdSettings();
   }
 
@@ -590,11 +577,7 @@
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ images: popupAdImages, interval: Number(interval) }),
     }).then(function(r){return r.json()}).then(function(d) {
-      if (d.ok) {
-        var st = document.getElementById("popup-ad-status");
-        st.style.display = "block";
-        setTimeout(function(){ st.style.display = "none"; }, 2000);
-      }
+      if (d.ok) { var st = document.getElementById("popup-ad-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
   }
   </script>
