@@ -13,10 +13,36 @@ let managePage = 1;
 let manageSearch = "";
 let manageDebounce = null;
 
+const _adminCC = window.__COUNTRY_CONFIG || {};
+
 function formatPrice(price) {
   if (!price && price !== 0) return "-";
-  const sym = (window.__COUNTRY_CONFIG || {}).currencySymbol || "¥";
+  const sym = _adminCC.currencySymbol || "¥";
   return `${sym}${Number(price).toLocaleString("en-US")}`;
+}
+
+function formatSellingPrice(basePrice, pricing) {
+  if (!basePrice && basePrice !== 0) return "";
+  const base = Number(basePrice);
+  if (!Number.isFinite(base)) return "";
+  const markup = Number(pricing?.markupJpy ?? 0);
+  const rate = Number(pricing?.jpyToTwd ?? 1);
+  const src = Math.round(base + markup);
+  const twd = Math.round(src * rate);
+  return `NT$${twd.toLocaleString("en-US")}`;
+}
+
+let adminPricing = null;
+async function loadAdminPricing() {
+  if (adminPricing) return adminPricing;
+  try {
+    const res = await apiFetch("/api/pricing");
+    if (res.ok) {
+      const data = await res.json();
+      adminPricing = data.pricing || {};
+    }
+  } catch {}
+  return adminPricing || {};
 }
 
 function renderProductGrid(products, paging) {
@@ -38,7 +64,7 @@ function renderProductGrid(products, paging) {
       <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
         <p class="manage-card__title">${name}</p>
-        <p class="manage-card__price">${formatPrice(p.priceJpyTaxIn)}</p>
+        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
         <p class="manage-card__meta">${p.brand || ""}${p.category ? " · " + p.category : ""}</p>
         <div class="manage-card__actions">
           <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}">編輯</button>
@@ -99,6 +125,7 @@ function renderProductGrid(products, paging) {
 }
 
 async function loadManagedProducts() {
+  await loadAdminPricing();
   const params = new URLSearchParams({ limit: "20", offset: String((managePage - 1) * 20) });
   if (manageSearch) params.set("search", manageSearch);
   const res = await apiFetch(`/api/products?${params}`);
