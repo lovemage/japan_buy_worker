@@ -151,6 +151,12 @@
       var drawerTitle = document.getElementById("drawer-title");
       if (drawerTitle) { var span = drawerTitle.querySelector("span"); if (span) span.style.display = "none"; }
     }
+    // Fix floating request button href
+    (function() {
+      var base = window.__API_BASE || "";
+      var reqBtn = document.querySelector(".floating-request-btn");
+      if (reqBtn) reqBtn.href = base + "/request.html";
+    })();
     // Drawer toggle
     (function() {
       var btn = document.getElementById("hamburger-btn");
