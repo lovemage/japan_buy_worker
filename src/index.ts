@@ -194,22 +194,16 @@ export default {
     }
 
     // ── Legacy routes: serve bootstrap store at root (backward compat) ──
-    // During transition, root-level /api/* routes still work for store_id=1
-    if (url.pathname.startsWith("/api/") || url.pathname === "/admin/crawl") {
+    const LEGACY_PAGES = ["/store", "/store.html", "/product", "/product.html",
+      "/request", "/request.html", "/success", "/success.html",
+      "/admin", "/admin.html", "/admin-login.html"];
+    const isLegacyPage = LEGACY_PAGES.includes(url.pathname);
+    if (url.pathname.startsWith("/api/") || url.pathname === "/admin/crawl" || isLegacyPage) {
       const store = await resolveStore(env.DB, "default");
       if (store) {
         const ctx = buildCtxFromStore(store, env, "");
         return routeTenantRequest(request, ctx, url.pathname, getCrawlEnv(env), env.ASSETS);
       }
-    }
-
-    // ── Legacy HTML pages at root (backward compat for bootstrap store) ──
-    if (url.pathname === "/admin" || url.pathname === "/admin.html") {
-      const isAdmin = await isAdminAuthorized(request, env.DB);
-      if (!isAdmin) {
-        return Response.redirect(new URL("/admin-login.html", request.url).toString(), 302);
-      }
-      // Fall through to ASSETS
     }
 
     // ── Static assets ──
