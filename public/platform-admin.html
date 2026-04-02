@@ -338,6 +338,26 @@ let allStores = [];
 let testStoreIds = [];
 let allLogs = [];
 let logFilter = "all";
+var TEMPLATES = [
+  { id: "default", name: "抹茶暖色" },
+  { id: "ink-blue", name: "墨藍" },
+  { id: "sand", name: "暖沙灰" },
+  { id: "moss", name: "苔蘚灰綠" },
+  { id: "slate", name: "石板灰藍" },
+  { id: "bold-gold", name: "白黃黑" },
+  { id: "bold-ocean", name: "白藍黑" },
+];
+
+async function setTemplate(storeId, template) {
+  var res = await fetch("/api/platform-admin/stores/" + storeId, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ action: "template", template: template }),
+  });
+  var data = await res.json();
+  if (data.ok) await loadStores();
+  else alert(data.error || "操作失敗");
+}
 
 function switchPage(page, btn) {
   document.querySelectorAll(".page-content").forEach(p => p.classList.add("hidden"));
@@ -455,6 +475,7 @@ function renderStores(stores) {
         '<span>📦 ' + (s.product_count || 0) + ' 商品</span>' +
         '<span>📋 ' + (s.order_count || 0) + ' 訂單</span>' +
         '<span>📅 ' + created + '</span>' +
+        '<span>🎨 <select onchange="setTemplate(' + s.id + ',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">' + TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></span>' +
       '</div>' +
       '<div class="member-actions">' +
         '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +

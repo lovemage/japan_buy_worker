@@ -128,7 +128,7 @@ export async function handlePlatformAdmin(
         SELECT
           s.id, s.slug, s.name, s.owner_email, s.plan, s.plan_expires_at,
           s.is_active, s.onboarding_step, s.email_verified, s.phone_verified,
-          s.phone_number, s.google_id, s.line_id,
+          s.phone_number, s.google_id, s.line_id, s.template,
           s.created_at, s.updated_at,
           (SELECT COUNT(1) FROM products p WHERE p.store_id = s.id) as product_count,
           (SELECT COUNT(1) FROM requirement_forms rf WHERE rf.store_id = s.id) as order_count
@@ -203,6 +203,15 @@ export async function handlePlatformAdmin(
         }
 
         return json({ ok: true, plan: action, plan_expires_at: expiresAt });
+      }
+      case "template": {
+        const tpl = (body as Record<string, unknown>).template as string;
+        if (!tpl) return json({ ok: false, error: "Missing template" }, 400);
+        await db
+          .prepare("UPDATE stores SET template = ?, updated_at = datetime('now') WHERE id = ?")
+          .bind(tpl, storeId)
+          .run();
+        return json({ ok: true, template: tpl });
       }
       case "deactivate":
         await db
