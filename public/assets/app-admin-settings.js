@@ -48,7 +48,7 @@ async function loadGeminiSettings() {
 async function saveGeminiKey() {
   const input = document.getElementById("gemini-api-key");
   const key = input?.value?.trim();
-  if (!key) { showError("請填入 Gemini API Key"); return; }
+  if (!key) { showError("請填入 API Key"); return; }
   const res = await apiFetch("/api/admin/settings/gemini", {
     method: "POST",
     headers: { "content-type": "application/json" },

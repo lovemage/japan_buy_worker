@@ -1,6 +1,6 @@
 import type { RequestContext } from "../../context";
 
-const VALID_STATUSES = ["pending", "ordered", "shipped", "cancelled"] as const;
+const VALID_STATUSES = ["pending", "paid", "preparing", "ordered", "shipped", "completed", "cancelled"] as const;
 type RequirementStatus = (typeof VALID_STATUSES)[number];
 
 type FormRow = {

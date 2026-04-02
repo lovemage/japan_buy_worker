@@ -16,10 +16,26 @@ function shippingMethodText(method) {
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "待處理" },
+  { value: "paid", label: "已付款" },
+  { value: "preparing", label: "待出貨" },
   { value: "ordered", label: "已下單" },
   { value: "shipped", label: "已出貨" },
+  { value: "completed", label: "已完成" },
   { value: "cancelled", label: "取消訂單" },
 ];
+
+const FILTER_TABS = [
+  { value: "all", label: "全部" },
+  { value: "pending", label: "待處理" },
+  { value: "paid", label: "已付款" },
+  { value: "preparing", label: "待出貨" },
+  { value: "shipped", label: "已出貨" },
+  { value: "completed", label: "已完成" },
+  { value: "cancelled", label: "已取消" },
+];
+
+let allForms = [];
+let activeFilter = "pending";
 
 function statusSelectHtml(formId, current) {
   const options = STATUS_OPTIONS.map(
@@ -28,15 +44,40 @@ function statusSelectHtml(formId, current) {
   return `<select class="js-status-select" data-form-id="${formId}">${options}</select>`;
 }
 
+function renderFilterTabs() {
+  const tabsEl = document.getElementById("order-filter-tabs");
+  if (!tabsEl) return;
+  const counts = {};
+  let total = allForms.length;
+  for (const f of allForms) {
+    counts[f.status] = (counts[f.status] || 0) + 1;
+  }
+  tabsEl.innerHTML = FILTER_TABS.map((t) => {
+    const count = t.value === "all" ? total : (counts[t.value] || 0);
+    const active = t.value === activeFilter ? " is-active" : "";
+    return `<button class="order-filter-tab${active}" data-filter="${t.value}">${t.label}<span class="order-filter-count">${count}</span></button>`;
+  }).join("");
+  tabsEl.querySelectorAll(".order-filter-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeFilter = btn.getAttribute("data-filter");
+      renderFilterTabs();
+      renderForms(allForms);
+    });
+  });
+}
+
 function renderForms(forms) {
   const wrapper = document.getElementById("admin-forms");
   if (!wrapper) return;
-  if (!Array.isArray(forms) || forms.length === 0) {
-    wrapper.innerHTML = '<p class="notice notice--info">目前沒有需求單。</p>';
+
+  const filtered = activeFilter === "all" ? forms : forms.filter((f) => f.status === activeFilter);
+
+  if (!Array.isArray(filtered) || filtered.length === 0) {
+    wrapper.innerHTML = `<p class="notice notice--info">目前沒有${activeFilter === "all" ? "" : FILTER_TABS.find((t) => t.value === activeFilter)?.label || ""}需求單。</p>`;
     return;
   }
 
-  wrapper.innerHTML = forms.map((form) => {
+  wrapper.innerHTML = filtered.map((form) => {
     const totals = calculateAdminFormTotals(form);
     const itemsHtml = Array.isArray(form.items)
       ? form.items.map((item) => {
@@ -87,6 +128,10 @@ function renderForms(forms) {
       if (!res.ok) { showError(`狀態更新失敗：${res.status}`); return; }
       const card = select.closest(".admin-form-card");
       if (card) card.setAttribute("data-status", select.value);
+      // Update allForms data and refresh tabs
+      const target = allForms.find((f) => f.id === formId);
+      if (target) target.status = select.value;
+      renderFilterTabs();
     });
   });
 
@@ -110,7 +155,9 @@ async function loadForms() {
   if (res.status === 401) { location.href = "/admin-login.html"; return; }
   if (!res.ok) { showError(`讀取失敗：${res.status}`); return; }
   const body = await res.json();
-  renderForms(body.forms || []);
+  allForms = body.forms || [];
+  renderFilterTabs();
+  renderForms(allForms);
 }
 
 export function refreshOrders() {

@@ -182,6 +182,7 @@
             <input id="photo-input" type="file" accept="image/*" capture="environment" multiple hidden />
           </label>
           <p class="meta" id="photo-count">已選 0 / 3 張</p>
+          <p class="meta" style="color:#999;font-size:11px;margin-top:4px;">需開啟瀏覽器相機權限才能拍照</p>
         </div>
         <button id="btn-recognize-quick" class="button" type="button" disabled>VOVOCI AI 辨識上架</button>
         <div id="recognize-loading" class="sync-loading hidden">
@@ -241,6 +242,7 @@
 
     <!-- Tab 4: 訂單列表 -->
     <section class="admin-tab-panel hidden" data-tab="orders">
+      <div id="order-filter-tabs" class="order-filter-tabs"></div>
       <section id="admin-forms" class="admin-forms"></section>
     </section>
 
