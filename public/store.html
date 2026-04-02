@@ -60,7 +60,7 @@
       <div class="container">
         <div class="header-top">
           <div class="header-left">
-            <img id="store-logo" class="store-logo-header" style="display:none;" alt="商店 Logo" />
+            <a href="/" id="store-logo-link"><img id="store-logo" class="store-logo-header" src="/assets/images/logo2.png" alt="商店 Logo" /></a>
             <div>
               <h1 id="store-header-name">商品列表</h1>
               <p id="store-desc" class="store-desc" style="display:none;"></p>
@@ -81,7 +81,7 @@
     <!-- Drawer -->
     <aside class="drawer" id="drawer">
       <div class="drawer-header">
-        <h2 id="drawer-title"><img id="drawer-logo" class="drawer-logo" style="display:none;" alt="" /><span>篩選</span></h2>
+        <h2 id="drawer-title"><a href="/"><img id="drawer-logo" class="drawer-logo" src="/assets/images/logo2.png" alt="商店 Logo" /></a><span>篩選</span></h2>
         <button class="drawer-close" id="drawer-close" aria-label="關閉">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -131,14 +131,15 @@
     }
     // Render store logo
     var ds = window.__DISPLAY_SETTINGS || {};
+    var base = window.__API_BASE || "";
+    var logoLink = document.getElementById("store-logo-link");
+    if (logoLink && base) logoLink.href = base + "/";
     if (ds.storeLogo) {
-      var logoSrc = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo;
+      var logoSrc = base + "/api/images/" + ds.storeLogo;
       var logoEl = document.getElementById("store-logo");
-      if (logoEl) { logoEl.src = logoSrc; logoEl.style.display = "block"; }
+      if (logoEl) logoEl.src = logoSrc;
       var drawerLogo = document.getElementById("drawer-logo");
-      if (drawerLogo) { drawerLogo.src = logoSrc; drawerLogo.style.display = "inline-block"; }
-      var drawerTitle = document.getElementById("drawer-title");
-      if (drawerTitle) { var span = drawerTitle.querySelector("span"); if (span) span.style.display = "none"; }
+      if (drawerLogo) drawerLogo.src = logoSrc;
     }
     // Fix floating request button href
     (function() {
