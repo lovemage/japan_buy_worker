@@ -68,7 +68,13 @@
     (function(){
       var ds = window.__DISPLAY_SETTINGS || {};
       if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = "block"; } }
-      if (ds.storeRules) { var box = document.getElementById("store-rules-box"); var content = document.getElementById("store-rules-content"); if (box && content) { content.textContent = ds.storeRules; box.style.display = ""; } }
+      if (ds.storeRules) {
+        document.addEventListener("DOMContentLoaded", function() {
+          var box = document.getElementById("store-rules-box");
+          var content = document.getElementById("store-rules-content");
+          if (box && content) { content.textContent = ds.storeRules; box.style.display = ""; }
+        });
+      }
     })();
     </script>
 
