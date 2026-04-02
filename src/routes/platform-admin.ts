@@ -213,6 +213,15 @@ export async function handlePlatformAdmin(
           .run();
         return json({ ok: true, template: tpl });
       }
+      case "rename": {
+        const newName = (body as Record<string, unknown>).name as string;
+        if (!newName) return json({ ok: false, error: "Missing name" }, 400);
+        await db
+          .prepare("UPDATE stores SET name = ?, updated_at = datetime('now') WHERE id = ?")
+          .bind(newName, storeId)
+          .run();
+        return json({ ok: true, name: newName });
+      }
       case "deactivate":
         await db
           .prepare("UPDATE stores SET is_active = 0, updated_at = datetime('now') WHERE id = ?")

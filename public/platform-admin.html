@@ -359,6 +359,19 @@ async function setTemplate(storeId, template) {
   else alert(data.error || "操作失敗");
 }
 
+async function renameStore(storeId, currentName) {
+  var newName = prompt("輸入新名稱：", currentName);
+  if (!newName || newName === currentName) return;
+  var res = await fetch("/api/platform-admin/stores/" + storeId, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ action: "rename", name: newName }),
+  });
+  var data = await res.json();
+  if (data.ok) await loadStores();
+  else alert(data.error || "操作失敗");
+}
+
 async function deleteStore(storeId, storeName) {
   if (!confirm("確定要刪除商店「" + storeName + "」？此操作不可復原！")) return;
   var password = prompt("請輸入管理員密碼以確認刪除：");
@@ -481,7 +494,7 @@ function renderStores(stores) {
 
     return '<div class="member-card">' +
       '<div class="member-top">' +
-        '<div><div class="member-name">' + s.name + '</div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
+        '<div><div class="member-name">' + s.name + ' <button onclick="renameStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')" style="border:none;background:none;cursor:pointer;font-size:11px;color:var(--pa-muted);">✏️</button></div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
         '<div>' + badges + statusBadge + '</div>' +
       '</div>' +
       '<div class="member-meta">' +
