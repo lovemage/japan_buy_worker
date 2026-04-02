@@ -359,6 +359,20 @@ async function setTemplate(storeId, template) {
   else alert(data.error || "操作失敗");
 }
 
+async function deleteStore(storeId, storeName) {
+  if (!confirm("確定要刪除商店「" + storeName + "」？此操作不可復原！")) return;
+  var password = prompt("請輸入管理員密碼以確認刪除：");
+  if (!password) return;
+  var res = await fetch("/api/platform-admin/stores/" + storeId, {
+    method: "DELETE",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ password: password }),
+  });
+  var data = await res.json();
+  if (data.ok) await loadStores();
+  else alert(data.error || "刪除失敗");
+}
+
 function switchPage(page, btn) {
   document.querySelectorAll(".page-content").forEach(p => p.classList.add("hidden"));
   document.getElementById("page-" + page).classList.remove("hidden");
@@ -483,6 +497,7 @@ function renderStores(stores) {
         '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
         '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
         (s.is_active ? '<button style="color:#ef4444;" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button style="color:#16a34a;" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
+        '<button style="color:#991b1b;" onclick="deleteStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')">刪除</button>' +
       '</div>' +
     '</div>';
   }).join("");

@@ -230,6 +230,28 @@ export async function handlePlatformAdmin(
     }
   }
 
+  // Delete a store (requires password)
+  if (storeMatch && request.method === "DELETE") {
+    const storeId = parseInt(storeMatch[1], 10);
+    let body: { password?: string };
+    try {
+      body = (await request.json()) as { password?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    if (!body.password || body.password !== platformPassword) {
+      return json({ ok: false, error: "密碼錯誤" }, 401);
+    }
+    // Delete related data first, then store
+    await db.prepare("DELETE FROM requirement_items WHERE requirement_form_id IN (SELECT id FROM requirement_forms WHERE store_id = ?)").bind(storeId).run();
+    await db.prepare("DELETE FROM requirement_forms WHERE store_id = ?").bind(storeId).run();
+    await db.prepare("DELETE FROM products WHERE store_id = ?").bind(storeId).run();
+    await db.prepare("DELETE FROM app_settings WHERE store_id = ?").bind(storeId).run();
+    await db.prepare("DELETE FROM store_sessions WHERE store_id = ?").bind(storeId).run();
+    await db.prepare("DELETE FROM stores WHERE id = ?").bind(storeId).run();
+    return json({ ok: true, deletedId: storeId });
+  }
+
   // Revenue logs: list
   if (url.pathname === "/api/platform-admin/revenue-logs" && request.method === "GET") {
     await ensureLogTable(db);
