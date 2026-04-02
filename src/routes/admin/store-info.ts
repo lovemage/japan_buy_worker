@@ -102,9 +102,9 @@ export async function handleDisplaySettings(
   }
 
   if (request.method === "POST") {
-    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; shippingMethods?: unknown[] };
+    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; storeRules?: string; shippingMethods?: unknown[] };
     try {
-      body = (await request.json()) as { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; shippingMethods?: unknown[] };
+      body = (await request.json()) as { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; storeRules?: string; shippingMethods?: unknown[] };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
@@ -113,6 +113,7 @@ export async function handleDisplaySettings(
       promoEnabled: body.promoEnabled !== false,
       promoFilters: body.promoFilters || ["all", "350", "450", "550"],
       checkoutMessage: body.checkoutMessage || "",
+      storeRules: body.storeRules || "",
     };
     if (body.shippingMethods !== undefined) {
       settings.shippingMethods = body.shippingMethods;

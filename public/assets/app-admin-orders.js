@@ -108,7 +108,7 @@ function renderForms(forms) {
       <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
       <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)}</p>
       <p class="meta">整單備註：${form.notes || "無"}</p>
-      <button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此需求單</button>
+      ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此需求單</button>` : ""}
       <ul class="admin-form-items">${itemsHtml}</ul>
     </article>`;
   }).join("");
@@ -126,12 +126,10 @@ function renderForms(forms) {
       });
       if (res.status === 401) { location.href = "/admin-login.html"; return; }
       if (!res.ok) { showError(`狀態更新失敗：${res.status}`); return; }
-      const card = select.closest(".admin-form-card");
-      if (card) card.setAttribute("data-status", select.value);
-      // Update allForms data and refresh tabs
       const target = allForms.find((f) => f.id === formId);
       if (target) target.status = select.value;
       renderFilterTabs();
+      renderForms(allForms);
     });
   });
 

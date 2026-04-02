@@ -65,7 +65,11 @@
       </div>
     </header>
     <script>
-    (function(){ var ds = window.__DISPLAY_SETTINGS || {}; if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = "block"; } } })();
+    (function(){
+      var ds = window.__DISPLAY_SETTINGS || {};
+      if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = "block"; } }
+      if (ds.storeRules) { var box = document.getElementById("store-rules-box"); var content = document.getElementById("store-rules-content"); if (box && content) { content.textContent = ds.storeRules; box.style.display = ""; } }
+    })();
     </script>
 
     <main class="container">
@@ -91,6 +95,10 @@
           <div class="detail-spec-box">
             <h3>商品規格</h3>
             <ul id="detail-spec-list"></ul>
+          </div>
+          <div id="store-rules-box" class="detail-spec-box" style="display:none;">
+            <h3>賣場規則</h3>
+            <div id="store-rules-content" style="font-size:13px;color:#666;white-space:pre-line;line-height:1.6;"></div>
           </div>
         </div>
       </article>
