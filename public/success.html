@@ -7,30 +7,6 @@
     <link rel="stylesheet" href="/assets/styles.css" />
     <link rel="stylesheet" href="/assets/templates.css" />
     <script>if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };</script>
-    <style>
-      .success-wrap { max-width: 480px; margin: 0 auto; padding: 24px 16px 80px; }
-      .success-header { text-align: center; padding: 32px 0 20px; }
-      .success-icon { font-size: 48px; margin-bottom: 12px; }
-      .success-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-      .success-header .order-code { font-size: 14px; color: #6366f1; font-weight: 600; }
-
-      .success-msg { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; margin-bottom: 16px; font-size: 14px; color: #166534; line-height: 1.7; }
-      .success-msg strong { display: block; margin-bottom: 4px; }
-
-      .order-summary { background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-      .order-summary-title { padding: 12px 14px; background: #fafafa; font-size: 13px; font-weight: 600; color: #666; border-bottom: 1px solid #eee; }
-      .order-item { padding: 10px 14px; border-bottom: 1px solid #f5f5f5; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
-      .order-item:last-child { border-bottom: none; }
-      .order-item .name { flex: 1; min-width: 0; }
-      .order-item .spec { color: #888; font-size: 12px; }
-      .order-item .price { text-align: right; white-space: nowrap; font-weight: 600; }
-      .order-totals { padding: 12px 14px; background: #fafafa; border-top: 1px solid #eee; }
-      .order-totals .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
-      .order-totals .row.total { font-size: 16px; font-weight: 700; color: #1a1a1a; padding-top: 8px; border-top: 1px solid #eee; margin-top: 6px; }
-
-      .success-actions { display: flex; flex-direction: column; gap: 8px; }
-      .success-actions .btn-pill { text-align: center; text-decoration: none; }
-    </style>
   </head>
   <body>
     <div class="success-wrap">

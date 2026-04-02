@@ -98,26 +98,26 @@ function renderDraftItems() {
   wrapper.innerHTML = draft.items
     .map(
       (item, idx) => `
-      <article class="request-item" data-idx="${idx}" style="display:flex;gap:10px;padding:12px;background:#fff;border:1px solid #eee;border-radius:10px;margin-bottom:8px;">
-        <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${item.productNameSnapshot}" data-fallback="product" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
-        <div style="flex:1;min-width:0;">
-          <p style="font-size:14px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.productNameSnapshot}</p>
-          <p style="font-size:12px;color:#888;margin-bottom:6px;">${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-            <label style="font-size:12px;display:flex;align-items:center;gap:4px;">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" style="width:48px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" /></label>
-            <label style="font-size:12px;display:flex;align-items:center;gap:4px;">尺寸${
+      <article class="request-item" data-idx="${idx}">
+        <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${escapeHtml(item.productNameSnapshot)}" data-fallback="product" class="request-item__thumb" />
+        <div class="request-item__body">
+          <p class="request-item__name">${escapeHtml(item.productNameSnapshot)}</p>
+          <p class="request-item__price">${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
+          <div class="request-item__fields">
+            <label class="request-item__field-label">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" class="request-item__field-input request-item__field-input--qty" /></label>
+            <label class="request-item__field-label">尺寸${
               Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0
-                ? `<select data-field="desiredSize" style="padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;">${renderSelectOptions(
+                ? `<select data-field="desiredSize" class="request-item__field-input">${renderSelectOptions(
                     item.sizeOptions,
                     item.desiredSize || "",
                     "選擇"
                   )}</select>`
-                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" style="width:60px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" />`
+                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" class="request-item__field-input request-item__field-input--size" />`
             }</label>
           </div>
-          <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
-            <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" style="flex:1;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px;" />
-            <button type="button" class="js-remove-item" data-remove-idx="${idx}" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;color:#ef4444;">刪除</button>
+          <div class="request-item__note-row">
+            <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" class="request-item__field-input request-item__field-input--note" />
+            <button type="button" class="js-remove-item request-item__remove" data-remove-idx="${idx}">刪除</button>
           </div>
         </div>
       </article>
