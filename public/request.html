@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="/assets/styles.css" />
     <link rel="stylesheet" href="/assets/templates.css" />
     <script>
+    if (!window.__API_BASE) {
+      var pm = location.pathname.match(/^(\/s\/[a-z0-9][a-z0-9-]*)/);
+      if (pm) window.__API_BASE = pm[1];
+    }
     if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };
     document.addEventListener("DOMContentLoaded", function() {
       var base = window.__API_BASE || "";
@@ -47,7 +51,6 @@
     <header class="page-header">
       <div class="container">
         <img id="store-logo" class="store-logo" style="display:none;" alt="商店 Logo" />
-        <h1>需求單</h1>
         <a class="btn-pill secondary" id="back-to-store" href="/store.html">← 返回商店</a>
       </div>
     </header>
