@@ -333,6 +333,18 @@ body {
   display: none;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .notice {
   margin: 12px 0;
   background: #FEF1EE;
@@ -778,6 +790,8 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+  outline: none;
 }
 
 input:disabled,

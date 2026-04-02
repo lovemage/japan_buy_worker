@@ -28,29 +28,29 @@
     </script>
 
     <main class="container">
-      <section id="request-error" class="notice hidden"></section>
-      <section id="request-items" class="request-items"></section>
+      <section id="request-error" class="notice hidden" role="alert" aria-live="assertive"></section>
+      <section id="request-items" class="request-items" role="list" aria-label="需求單商品列表"></section>
 
       <form id="request-form" class="request-form">
-        <label>
+        <label for="memberName">
           會員姓名
-          <input id="memberName" name="memberName" type="text" class="input-cute" required />
+          <input id="memberName" name="memberName" type="text" class="input-cute" required aria-required="true" />
         </label>
-        <label>
+        <label for="memberPhone">
           會員電話
-          <input id="memberPhone" name="memberPhone" type="tel" class="input-cute" required />
+          <input id="memberPhone" name="memberPhone" type="tel" class="input-cute" required aria-required="true" />
         </label>
-        <label>
+        <label for="recipientCity">
           收件縣市
-          <select id="recipientCity" name="recipientCity" class="input-cute" required></select>
+          <select id="recipientCity" name="recipientCity" class="input-cute" required aria-required="true"></select>
         </label>
-        <label>
+        <label for="recipientAddress">
           收件地址
-          <input id="recipientAddress" name="recipientAddress" type="text" class="input-cute" required />
+          <input id="recipientAddress" name="recipientAddress" type="text" class="input-cute" required aria-required="true" />
         </label>
-        <label>
+        <label for="lineId">
           Line ID
-          <input id="lineId" name="lineId" type="text" class="input-cute" required />
+          <input id="lineId" name="lineId" type="text" class="input-cute" required aria-required="true" />
         </label>
         <fieldset id="shipping-options-box" class="shipping-options">
           <legend>配送方式</legend>
@@ -83,9 +83,10 @@
         </label>
         <div class="captcha-box">
           <p class="meta">請輸入圖中英數字</p>
-          <svg id="captcha-svg" class="captcha-svg" viewBox="0 0 160 50" aria-label="圖形驗證碼"></svg>
-          <input id="captchaInput" name="captchaInput" type="text" class="input-cute" placeholder="輸入驗證碼" required autocomplete="off" />
-          <button id="captcha-refresh" class="btn-pill secondary" type="button">重新產生</button>
+          <svg id="captcha-svg" class="captcha-svg" viewBox="0 0 160 50" role="img" aria-label="圖形驗證碼，請看圖片輸入英數字"></svg>
+          <label for="captchaInput" class="sr-only">驗證碼</label>
+          <input id="captchaInput" name="captchaInput" type="text" class="input-cute" placeholder="輸入驗證碼" required autocomplete="off" aria-required="true" />
+          <button id="captcha-refresh" class="btn-pill secondary" type="button" aria-label="重新產生驗證碼">重新產生</button>
         </div>
         <section class="request-total-box">
           <p class="meta" id="shipping-twd">運費：NT$0</p>

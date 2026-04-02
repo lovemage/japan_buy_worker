@@ -44,6 +44,7 @@ function showError(message) {
   }
   node.textContent = message;
   node.classList.remove("hidden");
+  node.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function calcAdjustedPrices(baseJpy, pricing) {
@@ -98,26 +99,26 @@ function renderDraftItems() {
   wrapper.innerHTML = draft.items
     .map(
       (item, idx) => `
-      <article class="request-item" data-idx="${idx}">
+      <article class="request-item" data-idx="${idx}" role="listitem" aria-label="${escapeHtml(item.productNameSnapshot)}">
         <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${escapeHtml(item.productNameSnapshot)}" data-fallback="product" class="request-item__thumb" />
         <div class="request-item__body">
           <p class="request-item__name">${escapeHtml(item.productNameSnapshot)}</p>
           <p class="request-item__price">${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}</p>
           <div class="request-item__fields">
-            <label class="request-item__field-label">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" class="request-item__field-input request-item__field-input--qty" /></label>
+            <label class="request-item__field-label">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" class="request-item__field-input request-item__field-input--qty" aria-label="${escapeHtml(item.productNameSnapshot)} 數量" /></label>
             <label class="request-item__field-label">尺寸${
               Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0
-                ? `<select data-field="desiredSize" class="request-item__field-input">${renderSelectOptions(
+                ? `<select data-field="desiredSize" class="request-item__field-input" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸">${renderSelectOptions(
                     item.sizeOptions,
                     item.desiredSize || "",
                     "選擇"
                   )}</select>`
-                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" class="request-item__field-input request-item__field-input--size" />`
+                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" class="request-item__field-input request-item__field-input--size" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸" />`
             }</label>
           </div>
           <div class="request-item__note-row">
-            <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" class="request-item__field-input request-item__field-input--note" />
-            <button type="button" class="js-remove-item request-item__remove" data-remove-idx="${idx}">刪除</button>
+            <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" class="request-item__field-input request-item__field-input--note" aria-label="${escapeHtml(item.productNameSnapshot)} 備註" />
+            <button type="button" class="js-remove-item request-item__remove" data-remove-idx="${idx}" aria-label="刪除 ${escapeHtml(item.productNameSnapshot)}">刪除</button>
           </div>
         </div>
       </article>
