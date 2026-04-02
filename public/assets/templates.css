@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════
    VOVOSnap Store Templates
-   7 themes with color + font variations
+   7 themes with color + font + UI variations
    ═══════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;700&family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Kosugi+Maru&family=Shippori+Mincho:wght@400;500;700&display=swap');
@@ -8,7 +8,11 @@
 /* ── Template: default (原有抹茶暖色) ── */
 /* No overrides needed — uses styles.css :root (Zen Maru Gothic) */
 
-/* ── Template: ink-blue (墨藍) ── */
+
+/* ══════════════════════════════════════════
+   Template: ink-blue (墨藍)
+   知性文藝風 — 襯線字體 + 冷色調
+   ══════════════════════════════════════════ */
 [data-template="ink-blue"] {
   font-family: "Noto Serif TC", "Georgia", serif;
   --bg-color: #F4F6F8;
@@ -25,7 +29,6 @@
   --muted-brand: #6B7B8D;
   --line: #DDE2E8;
   --shadow: 0 4px 12px rgba(74, 97, 120, 0.08);
-  /* Derived */
   --btn-secondary: #5A7088;
   --btn-secondary-hover: #4A6078;
   --btn-added: #4A7A6A;
@@ -53,14 +56,46 @@
   background: #DCE2E8;
   color: #3B5064;
 }
+/* Buttons: 查看詳情 / 加入需求單 / 返回 */
 [data-template="ink-blue"] .button {
   background: #4A6178;
+  border-radius: 6px;
 }
 [data-template="ink-blue"] .button:hover {
   background: #3B5064;
 }
+[data-template="ink-blue"] .button.secondary {
+  background: #E8ECF0;
+  color: #4A6178;
+  border: 1px solid #CCD3DB;
+}
+[data-template="ink-blue"] .button.secondary:hover {
+  background: #DCE2E8;
+  color: #3B5064;
+}
+/* Floating cart */
+[data-template="ink-blue"] .floating-request-btn {
+  background: #4A6178;
+  box-shadow: 0 4px 16px rgba(74, 97, 120, 0.35);
+}
+[data-template="ink-blue"] .floating-request-btn:hover {
+  background: #3B5064;
+  box-shadow: 0 6px 24px rgba(74, 97, 120, 0.4);
+}
+/* Card styling — subtle borders for literary feel */
+[data-template="ink-blue"] .product-card {
+  border: 1px solid #DDE2E8;
+}
+[data-template="ink-blue"] .qty-stepper__btn:hover {
+  background: #E8ECF0;
+  color: #4A6178;
+}
 
-/* ── Template: sand (暖沙灰) ── */
+
+/* ══════════════════════════════════════════
+   Template: sand (暖沙灰)
+   手寫溫暖風 — 手寫字體 + 暖色
+   ══════════════════════════════════════════ */
 [data-template="sand"] {
   font-family: "Klee One", "Zen Maru Gothic", cursive;
   --bg-color: #F7F5F0;
@@ -77,7 +112,6 @@
   --muted-brand: #7A7068;
   --line: #E5DFD6;
   --shadow: 0 4px 12px rgba(140, 123, 107, 0.08);
-  /* Derived */
   --btn-secondary: #7A6E62;
   --btn-secondary-hover: #6A5E52;
   --btn-added: #6A8A68;
@@ -107,12 +141,42 @@
 }
 [data-template="sand"] .button {
   background: #8C7B6B;
+  border-radius: 20px;
 }
 [data-template="sand"] .button:hover {
   background: #76675A;
 }
+[data-template="sand"] .button.secondary {
+  background: #EDE8E0;
+  color: #6E6258;
+  border: 1px solid #D8D0C5;
+  border-radius: 20px;
+}
+[data-template="sand"] .button.secondary:hover {
+  background: #E3DCD2;
+  color: #5A4E44;
+}
+[data-template="sand"] .floating-request-btn {
+  background: #A07858;
+  box-shadow: 0 4px 16px rgba(160, 120, 88, 0.35);
+}
+[data-template="sand"] .floating-request-btn:hover {
+  background: #8A6548;
+  box-shadow: 0 6px 24px rgba(160, 120, 88, 0.4);
+}
+[data-template="sand"] .product-card {
+  border-radius: 16px;
+}
+[data-template="sand"] .qty-stepper__btn:hover {
+  background: #F2ECE4;
+  color: #A07858;
+}
 
-/* ── Template: moss (苔蘚灰綠) ── */
+
+/* ══════════════════════════════════════════
+   Template: moss (苔蘚灰綠)
+   自然柔和風 — 圓體 + 綠色調
+   ══════════════════════════════════════════ */
 [data-template="moss"] {
   font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
   --bg-color: #F3F5F2;
@@ -129,7 +193,6 @@
   --muted-brand: #687868;
   --line: #DDE2DA;
   --shadow: 0 4px 12px rgba(107, 127, 107, 0.08);
-  /* Derived */
   --btn-secondary: #5E7060;
   --btn-secondary-hover: #4E6050;
   --btn-added: #4A7A5A;
@@ -159,12 +222,42 @@
 }
 [data-template="moss"] .button {
   background: #6B7F6B;
+  border-radius: 12px;
 }
 [data-template="moss"] .button:hover {
   background: #5A6D5A;
 }
+[data-template="moss"] .button.secondary {
+  background: #E5EAE3;
+  color: #5A6D5A;
+  border: 1px solid #CDD6CA;
+  border-radius: 12px;
+}
+[data-template="moss"] .button.secondary:hover {
+  background: #DAE0D7;
+  color: #4A5C4A;
+}
+[data-template="moss"] .floating-request-btn {
+  background: #6B7F6B;
+  box-shadow: 0 4px 16px rgba(107, 127, 107, 0.35);
+}
+[data-template="moss"] .floating-request-btn:hover {
+  background: #5A6D5A;
+  box-shadow: 0 6px 24px rgba(107, 127, 107, 0.4);
+}
+[data-template="moss"] .product-card {
+  border-radius: 14px;
+}
+[data-template="moss"] .qty-stepper__btn:hover {
+  background: #E5EAE3;
+  color: #6B7F6B;
+}
 
-/* ── Template: slate (石板灰藍) ── */
+
+/* ══════════════════════════════════════════
+   Template: slate (石板灰藍)
+   現代俐落風 — 無襯線 + 冷灰
+   ══════════════════════════════════════════ */
 [data-template="slate"] {
   font-family: "Noto Sans TC", "Helvetica Neue", sans-serif;
   --bg-color: #F2F3F5;
@@ -181,7 +274,6 @@
   --muted-brand: #6A7080;
   --line: #DCDFE5;
   --shadow: 0 4px 12px rgba(94, 107, 122, 0.08);
-  /* Derived */
   --btn-secondary: #58657A;
   --btn-secondary-hover: #48556A;
   --btn-added: #4A7A6A;
@@ -211,12 +303,55 @@
 }
 [data-template="slate"] .button {
   background: #5E6B7A;
+  border-radius: 4px;
 }
 [data-template="slate"] .button:hover {
   background: #4D5968;
 }
+[data-template="slate"] .button.secondary {
+  background: #E4E7EC;
+  color: #5E6B7A;
+  border: 1px solid #CDD2DA;
+  border-radius: 4px;
+}
+[data-template="slate"] .button.secondary:hover {
+  background: #D8DCE3;
+  color: #4D5968;
+}
+[data-template="slate"] .floating-request-btn {
+  background: #5E6B7A;
+  box-shadow: 0 4px 16px rgba(94, 107, 122, 0.35);
+}
+[data-template="slate"] .floating-request-btn:hover {
+  background: #4D5968;
+  box-shadow: 0 6px 24px rgba(94, 107, 122, 0.4);
+}
+/* Sharp corners for modern feel */
+[data-template="slate"] .product-card {
+  border-radius: 6px;
+}
+[data-template="slate"] .product-card__media {
+  border-radius: 4px 4px 0 0;
+}
+[data-template="slate"] .qty-stepper {
+  border-radius: 4px;
+}
+[data-template="slate"] .qty-stepper__btn:hover {
+  background: #E4E7EC;
+  color: #5E6B7A;
+}
+[data-template="slate"] .input-cute {
+  border-radius: 6px;
+}
+[data-template="slate"] .detail-price-block {
+  border-radius: 4px;
+}
 
-/* ── Template: bold-gold (白黃黑) ── */
+
+/* ══════════════════════════════════════════
+   Template: bold-gold (白黃黑)
+   奢華大膽風 — 明朝體 + 金黑對比
+   ══════════════════════════════════════════ */
 [data-template="bold-gold"] {
   font-family: "Shippori Mincho", "Noto Serif TC", serif;
   --bg-color: #FAFAF5;
@@ -260,14 +395,78 @@
   background: #E8E2D0;
   color: #1A1A1A;
 }
+/* Gold primary button with dark text for contrast */
 [data-template="bold-gold"] .button {
   background: #C8A415;
+  color: #1A1A1A;
+  font-weight: 700;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
 }
 [data-template="bold-gold"] .button:hover {
   background: #B08E0A;
+  color: #1A1A1A;
+}
+/* Secondary: dark button */
+[data-template="bold-gold"] .button.secondary {
+  background: #2A2A2A;
+  color: #FFD700;
+  border: none;
+  border-radius: 2px;
+}
+[data-template="bold-gold"] .button.secondary:hover {
+  background: #1A1A1A;
+  color: #FFE066;
+}
+[data-template="bold-gold"] .floating-request-btn {
+  background: #1A1A1A;
+  box-shadow: 0 4px 16px rgba(30, 30, 20, 0.4);
+}
+[data-template="bold-gold"] .floating-request-btn:hover {
+  background: #000;
+  box-shadow: 0 6px 24px rgba(30, 30, 20, 0.5);
+}
+[data-template="bold-gold"] .floating-cart-badge {
+  background: #C8A415;
+  color: #1A1A1A;
+}
+/* Bold card styling */
+[data-template="bold-gold"] .product-card {
+  border: 1px solid #E8E4D0;
+  border-radius: 2px;
+}
+[data-template="bold-gold"] .product-card__media {
+  border-radius: 0;
+}
+[data-template="bold-gold"] .detail-price-block {
+  background: #FFF9E0;
+  border-left: 3px solid #C8A415;
+  border-radius: 2px;
+}
+[data-template="bold-gold"] .detail-price-twd {
+  color: #1A1A1A;
+}
+[data-template="bold-gold"] .qty-stepper {
+  border-radius: 2px;
+  border-color: #2A2A2A;
+}
+[data-template="bold-gold"] .qty-stepper__btn:hover {
+  background: #FFF9E0;
+  color: #C8A415;
+}
+[data-template="bold-gold"] .input-cute {
+  border-radius: 2px;
+}
+[data-template="bold-gold"] .detail-thumb-btn.is-active .detail-thumb {
+  border-color: #C8A415;
+  box-shadow: 0 0 0 3px rgba(200, 164, 21, 0.25);
 }
 
-/* ── Template: bold-ocean (白藍黑) ── */
+
+/* ══════════════════════════════════════════
+   Template: bold-ocean (白藍黑)
+   活力科技風 — 圓體 + 亮藍
+   ══════════════════════════════════════════ */
 [data-template="bold-ocean"] {
   font-family: "Kosugi Maru", "Noto Sans TC", sans-serif;
   --bg-color: #F5F8FA;
@@ -313,7 +512,46 @@
 }
 [data-template="bold-ocean"] .button {
   background: #2563EB;
+  border-radius: 8px;
+  font-weight: 600;
 }
 [data-template="bold-ocean"] .button:hover {
   background: #1D4ED8;
+}
+[data-template="bold-ocean"] .button.secondary {
+  background: #E8EEF5;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+}
+[data-template="bold-ocean"] .button.secondary:hover {
+  background: #DCE4EE;
+  color: #1E293B;
+}
+[data-template="bold-ocean"] .floating-request-btn {
+  background: #2563EB;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+}
+[data-template="bold-ocean"] .floating-request-btn:hover {
+  background: #1D4ED8;
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+}
+[data-template="bold-ocean"] .product-card {
+  border-radius: 10px;
+  border: 1px solid #D4DEE8;
+}
+[data-template="bold-ocean"] .detail-price-block {
+  background: #EFF6FF;
+  border-left: 3px solid #2563EB;
+}
+[data-template="bold-ocean"] .detail-price-twd {
+  color: #1D4ED8;
+}
+[data-template="bold-ocean"] .qty-stepper__btn:hover {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+[data-template="bold-ocean"] .detail-thumb-btn.is-active .detail-thumb {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
