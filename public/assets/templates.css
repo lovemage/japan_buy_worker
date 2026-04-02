@@ -1,13 +1,16 @@
 /* ═══════════════════════════════════════
    VOVOSnap Store Templates
-   5 light-toned, low-saturation themes
+   7 themes with color + font variations
    ═══════════════════════════════════════ */
 
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;700&family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Kosugi+Maru&family=Shippori+Mincho:wght@400;500;700&display=swap');
+
 /* ── Template: default (原有抹茶暖色) ── */
-/* No overrides needed — uses styles.css :root */
+/* No overrides needed — uses styles.css :root (Zen Maru Gothic) */
 
 /* ── Template: ink-blue (墨藍) ── */
 [data-template="ink-blue"] {
+  font-family: "Noto Serif TC", "Georgia", serif;
   --bg-color: #F4F6F8;
   --card-bg: #FAFBFC;
   --primary-color: #4A6178;
@@ -50,9 +53,16 @@
   background: #DCE2E8;
   color: #3B5064;
 }
+[data-template="ink-blue"] .button {
+  background: #4A6178;
+}
+[data-template="ink-blue"] .button:hover {
+  background: #3B5064;
+}
 
 /* ── Template: sand (暖沙灰) ── */
 [data-template="sand"] {
+  font-family: "Klee One", "Zen Maru Gothic", cursive;
   --bg-color: #F7F5F0;
   --card-bg: #FDFCF9;
   --primary-color: #8C7B6B;
@@ -95,9 +105,16 @@
   background: #E3DCD2;
   color: #5A4E44;
 }
+[data-template="sand"] .button {
+  background: #8C7B6B;
+}
+[data-template="sand"] .button:hover {
+  background: #76675A;
+}
 
 /* ── Template: moss (苔蘚灰綠) ── */
 [data-template="moss"] {
+  font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
   --bg-color: #F3F5F2;
   --card-bg: #FAFBF9;
   --primary-color: #6B7F6B;
@@ -140,9 +157,16 @@
   background: #DAE0D7;
   color: #4A5C4A;
 }
+[data-template="moss"] .button {
+  background: #6B7F6B;
+}
+[data-template="moss"] .button:hover {
+  background: #5A6D5A;
+}
 
 /* ── Template: slate (石板灰藍) ── */
 [data-template="slate"] {
+  font-family: "Noto Sans TC", "Helvetica Neue", sans-serif;
   --bg-color: #F2F3F5;
   --card-bg: #F9FAFB;
   --primary-color: #5E6B7A;
@@ -185,9 +209,16 @@
   background: #D8DCE3;
   color: #4D5968;
 }
+[data-template="slate"] .button {
+  background: #5E6B7A;
+}
+[data-template="slate"] .button:hover {
+  background: #4D5968;
+}
 
 /* ── Template: bold-gold (白黃黑) ── */
 [data-template="bold-gold"] {
+  font-family: "Shippori Mincho", "Noto Serif TC", serif;
   --bg-color: #FAFAF5;
   --card-bg: #FFFFFF;
   --primary-color: #C8A415;
@@ -229,9 +260,16 @@
   background: #E8E2D0;
   color: #1A1A1A;
 }
+[data-template="bold-gold"] .button {
+  background: #C8A415;
+}
+[data-template="bold-gold"] .button:hover {
+  background: #B08E0A;
+}
 
 /* ── Template: bold-ocean (白藍黑) ── */
 [data-template="bold-ocean"] {
+  font-family: "Kosugi Maru", "Noto Sans TC", sans-serif;
   --bg-color: #F5F8FA;
   --card-bg: #FFFFFF;
   --primary-color: #2563EB;
@@ -272,4 +310,10 @@
 [data-template="bold-ocean"] .btn-pill.secondary:hover {
   background: #DCE4EE;
   color: #1E293B;
+}
+[data-template="bold-ocean"] .button {
+  background: #2563EB;
+}
+[data-template="bold-ocean"] .button:hover {
+  background: #1D4ED8;
 }
