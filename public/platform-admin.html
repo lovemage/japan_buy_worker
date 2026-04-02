@@ -107,6 +107,27 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .member-expires .active { color: #166534; }
 .member-expires .expired { color: #991b1b; }
 
+/* Test badge */
+.badge-test { background: #fef3c7; color: #92400e; }
+.member-actions button.is-test { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+
+/* Revenue log */
+.revenue-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.revenue-header select { padding: 6px 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 13px; }
+.log-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.log-filter-btn { padding: 4px 12px; border: 1.5px solid #ddd; background: #fff; border-radius: 16px; font-size: 11px; cursor: pointer; }
+.log-filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.log-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.log-card .log-info { flex: 1; min-width: 0; }
+.log-card .log-name { font-size: 13px; font-weight: 600; }
+.log-card .log-meta { font-size: 11px; color: #888; margin-top: 2px; }
+.log-card .log-amount { font-size: 16px; font-weight: 800; white-space: nowrap; }
+.log-card .log-amount.zero { color: #999; text-decoration: line-through; }
+.log-card select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 11px; }
+.log-status-normal { color: #166534; }
+.log-status-pending { color: #d97706; }
+.log-status-cancelled { color: #991b1b; }
+
 @media (max-width: 640px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
   .card .row { grid-template-columns: 1fr; }
@@ -141,7 +162,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="stat-card"><div class="stat-num" id="stat-free">0</div><div class="stat-label">Free</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-starter">0</div><div class="stat-label">Starter</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-pro">0</div><div class="stat-label">Pro</div></div>
+      <div class="stat-card" style="grid-column:1/-1;"><div class="stat-num" id="stat-revenue" style="color:#22c55e;">NT$0</div><div class="stat-label" id="stat-revenue-label">本月總收入</div></div>
     </div>
+    <div class="revenue-header">
+      <strong style="font-size:14px;">收入紀錄</strong>
+      <select id="log-month" onchange="loadRevenueLogs()"></select>
+    </div>
+    <div class="log-filters" id="log-filters">
+      <button class="log-filter-btn active" onclick="filterLogs('all',this)">全部</button>
+      <button class="log-filter-btn" onclick="filterLogs('normal',this)">正常</button>
+      <button class="log-filter-btn" onclick="filterLogs('pending',this)">待處理</button>
+      <button class="log-filter-btn" onclick="filterLogs('cancelled',this)">取消</button>
+    </div>
+    <div id="log-list"></div>
   </div>
 
   <!-- Tab: 會員 -->
@@ -239,6 +272,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <script>
 let adminToken = sessionStorage.getItem("platform_admin_token") || "";
 let allStores = [];
+let testStoreIds = [];
+let allLogs = [];
+let logFilter = "all";
 
 function switchPage(page, btn) {
   document.querySelectorAll(".page-content").forEach(p => p.classList.add("hidden"));
@@ -278,10 +314,31 @@ function logout() {
 async function showDashboard() {
   document.getElementById("login-section").style.display = "none";
   document.getElementById("dashboard").classList.add("active");
+  initMonthSelector();
+  await loadTestStores();
   await loadStores();
+  await loadRevenueLogs();
   await loadApiKeys();
   await loadSystemPrompt();
   await loadPlanLimits();
+}
+
+async function loadTestStores() {
+  var res = await fetch("/api/platform-admin/test-stores", { headers: { authorization: "Bearer " + adminToken } });
+  var data = await res.json();
+  if (data.ok) testStoreIds = data.testStoreIds || [];
+}
+
+async function toggleTest(storeId) {
+  var res = await fetch("/api/platform-admin/stores/" + storeId + "/test", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+  });
+  var data = await res.json();
+  if (data.ok) {
+    await loadTestStores();
+    await loadStores();
+  } else alert(data.error || "操作失敗");
 }
 
 async function loadStores() {
@@ -316,7 +373,10 @@ function formatExpires(expiresAt) {
 
 function renderStores(stores) {
   document.getElementById("member-list").innerHTML = stores.map(s => {
+    var isTest = testStoreIds.indexOf(s.id) >= 0;
     var planClass = "badge-" + s.plan;
+    var badges = '<span class="badge ' + planClass + '">' + s.plan.toUpperCase() + '</span> ';
+    if (isTest) badges += '<span class="badge badge-test">測試</span> ';
     var statusBadge = s.onboarding_step !== "complete"
       ? '<span class="badge badge-onboarding">' + s.onboarding_step + '</span>'
       : s.is_active ? '<span class="badge badge-active">啟用</span>' : '<span class="badge badge-inactive">停用</span>';
@@ -325,7 +385,7 @@ function renderStores(stores) {
     return '<div class="member-card">' +
       '<div class="member-top">' +
         '<div><div class="member-name">' + s.name + '</div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
-        '<div><span class="badge ' + planClass + '">' + s.plan.toUpperCase() + '</span> ' + statusBadge + '</div>' +
+        '<div>' + badges + statusBadge + '</div>' +
       '</div>' +
       '<div class="member-meta">' +
         '<span>🔗 <a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a></span>' +
@@ -337,6 +397,7 @@ function renderStores(stores) {
         '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
         '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'starter\')">Starter</button>' +
         '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
+        '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
         (s.is_active ? '<button onclick="updateStore(' + s.id + ',\'deactivate\')" style="color:#ef4444;">停用</button>' : '<button onclick="updateStore(' + s.id + ',\'activate\')" style="color:#22c55e;">啟用</button>') +
       '</div>' +
     '</div>';
@@ -344,9 +405,9 @@ function renderStores(stores) {
 }
 
 var STARTER_OPTIONS = [
-  { days: 30, label: "1 個月", sub: "30 天", price: "NT$980" },
-  { days: 180, label: "6 個月", sub: "180 天", price: "NT$880/月" },
-  { days: 390, label: "12 個月", sub: "360 天 + 贈 30 天", price: "NT$680/月" },
+  { days: 30, amount: 980, label: "1 個月", sub: "30 天", price: "NT$980" },
+  { days: 180, amount: 5280, label: "6 個月", sub: "180 天", price: "NT$880/月（共 NT$5,280）" },
+  { days: 390, amount: 8160, label: "12 個月", sub: "360 天 + 贈 30 天", price: "NT$680/月（共 NT$8,160）" },
 ];
 
 function showPlanModal(storeId, plan) {
@@ -357,7 +418,7 @@ function showPlanModal(storeId, plan) {
   var optionsHtml = "";
   if (plan === "starter") {
     optionsHtml = STARTER_OPTIONS.map(function(opt, i) {
-      return '<div class="plan-option' + (i === 0 ? " selected" : "") + '" data-days="' + opt.days + '" onclick="selectPlanOption(this)">' +
+      return '<div class="plan-option' + (i === 0 ? " selected" : "") + '" data-days="' + opt.days + '" data-amount="' + opt.amount + '" onclick="selectPlanOption(this)">' +
         '<div class="po-radio"></div>' +
         '<div class="po-info"><div class="po-title">' + opt.label + '</div><div class="po-sub">' + opt.sub + '</div></div>' +
         '<div class="po-price">' + opt.price + '</div>' +
@@ -410,32 +471,39 @@ async function confirmPlanModal() {
   if (!modal) return;
   var storeId = Number(modal.dataset.storeId);
   var plan = modal.dataset.plan;
-  var days;
+  var days, amount;
 
   if (plan === "starter") {
     var selected = modal.querySelector(".plan-option.selected");
     days = selected ? Number(selected.dataset.days) : 30;
+    amount = selected ? Number(selected.dataset.amount) : 980;
   } else {
     var months = Number(document.getElementById("plan-months").value) || 1;
     if (months < 1) months = 1;
     days = months * 30;
+    amount = months * 1580;
   }
 
   var expiresAt = new Date(Date.now() + days * 86400000).toISOString();
   closePlanModal();
-  await updateStore(storeId, plan, expiresAt);
+  await updateStore(storeId, plan, expiresAt, amount, days);
 }
 
-async function updateStore(storeId, action, planExpiresAt) {
+async function updateStore(storeId, action, planExpiresAt, amount, days) {
   var body = { action: action };
   if (planExpiresAt) body.plan_expires_at = planExpiresAt;
+  if (typeof amount === "number") body.amount = amount;
+  if (typeof days === "number") body.days = days;
   var res = await fetch("/api/platform-admin/stores/" + storeId, {
     method: "PATCH",
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
     body: JSON.stringify(body),
   });
   var data = await res.json();
-  if (data.ok) await loadStores();
+  if (data.ok) {
+    await loadStores();
+    await loadRevenueLogs();
+  }
   else alert(data.error || "操作失敗");
 }
 
@@ -500,6 +568,91 @@ async function savePlanLimits() {
     }),
   });
   if ((await res.json()).ok) { var t = document.getElementById("plan-limits-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000); }
+}
+
+// Revenue log functions
+function initMonthSelector() {
+  var sel = document.getElementById("log-month");
+  if (!sel) return;
+  var now = new Date();
+  sel.innerHTML = "";
+  for (var i = 0; i < 12; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var val = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    var label = d.getFullYear() + " 年 " + (d.getMonth() + 1) + " 月";
+    sel.innerHTML += '<option value="' + val + '">' + label + '</option>';
+  }
+}
+
+async function loadRevenueLogs() {
+  var month = document.getElementById("log-month")?.value || "";
+  var res = await fetch("/api/platform-admin/revenue-logs?month=" + month, { headers: { authorization: "Bearer " + adminToken } });
+  var data = await res.json();
+  if (data.ok) {
+    allLogs = data.logs || [];
+    renderLogs();
+  }
+}
+
+function filterLogs(status, btn) {
+  logFilter = status;
+  document.querySelectorAll("#log-filters .log-filter-btn").forEach(function(b) { b.classList.remove("active"); });
+  btn.classList.add("active");
+  renderLogs();
+}
+
+var STATUS_LABELS = { normal: "正常", pending: "待處理", cancelled: "取消" };
+
+function renderLogs() {
+  var filtered = logFilter === "all" ? allLogs : allLogs.filter(function(l) { return l.status === logFilter; });
+
+  // Calculate revenue: normal logs count full amount, pending/cancelled = 0
+  var totalRevenue = 0;
+  allLogs.forEach(function(l) { if (l.status === "normal") totalRevenue += l.amount; });
+  document.getElementById("stat-revenue").textContent = "NT$" + totalRevenue.toLocaleString();
+
+  var monthLabel = document.getElementById("log-month")?.selectedOptions?.[0]?.textContent || "本月";
+  document.getElementById("stat-revenue-label").textContent = monthLabel + " 總收入";
+
+  var list = document.getElementById("log-list");
+  if (!list) return;
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="font-size:13px;color:#888;text-align:center;padding:20px;">此期間沒有紀錄</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(function(l) {
+    var effectiveAmount = l.status === "normal" ? l.amount : 0;
+    var amountClass = l.status !== "normal" ? " zero" : "";
+    var dateStr = new Date(l.created_at).toLocaleDateString("zh-TW");
+    var planLabel = l.plan === "starter" ? "Starter" : "Pro";
+    var statusOpts = ["normal", "pending", "cancelled"].map(function(s) {
+      return '<option value="' + s + '"' + (l.status === s ? " selected" : "") + '>' + STATUS_LABELS[s] + '</option>';
+    }).join("");
+
+    return '<div class="log-card">' +
+      '<div class="log-info">' +
+        '<div class="log-name">' + (l.store_name || l.store_email) + '</div>' +
+        '<div class="log-meta">' + planLabel + ' · ' + l.days + ' 天 · ' + dateStr + '</div>' +
+      '</div>' +
+      '<select class="log-status-' + l.status + '" onchange="updateLogStatus(' + l.id + ', this.value)">' + statusOpts + '</select>' +
+      '<div class="log-amount' + amountClass + '">NT$' + l.amount.toLocaleString() + '</div>' +
+    '</div>';
+  }).join("");
+}
+
+async function updateLogStatus(logId, status) {
+  var res = await fetch("/api/platform-admin/revenue-logs/" + logId, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ status: status }),
+  });
+  var data = await res.json();
+  if (data.ok) {
+    var log = allLogs.find(function(l) { return l.id === logId; });
+    if (log) log.status = status;
+    renderLogs();
+  } else alert(data.error || "操作失敗");
 }
 
 if (adminToken) showDashboard();

@@ -42,6 +42,38 @@ const PLATFORM_ADMIN_EMAILS = [
   "aistorm0910@gmail.com",
 ];
 
+async function ensureLogTable(db: D1DatabaseLike): Promise<void> {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS plan_change_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      store_id INTEGER NOT NULL,
+      store_name TEXT NOT NULL DEFAULT '',
+      store_email TEXT NOT NULL DEFAULT '',
+      plan TEXT NOT NULL,
+      days INTEGER NOT NULL,
+      amount INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'normal',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `).run();
+}
+
+async function getTestStoreIds(db: D1DatabaseLike): Promise<number[]> {
+  const row = await db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'test_store_ids'")
+    .first<{ value: string }>();
+  if (!row?.value) return [];
+  try { return JSON.parse(row.value); } catch { return []; }
+}
+
+async function setTestStoreIds(db: D1DatabaseLike, ids: number[]): Promise<void> {
+  await db
+    .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'test_store_ids', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+    .bind(JSON.stringify(ids))
+    .run();
+}
+
 export async function handlePlatformAdmin(
   request: Request,
   db: D1DatabaseLike,
@@ -108,13 +140,33 @@ export async function handlePlatformAdmin(
     return json({ ok: true, stores: stores.results });
   }
 
+  // Toggle test member
+  const testMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/test$/);
+  if (testMatch && request.method === "POST") {
+    const storeId = parseInt(testMatch[1], 10);
+    const ids = await getTestStoreIds(db);
+    const idx = ids.indexOf(storeId);
+    if (idx >= 0) {
+      ids.splice(idx, 1);
+    } else {
+      ids.push(storeId);
+      // Set test members to pro plan with no expiry
+      await db
+        .prepare("UPDATE stores SET plan = 'pro', plan_expires_at = NULL, updated_at = datetime('now') WHERE id = ?")
+        .bind(storeId)
+        .run();
+    }
+    await setTestStoreIds(db, ids);
+    return json({ ok: true, isTest: idx < 0 });
+  }
+
   // Update a store
   const storeMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)$/);
   if (storeMatch && request.method === "PATCH") {
     const storeId = parseInt(storeMatch[1], 10);
-    let body: { action?: string; plan_expires_at?: string };
+    let body: { action?: string; plan_expires_at?: string; amount?: number; days?: number };
     try {
-      body = (await request.json()) as { action?: string; plan_expires_at?: string };
+      body = (await request.json()) as { action?: string; plan_expires_at?: string; amount?: number; days?: number };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
@@ -133,6 +185,23 @@ export async function handlePlatformAdmin(
           .prepare("UPDATE stores SET plan = ?, plan_expires_at = ?, updated_at = datetime('now') WHERE id = ?")
           .bind(action, expiresAt, storeId)
           .run();
+
+        // Auto-log revenue (skip test members and free plan)
+        if (action !== "free" && typeof body.amount === "number" && body.amount > 0) {
+          const testIds = await getTestStoreIds(db);
+          if (!testIds.includes(storeId)) {
+            await ensureLogTable(db);
+            const store = await db
+              .prepare("SELECT name, owner_email FROM stores WHERE id = ?")
+              .bind(storeId)
+              .first<{ name: string; owner_email: string }>();
+            await db
+              .prepare("INSERT INTO plan_change_logs (store_id, store_name, store_email, plan, days, amount) VALUES (?, ?, ?, ?, ?, ?)")
+              .bind(storeId, store?.name || "", store?.owner_email || "", action, body.days || 30, body.amount)
+              .run();
+          }
+        }
+
         return json({ ok: true, plan: action, plan_expires_at: expiresAt });
       }
       case "deactivate":
@@ -150,6 +219,50 @@ export async function handlePlatformAdmin(
       default:
         return json({ ok: false, error: "Unknown action" }, 400);
     }
+  }
+
+  // Revenue logs: list
+  if (url.pathname === "/api/platform-admin/revenue-logs" && request.method === "GET") {
+    await ensureLogTable(db);
+    const month = url.searchParams.get("month"); // format: 2026-04
+    let sql = "SELECT * FROM plan_change_logs";
+    const binds: string[] = [];
+    if (month) {
+      sql += " WHERE created_at LIKE ?";
+      binds.push(month + "%");
+    }
+    sql += " ORDER BY created_at DESC LIMIT 500";
+    const stmt = binds.length > 0 ? db.prepare(sql).bind(...binds) : db.prepare(sql);
+    const result = await stmt.all();
+    return json({ ok: true, logs: result.results });
+  }
+
+  // Revenue logs: update status
+  const logMatch = url.pathname.match(/^\/api\/platform-admin\/revenue-logs\/(\d+)$/);
+  if (logMatch && request.method === "PATCH") {
+    await ensureLogTable(db);
+    const logId = parseInt(logMatch[1], 10);
+    let body: { status?: string };
+    try {
+      body = (await request.json()) as { status?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    const validStatuses = ["normal", "pending", "cancelled"];
+    if (!body.status || !validStatuses.includes(body.status)) {
+      return json({ ok: false, error: "Invalid status" }, 400);
+    }
+    await db
+      .prepare("UPDATE plan_change_logs SET status = ?, updated_at = datetime('now') WHERE id = ?")
+      .bind(body.status, logId)
+      .run();
+    return json({ ok: true });
+  }
+
+  // Get test store IDs
+  if (url.pathname === "/api/platform-admin/test-stores" && request.method === "GET") {
+    const ids = await getTestStoreIds(db);
+    return json({ ok: true, testStoreIds: ids });
   }
 
   // Get platform API keys
