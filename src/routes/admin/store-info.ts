@@ -102,22 +102,20 @@ export async function handleDisplaySettings(
   }
 
   if (request.method === "POST") {
-    let body: { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; storeRules?: string; shippingMethods?: unknown[] };
+    let body: Record<string, unknown>;
     try {
-      body = (await request.json()) as { viewMode?: string; promoEnabled?: boolean; promoFilters?: unknown[]; checkoutMessage?: string; storeRules?: string; shippingMethods?: unknown[] };
+      body = (await request.json()) as Record<string, unknown>;
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
-    const settings: Record<string, unknown> = {
-      viewMode: body.viewMode || "2card",
-      promoEnabled: body.promoEnabled !== false,
-      promoFilters: body.promoFilters || ["all", "350", "450", "550"],
-      checkoutMessage: body.checkoutMessage || "",
-      storeRules: body.storeRules || "",
-    };
-    if (body.shippingMethods !== undefined) {
-      settings.shippingMethods = body.shippingMethods;
-    }
+    // Merge with existing settings to preserve fields not in this request
+    const existingRow = await ctx.db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+      .bind(ctx.storeId)
+      .first<{ value: string }>();
+    let existing: Record<string, unknown> = {};
+    try { if (existingRow?.value) existing = JSON.parse(existingRow.value); } catch {}
+    const settings: Record<string, unknown> = { ...existing, ...body };
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
       .bind(ctx.storeId, JSON.stringify(settings))
