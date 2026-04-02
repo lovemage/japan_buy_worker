@@ -182,7 +182,8 @@ export default {
 
     // ── Redirect root-level store pages to tenant path when returnTo hints the store ──
     if ((url.pathname === "/product" || url.pathname === "/product.html" ||
-         url.pathname === "/request.html" || url.pathname === "/success.html") &&
+         url.pathname === "/request" || url.pathname === "/request.html" ||
+         url.pathname === "/success" || url.pathname === "/success.html") &&
         url.searchParams.get("returnTo")) {
       const returnTo = url.searchParams.get("returnTo") || "";
       const storeMatch = returnTo.match(/^\/s\/([a-z0-9][a-z0-9-]*)/);
