@@ -179,7 +179,7 @@ body {
 
 /* Header layout */
 .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-.header-left { flex: 1; min-width: 0; }
+.header-left { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
 .header-right { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 12px; }
 
 /* Store Logo (header) */
