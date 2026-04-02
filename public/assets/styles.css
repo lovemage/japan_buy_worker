@@ -995,6 +995,7 @@ select:disabled {
 
 /* --- Main Image: zoom on hover --- */
 .detail-main-wrap {
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -2250,6 +2251,7 @@ select:disabled {
 }
 
 /* Loading Overlay */
+/* ── Loading overlay (centered bar) ── */
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -2259,89 +2261,45 @@ select:disabled {
   background: var(--bg-color);
   transition: opacity 500ms var(--ease-out-quart);
 }
-
 .loading-overlay.is-hiding {
   opacity: 0;
   pointer-events: none;
 }
-
 .loading-overlay.hidden {
   display: none;
 }
 
-.loading-logo {
-  width: min(420px, 80vw);
-  height: auto;
-  display: block;
+/* ── Shared loading bar ── */
+.loading-bar-wrap {
+  width: min(200px, 50vw);
+  height: 3px;
+  background: var(--line, #e5e0d6);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.loading-bar {
+  width: 40%;
+  height: 100%;
+  background: var(--primary-color, #8A9A5B);
+  border-radius: 2px;
+  animation: loading-slide 1.2s ease-in-out infinite;
+}
+@keyframes loading-slide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(200%); }
+  100% { transform: translateX(-100%); }
 }
 
-.loading-letter {
-  font-family: "Zen Maru Gothic", sans-serif;
-  font-size: 100px;
-  font-weight: 700;
-  fill: var(--primary-color);
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: letter-bounce 1.6s ease-in-out infinite;
+/* ── Image loading bar (product detail) ── */
+.detail-main-wrap .loading-bar-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  border-radius: 0;
 }
-
-.loading-subtitle {
-  font-family: "Zen Maru Gothic", sans-serif;
-  font-size: 32px;
-  font-weight: 500;
-  fill: var(--accent-warm);
-  text-anchor: middle;
-  letter-spacing: 0.3em;
-  animation: subtitle-pulse 2s ease-in-out infinite;
-}
-
-.loading-dot {
-  fill: var(--accent-gold);
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: dot-float 2s ease-in-out infinite;
-}
-
-.loading-sparkle {
-  fill: var(--accent-gold);
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: sparkle-twinkle 2.4s ease-in-out infinite;
-}
-
-.loading-hint {
-  margin-top: 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  text-align: center;
-  animation: hint-fade 2s ease-in-out infinite;
-}
-
-@keyframes letter-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-@keyframes subtitle-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes dot-float {
-  0%, 100% { transform: translateY(0); opacity: 0.7; }
-  50% { transform: translateY(-8px); opacity: 1; }
-}
-
-@keyframes sparkle-twinkle {
-  0%, 100% { transform: scale(0.6); opacity: 0.3; }
-  50% { transform: scale(1.1); opacity: 1; }
-}
-
-@keyframes hint-fade {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
+.detail-main-wrap.is-loaded .loading-bar-wrap { display: none; }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {

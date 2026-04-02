@@ -51,21 +51,9 @@
     })();
     </script>
     <div id="loading-overlay" class="loading-overlay" aria-live="polite" aria-label="載入中">
-      <svg class="loading-logo" viewBox="0 0 620 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VOVOSnap">
-        <text class="loading-letter" x="10" y="130" style="animation-delay: 0s">V</text>
-        <text class="loading-letter" x="85" y="130" style="animation-delay: 0.07s">O</text>
-        <text class="loading-letter" x="170" y="130" style="animation-delay: 0.14s">V</text>
-        <text class="loading-letter" x="245" y="130" style="animation-delay: 0.21s">O</text>
-        <text class="loading-letter" x="330" y="130" style="animation-delay: 0.28s;fill:#6366f1;">S</text>
-        <text class="loading-letter" x="400" y="130" style="animation-delay: 0.35s;fill:#6366f1;">n</text>
-        <text class="loading-letter" x="465" y="130" style="animation-delay: 0.42s;fill:#6366f1;">a</text>
-        <text class="loading-letter" x="530" y="130" style="animation-delay: 0.49s;fill:#6366f1;">p</text>
-        <circle class="loading-dot" cx="590" cy="55" r="5" style="animation-delay: 0.2s" />
-        <circle class="loading-dot" cx="575" cy="40" r="3" style="animation-delay: 0.4s" />
-        <path class="loading-sparkle" d="M50 30 L53 40 L63 43 L53 46 L50 56 L47 46 L37 43 L47 40Z" style="animation-delay: 0.5s" />
-        <text class="loading-subtitle" x="310" y="175">📸</text>
-      </svg>
-      <p class="loading-hint">商品載入中</p>
+      <div class="loading-bar-wrap">
+        <div class="loading-bar"></div>
+      </div>
     </div>
 
     <header class="page-header">
@@ -196,6 +184,9 @@
     <script>
     (function() {
       var base = window.__API_BASE || "";
+      var slug = window.__STORE_SLUG || "default";
+      var adKey = "vovosnap-popup-seen-" + slug;
+      if (localStorage.getItem(adKey)) return;
       fetch(base + "/api/admin/popup-ads").then(function(r){return r.json()}).then(function(d) {
         if (!d.ok || !d.images || !d.images.length) return;
         var images = d.images;
@@ -212,9 +203,11 @@
           }, interval);
         }
       });
+      window._popupAdKey = adKey;
     })();
     function closePopupAd() {
       document.getElementById("popup-ad-overlay").style.display = "none";
+      if (window._popupAdKey) localStorage.setItem(window._popupAdKey, "1");
     }
     </script>
     <script type="module" src="/assets/app-list.js"></script>

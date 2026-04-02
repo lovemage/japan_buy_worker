@@ -36,9 +36,12 @@ function renderProduct(item, pricing) {
   const images = Array.isArray(item.gallery) && item.gallery.length > 0 ? item.gallery : [mainImage];
 
   const main = document.getElementById("detail-main-image");
+  const mainWrap = document.getElementById("detail-main-wrap");
   if (main && images[0]) {
     main.src = images[0];
     main.alt = title;
+    main.addEventListener("load", () => { if (mainWrap) mainWrap.classList.add("is-loaded"); }, { once: true });
+    main.addEventListener("error", () => { if (mainWrap) mainWrap.classList.add("is-loaded"); }, { once: true });
   }
 
   const gallery = document.getElementById("detail-gallery");
