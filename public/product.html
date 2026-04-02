@@ -59,15 +59,15 @@
     })();
     </script>
     <header class="page-header">
-      <div class="container">
-        <img id="store-logo" class="store-logo" style="display:none;" alt="商店 Logo" />
-        <a id="detail-back-link" class="button secondary" href="/store.html">← 返回商店</a>
+      <div class="container sub-header">
+        <a id="detail-back-link" class="sub-header__back" href="/store.html">← 返回商店</a>
+        <img id="store-logo" class="sub-header__logo" style="display:none;" alt="商店 Logo" />
       </div>
     </header>
     <script>
     (function(){
       var ds = window.__DISPLAY_SETTINGS || {};
-      if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = "block"; } }
+      if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = ""; } }
       if (ds.storeRules) {
         document.addEventListener("DOMContentLoaded", function() {
           var box = document.getElementById("store-rules-box");

@@ -49,13 +49,13 @@
     })();
     </script>
     <header class="page-header">
-      <div class="container">
-        <img id="store-logo" class="store-logo" style="display:none;" alt="商店 Logo" />
-        <a class="btn-pill secondary" id="back-to-store" href="/store.html">← 返回商店</a>
+      <div class="container sub-header">
+        <a class="sub-header__back" id="back-to-store" href="/store.html">← 返回商店</a>
+        <img id="store-logo" class="sub-header__logo" style="display:none;" alt="商店 Logo" />
       </div>
     </header>
     <script>
-    (function(){ var ds = window.__DISPLAY_SETTINGS || {}; if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = "block"; } } })();
+    (function(){ var ds = window.__DISPLAY_SETTINGS || {}; if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = ""; } } })();
     </script>
 
     <main class="container">

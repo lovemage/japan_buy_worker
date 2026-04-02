@@ -192,17 +192,33 @@ body {
   background: #fff;
 }
 
-/* Store Logo (other pages - product, request) */
-.store-logo {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 44px;
-  height: 44px;
+/* Sub-page header (product, request) */
+.sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sub-header__back {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color) !important;
+  background: var(--bg-color);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 150ms ease;
+}
+.sub-header__back:hover { background: var(--line); }
+.sub-header__logo {
+  width: 40px;
+  height: 40px;
   object-fit: contain;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: #fff;
+  flex-shrink: 0;
 }
 
 /* Hamburger button */
