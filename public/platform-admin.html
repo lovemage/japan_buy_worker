@@ -91,6 +91,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-modal .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .plan-modal .btn-confirm { background: #1a1a1a; color: #fff; }
 .plan-modal .btn-cancel { background: #f3f4f6; color: #666; }
+.plan-option { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; }
+.plan-option:hover { border-color: #6366f1; background: #faf5ff; }
+.plan-option.selected { border-color: #6366f1; background: #ede9fe; }
+.plan-option .po-radio { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.plan-option.selected .po-radio { border-color: #6366f1; }
+.plan-option.selected .po-radio::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #6366f1; }
+.plan-option .po-info { flex: 1; }
+.plan-option .po-title { font-size: 14px; font-weight: 600; }
+.plan-option .po-sub { font-size: 11px; color: #888; }
+.plan-option .po-price { font-size: 14px; font-weight: 700; color: #1a1a1a; white-space: nowrap; }
 
 /* Expires label */
 .member-expires { font-size: 11px; margin-top: 4px; }
@@ -333,10 +343,31 @@ function renderStores(stores) {
   }).join("");
 }
 
+var STARTER_OPTIONS = [
+  { days: 30, label: "1 個月", sub: "30 天", price: "NT$980" },
+  { days: 180, label: "6 個月", sub: "180 天", price: "NT$880/月" },
+  { days: 390, label: "12 個月", sub: "360 天 + 贈 30 天", price: "NT$680/月" },
+];
+
 function showPlanModal(storeId, plan) {
   var store = allStores.find(function(s) { return s.id === storeId; });
   var name = store ? store.name || store.owner_email : "會員";
   var label = plan === "starter" ? "Starter" : "Pro";
+
+  var optionsHtml = "";
+  if (plan === "starter") {
+    optionsHtml = STARTER_OPTIONS.map(function(opt, i) {
+      return '<div class="plan-option' + (i === 0 ? " selected" : "") + '" data-days="' + opt.days + '" onclick="selectPlanOption(this)">' +
+        '<div class="po-radio"></div>' +
+        '<div class="po-info"><div class="po-title">' + opt.label + '</div><div class="po-sub">' + opt.sub + '</div></div>' +
+        '<div class="po-price">' + opt.price + '</div>' +
+      '</div>';
+    }).join("");
+  } else {
+    optionsHtml =
+      '<label>增加幾個月（1 個月 = 30 天）</label>' +
+      '<input type="number" id="plan-months" min="1" max="36" value="1" />';
+  }
 
   var backdrop = document.createElement("div");
   backdrop.className = "plan-modal-backdrop";
@@ -344,8 +375,7 @@ function showPlanModal(storeId, plan) {
     '<div class="plan-modal">' +
       '<h3>設定 ' + label + ' 方案</h3>' +
       '<p class="meta">會員：' + name + '</p>' +
-      '<label>增加幾個月（1 個月 = 30 天）</label>' +
-      '<input type="number" id="plan-months" min="1" max="36" value="1" />' +
+      optionsHtml +
       '<div class="modal-actions">' +
         '<button class="btn-cancel" onclick="closePlanModal()">取消</button>' +
         '<button class="btn-confirm" onclick="confirmPlanModal()">確認</button>' +
@@ -358,8 +388,16 @@ function showPlanModal(storeId, plan) {
     if (e.target === backdrop) closePlanModal();
   });
   document.body.appendChild(backdrop);
-  document.getElementById("plan-months").focus();
-  document.getElementById("plan-months").select();
+  if (plan !== "starter") {
+    document.getElementById("plan-months").focus();
+    document.getElementById("plan-months").select();
+  }
+}
+
+function selectPlanOption(el) {
+  var modal = el.closest(".plan-modal");
+  modal.querySelectorAll(".plan-option").forEach(function(o) { o.classList.remove("selected"); });
+  el.classList.add("selected");
 }
 
 function closePlanModal() {
@@ -372,10 +410,18 @@ async function confirmPlanModal() {
   if (!modal) return;
   var storeId = Number(modal.dataset.storeId);
   var plan = modal.dataset.plan;
-  var months = Number(document.getElementById("plan-months").value) || 1;
-  if (months < 1) months = 1;
+  var days;
 
-  var expiresAt = new Date(Date.now() + months * 30 * 86400000).toISOString();
+  if (plan === "starter") {
+    var selected = modal.querySelector(".plan-option.selected");
+    days = selected ? Number(selected.dataset.days) : 30;
+  } else {
+    var months = Number(document.getElementById("plan-months").value) || 1;
+    if (months < 1) months = 1;
+    days = months * 30;
+  }
+
+  var expiresAt = new Date(Date.now() + days * 86400000).toISOString();
   closePlanModal();
   await updateStore(storeId, plan, expiresAt);
 }
