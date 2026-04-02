@@ -80,6 +80,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .nav-item.active { color: #6366f1; }
 .nav-item svg { width: 22px; height: 22px; }
 
+/* Plan month modal */
+.plan-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.plan-modal { background: #fff; border-radius: 12px; padding: 24px; width: 320px; max-width: 90vw; }
+.plan-modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+.plan-modal .meta { font-size: 12px; color: #888; margin-bottom: 12px; }
+.plan-modal label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 6px; }
+.plan-modal input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; text-align: center; margin-bottom: 12px; }
+.plan-modal .modal-actions { display: flex; gap: 8px; }
+.plan-modal .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.plan-modal .btn-confirm { background: #1a1a1a; color: #fff; }
+.plan-modal .btn-cancel { background: #f3f4f6; color: #666; }
+
+/* Expires label */
+.member-expires { font-size: 11px; margin-top: 4px; }
+.member-expires .active { color: #166534; }
+.member-expires .expired { color: #991b1b; }
+
 @media (max-width: 640px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
   .card .row { grid-template-columns: 1fr; }
@@ -277,18 +294,27 @@ function filterStores(filter, btn) {
   else renderStores(allStores.filter(s => s.plan === filter));
 }
 
+function formatExpires(expiresAt) {
+  if (!expiresAt) return '';
+  var exp = new Date(expiresAt);
+  var now = new Date();
+  var dateStr = exp.toLocaleDateString("zh-TW");
+  if (exp < now) return '<div class="member-expires"><span class="expired">已到期 ' + dateStr + '</span></div>';
+  var days = Math.ceil((exp - now) / 86400000);
+  return '<div class="member-expires"><span class="active">到期：' + dateStr + '（剩 ' + days + ' 天）</span></div>';
+}
+
 function renderStores(stores) {
   document.getElementById("member-list").innerHTML = stores.map(s => {
-    const planClass = "badge-" + s.plan;
-    const statusBadge = s.onboarding_step !== "complete"
+    var planClass = "badge-" + s.plan;
+    var statusBadge = s.onboarding_step !== "complete"
       ? '<span class="badge badge-onboarding">' + s.onboarding_step + '</span>'
       : s.is_active ? '<span class="badge badge-active">啟用</span>' : '<span class="badge badge-inactive">停用</span>';
-    const created = new Date(s.created_at).toLocaleDateString("zh-TW");
-    const expires = s.plan_expires_at ? new Date(s.plan_expires_at).toLocaleDateString("zh-TW") : "";
+    var created = new Date(s.created_at).toLocaleDateString("zh-TW");
 
     return '<div class="member-card">' +
       '<div class="member-top">' +
-        '<div><div class="member-name">' + s.name + '</div><div class="member-email">' + s.owner_email + '</div></div>' +
+        '<div><div class="member-name">' + s.name + '</div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
         '<div><span class="badge ' + planClass + '">' + s.plan.toUpperCase() + '</span> ' + statusBadge + '</div>' +
       '</div>' +
       '<div class="member-meta">' +
@@ -296,25 +322,73 @@ function renderStores(stores) {
         '<span>📦 ' + (s.product_count || 0) + ' 商品</span>' +
         '<span>📋 ' + (s.order_count || 0) + ' 訂單</span>' +
         '<span>📅 ' + created + '</span>' +
-        (expires ? '<span>⏰ ' + expires + '</span>' : '') +
       '</div>' +
       '<div class="member-actions">' +
         '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
-        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'starter\')">Starter</button>' +
-        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'pro\')">Pro</button>' +
+        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'starter\')">Starter</button>' +
+        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
         (s.is_active ? '<button onclick="updateStore(' + s.id + ',\'deactivate\')" style="color:#ef4444;">停用</button>' : '<button onclick="updateStore(' + s.id + ',\'activate\')" style="color:#22c55e;">啟用</button>') +
       '</div>' +
     '</div>';
   }).join("");
 }
 
-async function updateStore(storeId, action) {
-  const res = await fetch("/api/platform-admin/stores/" + storeId, {
+function showPlanModal(storeId, plan) {
+  var store = allStores.find(function(s) { return s.id === storeId; });
+  var name = store ? store.name || store.owner_email : "會員";
+  var label = plan === "starter" ? "Starter" : "Pro";
+
+  var backdrop = document.createElement("div");
+  backdrop.className = "plan-modal-backdrop";
+  backdrop.innerHTML =
+    '<div class="plan-modal">' +
+      '<h3>設定 ' + label + ' 方案</h3>' +
+      '<p class="meta">會員：' + name + '</p>' +
+      '<label>增加幾個月（1 個月 = 30 天）</label>' +
+      '<input type="number" id="plan-months" min="1" max="36" value="1" />' +
+      '<div class="modal-actions">' +
+        '<button class="btn-cancel" onclick="closePlanModal()">取消</button>' +
+        '<button class="btn-confirm" onclick="confirmPlanModal()">確認</button>' +
+      '</div>' +
+    '</div>';
+
+  backdrop.dataset.storeId = storeId;
+  backdrop.dataset.plan = plan;
+  backdrop.addEventListener("click", function(e) {
+    if (e.target === backdrop) closePlanModal();
+  });
+  document.body.appendChild(backdrop);
+  document.getElementById("plan-months").focus();
+  document.getElementById("plan-months").select();
+}
+
+function closePlanModal() {
+  var modal = document.querySelector(".plan-modal-backdrop");
+  if (modal) modal.remove();
+}
+
+async function confirmPlanModal() {
+  var modal = document.querySelector(".plan-modal-backdrop");
+  if (!modal) return;
+  var storeId = Number(modal.dataset.storeId);
+  var plan = modal.dataset.plan;
+  var months = Number(document.getElementById("plan-months").value) || 1;
+  if (months < 1) months = 1;
+
+  var expiresAt = new Date(Date.now() + months * 30 * 86400000).toISOString();
+  closePlanModal();
+  await updateStore(storeId, plan, expiresAt);
+}
+
+async function updateStore(storeId, action, planExpiresAt) {
+  var body = { action: action };
+  if (planExpiresAt) body.plan_expires_at = planExpiresAt;
+  var res = await fetch("/api/platform-admin/stores/" + storeId, {
     method: "PATCH",
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
-    body: JSON.stringify({ action }),
+    body: JSON.stringify(body),
   });
-  const data = await res.json();
+  var data = await res.json();
   if (data.ok) await loadStores();
   else alert(data.error || "操作失敗");
 }
