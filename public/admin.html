@@ -34,7 +34,7 @@
     .promo-row .del { flex-shrink: 0; width: 28px; height: 28px; padding: 0; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; color: #ef4444; line-height: 28px; text-align: center; }
     .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .toggle-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
-    .toggle-label input { width: 18px; height: 18px; }
+    .toggle-label input[type="checkbox"] { width: 18px; height: 18px; margin: 0; flex-shrink: 0; }
     .ad-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
     .ad-thumb { position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid #eee; }
     .ad-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -288,7 +288,6 @@
         <button class="tab-sub-btn" data-subtab="display">商店</button>
         <button class="tab-sub-btn" data-subtab="pricing">匯率</button>
         <button class="tab-sub-btn" data-subtab="shipping">運輸</button>
-        <button class="tab-sub-btn" data-subtab="danger">資料</button>
       </div>
 
       <!-- 帳號 -->
@@ -413,23 +412,7 @@
         </div>
       </div>
 
-      <div class="admin-sub-panel hidden" data-subtab-panel="danger">
-        <div class="admin-form-card">
-          <h3 class="danger-title">危險操作</h3>
-          <p class="meta">以下操作不可復原，需要輸入管理員密碼確認。</p>
-          <div class="danger-action">
-            <p><strong>清空同步商品</strong></p>
-            <p class="meta">刪除所有從網站同步的商品資料（source_site 非 manual 的商品）</p>
-            <button id="btn-clear-sync" class="button danger-btn" type="button">清空同步商品</button>
-          </div>
-          <div class="danger-action">
-            <p><strong>清空拍照商品</strong></p>
-            <p class="meta">刪除所有手動上架的商品資料及 R2 中的照片</p>
-            <button id="btn-clear-manual" class="button danger-btn" type="button">清空拍照商品</button>
-          </div>
-          <p id="danger-status" class="meta"></p>
-        </div>
-      </div>
+      <!-- danger tab removed -->
     </section>
   </main>
 
