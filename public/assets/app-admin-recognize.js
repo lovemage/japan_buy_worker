@@ -19,6 +19,7 @@ function updateButtons() {
   if (quickBtn) quickBtn.disabled = !hasImages;
   const count = document.getElementById("photo-count");
   if (count) count.textContent = `已選 ${selectedImages.length} / ${window.__MAX_IMAGES || 3} 張`;
+  if (typeof updateHint === "function") updateHint();
 }
 
 function compressImage(file) {
@@ -254,9 +255,23 @@ async function confirmListing() {
   }
 }
 
+function updateHint() {
+  const hint = document.getElementById("recognize-hint");
+  if (hint) {
+    if (selectedImages.length > 0) {
+      hint.classList.remove("hidden");
+    } else {
+      hint.classList.add("hidden");
+    }
+  }
+}
+
 function initPhotoRecognize() {
   const input = document.getElementById("photo-input");
   if (input) input.addEventListener("change", onPhotosSelected);
+
+  const cameraInput = document.getElementById("photo-input-camera");
+  if (cameraInput) cameraInput.addEventListener("change", onPhotosSelected);
 
   const quickBtn = document.getElementById("btn-recognize-quick");
   if (quickBtn) quickBtn.addEventListener("click", doRecognize);

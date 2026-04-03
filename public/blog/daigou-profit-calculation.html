@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>代購利潤怎麼算？業餘與專業代購的定價策略完整教學｜vovosnap</title>
+<meta name="description" content="代購利潤怎麼抓？業餘代購建議 10%-20%，專業代購要算進匯率差、代購費和機票飯店成本。用實際數字帶你算一次，搞懂代購定價的邏輯。" />
+<meta property="og:title" content="代購利潤怎麼算？業餘與專業代購的定價策略" />
+<meta property="og:description" content="業餘代購建議 10%-20%，專業代購要算進匯率差和成本。實際數字帶你算一次。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://vovosnap.com/blog/daigou-profit-calculation.html" />
+<meta property="og:image" content="https://vovosnap.com/assets/images/blog/hero-daigou-profit.webp" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://vovosnap.com/assets/images/blog/hero-daigou-profit.webp" />
+<meta name="twitter:title" content="代購利潤怎麼算？業餘與專業代購的定價策略" />
+<meta name="twitter:description" content="業餘代購建議 10%-20%，專業代購要算進匯率差和成本。實際數字帶你算一次。" />
+<link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
+<link rel="canonical" href="https://vovosnap.com/blog/daigou-profit-calculation.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap">
+<style>
+:root {
+  --brand: #8A9A5B;
+  --brand-light: #EEF1E6;
+  --brand-dark: #768a4a;
+  --accent: #9E5F38;
+  --text: #3D3A35;
+  --text-secondary: #7A756D;
+  --text-muted: #A09A90;
+  --bg: #F9F7F1;
+  --bg-alt: #F3F0E8;
+  --bg-card: #FFFEFA;
+  --border: #E5E0D6;
+  --success: #8A9A5B;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+.nav-actions { display: flex; gap: 8px; align-items: center; }
+.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
+.nav-link:hover { background: var(--bg-alt); color: var(--text); }
+.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-fill { background: var(--brand); color: #fff; }
+.btn-fill:hover { background: var(--brand-dark); }
+
+.article-wrapper { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+.article-meta { margin-bottom: 32px; }
+.article-breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.article-breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+.article-breadcrumb a:hover { color: var(--brand); }
+.article-header { margin-bottom: 40px; }
+.article-header h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--text); }
+.article-header .lead { font-size: 17px; line-height: 1.8; color: var(--text-secondary); }
+.article-date { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+
+.article-content h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); color: var(--text); letter-spacing: -0.3px; }
+.article-content h3 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; color: var(--text); }
+.article-content p { font-size: 16px; line-height: 1.9; margin-bottom: 16px; color: var(--text); }
+.article-content ul, .article-content ol { margin: 12px 0 20px 24px; }
+.article-content li { font-size: 16px; line-height: 1.8; margin-bottom: 8px; color: var(--text); }
+.article-content strong { color: var(--text); font-weight: 700; }
+.article-content a { color: var(--brand-dark); text-decoration: underline; text-underline-offset: 2px; }
+.article-content a:hover { color: var(--brand); }
+
+.callout { background: var(--brand-light); border-left: 4px solid var(--brand); border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 24px 0; }
+.callout p { margin-bottom: 0; font-size: 15px; }
+.callout strong { color: var(--brand-dark); }
+.callout-warn { background: #FFF8ED; border-left-color: var(--accent); }
+.callout-warn strong { color: var(--accent); }
+
+.checklist { list-style: none; margin: 16px 0 24px 0; padding: 0; }
+.checklist li { padding: 8px 0 8px 28px; position: relative; font-size: 15px; line-height: 1.7; color: var(--text); }
+.checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--brand); font-weight: 700; }
+
+/* ── Calculation table ── */
+.calc-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+.calc-table th { background: var(--bg-alt); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
+.calc-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.calc-table tr:last-child td { border-bottom: 2px solid var(--brand); font-weight: 700; }
+.calc-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.calc-table .highlight { background: var(--brand-light); }
+
+/* ── Compare box ── */
+.compare-box { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.compare-col { padding: 20px; border-radius: var(--radius); }
+.compare-col.before { background: #FFF3F0; border: 1px solid #F0D0C8; }
+.compare-col.after { background: var(--brand-light); border: 1px solid #C8D6A8; }
+.compare-col h4 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.compare-col.before h4 { color: #C0614A; }
+.compare-col.after h4 { color: var(--brand-dark); }
+.compare-col ul { list-style: none; padding: 0; margin: 0; }
+.compare-col li { font-size: 14px; line-height: 1.7; padding: 3px 0; }
+@media (max-width: 540px) { .compare-box { grid-template-columns: 1fr; } }
+
+.cta-box { background: linear-gradient(135deg, var(--brand-light) 0%, #F5F0E6 100%); border: 1.5px solid var(--brand); border-radius: var(--radius); padding: 32px; margin: 40px 0; text-align: center; }
+.cta-box h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 8px; color: var(--text); }
+.cta-box p { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
+.cta-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none; background: var(--brand); color: #fff; border: none; cursor: pointer; transition: all 0.2s; }
+.cta-btn:hover { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(138,154,91,0.3); }
+
+.toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 0 0 40px; }
+.toc h4 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { font-size: 14px; line-height: 1.8; }
+.toc a { color: var(--text-secondary); text-decoration: none; }
+.toc a:hover { color: var(--brand); }
+
+.related { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.related h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.related-list a { font-size: 15px; color: var(--text); text-decoration: none; font-weight: 500; }
+.related-list a:hover { color: var(--brand); }
+
+.footer { text-align: center; padding: 24px 20px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
+.footer a { color: var(--text-secondary); text-decoration: none; margin: 0 8px; }
+.footer a:hover { color: var(--brand); }
+
+.article-hero { margin: 0 -20px 32px; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.article-hero img { width: 100%; height: auto; display: block; }
+@media (min-width: 760px) { .article-hero { margin: 0 0 32px; border-radius: var(--radius); } }
+
+.article-img { margin: 32px 0; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.article-img img { width: 100%; height: auto; display: block; }
+.article-img figcaption { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px 16px; background: var(--bg-alt); }
+
+.faq-section { margin-top: 48px; }
+.faq-item { border-bottom: 1px solid var(--border); padding: 16px 0; }
+.faq-q { font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.faq-q::after { content: "+"; font-size: 20px; color: var(--text-muted); transition: transform 0.2s; }
+.faq-q.open::after { transform: rotate(45deg); }
+.faq-a { font-size: 15px; line-height: 1.8; color: var(--text-secondary); padding-top: 10px; display: none; }
+.faq-a.show { display: block; }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "代購利潤怎麼算？業餘與專業代購的定價策略完整教學",
+  "description": "代購利潤怎麼抓？業餘代購建議 10%-20%，專業代購要算進匯率差、代購費和機票飯店成本。",
+  "datePublished": "2026-04-04",
+  "dateModified": "2026-04-04",
+  "author": { "@type": "Organization", "name": "vovosnap", "url": "https://vovosnap.com" },
+  "publisher": { "@type": "Organization", "name": "vovosnap", "url": "https://vovosnap.com" },
+  "mainEntityOfPage": "https://vovosnap.com/blog/daigou-profit-calculation.html"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "首頁", "item": "https://vovosnap.com/" },
+    { "@type": "ListItem", "position": 2, "name": "部落格", "item": "https://vovosnap.com/blog/" },
+    { "@type": "ListItem", "position": 3, "name": "代購利潤計算" }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "代購利潤怎麼算？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "業餘代購建議抓 10%-20% 利潤。專業代購則會在匯率上取較高值（例如銀行匯率 0.20，代購匯率設 0.22-0.25），再加收 15% 左右的代購費，並將機票、飯店等成本納入計算。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "代購匯率要怎麼設定？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不建議直接用銀行當日匯率，因為實際換匯會有手續費和匯差。以日本代購為例，若台灣銀行匯率為 0.20（1日圓 = 0.20台幣），建議代購匯率設在 0.22-0.25 之間，這個差額可以彌補換匯損失。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "專業代購怎麼算成本才能確保獲利？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "專業代購會將機票、飯店及所有相關花費納入成本。目標是在出國前就透過預訂單打平開銷，出國後的訂單都是純利潤。這樣每次出國都能確保獲利。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "vovosnap 可以自動計算代購利潤嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以。在 vovosnap 設定好匯率和利潤百分比後，每次拍照上架時 AI 會自動計算含利潤的台幣售價。你不用每件商品逐一手算，一次設定就搞定。"
+      }
+    }
+  ]
+}
+</script>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:62px;height:35px;" /></a>
+    <div class="nav-actions">
+      <a href="/blog/" class="nav-link">代購教學</a>
+      <a href="/login.html" class="btn-sm btn-fill">登入</a>
+    </div>
+  </div>
+</nav>
+
+<article class="article-wrapper">
+
+  <div class="article-meta">
+    <div class="article-breadcrumb">
+      <a href="/">首頁</a> / <a href="/blog/">部落格</a> / 代購利潤計算
+    </div>
+  </div>
+
+  <div class="article-hero">
+    <img src="/assets/images/blog/hero-daigou-profit.webp" alt="日式咖啡廳桌上的手機計算機、筆記本利潤計算、日幣和抹茶拿鐵" width="1376" height="768" loading="eager">
+  </div>
+
+  <header class="article-header">
+    <h1>代購利潤怎麼算？業餘與專業代購的定價策略完整教學</h1>
+    <p class="lead">
+      代購不是義務幫忙，是一份需要合理報酬的工作。但「利潤要抓多少」是每個代購新手最頭痛的問題——抓太少不划算，抓太多朋友覺得貴。這篇文章用實際數字帶你算一次，從業餘到專業，搞懂代購定價的邏輯。
+    </p>
+    <div class="article-date">2026 年 4 月 4 日 ・ 閱讀時間約 6 分鐘</div>
+  </header>
+
+  <nav class="toc">
+    <h4>文章目錄</h4>
+    <ol>
+      <li><a href="#amateur">業餘代購：10%-20% 利潤怎麼抓</a></li>
+      <li><a href="#pro">專業代購：匯率差 + 代購費</a></li>
+      <li><a href="#example">實際計算範例</a></li>
+      <li><a href="#cost">專業代購的成本思維</a></li>
+      <li><a href="#vovosnap">用 vovosnap 自動搞定定價</a></li>
+      <li><a href="#faq">常見問題</a></li>
+    </ol>
+  </nav>
+
+  <div class="article-content">
+
+    <!-- Compare box -->
+    <div class="compare-box">
+      <div class="compare-col before">
+        <h4>業餘代購</h4>
+        <ul>
+          <li>幫朋友順便帶</li>
+          <li>利潤 10%-20%</li>
+          <li>用銀行匯率計算</li>
+          <li>不算機票飯店</li>
+          <li>賺回機票錢就好</li>
+        </ul>
+      </div>
+      <div class="compare-col after">
+        <h4>專業代購</h4>
+        <ul>
+          <li>固定客群、定期出國</li>
+          <li>匯率取高值 + 代購費 15%</li>
+          <li>機票飯店算進成本</li>
+          <li>出國前就打平開銷</li>
+          <li>每趟出國都確保獲利</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- Section 1 -->
+    <h2 id="amateur">一、業餘代購：10%-20% 利潤怎麼抓</h2>
+
+    <p>如果你是出國旅遊順便幫親友帶東西，利潤目標以<strong>個人滿意度為準</strong>。但無論如何，建議至少維持 <strong>10% 到 20%</strong> 之間。</p>
+
+    <h3>為什麼不能不賺？</h3>
+
+    <p>很多人覺得「幫朋友帶而已，不好意思收費」。但請考慮以下成本：</p>
+
+    <ul>
+      <li><strong>時間成本</strong>：你花時間逛街、挑商品、排隊、打包</li>
+      <li><strong>行李空間</strong>：你的行李箱空間是有限的資源</li>
+      <li><strong>風險成本</strong>：商品可能被海關查驗、行李可能超重</li>
+      <li><strong>機票與住宿</strong>：這些都是你自己出的錢</li>
+    </ul>
+
+    <p>代購是一種<strong>勞務服務</strong>，合理收費是理所當然的。10%-20% 的利潤對買家來說不算高，但累積起來足以讓你的旅行更輕鬆。</p>
+
+    <div class="callout">
+      <p><strong>業餘代購快速算法：</strong>日幣商品價格 × 銀行匯率 × 1.15（加 15% 利潤）= 台幣售價。例如一瓶 ¥1,500 的乳液，匯率 0.20：1,500 × 0.20 × 1.15 = NT$345。</p>
+    </div>
+
+
+    <!-- Section 2 -->
+    <h2 id="pro">二、專業代購：匯率差 + 代購費</h2>
+
+    <p>專業代購的定價邏輯和業餘完全不同。利潤不是只加一個百分比，而是<strong>從匯率就開始賺</strong>。</p>
+
+    <h3>匯率策略：取高不取低</h3>
+
+    <p>專業代購在設定匯率時，<strong>不會用銀行當日匯率</strong>。原因很簡單：實際換匯有手續費和匯差，用銀行匯率計算等於自己吸收這些成本。</p>
+
+    <p>以日本代購為例：</p>
+    <ul>
+      <li><strong>台灣銀行匯率</strong>：約 0.20（1 日圓 = 0.20 台幣）</li>
+      <li><strong>代購匯率建議</strong>：0.22 ~ 0.25</li>
+    </ul>
+
+    <p>這 0.02-0.05 的匯率差就是你的第一層利潤，用來<strong>彌補換匯損失和手續費</strong>。</p>
+
+    <h3>代購費：另外加收 15%</h3>
+
+    <p>商品價值用代購匯率計算後，<strong>再加收 15% 的代購費</strong>。這筆費用是你的勞務報酬——找商品、拍照、上架、確認訂單、購買、打包寄送的工錢。</p>
+
+
+    <!-- Section 3: 實際計算 -->
+    <h2 id="example">三、實際計算範例</h2>
+
+    <p>以一件日幣 ¥3,000 的商品為例，分別看業餘和專業的算法：</p>
+
+    <h3>業餘算法</h3>
+
+    <table class="calc-table">
+      <tr><th>項目</th><th class="num">金額</th></tr>
+      <tr><td>日幣商品價格</td><td class="num">¥3,000</td></tr>
+      <tr><td>銀行匯率</td><td class="num">× 0.20</td></tr>
+      <tr><td>台幣成本</td><td class="num">NT$600</td></tr>
+      <tr><td>加 15% 利潤</td><td class="num">× 1.15</td></tr>
+      <tr class="highlight"><td><strong>台幣售價</strong></td><td class="num"><strong>NT$690</strong></td></tr>
+    </table>
+    <p>利潤：NT$90（15%）</p>
+
+    <h3>專業算法</h3>
+
+    <table class="calc-table">
+      <tr><th>項目</th><th class="num">金額</th></tr>
+      <tr><td>日幣商品價格</td><td class="num">¥3,000</td></tr>
+      <tr><td>代購匯率（取高值）</td><td class="num">× 0.23</td></tr>
+      <tr><td>台幣商品價值</td><td class="num">NT$690</td></tr>
+      <tr><td>加 15% 代購費</td><td class="num">× 1.15</td></tr>
+      <tr class="highlight"><td><strong>台幣售價</strong></td><td class="num"><strong>NT$794</strong></td></tr>
+    </table>
+    <p>利潤：NT$194（含匯率差 NT$90 + 代購費 NT$104）。比業餘算法多賺 NT$104。</p>
+
+    <div class="callout">
+      <p><strong>數字會說話：</strong>如果一趟旅程代購 50 件商品，專業算法比業餘算法每件多賺約 NT$100，一趟就多 <strong>NT$5,000</strong>。這足以抵掉一晚飯店的費用。</p>
+    </div>
+
+
+    <!-- Manga insert -->
+    <figure class="article-img">
+      <img src="/assets/images/blog/manga-daigou-profit.webp" alt="代購利潤計算 4 格漫畫：業餘代購、專業代購、成本計算、出國前打平目標" width="1200" height="896" loading="lazy">
+      <figcaption>業餘 vs 專業代購的利潤思維差異</figcaption>
+    </figure>
+
+
+    <!-- Section 4: 成本思維 -->
+    <h2 id="cost">四、專業代購的成本思維</h2>
+
+    <p>專業代購和業餘最大的差別，不是利潤比例，而是<strong>成本思維</strong>。</p>
+
+    <h3>把所有花費算進成本</h3>
+
+    <p>專業代購會將以下費用全部納入成本計算：</p>
+
+    <table class="calc-table">
+      <tr><th>成本項目</th><th class="num">範例金額</th></tr>
+      <tr><td>來回機票</td><td class="num">NT$8,000</td></tr>
+      <tr><td>飯店（4 晚）</td><td class="num">NT$8,000</td></tr>
+      <tr><td>當地交通</td><td class="num">NT$1,500</td></tr>
+      <tr><td>餐飲</td><td class="num">NT$3,000</td></tr>
+      <tr><td>eSIM 網路</td><td class="num">NT$300</td></tr>
+      <tr class="highlight"><td><strong>總成本</strong></td><td class="num"><strong>NT$20,800</strong></td></tr>
+    </table>
+
+    <h3>目標：出國前就打平</h3>
+
+    <p>專業代購的策略是：<strong>在出國前就透過預訂單打平所有開銷。</strong></p>
+
+    <p>以上面的範例，你需要在出國前收到約 NT$20,800 的代購利潤才能打平。如果每件商品平均利潤 NT$150，你需要出國前就確認大約 <strong>140 件預訂單</strong>。</p>
+
+    <p>聽起來很多？其實不然。如果你有 3-4 個 LINE 群、總共 100-200 人，每人平均訂 1-2 件就能達標。</p>
+
+    <div class="callout">
+      <p><strong>打平之後，出國後的每一筆訂單都是純利潤。</strong>到了當地看到好的商品再拍照上架，這些「現場訂單」的利潤就是你這趟旅程的淨賺。代購就這樣從副業變成一份可行的事業。</p>
+    </div>
+
+
+    <!-- Section 5: vovosnap -->
+    <h2 id="vovosnap">五、用 vovosnap 自動搞定定價</h2>
+
+    <p>看完上面的計算，你可能覺得：「每件商品都要這樣算，太累了吧？」</p>
+
+    <p>這正是 <a href="/">vovosnap</a> 存在的原因。</p>
+
+    <ul class="checklist">
+      <li><strong>一次設定匯率和利潤</strong>：在後台設好代購匯率（例如 0.23）和利潤百分比（例如 15%），之後不用再管</li>
+      <li><strong>拍照自動計算售價</strong>：AI 辨識商品日幣價格後，自動套用你的匯率和利潤，算出台幣售價</li>
+      <li><strong>不用逐一手算</strong>：拍 100 件商品，100 件都自動算好，你只需要拍照</li>
+      <li><strong>隨時調整</strong>：匯率波動時，後台一鍵調整，所有商品售價自動更新</li>
+    </ul>
+
+    <p>你把時間花在<strong>找商品和拍照</strong>上，定價交給系統。</p>
+
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>利潤自動算，你只管拍照</h3>
+      <p>設定一次匯率和利潤，AI 幫你算好每件商品的台幣售價。<br>免費開始，不收交易手續費。</p>
+      <a href="/login.html" class="cta-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        免費註冊 vovosnap
+      </a>
+    </div>
+
+
+    <!-- FAQ -->
+    <div class="faq-section" id="faq">
+      <h2>常見問題</h2>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">代購利潤怎麼算？</div>
+        <div class="faq-a">業餘代購建議抓 10%-20% 利潤。專業代購則會在匯率上取較高值（例如銀行匯率 0.20，代購匯率設 0.22-0.25），再加收 15% 左右的代購費，並將機票、飯店等成本納入計算。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">代購匯率要怎麼設定？</div>
+        <div class="faq-a">不建議直接用銀行當日匯率，因為實際換匯會有手續費和匯差。以日本代購為例，若台灣銀行匯率為 0.20，建議代購匯率設在 0.22-0.25 之間，這個差額可以彌補換匯損失。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">專業代購怎麼算成本才能確保獲利？</div>
+        <div class="faq-a">專業代購會將機票、飯店及所有相關花費納入成本。目標是在出國前就透過預訂單打平開銷，出國後的訂單都是純利潤。這樣每次出國都能確保獲利。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">vovosnap 可以自動計算代購利潤嗎？</div>
+        <div class="faq-a">可以。在 vovosnap 設定好匯率和利潤百分比後，每次拍照上架時 AI 會自動計算含利潤的台幣售價。你不用每件商品逐一手算，一次設定就搞定。</div>
+      </div>
+    </div>
+
+
+    <!-- Related -->
+    <div class="related">
+      <h3>延伸閱讀</h3>
+      <ul class="related-list">
+        <li><a href="/blog/first-time-daigou-guide.html">第一次代購就上手：出國代購完整教學</a></li>
+        <li><a href="/blog/daigou-preparation-checklist.html">代購前需要準備什麼？出國代購完整準備清單</a></li>
+        <li><a href="/blog/">LINE 群代購升級術：一個連結取代逐一貼文</a></li>
+        <li><a href="/#pricing">vovosnap 方案比較</a></li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<footer class="footer">
+  <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:50px;height:28px;margin-bottom:8px;" /></a><br>
+  <a href="/privacy.html">隱私權政策</a>
+  <a href="/terms.html">服務條款</a>
+  <p style="margin-top:8px;">聯絡信箱：<a href="mailto:info@vovosnap.com">info@vovosnap.com</a></p>
+  <p>卉田國際有限公司｜統一編號：91093506</p>
+  <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
+</footer>
+
+</body>
+</html>
