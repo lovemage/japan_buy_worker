@@ -86,7 +86,8 @@ export async function handlePlatformAdmin(
   // Serve the admin page
   if (url.pathname === "/platform-admin" || url.pathname === "/platform-admin.html") {
     if (assets) {
-      return assets.fetch(new Request(new URL("/platform-admin.html", request.url).toString(), request));
+      const assetUrl = new URL("/platform-admin.html", request.url).toString();
+      return assets.fetch(new Request(assetUrl, { method: "GET", headers: request.headers }));
     }
     return json({ ok: false, error: "Assets not configured" }, 500);
   }

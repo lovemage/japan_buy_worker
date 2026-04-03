@@ -198,7 +198,7 @@ export default {
     if (url.pathname === "/onboarding" || url.pathname === "/onboarding.html") {
       if (env.ASSETS) {
         // Serve onboarding.html (will be created in Phase 6)
-        const resp = await env.ASSETS.fetch(new Request(new URL("/onboarding.html", request.url).toString(), request));
+        const resp = await env.ASSETS.fetch(new Request(new URL("/onboarding.html", request.url).toString(), { method: "GET", headers: request.headers }));
         if (resp.ok) return resp;
       }
       return json({ ok: false, error: "Onboarding page not found" }, 404);
