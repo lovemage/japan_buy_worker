@@ -6,6 +6,7 @@ import {
   buildStoreReturnToPath,
   buildProductShareUrl,
   buildStorePublicDisplayText,
+  buildStoreDomainChangeMessage,
 } from "../public/assets/store-url.js";
 
 test("buildStorePublicBaseUrl uses subdomain for pro plan", () => {
@@ -79,4 +80,32 @@ test("buildStorePublicDisplayText strips protocol for admin display", () => {
   });
 
   assert.equal(text, "xiaomei.vovosnap.com/");
+});
+
+test("buildStoreDomainChangeMessage tells pro users to wait for subdomain updates", () => {
+  const message = buildStoreDomainChangeMessage({
+    plan: "pro",
+    slug: "xiaomei",
+    mainDomain: "vovosnap.com",
+    protocol: "https:",
+    origin: "https://vovosnap.com",
+    apiBase: "/s/xiaomei",
+  });
+
+  assert.match(message, /xiaomei\.vovosnap\.com/);
+  assert.match(message, /等待/);
+});
+
+test("buildStoreDomainChangeMessage tells path-based stores to wait for route updates", () => {
+  const message = buildStoreDomainChangeMessage({
+    plan: "starter",
+    slug: "newshop",
+    mainDomain: "vovosnap.com",
+    protocol: "https:",
+    origin: "https://vovosnap.com",
+    apiBase: "/s/oldshop",
+  });
+
+  assert.match(message, /vovosnap\.com\/s\/newshop/);
+  assert.match(message, /等待/);
 });

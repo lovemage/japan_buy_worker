@@ -1,5 +1,12 @@
-.env
-.dev.vars
 node_modules/
-.gstack/
 .wrangler/
+.env
+.env.*
+.dev.vars
+dist/
+*.log
+backup-*.sql
+.gstack/
+
+# 備份用，實際開發以根目錄為主
+workers/

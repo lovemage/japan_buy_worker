@@ -2,7 +2,11 @@ import { initSync } from "./app-admin-sync.js";
 import { initOrders, refreshOrders } from "./app-admin-orders.js";
 import { initProducts } from "./app-admin-products.js";
 import { initSettings } from "./app-admin-settings.js";
-import { buildStorePublicBaseUrl, buildStorePublicDisplayText } from "./store-url.js";
+import {
+  buildStorePublicBaseUrl,
+  buildStorePublicDisplayText,
+  buildStoreDomainChangeMessage,
+} from "./store-url.js";
 
 const TAB_TITLES = {
   products: "商品管理",
@@ -238,5 +242,7 @@ function bootstrap() {
 
   import("./app-admin-recognize.js");
 }
+
+window.__buildStoreDomainChangeMessage = buildStoreDomainChangeMessage;
 
 bootstrap();

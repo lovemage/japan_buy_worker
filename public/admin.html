@@ -727,10 +727,20 @@
     }).then(function(r){return r.json()}).then(function(d) {
       if (!statusEl) return;
       if (d.ok) {
-        statusEl.textContent = "已更新，重新導向中...";
+        var buildDomainChangeMessage = window.__buildStoreDomainChangeMessage;
+        statusEl.textContent = typeof buildDomainChangeMessage === "function"
+          ? buildDomainChangeMessage({
+              plan: window.__STORE_PLAN,
+              slug: slug,
+              mainDomain: window.__MAIN_DOMAIN,
+              protocol: location.protocol,
+              origin: location.origin,
+              apiBase: "/s/" + slug,
+            })
+          : "已更新，新的網址可能需要等待幾分鐘才會完全生效。";
         statusEl.style.display = "block";
         var to = d.redirectUrl || ("/s/" + slug + "/admin");
-        setTimeout(function(){ location.href = to; }, 500);
+        setTimeout(function(){ location.href = to; }, 1800);
       } else {
         statusEl.textContent = d.error || "更新失敗";
         statusEl.style.display = "block";
