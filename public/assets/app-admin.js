@@ -2,6 +2,7 @@ import { initSync } from "./app-admin-sync.js";
 import { initOrders, refreshOrders } from "./app-admin-orders.js";
 import { initProducts } from "./app-admin-products.js";
 import { initSettings } from "./app-admin-settings.js";
+import { buildStorePublicBaseUrl, buildStorePublicDisplayText } from "./store-url.js";
 
 const TAB_TITLES = {
   products: "商品管理",
@@ -196,6 +197,32 @@ function initSubTabs(scope) {
 // ── Bootstrap ──
 
 function bootstrap() {
+  const viewStoreLink = document.getElementById("view-store-link");
+  const publicUrlLink = document.getElementById("public-url-link");
+  const baseUrl = buildStorePublicBaseUrl({
+    plan: window.__STORE_PLAN,
+    slug: window.__STORE_SLUG,
+    mainDomain: window.__MAIN_DOMAIN,
+    protocol: location.protocol,
+    origin: location.origin,
+    apiBase: window.__API_BASE || "",
+  });
+
+  if (viewStoreLink instanceof HTMLAnchorElement) {
+    viewStoreLink.href = `${baseUrl}/`;
+  }
+  if (publicUrlLink instanceof HTMLAnchorElement) {
+    publicUrlLink.href = `${baseUrl}/`;
+    publicUrlLink.textContent = buildStorePublicDisplayText({
+      plan: window.__STORE_PLAN,
+      slug: window.__STORE_SLUG,
+      mainDomain: window.__MAIN_DOMAIN,
+      protocol: location.protocol,
+      origin: location.origin,
+      apiBase: window.__API_BASE || "",
+    });
+  }
+
   document.querySelectorAll(".admin-nav-item").forEach((btn) => {
     btn.addEventListener("click", () => {
       const tab = btn.getAttribute("data-tab");

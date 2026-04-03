@@ -1,5 +1,6 @@
 import { showError } from "./app-admin.js";
 import { withProductImageFallback, applyProductImageFallback } from "./image-fallback.js";
+import { buildProductShareUrl } from "./store-url.js";
 
 function prefixImageUrl(url) {
   if (!url) return url;
@@ -83,8 +84,14 @@ function renderProductGrid(products, paging) {
   grid.querySelectorAll(".js-copy-url").forEach((btn) => {
     btn.addEventListener("click", () => {
       const code = btn.getAttribute("data-code");
-      const base = window.__API_BASE || "";
-      const url = location.origin + base + "/product?code=" + encodeURIComponent(code) + "&returnTo=" + encodeURIComponent(base + "/");
+      const url = buildProductShareUrl(code, {
+        plan: window.__STORE_PLAN,
+        slug: window.__STORE_SLUG,
+        mainDomain: window.__MAIN_DOMAIN,
+        protocol: location.protocol,
+        origin: location.origin,
+        apiBase: window.__API_BASE || "",
+      });
       navigator.clipboard.writeText(url).then(() => {
         const orig = btn.textContent;
         btn.textContent = "✓ 已複製";

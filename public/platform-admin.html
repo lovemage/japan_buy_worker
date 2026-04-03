@@ -425,6 +425,7 @@ async function showDashboard() {
   document.getElementById("login-section").style.display = "none";
   document.getElementById("dashboard").classList.add("active");
   initMonthSelector();
+  await loadPlanOffers();
   await loadTestStores();
   await loadStores();
   await loadRevenueLogs();
@@ -516,31 +517,45 @@ function renderStores(stores) {
   }).join("");
 }
 
-var STARTER_OPTIONS = [
-  { days: 30, amount: 980, label: "1 個月", sub: "30 天", price: "NT$980" },
-  { days: 180, amount: 5280, label: "6 個月", sub: "180 天", price: "NT$880/月（共 NT$5,280）" },
-  { days: 390, amount: 8160, label: "12 個月", sub: "360 天 + 贈 30 天", price: "NT$680/月（共 NT$8,160）" },
-];
+var PLAN_OFFERS = {
+  starter: [
+    { months: 1, days: 30, amount: 980, monthlyPrice: 980, bonusDays: 0 },
+    { months: 6, days: 180, amount: 5280, monthlyPrice: 880, bonusDays: 0 },
+    { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+  ],
+  pro: [
+    { months: 1, days: 30, amount: 1580, monthlyPrice: 1580, bonusDays: 0 },
+    { months: 6, days: 180, amount: 8880, monthlyPrice: 1480, bonusDays: 0 },
+    { months: 12, days: 390, amount: 15360, monthlyPrice: 1280, bonusDays: 30 }
+  ]
+};
+
+async function loadPlanOffers() {
+  try {
+    var res = await fetch("/api/plan-offers", { headers: { authorization: "Bearer " + adminToken } });
+    var data = await res.json();
+    if (data && data.ok && data.offers) PLAN_OFFERS = data.offers;
+  } catch (e) {}
+}
 
 function showPlanModal(storeId, plan) {
   var store = allStores.find(function(s) { return s.id === storeId; });
   var name = store ? store.name || store.owner_email : "會員";
   var label = plan === "starter" ? "Starter" : "Pro";
 
-  var optionsHtml = "";
-  if (plan === "starter") {
-    optionsHtml = STARTER_OPTIONS.map(function(opt, i) {
-      return '<div class="plan-option' + (i === 0 ? " selected" : "") + '" data-days="' + opt.days + '" data-amount="' + opt.amount + '" onclick="selectPlanOption(this)">' +
-        '<div class="po-radio"></div>' +
-        '<div class="po-info"><div class="po-title">' + opt.label + '</div><div class="po-sub">' + opt.sub + '</div></div>' +
-        '<div class="po-price">' + opt.price + '</div>' +
-      '</div>';
-    }).join("");
-  } else {
-    optionsHtml =
-      '<label>增加幾個月（1 個月 = 30 天）</label>' +
-      '<input type="number" id="plan-months" min="1" max="36" value="1" />';
+  var options = Array.isArray(PLAN_OFFERS[plan]) ? PLAN_OFFERS[plan] : [];
+  if (options.length === 0) {
+    alert("尚未設定方案優惠選項");
+    return;
   }
+  var optionsHtml = options.map(function(opt, i) {
+    var sub = opt.days + " 天" + (opt.bonusDays > 0 ? "（含贈 " + opt.bonusDays + " 天）" : "");
+    return '<div class="plan-option' + (i === 0 ? " selected" : "") + '" data-months="' + opt.months + '" data-days="' + opt.days + '" data-amount="' + opt.amount + '" onclick="selectPlanOption(this)">' +
+      '<div class="po-radio"></div>' +
+      '<div class="po-info"><div class="po-title">' + opt.months + ' 個月</div><div class="po-sub">' + sub + '</div></div>' +
+      '<div class="po-price">NT$' + Number(opt.monthlyPrice).toLocaleString() + '/月</div>' +
+    '</div>';
+  }).join("");
 
   var backdrop = document.createElement("div");
   backdrop.className = "plan-modal-backdrop";
@@ -561,10 +576,6 @@ function showPlanModal(storeId, plan) {
     if (e.target === backdrop) closePlanModal();
   });
   document.body.appendChild(backdrop);
-  if (plan !== "starter") {
-    document.getElementById("plan-months").focus();
-    document.getElementById("plan-months").select();
-  }
 }
 
 function selectPlanOption(el) {
@@ -583,29 +594,22 @@ async function confirmPlanModal() {
   if (!modal) return;
   var storeId = Number(modal.dataset.storeId);
   var plan = modal.dataset.plan;
-  var days, amount;
-
-  if (plan === "starter") {
-    var selected = modal.querySelector(".plan-option.selected");
-    days = selected ? Number(selected.dataset.days) : 30;
-    amount = selected ? Number(selected.dataset.amount) : 980;
-  } else {
-    var months = Number(document.getElementById("plan-months").value) || 1;
-    if (months < 1) months = 1;
-    days = months * 30;
-    amount = months * 1580;
-  }
+  var selected = modal.querySelector(".plan-option.selected");
+  var months = selected ? Number(selected.dataset.months) : 1;
+  var days = selected ? Number(selected.dataset.days) : 30;
+  var amount = selected ? Number(selected.dataset.amount) : 0;
 
   var expiresAt = new Date(Date.now() + days * 86400000).toISOString();
   closePlanModal();
-  await updateStore(storeId, plan, expiresAt, amount, days);
+  await updateStore(storeId, plan, expiresAt, amount, days, months);
 }
 
-async function updateStore(storeId, action, planExpiresAt, amount, days) {
+async function updateStore(storeId, action, planExpiresAt, amount, days, months) {
   var body = { action: action };
   if (planExpiresAt) body.plan_expires_at = planExpiresAt;
   if (typeof amount === "number") body.amount = amount;
   if (typeof days === "number") body.days = days;
+  if (typeof months === "number") body.months = months;
   var res = await fetch("/api/platform-admin/stores/" + storeId, {
     method: "PATCH",
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },

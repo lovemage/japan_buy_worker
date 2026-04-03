@@ -1,4 +1,5 @@
 import type { D1DatabaseLike } from "../types/d1";
+import { DEFAULT_PLAN_OFFERS, getPlanOfferByMonths } from "../shared/plan-offers.js";
 
 function json(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
@@ -164,9 +165,9 @@ export async function handlePlatformAdmin(
   const storeMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)$/);
   if (storeMatch && request.method === "PATCH") {
     const storeId = parseInt(storeMatch[1], 10);
-    let body: { action?: string; plan_expires_at?: string; amount?: number; days?: number };
+    let body: { action?: string; plan_expires_at?: string; amount?: number; days?: number; months?: number };
     try {
-      body = (await request.json()) as { action?: string; plan_expires_at?: string; amount?: number; days?: number };
+      body = (await request.json()) as { action?: string; plan_expires_at?: string; amount?: number; days?: number; months?: number };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
@@ -178,16 +179,24 @@ export async function handlePlatformAdmin(
       case "free":
       case "starter":
       case "pro": {
+        let days = typeof body.days === "number" ? body.days : 30;
+        let amount = typeof body.amount === "number" ? body.amount : 0;
+        if (action === "starter" || action === "pro") {
+          const offer = getPlanOfferByMonths(action, body.months || 1, DEFAULT_PLAN_OFFERS);
+          if (!offer) return json({ ok: false, error: "Invalid plan offer option" }, 400);
+          days = offer.days;
+          amount = offer.amount;
+        }
         const expiresAt = action === "free"
           ? null
-          : (body.plan_expires_at || new Date(Date.now() + 30 * 86400_000).toISOString());
+          : (body.plan_expires_at || new Date(Date.now() + days * 86400_000).toISOString());
         await db
           .prepare("UPDATE stores SET plan = ?, plan_expires_at = ?, updated_at = datetime('now') WHERE id = ?")
           .bind(action, expiresAt, storeId)
           .run();
 
         // Auto-log revenue (skip test members and free plan)
-        if (action !== "free" && typeof body.amount === "number" && body.amount > 0) {
+        if (action !== "free" && amount > 0) {
           const testIds = await getTestStoreIds(db);
           if (!testIds.includes(storeId)) {
             await ensureLogTable(db);
@@ -197,7 +206,7 @@ export async function handlePlatformAdmin(
               .first<{ name: string; owner_email: string }>();
             await db
               .prepare("INSERT INTO plan_change_logs (store_id, store_name, store_email, plan, days, amount) VALUES (?, ?, ?, ?, ?, ?)")
-              .bind(storeId, store?.name || "", store?.owner_email || "", action, body.days || 30, body.amount)
+              .bind(storeId, store?.name || "", store?.owner_email || "", action, days, amount)
               .run();
           }
         }

@@ -81,7 +81,10 @@
       <a href="/"><img src="/assets/images/logo2.png" alt="VOVOSnap" style="height:34px;" /></a>
       <div class="admin-topbar__actions" id="admin-topbar-actions">
         <span id="plan-badge" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;"></span>
-        <a class="admin-topbar__link" href="/store.html" target="_blank" rel="noopener">
+        <a id="public-url-link" href="/store.html" target="_blank" rel="noopener" style="font-size:12px;color:#6b7280;text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          /store.html
+        </a>
+        <a class="admin-topbar__link" id="view-store-link" href="/store.html" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           檢視網站
         </a>
@@ -301,6 +304,12 @@
           <p class="meta">顯示在商店首頁的名稱</p>
           <label style="margin-top:10px;">網站介紹<input id="store-description" type="text" class="input-cute" placeholder="日韓代購，品質保證" maxlength="200" /></label>
           <p class="meta">顯示在商店名稱下方（最多 200 字）</p>
+          <label style="margin-top:10px;">店面網址 (slug)
+            <input id="store-slug-edit" type="text" class="input-cute" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
+          </label>
+          <p class="meta" id="store-slug-meta">僅 Pro 可修改，終身一次。</p>
+          <button class="button secondary" type="button" id="store-slug-save-btn" onclick="saveStoreSlug()">更新網址</button>
+          <p id="store-slug-status" class="admin-status">已更新，重新導向中...</p>
           <button class="button" type="button" onclick="saveStoreName()">儲存</button>
           <p id="store-name-status" class="admin-status">已儲存</p>
 
@@ -645,6 +654,8 @@
     });
   }
 
+  var storeCanChangeSlugOnce = false;
+
   // Store info load
   (function() {
     apiFetch("/api/admin/store-info").then(function(r){return r.json()}).then(function(d) {
@@ -652,10 +663,21 @@
         loadDisplaySettings();
         var nameInput = document.getElementById("store-display-name");
         if (nameInput) nameInput.value = d.store.name || "";
+        var slugInput = document.getElementById("store-slug-edit");
+        if (slugInput) slugInput.value = d.store.slug || "";
         var descInput = document.getElementById("store-description");
         if (descInput) descInput.value = d.store.description || "";
         var emailEl = document.getElementById("member-email");
         if (emailEl) emailEl.textContent = d.store.owner_email || "";
+        storeCanChangeSlugOnce = !!d.store.can_change_slug_once;
+        var slugMeta = document.getElementById("store-slug-meta");
+        var slugBtn = document.getElementById("store-slug-save-btn");
+        if (slugBtn) slugBtn.disabled = !storeCanChangeSlugOnce;
+        if (slugMeta) {
+          if (storeCanChangeSlugOnce) slugMeta.textContent = "僅 Pro 可修改，終身一次（你目前可用 1 次）。";
+          else if (d.store.effective_plan !== "pro") slugMeta.textContent = "目前方案不可修改 slug（需 Pro）。";
+          else slugMeta.textContent = "你已使用過 slug 修改機會（終身一次）。";
+        }
         var expiresEl = document.getElementById("plan-expires");
         if (expiresEl && d.store.plan_expires_at) {
           var exp = new Date(d.store.plan_expires_at);
@@ -678,6 +700,41 @@
       body: JSON.stringify({ name: name, description: description }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("store-name-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
+    });
+  }
+
+  function saveStoreSlug() {
+    var slug = document.getElementById("store-slug-edit")?.value?.trim() || "";
+    var statusEl = document.getElementById("store-slug-status");
+    if (!storeCanChangeSlugOnce) {
+      if (statusEl) {
+        statusEl.textContent = "目前不可修改 slug";
+        statusEl.style.display = "block";
+      }
+      return;
+    }
+    if (!slug || slug.length < 3) {
+      if (statusEl) {
+        statusEl.textContent = "網址至少 3 個字元";
+        statusEl.style.display = "block";
+      }
+      return;
+    }
+    apiFetch("/api/admin/store-slug", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ slug: slug }),
+    }).then(function(r){return r.json()}).then(function(d) {
+      if (!statusEl) return;
+      if (d.ok) {
+        statusEl.textContent = "已更新，重新導向中...";
+        statusEl.style.display = "block";
+        var to = d.redirectUrl || ("/s/" + slug + "/admin");
+        setTimeout(function(){ location.href = to; }, 500);
+      } else {
+        statusEl.textContent = d.error || "更新失敗";
+        statusEl.style.display = "block";
+      }
     });
   }
 

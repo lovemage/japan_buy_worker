@@ -1,4 +1,5 @@
 import type { RequestContext } from "../../context";
+import { normalizeSlug, getSlugValidationError, canChangeSlugOnceForPro } from "../../shared/slug-rules.js";
 
 // Country → currency mapping
 export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number; defaultMarkup: number }> = {
@@ -22,9 +23,9 @@ export async function handleStoreInfo(
   // GET: return store info including country config
   if (request.method === "GET") {
     const store = await ctx.db
-      .prepare("SELECT id, slug, name, description, owner_email, destination_country, display_currency, line_id, plan, plan_expires_at FROM stores WHERE id = ?")
+      .prepare("SELECT id, slug, name, description, owner_email, destination_country, display_currency, line_id, plan, plan_expires_at, slug_change_used FROM stores WHERE id = ?")
       .bind(ctx.storeId)
-      .first<{ id: number; slug: string; name: string; description: string; owner_email: string; destination_country: string; display_currency: string; line_id: string | null; plan: string; plan_expires_at: string | null }>();
+      .first<{ id: number; slug: string; name: string; description: string; owner_email: string; destination_country: string; display_currency: string; line_id: string | null; plan: string; plan_expires_at: string | null; slug_change_used: number }>();
 
     if (!store) return json({ ok: false, error: "Store not found" }, 404);
 
@@ -34,6 +35,11 @@ export async function handleStoreInfo(
       ok: true,
       store: {
         ...store,
+        effective_plan: ctx.storePlan,
+        can_change_slug_once: canChangeSlugOnceForPro({
+          effectivePlan: ctx.storePlan,
+          slugChangeUsed: store.slug_change_used,
+        }),
         countryConfig: countryConf,
       },
       countries: Object.entries(COUNTRY_CONFIG).map(([code, conf]) => ({
@@ -151,6 +157,53 @@ export async function handleStoreNameUpdate(
     .run();
 
   return json({ ok: true });
+}
+
+export async function handleStoreSlugUpdate(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+
+  const store = await ctx.db
+    .prepare("SELECT slug_change_used FROM stores WHERE id = ?")
+    .bind(ctx.storeId)
+    .first<{ slug_change_used: number }>();
+  if (!store) return json({ ok: false, error: "Store not found" }, 404);
+
+  if (!canChangeSlugOnceForPro({ effectivePlan: ctx.storePlan, slugChangeUsed: store.slug_change_used })) {
+    return json({ ok: false, error: "Pro members can change slug only once" }, 403);
+  }
+
+  let body: { slug?: string };
+  try {
+    body = (await request.json()) as { slug?: string };
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  const slug = normalizeSlug(body.slug || "");
+  const slugError = getSlugValidationError(slug);
+  if (slugError) return json({ ok: false, error: slugError }, 400);
+
+  const existing = await ctx.db
+    .prepare("SELECT id FROM stores WHERE slug = ? AND id != ?")
+    .bind(slug, ctx.storeId)
+    .first();
+  if (existing) {
+    return json({ ok: false, error: "This slug is already taken" }, 400);
+  }
+
+  await ctx.db
+    .prepare("UPDATE stores SET slug = ?, subdomain = ?, slug_change_used = 1, updated_at = datetime('now') WHERE id = ?")
+    .bind(slug, slug, ctx.storeId)
+    .run();
+
+  return json({
+    ok: true,
+    slug,
+    redirectUrl: `/s/${slug}/admin`,
+  });
 }
 
 // Popup ad management

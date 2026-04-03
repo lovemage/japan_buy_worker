@@ -129,6 +129,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-price .cur { font-size: 16px; font-weight: 600; vertical-align: top; }
 .plan-price .per { font-size: 13px; font-weight: 400; color: var(--text-muted); }
 .plan-discount { font-size: 11px; color: var(--text-muted); margin: 4px 0 0; line-height: 1.5; }
+.plan-discount-link { background: none; border: none; padding: 0; font: inherit; color: var(--brand); text-decoration: underline; cursor: pointer; }
+.plan-discount-link:hover { color: var(--brand-dark); }
 .plan-line { height: 1px; background: var(--border); margin: 14px 0; }
 .plan-list { list-style: none; flex: 1; margin-bottom: 18px; }
 .plan-list li { padding: 5px 0; font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 7px; }
@@ -149,6 +151,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .faq-item.open .faq-q::after { content: "−"; }
 .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.25,1,0.5,1); }
 .faq-a p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding: 0 0 16px; margin: 0; }
+
+/* Plan offer popup */
+.offer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 120; }
+.offer-backdrop.is-open { display: flex; }
+.offer-modal { width: min(560px, 92vw); max-height: 80vh; overflow: auto; background: #fff; border-radius: 14px; padding: 18px; border: 1px solid var(--border); }
+.offer-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.offer-head h3 { font-size: 17px; }
+.offer-close { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.offer-plan { margin-top: 12px; }
+.offer-plan h4 { font-size: 14px; margin-bottom: 6px; }
+.offer-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.offer-table th, .offer-table td { border-bottom: 1px solid var(--border); padding: 7px 6px; text-align: left; }
+.offer-note { font-size: 12px; color: var(--text-muted); margin-top: 10px; }
 
 /* ── CTA ── */
 .cta { text-align: center; }
@@ -354,7 +369,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
           <div class="plan-desc">認真經營代購</div>
           <div class="plan-price"><span class="cur">NT$</span>980<span class="per">/月</span></div>
           <div class="plan-discount">
-            <p>6 個月 NT$880/月 ｜ 12 個月 NT$680/月 <span style="color:#22c55e;">+贈 30 天</span></p>
+            <button class="plan-discount-link" type="button" onclick="openPlanOfferPopup('starter')">方案優惠</button>
           </div>
           <div class="plan-line"></div>
           <ul class="plan-list">
@@ -372,6 +387,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
           <div class="plan-name">Pro</div>
           <div class="plan-desc">全職代購</div>
           <div class="plan-price"><span class="cur">NT$</span>1,580<span class="per">/月</span></div>
+          <div class="plan-discount">
+            <button class="plan-discount-link" type="button" onclick="openPlanOfferPopup('pro')">方案優惠</button>
+          </div>
           <div class="plan-line"></div>
           <ul class="plan-list">
             <li id="limit-pro-display">不限商品數量</li>
@@ -411,6 +429,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
   </div>
 </section>
+
+<div class="offer-backdrop" id="offer-backdrop" onclick="if(event.target===this)closePlanOfferPopup()">
+  <div class="offer-modal">
+    <div class="offer-head">
+      <h3>方案優惠說明</h3>
+      <button class="offer-close" type="button" onclick="closePlanOfferPopup()">關閉</button>
+    </div>
+    <div id="offer-content"></div>
+    <p class="offer-note">12 個月方案包含贈送天數：Starter 與 Pro 均為 +30 天。</p>
+  </div>
+</div>
 
 <!-- FAQ -->
 <section class="section faq-section fade-in">
@@ -492,6 +521,60 @@ fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
   if (s && l.starter > 0) s.textContent = "最多 " + l.starter + " 件商品";
   if (p) p.textContent = (l.pro && l.pro > 0) ? "最多 " + l.pro + " 件商品" : "不限商品數量";
 }).catch(function(){});
+
+var PLAN_OFFERS = null;
+function fallbackOffers() {
+  return {
+    starter: [
+      { months: 1, days: 30, amount: 980, monthlyPrice: 980, bonusDays: 0 },
+      { months: 6, days: 180, amount: 5280, monthlyPrice: 880, bonusDays: 0 },
+      { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+    ],
+    pro: [
+      { months: 1, days: 30, amount: 1580, monthlyPrice: 1580, bonusDays: 0 },
+      { months: 6, days: 180, amount: 8880, monthlyPrice: 1480, bonusDays: 0 },
+      { months: 12, days: 390, amount: 15360, monthlyPrice: 1280, bonusDays: 30 }
+    ]
+  };
+}
+
+fetch("/api/plan-offers").then(function(r){ return r.json(); }).then(function(d) {
+  if (d && d.ok && d.offers) PLAN_OFFERS = d.offers;
+}).catch(function(){});
+
+function openPlanOfferPopup(focusPlan) {
+  var offers = PLAN_OFFERS || fallbackOffers();
+  var content = document.getElementById("offer-content");
+  if (!content) return;
+  var plans = ["starter", "pro"];
+  content.innerHTML = plans.map(function(plan) {
+    var rows = Array.isArray(offers[plan]) ? offers[plan] : [];
+    var title = plan === "starter" ? "Starter" : "Pro";
+    return '<div class="offer-plan" id="offer-' + plan + '">' +
+      '<h4>' + title + '</h4>' +
+      '<table class="offer-table"><thead><tr><th>方案期</th><th>天數</th><th>優惠價</th><th>總價</th></tr></thead><tbody>' +
+      rows.map(function(o) {
+        var extra = o.bonusDays > 0 ? '（含贈 ' + o.bonusDays + ' 天）' : '';
+        return '<tr><td>' + o.months + ' 個月</td><td>' + o.days + ' 天' + extra + '</td><td>NT$' + Number(o.monthlyPrice).toLocaleString() + '/月</td><td>NT$' + Number(o.amount).toLocaleString() + '</td></tr>';
+      }).join("") +
+      '</tbody></table>' +
+    '</div>';
+  }).join("");
+
+  var back = document.getElementById("offer-backdrop");
+  if (back) back.classList.add("is-open");
+  if (focusPlan) {
+    setTimeout(function() {
+      var node = document.getElementById("offer-" + focusPlan);
+      if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }
+}
+
+function closePlanOfferPopup() {
+  var back = document.getElementById("offer-backdrop");
+  if (back) back.classList.remove("is-open");
+}
 
 // Plan carousel
 function scrollPlan(idx) {

@@ -29,7 +29,17 @@ import {
   handleAdminClearSyncProducts,
   handleAdminClearManualProducts,
 } from "./routes/admin/clear-products";
-import { handleStoreInfo, handleStoreNameUpdate, handleDisplaySettings, handlePopupAds, handlePopupAdUpload, handlePopupAdDelete, handleTemplate, COUNTRY_CONFIG } from "./routes/admin/store-info";
+import {
+  handleStoreInfo,
+  handleStoreNameUpdate,
+  handleStoreSlugUpdate,
+  handleDisplaySettings,
+  handlePopupAds,
+  handlePopupAdUpload,
+  handlePopupAdDelete,
+  handleTemplate,
+  COUNTRY_CONFIG,
+} from "./routes/admin/store-info";
 import type { RequestContext } from "./context";
 
 type CrawlEnv = {
@@ -104,6 +114,7 @@ window.__MAX_IMAGES=${{ free: 3, starter: 4, pro: 8 }[ctx.storePlan] || 3};
 window.__STORE_NAME="${storeName.replace(/"/g, '\\"')}";
 window.__STORE_DESC="${storeDesc.replace(/"/g, '\\"')}";
 window.__STORE_COUNTRY="${country}";
+window.__MAIN_DOMAIN="${ctx.mainDomain.replace(/"/g, '\\"')}";
 window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
 window.__DISPLAY_SETTINGS=${displaySettings};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
@@ -235,6 +246,10 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/store-name") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleStoreNameUpdate(request, ctx);
+  }
+  if (subPath === "/api/admin/store-slug") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleStoreSlugUpdate(request, ctx);
   }
   if (subPath === "/api/admin/template") {
     if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

@@ -1,5 +1,6 @@
 import type { D1DatabaseLike } from "../../types/d1";
 import type { RequestContext } from "../../context";
+import { normalizeSlug, getSlugValidationError } from "../../shared/slug-rules.js";
 
 export const STORE_COOKIE_NAME = "store_session";
 const SESSION_TTL_SECONDS = 86400 * 7; // 7 days
@@ -531,20 +532,12 @@ export async function handleCompleteOnboarding(
     return json({ ok: false, error: "Invalid JSON" }, 400);
   }
 
-  const slug = (body.slug || "").trim().toLowerCase();
+  const slug = normalizeSlug(body.slug || "");
   const name = (body.name || "").trim();
 
-  // Validate slug
-  if (!slug || slug.length < 3 || slug.length > 30) {
-    return json({ ok: false, error: "Slug must be 3-30 characters" }, 400);
-  }
-  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) && slug.length > 2) {
-    return json({ ok: false, error: "Slug must be lowercase alphanumeric with hyphens, no leading/trailing hyphens" }, 400);
-  }
-
-  const RESERVED = ["api", "assets", "admin", "register", "platform-admin", "healthz", "s", "www", "auth", "onboarding"];
-  if (RESERVED.includes(slug)) {
-    return json({ ok: false, error: "This slug is reserved" }, 400);
+  const slugError = getSlugValidationError(slug);
+  if (slugError) {
+    return json({ ok: false, error: slugError }, 400);
   }
 
   if (!name || name.length < 1 || name.length > 100) {

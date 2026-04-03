@@ -4,6 +4,7 @@ export type RequestContext = {
   storeId: number;
   storeSlug: string;
   storePlan: string; // "free" | "pro"
+  mainDomain: string;
   db: D1DatabaseLike;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   r2: any | null;
@@ -23,6 +24,7 @@ export type StoreRow = {
   plan: string;
   plan_expires_at: string | null;
   subdomain: string | null;
+  slug_change_used?: number;
   is_active: number;
 };
 

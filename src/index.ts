@@ -18,6 +18,7 @@ import {
   isAdminAuthorized,
 } from "./routes/admin/auth";
 import { handlePlatformAdmin } from "./routes/platform-admin";
+import { DEFAULT_PLAN_OFFERS } from "./shared/plan-offers.js";
 
 type Env = {
   DB: D1DatabaseLike;
@@ -71,10 +72,12 @@ function buildCtxFromStore(
   env: Env,
   basePath: string
 ): RequestContext {
+  const mainDomain = env.MAIN_DOMAIN || "vovosnap.com";
   return {
     storeId: store.id,
     storeSlug: store.slug,
     storePlan: getEffectivePlan(store as any),
+    mainDomain,
     db: env.DB,
     r2: env.IMAGES ?? null,
     basePath,
@@ -86,6 +89,12 @@ export default {
     const url = new URL(request.url);
     const mainDomain = env.MAIN_DOMAIN || "vovosnap.com";
     const hostname = url.hostname;
+
+    if (hostname === `www.${mainDomain}`) {
+      const redirectUrl = new URL(request.url);
+      redirectUrl.hostname = mainDomain;
+      return Response.redirect(redirectUrl.toString(), 302);
+    }
 
     // ── Health check ──
     if (request.method === "GET" && url.pathname === "/healthz") {
@@ -104,6 +113,9 @@ export default {
         .first<{ value: string }>();
       const limits = row?.value ? JSON.parse(row.value) : { free: 10, starter: 50, pro: -1 };
       return json({ ok: true, limits });
+    }
+    if (url.pathname === "/api/plan-offers") {
+      return json({ ok: true, offers: DEFAULT_PLAN_OFFERS });
     }
 
     // ── Auth routes (platform-level, not tenant-scoped) ──
@@ -143,6 +155,12 @@ export default {
       const store = await resolveStoreBySubdomain(env.DB, slug);
       if (!store || !store.is_active) {
         return json({ ok: false, error: "Store not found" }, 404);
+      }
+      if (getEffectivePlan(store) !== "pro") {
+        const redirectUrl = new URL(request.url);
+        redirectUrl.hostname = mainDomain;
+        redirectUrl.pathname = url.pathname === "/" ? `/s/${store.slug}/` : `/s/${store.slug}${url.pathname}`;
+        return Response.redirect(redirectUrl.toString(), 302);
       }
       const ctx = buildCtxFromStore(store, env, ""); // empty basePath for subdomain
       return routeTenantRequest(request, ctx, url.pathname, getCrawlEnv(env), env.ASSETS);
