@@ -4,20 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>vovosnap — 拍照就開店</title>
-<script>
-(function() {
-  var host = (location.hostname || "").toLowerCase();
-  var mainDomain = "vovosnap.com";
-  if (!host || host === mainDomain || host === ("www." + mainDomain)) return;
-  if (!host.endsWith("." + mainDomain)) return;
-
-  var slug = host.slice(0, -1 * ("." + mainDomain).length);
-  if (!slug) return;
-
-  var target = "https://" + mainDomain + "/s/" + slug + "/";
-  if (location.href !== target) location.replace(target);
-})();
-</script>
 <style>
 :root {
   --brand: #8A9A5B;

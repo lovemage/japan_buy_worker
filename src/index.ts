@@ -48,6 +48,13 @@ function normalizeMainDomain(raw: string | undefined): string {
     .replace(/\/+$/, "");
 }
 
+function resolveRequestHostname(request: Request, fallback: string): string {
+  const forwarded = (request.headers.get("x-forwarded-host") || "").split(",")[0].trim().toLowerCase();
+  const host = (request.headers.get("host") || "").split(",")[0].trim().toLowerCase();
+  const raw = forwarded || host || fallback.toLowerCase();
+  return raw.replace(/:\d+$/, "");
+}
+
 function json(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
     status,
@@ -96,7 +103,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const mainDomain = normalizeMainDomain(env.MAIN_DOMAIN);
-    const hostname = url.hostname.toLowerCase();
+    const hostname = resolveRequestHostname(request, url.hostname);
 
     if (hostname === `www.${mainDomain}`) {
       const redirectUrl = new URL(request.url);
