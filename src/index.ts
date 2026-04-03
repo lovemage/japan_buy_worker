@@ -40,6 +40,14 @@ type Env = {
   MAIN_DOMAIN?: string; // e.g. "vovosnap.com"
 };
 
+function normalizeMainDomain(raw: string | undefined): string {
+  const value = (raw || "vovosnap.com").trim().toLowerCase();
+  return value
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/+$/, "");
+}
+
 function json(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
     status,
@@ -72,7 +80,7 @@ function buildCtxFromStore(
   env: Env,
   basePath: string
 ): RequestContext {
-  const mainDomain = env.MAIN_DOMAIN || "vovosnap.com";
+  const mainDomain = normalizeMainDomain(env.MAIN_DOMAIN);
   return {
     storeId: store.id,
     storeSlug: store.slug,
@@ -87,8 +95,8 @@ function buildCtxFromStore(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const mainDomain = env.MAIN_DOMAIN || "vovosnap.com";
-    const hostname = url.hostname;
+    const mainDomain = normalizeMainDomain(env.MAIN_DOMAIN);
+    const hostname = url.hostname.toLowerCase();
 
     if (hostname === `www.${mainDomain}`) {
       const redirectUrl = new URL(request.url);
