@@ -289,3 +289,47 @@ Email (白名單: lovemage@gmail.com, aistorm0910@gmail.com) + 密碼 → HMAC s
 - 主要設計：375px（iPhone）
 - 最小支援：320px
 - 不需要桌面斷點適配（單欄即可）
+
+---
+
+## Blog 文章撰寫規範
+
+若要撰寫新的 blog 文章，請參考 `/public/blog/first-time-daigou-guide.html` 作為內容範例與延伸基準。
+
+### 範本文章
+- 檔案：`/public/blog/first-time-daigou-guide.html`
+- 標題：「第一次代購就上手：出國代購完整教學，拍照就能賺回機票錢」
+
+### 文章結構要求
+1. **SEO Meta**：title（含目標關鍵字）、meta description、OG tags、canonical URL
+2. **Schema Markup**：Article + BreadcrumbList + FAQPage + HowTo（依內容選用）
+3. **首圖**：16:9 情境圖，使用 Gemini `nano-banana-pro-preview` 生成，無文字，存放於 `/assets/images/blog/`
+4. **H1 標題**：包含核心關鍵字，前 100 字帶入痛點場景
+5. **目錄（TOC）**：文章超過 3 個段落時需加入
+6. **Before/After 對比**：展示傳統流程 vs vovosnap 的效率差異
+7. **步驟卡片**：使用 `.step-card` 元件呈現流程步驟
+8. **中段插圖**：4 格漫畫或流程圖，使用 Gemini 生成，放置於文章中段
+9. **Callout 提示**：重要資訊使用 `.callout`（綠色）或 `.callout-warn`（橘色）
+10. **CTA**：文末使用 `.cta-box` 引導免費註冊
+11. **FAQ**：文末 FAQ 區塊，需同時有 JSON-LD FAQPage schema 與可展開的 HTML
+12. **延伸閱讀**：連結到其他相關文章
+
+### 設計風格
+- 沿用網站 CSS 變數（`--brand: #8A9A5B` 等）
+- 最大寬度 720px，單欄閱讀排版
+- 使用 Zen Maru Gothic 字型作為標題
+- Mobile-first 響應式設計
+
+### 圖片生成與格式
+- 工具：Gemini API `nano-banana-pro-preview` 模型
+- 首圖：寫實日系風格情境圖，無文字
+- 流程圖：4 格漫畫風格，黑白 + 品牌綠色 (#8A9A5B) 點綴
+- 存放路徑：`/public/assets/images/blog/`
+- **圖片格式：一律使用 WebP**。Gemini 生成的 PNG/JPEG 須用 `cwebp -q 85` 轉換後刪除原檔，保持輕量化
+- 命名規則：`{用途}-{主題}.webp`，例如 `hero-daigou.webp`、`manga-daigou-flow.webp`
+
+### 核心訊息
+- 痛點：出國時間有限，傳統上架流程太耗時
+- 解決方案：vovosnap 是 LINE 群 / IG 的增強工具，不是取代品
+- 動機：賺回機票錢
+- 用戶只需做兩件事：拍照 + 邀請朋友加入群組
