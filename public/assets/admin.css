@@ -1183,6 +1183,22 @@
   margin: 0 0 12px;
 }
 
+/* ── Octopus animation ── */
+.octopus-anim {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.octopus-anim svg {
+  animation: octopusFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes octopusFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 /* ── Responsive (mobile) ── */
 @media (max-width: 720px) {
   .admin-main {
