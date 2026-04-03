@@ -26,6 +26,30 @@
 
 **多租戶模型：** 共享 D1 資料庫 + `store_id` 欄位隔離。
 
+### Cloudflare 路由與資產處理（重要）
+
+本專案採用「**Worker 優先**」模式處理請求，避免子網域首頁被靜態資產先攔截。
+
+- `wrangler.toml` 必須設定：
+  - `assets = { directory = "./public", binding = "ASSETS", run_worker_first = true }`
+  - `routes` 同時包含：
+    - `vovosnap.com/*`
+    - `*.vovosnap.com/*`
+- 目的：
+  - 先由 `src/index.ts` 判斷租戶（`{slug}.vovosnap.com` 或 `/s/{slug}`）
+  - 再由程式決定回傳租戶頁面或平台頁面
+  - 靜態資產僅作為 Worker 內 fallback 提供
+
+### 已知故障紀錄（2026-04）
+
+症狀：`https://small.vovosnap.com/` 顯示平台首頁（Landing），未進入會員商店。  
+根因：Cloudflare 設為資產優先時，`/` 會直接命中 `public/index.html`，Worker 租戶路由不會先執行。  
+修正：切換為 `run_worker_first = true` 並確認 wildcard route 生效。  
+部署後驗證：
+- `https://{slug}.vovosnap.com/healthz` 應回 `{"ok":true,"service":"vovosnap"}`
+- `https://{slug}.vovosnap.com/api/products` 與 `https://vovosnap.com/s/{slug}/api/products` 回傳同店資料
+- 若仍看到舊首頁，先做 Cloudflare Cache Purge 再驗證
+
 ---
 
 ## 方案與限制

@@ -121,6 +121,11 @@ export async function handleDisplaySettings(
       .first<{ value: string }>();
     let existing: Record<string, unknown> = {};
     try { if (existingRow?.value) existing = JSON.parse(existingRow.value); } catch {}
+    // Strip Pro-only fields for non-Pro plans
+    if (ctx.storePlan !== "pro") {
+      delete body.tagNames;
+      delete body.storeLogo;
+    }
     const settings: Record<string, unknown> = { ...existing, ...body };
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")

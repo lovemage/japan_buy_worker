@@ -5,83 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>vovosnap 管理後台</title>
   <link rel="stylesheet" href="/assets/styles.css" />
-  <style>
-    .admin-section-title { font-size: 14px; font-weight: 700; margin: 0 0 8px; }
-    .admin-section-desc { font-size: 13px; color: #666; margin-bottom: 12px; }
-    .admin-divider { border: none; border-top: 1px solid var(--line, #eee); margin: 16px 0; }
-    .admin-info-box { margin-bottom: 12px; padding: 10px 14px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee; }
-    .admin-info-box .label { font-size: 12px; color: #888; margin-bottom: 2px; }
-    .admin-info-box .value { font-size: 14px; font-weight: 600; }
-    .admin-status { font-size: 12px; color: #22c55e; margin-top: 8px; display: none; }
-    .country-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .country-btn { padding: 14px; border: 2px solid #eee; border-radius: 10px; background: #fff; cursor: pointer; font-size: 14px; text-align: center; }
-    .country-btn strong { display: block; }
-    .country-btn .sub { font-size: 12px; color: #888; }
-    .country-btn.selected { border-color: #6366f1; background: #f5f3ff; }
-    .view-mode-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-    .view-mode-opt { padding: 8px 16px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; }
-    .view-mode-opt.selected { border-color: #6366f1; background: #f5f3ff; }
-    .tpl-btn { border: 2px solid #e0e0e0; border-radius: 10px; padding: 8px 4px; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; }
-    .tpl-btn .tpl-swatch { width: 100%; height: 28px; border-radius: 6px; margin-bottom: 4px; }
-    .tpl-btn .tpl-name { font-size: 10px; font-weight: 600; color: #555; }
-    .tpl-btn.active { border-color: #6366f1; background: #f5f3ff; }
-    .tpl-btn.locked { opacity: 0.4; cursor: not-allowed; }
-    .tpl-btn.locked .tpl-name::after { content: " 🔒"; }
-    .promo-row { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; min-width: 0; }
-    .promo-row input[type="text"] { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
-    .promo-row .val { width: 70px; flex-shrink: 0; }
-    .promo-row .lbl { flex: 1; min-width: 0; }
-    .promo-row .del { flex-shrink: 0; width: 28px; height: 28px; padding: 0; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; color: #ef4444; line-height: 28px; text-align: center; }
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .toggle-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
-    .toggle-label input[type="checkbox"] { width: 18px; height: 18px; margin: 0; flex-shrink: 0; }
-    .ad-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .ad-thumb { position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid #eee; }
-    .ad-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .ad-thumb .rm { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; cursor: pointer; font-size: 12px; line-height: 20px; padding: 0; }
-    .upload-btn { display: inline-block; padding: 8px 16px; background: var(--bg-light, #f5f5f5); border: 1.5px dashed #ccc; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .ad-controls { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-    .ad-controls label { font-size: 13px; white-space: nowrap; }
-    .ad-controls .input-cute { width: 70px; }
-    .checkbox-label { display: flex; align-items: center; gap: 8px; }
-    .checkbox-label input { width: 18px; height: 18px; flex-shrink: 0; }
-    .danger-title { color: #991b1b; margin: 0 0 8px; font-size: 14px; font-weight: 700; }
-
-    /* Delight: micro-interactions */
-    .country-btn { transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
-    .country-btn:active { transform: scale(0.96); }
-    .country-btn:hover { border-color: #c7d2fe; background: #faf5ff; }
-    .view-mode-opt { transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
-    .view-mode-opt:active { transform: scale(0.95); }
-    .ad-thumb { transition: transform 0.2s; }
-    .ad-thumb:hover { transform: scale(1.05); }
-    .upload-btn { transition: all 0.2s; }
-    .upload-btn:hover { border-color: #6366f1; color: #6366f1; background: #faf5ff; }
-    .promo-row .del { transition: all 0.15s; }
-    .promo-row .del:hover { background: #fef2f2; transform: scale(1.1); }
-
-    /* Delight: success flash */
-    @keyframes successFlash { 0% { opacity: 0; transform: translateY(4px); } 30% { opacity: 1; transform: translateY(0); } 100% { opacity: 1; } }
-    .admin-status[style*="block"] { animation: successFlash 0.3s ease-out; }
-
-    /* Delight: tab panel transition */
-    .admin-tab-panel { animation: fadePanel 0.25s ease-out; }
-    .admin-sub-panel { animation: fadePanel 0.2s ease-out; }
-    @keyframes fadePanel { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-    }
-  </style>
+  <link rel="stylesheet" href="/assets/admin.css" />
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
     <div class="admin-topbar__row">
       <a href="/"><img src="/assets/images/logo2.png" alt="VOVOSnap" style="height:34px;" /></a>
       <div class="admin-topbar__actions" id="admin-topbar-actions">
-        <span id="plan-badge" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;"></span>
-        <a id="public-url-link" href="/store.html" target="_blank" rel="noopener" style="font-size:12px;color:#6b7280;text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        <span id="plan-badge" class="plan-badge"></span>
+        <a id="public-url-link" href="/store.html" target="_blank" rel="noopener" style="font-size:12px;color:var(--admin-text-muted);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
           /store.html
         </a>
         <a class="admin-topbar__link" id="view-store-link" href="/store.html" target="_blank" rel="noopener">
@@ -125,16 +57,16 @@
             <label>分類<input id="edit-category" type="text" class="input-cute" /></label>
             <label>價格（<span class="src-currency">JPY</span>）<input id="edit-price" type="number" min="0" class="input-cute" /></label>
             <div id="edit-tags-section" style="display:none;margin:8px 0;">
-              <p style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;">商品標籤</p>
+              <p style="font-size:12px;font-weight:600;color:var(--admin-text-secondary);margin-bottom:6px;">商品標籤</p>
               <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-hot" /> <span id="edit-tag-hot-label">熱門商品</span></label>
-                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-limited" /> <span id="edit-tag-limited-label">限時發售</span></label>
-                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-popular" /> <span id="edit-tag-popular-label">人氣特賣</span></label>
+                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-hot" /> <span class="tag-preview tag-color-hot" id="edit-tag-hot-label">熱門商品</span></label>
+                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-limited" /> <span class="tag-preview tag-color-limited" id="edit-tag-limited-label">限時發售</span></label>
+                <label class="checkbox-label" style="font-size:12px;"><input type="checkbox" id="edit-tag-popular" /> <span class="tag-preview tag-color-popular" id="edit-tag-popular-label">人氣特賣</span></label>
               </div>
             </div>
             <div class="edit-modal__actions">
               <button id="edit-save" class="button" type="button">儲存</button>
-              <button id="edit-toggle" class="button secondary" type="button" style="color:#ef4444;">下架</button>
+              <button id="edit-toggle" class="button secondary" type="button" style="color:var(--admin-danger);">下架</button>
               <button id="edit-cancel" class="button secondary" type="button">取消</button>
             </div>
             <p id="edit-status" class="meta"></p>
@@ -185,7 +117,7 @@
             <input id="photo-input" type="file" accept="image/*" capture="environment" multiple hidden />
           </label>
           <p class="meta" id="photo-count">已選 0 / 3 張</p>
-          <p class="meta" style="color:#999;font-size:11px;margin-top:4px;">需開啟瀏覽器相機權限才能拍照</p>
+          <p class="meta" style="color:var(--admin-text-muted);font-size:11px;margin-top:4px;">需開啟瀏覽器相機權限才能拍照</p>
         </div>
         <button id="btn-recognize-quick" class="button" type="button" disabled>VOVOCI AI 辨識上架</button>
         <div id="recognize-loading" class="sync-loading hidden">
@@ -216,89 +148,28 @@
       </div>
     </section>
 
-    <!-- Tab 3: 網站同步 -->
-    <section class="admin-tab-panel hidden" data-tab="sync">
-      <div class="admin-form-card">
-        <h2 class="admin-section-title">同步目標網站</h2>
-        <p class="meta">來源：fo-online.jp 排行榜</p>
-        <button id="sync-crawl-btn" class="button" type="button">開始同步</button>
-        <div id="sync-loading" class="sync-loading hidden">
-          <p class="sync-warning">請勿切換頁面或關閉螢幕</p>
-          <div class="sync-loading-bar">
-            <div class="sync-loading-bar__fill" id="sync-bar-fill"></div>
-          </div>
-          <p class="sync-loading-text" id="sync-loading-text">正在同步...</p>
-          <p class="sync-progress" id="sync-progress"></p>
-        </div>
-        <div id="sync-result" class="sync-result hidden">
-          <div class="sync-result-card">
-            <h3 id="sync-result-title">同步完成</h3>
-            <div class="sync-result-stats">
-              <div class="sync-stat"><span class="sync-stat__value" id="sync-crawled">0</span><span class="sync-stat__label">抓取筆數</span></div>
-              <div class="sync-stat"><span class="sync-stat__value" id="sync-upserted">0</span><span class="sync-stat__label">寫入筆數</span></div>
-              <div class="sync-stat"><span class="sync-stat__value" id="sync-source">-</span><span class="sync-stat__label">來源</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Tab 4: 訂單列表 -->
+    <!-- Tab 3: 訂單列表 -->
     <section class="admin-tab-panel hidden" data-tab="orders">
       <div id="order-filter-tabs" class="order-filter-tabs"></div>
       <section id="admin-forms" class="admin-forms"></section>
     </section>
 
-    <!-- Tab: 標籤 (Pro only) -->
-    <section class="admin-tab-panel hidden" data-tab="branding">
-      <div class="admin-form-card">
-        <h3 class="admin-section-title">商品標籤</h3>
-        <p class="meta" style="margin-bottom:12px;">自訂商品標籤名稱。Starter 使用預設名稱，Pro 可自訂。</p>
-        <div style="display:flex;flex-direction:column;gap:8px;" id="tag-names-editor">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="font-size:20px;">🔥</span>
-            <input type="text" id="tag-name-hot" class="input-cute" value="熱門商品" placeholder="熱門商品" />
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="font-size:20px;">⏰</span>
-            <input type="text" id="tag-name-limited" class="input-cute" value="限時發售" placeholder="限時發售" />
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="font-size:20px;">💎</span>
-            <input type="text" id="tag-name-popular" class="input-cute" value="人氣特賣" placeholder="人氣特賣" />
-          </div>
-        </div>
-        <button class="button" type="button" style="margin-top:12px;" onclick="saveTagNames()">儲存標籤</button>
-        <p id="tag-names-status" class="admin-status">已儲存</p>
-
-        <hr class="admin-divider" />
-        <h3 class="admin-section-title">商店 Logo</h3>
-        <p class="meta" style="margin-bottom:8px;">上傳 1:1 去背圖片，會顯示在商品列表、商品詳情、需求單右上角。</p>
-        <div id="store-logo-preview" style="margin-bottom:8px;"></div>
-        <label class="upload-btn">
-          上傳 Logo（1:1 去背圖）
-          <input type="file" id="store-logo-upload" accept="image/png,image/webp" style="display:none;" onchange="uploadStoreLogo(this.files[0])" />
-        </label>
-        <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="removeStoreLogo()">移除 Logo</button>
-        <p id="store-logo-status" class="admin-status">已儲存</p>
-      </div>
-    </section>
-
-    <!-- Tab 5: 設定 -->
+    <!-- Tab 4: 設定（整合標籤、外觀、定價、運輸） -->
     <section class="admin-tab-panel hidden" data-tab="settings">
       <div class="tab-sub-nav">
-        <button class="tab-sub-btn is-active" data-subtab="account">帳號</button>
-        <button class="tab-sub-btn" data-subtab="display">商店</button>
-        <button class="tab-sub-btn" data-subtab="pricing">匯率</button>
-        <button class="tab-sub-btn" data-subtab="shipping">運輸</button>
+        <button class="tab-sub-btn is-active" data-subtab="account">基本</button>
+        <button class="tab-sub-btn" data-subtab="display">外觀</button>
+        <button class="tab-sub-btn" data-subtab="branding">標籤</button>
+        <button class="tab-sub-btn" data-subtab="pricing">定價</button>
       </div>
 
-      <!-- 帳號 -->
+      <!-- 基本設定 -->
       <div class="admin-sub-panel" data-subtab-panel="account">
-        <div class="admin-form-card">
+        <div class="settings-group">
+          <h3 class="settings-group__title">帳號資訊</h3>
           <div class="admin-info-box">
             <p class="label">會員 Email</p>
-            <p class="value"><span id="member-email">載入中...</span> <span id="plan-expires" style="font-size:11px;color:#888;font-weight:400;"></span></p>
+            <p class="value"><span id="member-email">載入中...</span> <span id="plan-expires" style="font-size:11px;color:var(--admin-text-muted);font-weight:400;"></span></p>
           </div>
           <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
           <p class="meta">顯示在商店首頁的名稱</p>
@@ -312,9 +183,10 @@
           <p id="store-slug-status" class="admin-status">已更新，重新導向中...</p>
           <button class="button" type="button" onclick="saveStoreName()">儲存</button>
           <p id="store-name-status" class="admin-status">已儲存</p>
+        </div>
 
-          <hr class="admin-divider" />
-          <h3 class="admin-section-title">🌏 代購來源國家</h3>
+        <div class="settings-group">
+          <h3 class="settings-group__title">代購來源國家</h3>
           <p class="admin-section-desc">選擇後系統自動設定對應幣別和匯率。</p>
           <div class="country-grid" id="country-selector">
             <button class="country-btn" data-country="jp" onclick="selectCountry('jp')">🇯🇵<strong>日本</strong><span class="sub">JPY 日圓</span></button>
@@ -323,9 +195,52 @@
             <button class="country-btn" data-country="tw" onclick="selectCountry('tw')">🇹🇼<strong>台灣</strong><span class="sub">TWD 台幣</span></button>
           </div>
           <p id="country-status" class="admin-status">已儲存</p>
+        </div>
+      </div>
 
-          <hr class="admin-divider" />
-          <h3 class="admin-section-title">🖼️ 彈窗廣告輪播</h3>
+      <!-- 外觀設定 -->
+      <div class="admin-sub-panel hidden" data-subtab-panel="display">
+        <div class="settings-group">
+          <h3 class="settings-group__title">商店模板</h3>
+          <div id="template-selector" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+          <p id="template-status" class="admin-status">已套用</p>
+        </div>
+
+        <div class="settings-group" id="logo-section" style="display:none;">
+          <h3 class="settings-group__title">商店 Logo <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span></h3>
+          <p class="meta" style="margin-bottom:8px;">上傳 1:1 去背圖片，會顯示在商品列表、商品詳情、需求單右上角。</p>
+          <div id="store-logo-preview" style="margin-bottom:8px;"></div>
+          <label class="upload-btn">
+            上傳 Logo（1:1 去背圖）
+            <input type="file" id="store-logo-upload" accept="image/png,image/webp" style="display:none;" onchange="uploadStoreLogo(this.files[0])" />
+          </label>
+          <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="removeStoreLogo()">移除 Logo</button>
+          <p id="store-logo-status" class="admin-status">已儲存</p>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-group__title">商品列表檢視模式</h3>
+          <div class="view-mode-grid" id="view-mode-selector">
+            <button class="view-mode-opt" data-mode="list" onclick="setViewMode('list')">列表</button>
+            <button class="view-mode-opt" data-mode="card" onclick="setViewMode('card')">單欄</button>
+            <button class="view-mode-opt" data-mode="2card" onclick="setViewMode('2card')">雙欄</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-group__title">結帳感謝訊息</h3>
+          <p class="meta" style="margin-bottom:8px;">客人送出需求單後顯示的訊息。</p>
+          <textarea id="checkout-message-input" rows="4" class="input-cute" placeholder="請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。"></textarea>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-group__title">賣場規則</h3>
+          <p class="meta" style="margin-bottom:8px;">會顯示在商品詳情頁面的規格下方。可說明退換貨政策、運送時間等。</p>
+          <textarea id="store-rules-input" rows="6" class="input-cute" placeholder="1. 商品皆為代購，下單後約 7-14 個工作天到貨&#10;2. 代購商品恕不接受退換貨&#10;3. 商品價格已含國際運費&#10;4. 如有瑕疵請於收到 3 日內附照片聯繫客服"></textarea>
+        </div>
+
+        <div class="settings-group">
+          <h3 class="settings-group__title">彈窗廣告輪播</h3>
           <p class="meta" style="margin-bottom:8px;">上傳最多 3 張廣告圖片，會在商店首頁以輪播方式顯示。</p>
           <div class="ad-preview" id="popup-ad-preview"></div>
           <label class="upload-btn">
@@ -334,32 +249,47 @@
           </label>
           <div class="ad-controls">
             <label>輪播秒數</label>
-            <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" />
+            <input id="popup-ad-interval" type="number" min="0.3" max="10" step="0.1" value="0.5" class="input-cute" style="width:70px;" />
             <button class="button" type="button" onclick="savePopupAdSettings()">儲存</button>
           </div>
           <p id="popup-ad-status" class="admin-status">已儲存</p>
         </div>
+
+        <button class="button" type="button" style="margin-top:4px;" onclick="saveDisplaySettings()">儲存外觀設定</button>
+        <p id="display-status" class="admin-status">已儲存</p>
       </div>
 
-      <!-- 商店 -->
-      <div class="admin-sub-panel hidden" data-subtab-panel="display">
-        <div class="admin-form-card" style="margin-bottom:12px;">
-          <h3 class="admin-section-title">🎨 商店模板</h3>
-          <div id="template-selector" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
-          <p id="template-status" class="admin-status">已套用</p>
-        </div>
-        <div class="admin-form-card">
-          <h3 class="admin-section-title">商品列表檢視模式</h3>
-          <div class="view-mode-grid" id="view-mode-selector">
-            <button class="view-mode-opt" data-mode="list" onclick="setViewMode('list')">列表</button>
-            <button class="view-mode-opt" data-mode="card" onclick="setViewMode('card')">單欄</button>
-            <button class="view-mode-opt" data-mode="2card" onclick="setViewMode('2card')">雙欄</button>
+      <!-- 標籤設定（原 branding tab 整合進來） -->
+      <div class="admin-sub-panel hidden" data-subtab-panel="branding">
+        <div class="settings-group">
+          <h3 class="settings-group__title">商品標籤名稱</h3>
+          <p class="meta" style="margin-bottom:12px;">自訂商品標籤名稱。Starter 使用預設名稱，Pro 可自訂。</p>
+          <div style="display:flex;flex-direction:column;gap:10px;" id="tag-names-editor">
+            <div class="tag-input-row">
+              <span class="tag-icon">🔥</span>
+              <input type="text" id="tag-name-hot" class="input-cute" value="熱門商品" placeholder="熱門商品" />
+              <span class="tag-preview tag-color-hot" id="tag-preview-hot">熱門商品</span>
+            </div>
+            <div class="tag-input-row">
+              <span class="tag-icon">⏰</span>
+              <input type="text" id="tag-name-limited" class="input-cute" value="限時發售" placeholder="限時發售" />
+              <span class="tag-preview tag-color-limited" id="tag-preview-limited">限時發售</span>
+            </div>
+            <div class="tag-input-row">
+              <span class="tag-icon">💎</span>
+              <input type="text" id="tag-name-popular" class="input-cute" value="人氣特賣" placeholder="人氣特賣" />
+              <span class="tag-preview tag-color-popular" id="tag-preview-popular">人氣特賣</span>
+            </div>
           </div>
-          <hr class="admin-divider">
+          <button class="button" type="button" style="margin-top:12px;" onclick="saveTagNames()">儲存標籤</button>
+          <p id="tag-names-status" class="admin-status">已儲存</p>
+        </div>
+
+        <div class="settings-group">
           <div class="toggle-row">
-            <h3 class="admin-section-title" style="margin:0;">價格篩選按鈕</h3>
+            <h3 class="settings-group__title" style="margin:0;">價格篩選按鈕</h3>
             <label class="toggle-label">
-              <span id="promo-toggle-label" style="color:#888;">開啟</span>
+              <span id="promo-toggle-label" style="color:var(--admin-text-muted);">開啟</span>
               <input type="checkbox" id="promo-toggle" checked onchange="onPromoToggle()" />
             </label>
           </div>
@@ -368,11 +298,13 @@
             <div id="promo-filter-editor" style="display:flex;flex-direction:column;gap:8px;"></div>
             <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
           </div>
-          <hr class="admin-divider">
+        </div>
+
+        <div class="settings-group">
           <div class="toggle-row">
-            <h3 class="admin-section-title" style="margin:0;">優惠標籤</h3>
+            <h3 class="settings-group__title" style="margin:0;">優惠標籤</h3>
             <label class="toggle-label">
-              <span id="promo-tag-toggle-label" style="color:#888;">關閉</span>
+              <span id="promo-tag-toggle-label" style="color:var(--admin-text-muted);">關閉</span>
               <input type="checkbox" id="promo-tag-toggle" onchange="onPromoTagToggle()" />
             </label>
           </div>
@@ -383,36 +315,22 @@
               <input type="number" id="promo-tag-threshold" min="0" value="500" class="input-cute" style="width:80px;" />
             </div>
           </div>
-
-          <hr class="admin-divider">
-          <h3 class="admin-section-title">📝 結帳感謝訊息</h3>
-          <p class="meta" style="margin-bottom:8px;">客人送出需求單後顯示的訊息。</p>
-          <textarea id="checkout-message-input" rows="4" class="input-cute" placeholder="請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。"></textarea>
-
-          <hr class="admin-divider">
-          <h3 class="admin-section-title">📋 賣場規則</h3>
-          <p class="meta" style="margin-bottom:8px;">會顯示在商品詳情頁面的規格下方。可說明退換貨政策、運送時間等。</p>
-          <textarea id="store-rules-input" rows="6" class="input-cute" placeholder="1. 商品皆為代購，下單後約 7-14 個工作天到貨&#10;2. 代購商品恕不接受退換貨&#10;3. 商品價格已含國際運費&#10;4. 如有瑕疵請於收到 3 日內附照片聯繫客服"></textarea>
-
-          <button class="button" type="button" style="margin-top:12px;" onclick="saveDisplaySettings()">儲存顯示設定</button>
-          <p id="display-status" class="admin-status">已儲存</p>
         </div>
+
+        <button class="button" type="button" style="margin-top:4px;" onclick="saveDisplaySettings()">儲存標籤設定</button>
       </div>
 
-      <!-- 匯率 -->
+      <!-- 定價與運輸 -->
       <div class="admin-sub-panel hidden" data-subtab-panel="pricing">
-        <div class="admin-form-card">
+        <div class="settings-group">
+          <h3 class="settings-group__title">匯率設定</h3>
           <label><span class="currency-label">每筆加價</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
-          <label><span class="src-currency">JPY</span> → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
-          <button id="admin-save-pricing" class="button" type="button">儲存</button>
+          <label style="margin-top:8px;"><span class="src-currency">JPY</span> → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
+          <button id="admin-save-pricing" class="button" type="button" style="margin-top:8px;">儲存</button>
         </div>
-      </div>
 
-      <!-- 資料 -->
-      <!-- 運輸 -->
-      <div class="admin-sub-panel hidden" data-subtab-panel="shipping">
-        <div class="admin-form-card">
-          <h3 class="admin-section-title">運輸方式管理</h3>
+        <div class="settings-group">
+          <h3 class="settings-group__title">運輸方式管理</h3>
           <p class="meta" style="margin-bottom:12px;">自訂配送方式和運費。客人下單時可選擇這些選項。</p>
           <div id="shipping-methods-editor" style="display:flex;flex-direction:column;gap:10px;"></div>
           <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addShippingMethod()">+ 新增運輸方式</button>
@@ -420,8 +338,6 @@
           <p id="shipping-methods-status" class="admin-status">已儲存</p>
         </div>
       </div>
-
-      <!-- danger tab removed -->
     </section>
   </main>
 
@@ -436,7 +352,7 @@
     <div class="admin-sheet__body" id="admin-sheet-body"></div>
   </div>
 
-  <!-- 底部導航 -->
+  <!-- 底部導航（4 tabs） -->
   <nav class="admin-bottom-nav" id="admin-bottom-nav">
     <button class="admin-nav-item is-active" data-tab="products">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/><polyline points="2.32 6.16 12 11 21.68 6.16"/><line x1="12" y1="22.76" x2="12" y2="11"/></svg>
@@ -446,17 +362,9 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       <span>拍照</span>
     </button>
-    <button class="admin-nav-item" data-tab="sync">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      <span>同步</span>
-    </button>
     <button class="admin-nav-item" data-tab="orders">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
       <span>訂單</span>
-    </button>
-    <button class="admin-nav-item" data-tab="branding" id="nav-branding" style="display:none;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-      <span>標籤</span>
     </button>
     <button class="admin-nav-item" data-tab="settings">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -470,12 +378,6 @@
     var country = window.__STORE_COUNTRY || "jp";
     var conf = window.__COUNTRY_CONFIG || { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓" };
 
-    // Hide sync tab for all plans (feature removed)
-    var syncNav = document.querySelector('.admin-nav-item[data-tab="sync"]');
-    if (syncNav) syncNav.style.display = "none";
-    var syncPanel = document.querySelector('.admin-tab-panel[data-tab="sync"]');
-    if (syncPanel) syncPanel.remove();
-
     // Currency labels
     document.querySelectorAll(".src-currency").forEach(function(el) { el.textContent = conf.currency; });
 
@@ -485,19 +387,25 @@
       el.textContent = langLabels[country] || "原文品名";
     });
 
-    // Plan badge
+    // Plan badge (grayscale)
     var badge = document.getElementById("plan-badge");
     if (badge) {
       badge.textContent = plan.toUpperCase();
-      var colors = { free: "#f3f4f6:#6b7280", starter: "#EEF1E6:#5a6b2f", pro: "#F5EDE6:#9E5F38" };
-      var c = (colors[plan] || colors.free).split(":");
-      badge.style.background = c[0];
-      badge.style.color = c[1];
+      badge.className = "plan-badge plan-badge--" + plan;
     }
 
     // Country selector highlight
     document.querySelectorAll(".country-btn").forEach(function(btn) {
       if (btn.dataset.country === country) btn.classList.add("selected");
+    });
+
+    // Tag preview live update
+    ["hot", "limited", "popular"].forEach(function(tag) {
+      var input = document.getElementById("tag-name-" + tag);
+      var preview = document.getElementById("tag-preview-" + tag);
+      if (input && preview) {
+        input.addEventListener("input", function() { preview.textContent = this.value || this.placeholder; });
+      }
     });
   });
 
@@ -615,7 +523,7 @@
     var wrap = document.getElementById("promo-editor-wrap");
     var label = document.getElementById("promo-toggle-label");
     if (wrap) wrap.style.display = promoEnabled ? "" : "none";
-    if (label) { label.textContent = promoEnabled ? "開啟" : "關閉"; label.style.color = promoEnabled ? "#22c55e" : "#999"; }
+    if (label) { label.textContent = promoEnabled ? "開啟" : "關閉"; label.style.color = promoEnabled ? "var(--admin-success)" : "var(--admin-text-muted)"; }
   }
 
   function renderPromoEditor() {
@@ -650,7 +558,7 @@
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
     }).then(function(r){return r.json()}).then(function(d) {
-      if (d.ok) { var st = document.getElementById("display-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
+      if (d.ok) { var st = document.getElementById("display-status"); if (st) { st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); } }
     });
   }
 
@@ -842,16 +750,16 @@
     var el = document.getElementById("shipping-methods-editor");
     if (!el) return;
     el.innerHTML = shippingMethods.map(function(m, i) {
-      return '<div style="padding:12px;border:1px solid var(--line,#eee);border-radius:8px;background:var(--bg-card,#fff);">' +
+      return '<div style="padding:12px;border:1px solid var(--admin-border);border-radius:var(--admin-radius);background:var(--admin-surface);">' +
         '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">' +
           '<label class="toggle-label" style="flex-shrink:0;"><input type="checkbox" ' + (m.enabled ? 'checked' : '') + ' onchange="shippingMethods[' + i + '].enabled=this.checked"></label>' +
-          '<input type="text" value="' + (m.name || '').replace(/"/g,'&quot;') + '" placeholder="方式名稱" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;" onchange="shippingMethods[' + i + '].name=this.value">' +
-          '<button type="button" onclick="shippingMethods.splice(' + i + ',1);renderShippingEditor()" style="width:28px;height:28px;padding:0;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#ef4444;line-height:28px;text-align:center;">✕</button>' +
+          '<input type="text" value="' + (m.name || '').replace(/"/g,'&quot;') + '" placeholder="方式名稱" style="flex:1;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:13px;font-weight:600;" onchange="shippingMethods[' + i + '].name=this.value">' +
+          '<button type="button" onclick="shippingMethods.splice(' + i + ',1);renderShippingEditor()" style="width:28px;height:28px;padding:0;border:1px solid var(--admin-border);border-radius:4px;background:var(--admin-surface);cursor:pointer;font-size:12px;color:var(--admin-danger);line-height:28px;text-align:center;">✕</button>' +
         '</div>' +
-        '<input type="text" value="' + (m.desc || '').replace(/"/g,'&quot;') + '" placeholder="說明" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;color:#666;margin-bottom:4px;" onchange="shippingMethods[' + i + '].desc=this.value">' +
+        '<input type="text" value="' + (m.desc || '').replace(/"/g,'&quot;') + '" placeholder="說明" style="width:100%;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:12px;color:var(--admin-text-secondary);margin-bottom:4px;" onchange="shippingMethods[' + i + '].desc=this.value">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<span style="font-size:12px;color:#888;">運費 NT$</span>' +
-          '<input type="number" min="0" value="' + (m.price || 0) + '" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" onchange="shippingMethods[' + i + '].price=Number(this.value)">' +
+          '<span style="font-size:12px;color:var(--admin-text-muted);">運費 NT$</span>' +
+          '<input type="number" min="0" value="' + (m.price || 0) + '" style="width:80px;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:13px;" onchange="shippingMethods[' + i + '].price=Number(this.value)">' +
         '</div>' +
       '</div>';
     }).join("");
@@ -897,11 +805,11 @@
       var total = d.paging ? d.paging.total || 0 : 0;
       var limit = plan === "starter" ? 50 : 10;
       var pct = Math.min(100, Math.round(total / limit * 100));
-      var color = pct >= 90 ? "#ef4444" : pct >= 70 ? "#f59e0b" : "#8A9A5B";
+      var color = pct >= 90 ? "var(--admin-danger)" : pct >= 70 ? "var(--admin-warning)" : "var(--admin-text)";
       var bar = document.createElement("div");
-      bar.style.cssText = "padding:8px 12px;background:#f8f9fa;border:1px solid #eee;border-radius:8px;margin-bottom:12px;";
+      bar.style.cssText = "padding:8px 12px;background:var(--admin-hover);border:1px solid var(--admin-border);border-radius:8px;margin-bottom:12px;";
       bar.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>商品數量</span><span style="font-weight:600;">' + total + ' / ' + limit + '</span></div>' +
-        '<div style="height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;transition:width 0.3s;"></div></div>';
+        '<div style="height:6px;background:var(--admin-border);border-radius:3px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;transition:width 0.3s;"></div></div>';
       var grid = document.getElementById("manage-product-grid");
       if (grid && grid.parentNode) grid.parentNode.insertBefore(bar, grid);
     });
@@ -912,23 +820,34 @@
     var on = document.getElementById("promo-tag-toggle").checked;
     document.getElementById("promo-tag-wrap").style.display = on ? "" : "none";
     var label = document.getElementById("promo-tag-toggle-label");
-    if (label) { label.textContent = on ? "開啟" : "關閉"; label.style.color = on ? "#22c55e" : "#999"; }
+    if (label) { label.textContent = on ? "開啟" : "關閉"; label.style.color = on ? "var(--admin-success)" : "var(--admin-text-muted)"; }
   }
 
-  // Show branding tab for Pro, tags section for Starter+Pro
+  // Plan-gated features
   (function() {
     var plan = window.__STORE_PLAN || "free";
-    if (plan === "pro") {
-      var navBrand = document.getElementById("nav-branding");
-      if (navBrand) navBrand.style.display = "";
-    }
+
+    // Show tags in edit modal for Starter+Pro
     if (plan === "starter" || plan === "pro") {
       var tagSec = document.getElementById("edit-tags-section");
       if (tagSec) tagSec.style.display = "";
     }
-    // Pro can edit tag names, Starter sees readonly
+
+    // Pro: show logo section, editable tag names
+    if (plan === "pro") {
+      var logoSec = document.getElementById("logo-section");
+      if (logoSec) logoSec.style.display = "";
+    }
+
+    // Non-Pro: tag names readonly
     if (plan !== "pro") {
       document.querySelectorAll("#tag-names-editor input").forEach(function(inp) { inp.readOnly = true; inp.style.opacity = "0.6"; });
+    }
+
+    // Free: hide branding sub-tab entirely (no tags feature)
+    if (plan === "free") {
+      var brandingBtn = document.querySelector('.tab-sub-btn[data-subtab="branding"]');
+      if (brandingBtn) brandingBtn.style.display = "none";
     }
   })();
 
@@ -968,7 +887,6 @@
         body: JSON.stringify({ image: base64 }),
       }).then(function(r){return r.json()}).then(function(d) {
         if (d.ok) {
-          // Save logo key in display settings
           apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
             current.storeLogo = d.key;
             return apiFetch("/api/admin/display-settings", {
@@ -1002,7 +920,7 @@
   function renderStoreLogoPreview(key) {
     var el = document.getElementById("store-logo-preview");
     if (!el || !key) { if (el) el.innerHTML = ""; return; }
-    el.innerHTML = '<img src="' + (window.__API_BASE || "") + '/api/images/' + key + '" style="width:64px;height:64px;object-fit:contain;border:1px solid #eee;border-radius:8px;" />';
+    el.innerHTML = '<img src="' + (window.__API_BASE || "") + '/api/images/' + key + '" style="width:64px;height:64px;object-fit:contain;border:1px solid var(--admin-border);border-radius:8px;" />';
   }
 
   // Load tag names and logo from settings
@@ -1010,9 +928,9 @@
     apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
       if (!d.ok) return;
       if (d.tagNames) {
-        if (d.tagNames.hot) document.getElementById("tag-name-hot").value = d.tagNames.hot;
-        if (d.tagNames.limited) document.getElementById("tag-name-limited").value = d.tagNames.limited;
-        if (d.tagNames.popular) document.getElementById("tag-name-popular").value = d.tagNames.popular;
+        if (d.tagNames.hot) { document.getElementById("tag-name-hot").value = d.tagNames.hot; var ph = document.getElementById("tag-preview-hot"); if (ph) ph.textContent = d.tagNames.hot; }
+        if (d.tagNames.limited) { document.getElementById("tag-name-limited").value = d.tagNames.limited; var pl = document.getElementById("tag-preview-limited"); if (pl) pl.textContent = d.tagNames.limited; }
+        if (d.tagNames.popular) { document.getElementById("tag-name-popular").value = d.tagNames.popular; var pp = document.getElementById("tag-preview-popular"); if (pp) pp.textContent = d.tagNames.popular; }
         // Update edit modal tag labels
         var h = document.getElementById("edit-tag-hot-label"); if (h) h.textContent = d.tagNames.hot || "熱門商品";
         var l = document.getElementById("edit-tag-limited-label"); if (l) l.textContent = d.tagNames.limited || "限時發售";

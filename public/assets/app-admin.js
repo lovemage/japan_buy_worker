@@ -1,4 +1,3 @@
-import { initSync } from "./app-admin-sync.js";
 import { initOrders, refreshOrders } from "./app-admin-orders.js";
 import { initProducts } from "./app-admin-products.js";
 import { initSettings } from "./app-admin-settings.js";
@@ -11,14 +10,12 @@ import {
 const TAB_TITLES = {
   products: "商品管理",
   camera: "拍照上架",
-  sync: "網站同步",
   orders: "訂單列表",
-  branding: "品牌設定",
   settings: "網站設定",
 };
 
 // "products" is the main view; all others open as bottom sheets
-const SHEET_TABS = new Set(["camera", "sync", "orders", "branding", "settings"]);
+const SHEET_TABS = new Set(["camera", "orders", "settings"]);
 
 let currentTab = "products";
 let sheetOpen = false;
@@ -65,7 +62,6 @@ function openSheet(tab) {
     tabInitialized[tab] = true;
     if (tab === "orders") initOrders();
     if (tab === "settings") initSettings();
-    if (tab === "sync") initSync();
   }
 }
 
