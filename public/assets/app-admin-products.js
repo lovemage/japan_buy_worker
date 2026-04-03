@@ -26,8 +26,16 @@ function formatSellingPrice(basePrice, pricing) {
   if (!basePrice && basePrice !== 0) return "";
   const base = Number(basePrice);
   if (!Number.isFinite(base)) return "";
-  const markup = Number(pricing?.markupJpy ?? 0);
+  const mode = pricing?.markupMode || "flat";
   const rate = Number(pricing?.jpyToTwd ?? 1);
+
+  if (mode === "percent") {
+    const pct = Number(pricing?.markupPercent ?? 15);
+    const twd = Math.round(base * rate * (1 + pct / 100));
+    return `NT$${twd.toLocaleString("en-US")}`;
+  }
+
+  const markup = Number(pricing?.markupJpy ?? 0);
   const src = Math.round(base + markup);
   const twd = Math.round(src * rate);
   return `NT$${twd.toLocaleString("en-US")}`;

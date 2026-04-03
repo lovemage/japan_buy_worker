@@ -1,5 +1,28 @@
 import { showError } from "./app-admin.js";
 
+let currentMarkupMode = "flat";
+
+function setMarkupMode(mode) {
+  currentMarkupMode = mode;
+  const flatFields = document.getElementById("markup-flat-fields");
+  const percentFields = document.getElementById("markup-percent-fields");
+  const flatBtn = document.getElementById("markup-mode-flat");
+  const percentBtn = document.getElementById("markup-mode-percent");
+
+  if (mode === "percent") {
+    if (flatFields) flatFields.classList.add("hidden");
+    if (percentFields) percentFields.classList.remove("hidden");
+    if (flatBtn) { flatBtn.classList.add("secondary"); flatBtn.classList.remove("primary"); }
+    if (percentBtn) { percentBtn.classList.remove("secondary"); percentBtn.style.background = "var(--admin-active)"; percentBtn.style.color = "#fff"; }
+    if (flatBtn) { flatBtn.style.background = ""; flatBtn.style.color = ""; }
+  } else {
+    if (flatFields) flatFields.classList.remove("hidden");
+    if (percentFields) percentFields.classList.add("hidden");
+    if (percentBtn) { percentBtn.classList.add("secondary"); percentBtn.style.background = ""; percentBtn.style.color = ""; }
+    if (flatBtn) { flatBtn.classList.remove("secondary"); flatBtn.style.background = "var(--admin-active)"; flatBtn.style.color = "#fff"; }
+  }
+}
+
 async function loadPricing() {
   const res = await apiFetch("/api/admin/pricing");
   if (res.status === 401) { location.href = "/admin-login.html"; return; }
@@ -8,6 +31,7 @@ async function loadPricing() {
   const p = body?.pricing || {};
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = String(val ?? ""); };
   set("markup-jpy", p.markupJpy ?? 1000);
+  set("markup-percent", p.markupPercent ?? 15);
   set("jpy-to-twd", p.jpyToTwd ?? 0.21);
   set("international-shipping-twd", p.internationalShippingTwd ?? 350);
   set("domestic-shipping-twd", p.domesticShippingTwd ?? 60);
@@ -15,6 +39,7 @@ async function loadPricing() {
   set("limited-proxy-shipping-twd", p.limitedProxyShippingTwd ?? 80);
   const opt = document.getElementById("shipping-options-enabled");
   if (opt) opt.checked = p.shippingOptionsEnabled !== false;
+  setMarkupMode(p.markupMode || "flat");
 }
 
 async function savePricing() {
@@ -24,6 +49,8 @@ async function savePricing() {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       markupJpy: get("markup-jpy"),
+      markupMode: currentMarkupMode,
+      markupPercent: get("markup-percent"),
       jpyToTwd: get("jpy-to-twd"),
       internationalShippingTwd: get("international-shipping-twd"),
       domesticShippingTwd: get("domestic-shipping-twd"),
@@ -123,6 +150,8 @@ async function clearProducts(type) {
 
 export function initSettings() {
   document.getElementById("admin-save-pricing")?.addEventListener("click", savePricing);
+  document.getElementById("markup-mode-flat")?.addEventListener("click", () => setMarkupMode("flat"));
+  document.getElementById("markup-mode-percent")?.addEventListener("click", () => setMarkupMode("percent"));
   document.getElementById("admin-save-gemini-key")?.addEventListener("click", saveGeminiKey);
   document.getElementById("admin-change-password")?.addEventListener("click", changePassword);
   document.getElementById("admin-logout")?.addEventListener("click", logout);

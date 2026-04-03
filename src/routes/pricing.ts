@@ -8,6 +8,8 @@ type SettingRow = {
 };
 
 const DEFAULT_MARKUP_JPY = 1000;
+const DEFAULT_MARKUP_MODE = "flat"; // "flat" | "percent"
+const DEFAULT_MARKUP_PERCENT = 15;
 const DEFAULT_JPY_TO_TWD = 0.21;
 const DEFAULT_INTL_SHIPPING_TWD = 350;
 const DEFAULT_DOMESTIC_SHIPPING_TWD = 60;
@@ -31,6 +33,8 @@ CREATE TABLE IF NOT EXISTS app_settings (
 
 export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Promise<{
   markupJpy: number;
+  markupMode: string;
+  markupPercent: number;
   jpyToTwd: number;
   internationalShippingTwd: number;
   domesticShippingTwd: number;
@@ -81,15 +85,29 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
     )
     .bind(storeId, String(DEFAULT_SHIPPING_OPTIONS_ENABLED))
     .run();
+  await db
+    .prepare(
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_mode', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
+    )
+    .bind(storeId, DEFAULT_MARKUP_MODE)
+    .run();
+  await db
+    .prepare(
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_percent', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
+    )
+    .bind(storeId, String(DEFAULT_MARKUP_PERCENT))
+    .run();
 
   const rows = await db
     .prepare(
-      "SELECT key, value FROM app_settings WHERE store_id = ? AND key IN ('markup_jpy','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled')"
+      "SELECT key, value FROM app_settings WHERE store_id = ? AND key IN ('markup_jpy','markup_mode','markup_percent','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled')"
     )
     .bind(storeId)
     .all<SettingRow>();
   const result = Array.isArray(rows?.results) ? rows.results : [];
   const markupRaw = result.find((x) => x.key === "markup_jpy")?.value;
+  const markupModeRaw = result.find((x) => x.key === "markup_mode")?.value;
+  const markupPercentRaw = result.find((x) => x.key === "markup_percent")?.value;
   const rateRaw = result.find((x) => x.key === "jpy_to_twd")?.value;
   const intlShippingRaw =
     result.find((x) => x.key === "international_shipping_twd")?.value ||
@@ -104,6 +122,8 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   )?.value;
 
   const markup = Number(markupRaw);
+  const markupMode = markupModeRaw === "percent" ? "percent" : "flat";
+  const markupPercent = Number(markupPercentRaw);
   const rate = Number(rateRaw);
   const intlShipping = Number(intlShippingRaw);
   const domesticShipping = Number(domesticShippingRaw);
@@ -112,6 +132,8 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   const shippingOptionsEnabled = Number(shippingOptionsEnabledRaw);
   return {
     markupJpy: Number.isFinite(markup) ? markup : DEFAULT_MARKUP_JPY,
+    markupMode,
+    markupPercent: Number.isFinite(markupPercent) ? markupPercent : DEFAULT_MARKUP_PERCENT,
     jpyToTwd: Number.isFinite(rate) ? rate : DEFAULT_JPY_TO_TWD,
     internationalShippingTwd: Number.isFinite(intlShipping)
       ? intlShipping
@@ -160,6 +182,8 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
 
   let body: {
     markupJpy?: number;
+    markupMode?: string;
+    markupPercent?: number;
     jpyToTwd?: number;
     internationalShippingTwd?: number;
     internationalShippingJpy?: number;
@@ -169,16 +193,7 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
     shippingOptionsEnabled?: boolean;
   };
   try {
-    body = (await request.json()) as {
-      markupJpy?: number;
-      jpyToTwd?: number;
-      internationalShippingTwd?: number;
-      internationalShippingJpy?: number;
-      domesticShippingTwd?: number;
-      promoTagMaxTwd?: number;
-      limitedProxyShippingTwd?: number;
-      shippingOptionsEnabled?: boolean;
-    };
+    body = (await request.json()) as typeof body;
   } catch {
     return new Response(JSON.stringify({ ok: false, error: "Invalid JSON body" }), {
       status: 400,
@@ -187,6 +202,8 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
   }
 
   const markupJpy = Number(body.markupJpy);
+  const markupMode = body.markupMode === "percent" ? "percent" : "flat";
+  const markupPercent = Number(body.markupPercent ?? DEFAULT_MARKUP_PERCENT);
   const jpyToTwd = Number(body.jpyToTwd);
   const internationalShippingTwd = Number(
     body.internationalShippingTwd ?? body.internationalShippingJpy
@@ -197,6 +214,12 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
   const shippingOptionsEnabled = body.shippingOptionsEnabled === false ? 0 : 1;
   if (!Number.isFinite(markupJpy) || markupJpy < 0) {
     return new Response(JSON.stringify({ ok: false, error: "markupJpy must be >= 0" }), {
+      status: 400,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (!Number.isFinite(markupPercent) || markupPercent < 0 || markupPercent > 100) {
+    return new Response(JSON.stringify({ ok: false, error: "markupPercent must be 0-100" }), {
       status: 400,
       headers: { "content-type": "application/json" },
     });
@@ -253,6 +276,18 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
     .run();
   await ctx.db
     .prepare(
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_mode', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(ctx.storeId, markupMode)
+    .run();
+  await ctx.db
+    .prepare(
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_percent', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(ctx.storeId, String(markupPercent))
+    .run();
+  await ctx.db
+    .prepare(
       "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'jpy_to_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
     )
     .bind(ctx.storeId, String(jpyToTwd))
@@ -293,6 +328,8 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
       ok: true,
       pricing: {
         markupJpy,
+        markupMode,
+        markupPercent,
         jpyToTwd,
         internationalShippingTwd,
         domesticShippingTwd,

@@ -168,10 +168,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .offer-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .offer-head h3 { font-size: 17px; }
 .offer-close { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 4px 10px; cursor: pointer; }
-.offer-plan { margin-top: 12px; }
+.offer-plan { margin-top: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .offer-plan h4 { font-size: 14px; margin-bottom: 6px; }
-.offer-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.offer-table th, .offer-table td { border-bottom: 1px solid var(--border); padding: 7px 6px; text-align: left; }
+.offer-table { border-collapse: collapse; font-size: 12px; }
+.offer-table th, .offer-table td { border-bottom: 1px solid var(--border); padding: 7px 6px; text-align: left; white-space: nowrap; }
 .offer-hot { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 999px; background: #fde68a; color: #92400e; font-size: 10px; font-weight: 700; vertical-align: middle; }
 .offer-note { font-size: 12px; color: var(--text-muted); margin-top: 10px; }
 
@@ -563,11 +563,12 @@ function openPlanOfferPopup(focusPlan) {
     var title = plan === "starter" ? "Starter" : "Pro";
     return '<div class="offer-plan" id="offer-' + plan + '">' +
       '<h4>' + title + '</h4>' +
-      '<table class="offer-table"><thead><tr><th>方案期</th><th>天數</th><th>優惠價</th><th>總價</th></tr></thead><tbody>' +
+      '<table class="offer-table"><thead><tr><th>方案</th><th>月費</th><th>總價</th></tr></thead><tbody>' +
       rows.map(function(o) {
-        var extra = o.bonusDays > 0 ? '（含贈 ' + o.bonusDays + ' 天）' : '';
+        var extra = o.bonusDays > 0 ? '＋' + o.bonusDays + ' 天' : '';
         var hot = o.months === 12 ? ' <span class="offer-hot">最熱門</span>' : '';
-        return '<tr><td>' + o.months + ' 個月' + hot + '</td><td>' + o.days + ' 天' + extra + '</td><td>NT$' + Number(o.monthlyPrice).toLocaleString() + '/月</td><td>NT$' + Number(o.amount).toLocaleString() + '</td></tr>';
+        var period = o.months + ' 個月・' + o.days + ' 天' + (extra ? '（' + extra + '）' : '') + hot;
+        return '<tr><td>' + period + '</td><td>$' + Number(o.monthlyPrice).toLocaleString() + '/月</td><td>$' + Number(o.amount).toLocaleString() + '</td></tr>';
       }).join("") +
       '</tbody></table>' +
     '</div>';

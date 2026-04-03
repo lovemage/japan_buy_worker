@@ -328,6 +328,18 @@ Email (白名單: lovemage@gmail.com, aistorm0910@gmail.com) + 密碼 → HMAC s
 - **圖片格式：一律使用 WebP**。Gemini 生成的 PNG/JPEG 須用 `cwebp -q 85` 轉換後刪除原檔，保持輕量化
 - 命名規則：`{用途}-{主題}.webp`，例如 `hero-daigou.webp`、`manga-daigou-flow.webp`
 
+### 新增文章流程
+1. 在 `/public/blog/` 建立新的 HTML 文件
+2. 在 `/public/assets/blog-data.js` 的 `BLOG_ARTICLES` 陣列新增文章資料
+3. 在 `/public/sitemap.xml` 新增 `<url>` 條目
+4. 文章頁底部引入 `<script src="/assets/blog-data.js"></script>`，延伸閱讀用空的 `<ul class="related-list"></ul>`，由 JS 自動填入（排除當前頁面）
+5. Blog 列表頁用 `<div id="blog-article-list"></div>` 容器，由 JS 自動渲染所有文章卡片
+
+### SEO 基礎設施
+- **Sitemap**：`/public/sitemap.xml`（靜態，新增頁面時手動更新）
+- **Robots.txt**：`/public/robots.txt`（允許 / 和 /blog/，禁止 admin 和 API 路徑）
+- 新增 blog 文章時，sitemap 和 blog-data.js 都必須同步更新
+
 ### 核心訊息
 - 痛點：出國時間有限，傳統上架流程太耗時
 - 解決方案：vovosnap 是 LINE 群 / IG 的增強工具，不是取代品

@@ -3,6 +3,8 @@ import { applyProductImageFallback, withProductImageFallback } from "./image-fal
 const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = {
   markupJpy: _cc.defaultMarkup || 1000,
+  markupMode: "flat",
+  markupPercent: 15,
   jpyToTwd: _cc.defaultRate || 0.21,
   internationalShippingTwd: 350,
   domesticShippingTwd: 60,
@@ -52,8 +54,16 @@ function calcAdjustedPrices(baseJpy, pricing) {
   if (!Number.isFinite(base)) {
     return { jpy: 0, twd: 0 };
   }
-  const markup = Number(pricing?.markupJpy ?? DEFAULT_PRICING.markupJpy);
+  const mode = pricing?.markupMode || DEFAULT_PRICING.markupMode;
   const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
+
+  if (mode === "percent") {
+    const pct = Number(pricing?.markupPercent ?? DEFAULT_PRICING.markupPercent);
+    const twd = Math.round(base * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd) * (1 + (Number.isFinite(pct) ? pct : DEFAULT_PRICING.markupPercent) / 100));
+    return { jpy: base, twd };
+  }
+
+  const markup = Number(pricing?.markupJpy ?? DEFAULT_PRICING.markupJpy);
   const jpy = Math.round(base + (Number.isFinite(markup) ? markup : DEFAULT_PRICING.markupJpy));
   const twd = Math.round(jpy * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd));
   return { jpy, twd };

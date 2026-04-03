@@ -76,16 +76,23 @@ export async function handlePublicProducts(
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
   const pricing = await getPricingConfig(ctx.db, ctx.storeId);
   const markup = Number(pricing.markupJpy);
+  const markupMode = pricing.markupMode || "flat";
+  const markupPercent = Number(pricing.markupPercent);
   const rate = Number(pricing.jpyToTwd);
   const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
-  const maxBaseJpy =
-    Number.isFinite(markup) &&
-    Number.isFinite(rate) &&
-    rate > 0 &&
-    Number.isFinite(promoThreshold) &&
-    promoThreshold >= 0
+  const maxBaseJpy = (() => {
+    if (!Number.isFinite(rate) || rate <= 0 || !Number.isFinite(promoThreshold) || promoThreshold < 0) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    if (markupMode === "percent" && Number.isFinite(markupPercent)) {
+      // percent mode: twd = base * rate * (1 + pct/100), so base = twd / rate / (1 + pct/100)
+      return Math.max(0, Math.floor(promoThreshold / rate / (1 + markupPercent / 100)));
+    }
+    // flat mode: twd = (base + markup) * rate, so base = twd / rate - markup
+    return Number.isFinite(markup)
       ? Math.max(0, Math.floor(promoThreshold / rate - markup))
       : Number.MAX_SAFE_INTEGER;
+  })();
   const where = buildProductWhereClause({
     storeId: ctx.storeId,
     category,
@@ -219,16 +226,21 @@ export async function handlePublicProductBrands(
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
   const pricing = await getPricingConfig(ctx.db, ctx.storeId);
   const markup = Number(pricing.markupJpy);
+  const markupMode2 = pricing.markupMode || "flat";
+  const markupPercent2 = Number(pricing.markupPercent);
   const rate = Number(pricing.jpyToTwd);
   const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
-  const maxBaseJpy =
-    Number.isFinite(markup) &&
-    Number.isFinite(rate) &&
-    rate > 0 &&
-    Number.isFinite(promoThreshold) &&
-    promoThreshold >= 0
+  const maxBaseJpy = (() => {
+    if (!Number.isFinite(rate) || rate <= 0 || !Number.isFinite(promoThreshold) || promoThreshold < 0) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    if (markupMode2 === "percent" && Number.isFinite(markupPercent2)) {
+      return Math.max(0, Math.floor(promoThreshold / rate / (1 + markupPercent2 / 100)));
+    }
+    return Number.isFinite(markup)
       ? Math.max(0, Math.floor(promoThreshold / rate - markup))
       : Number.MAX_SAFE_INTEGER;
+  })();
   const where = buildProductWhereClause({
     storeId: ctx.storeId,
     category,

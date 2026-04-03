@@ -1,7 +1,7 @@
 import { addItem, getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 const _cc = window.__COUNTRY_CONFIG || {};
-const DEFAULT_PRICING = { markupJpy: 1000, jpyToTwd: _cc.defaultRate || 0.21 };
+const DEFAULT_PRICING = { markupJpy: 1000, markupMode: "flat", markupPercent: 15, jpyToTwd: _cc.defaultRate || 0.21 };
 
 function setError(message) {
   const node = document.getElementById("detail-error");
@@ -17,8 +17,16 @@ function calcAdjustedPrices(basePrice, pricing) {
   if (!Number.isFinite(base)) {
     return { src: null, twd: null };
   }
-  const markup = Number(pricing?.markupJpy ?? DEFAULT_PRICING.markupJpy);
+  const mode = pricing?.markupMode || DEFAULT_PRICING.markupMode;
   const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
+
+  if (mode === "percent") {
+    const pct = Number(pricing?.markupPercent ?? DEFAULT_PRICING.markupPercent);
+    const twd = Math.round(base * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd) * (1 + (Number.isFinite(pct) ? pct : DEFAULT_PRICING.markupPercent) / 100));
+    return { src: base, twd };
+  }
+
+  const markup = Number(pricing?.markupJpy ?? DEFAULT_PRICING.markupJpy);
   const src = Math.round(base + (Number.isFinite(markup) ? markup : DEFAULT_PRICING.markupJpy));
   const twd = Math.round(src * (Number.isFinite(rate) ? rate : DEFAULT_PRICING.jpyToTwd));
   return { src, twd };

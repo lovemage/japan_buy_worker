@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /blog/
+
+Disallow: /admin.html
+Disallow: /admin-login.html
+Disallow: /platform-admin.html
+Disallow: /onboarding.html
+Disallow: /api/
+
+Sitemap: https://vovosnap.com/sitemap.xml

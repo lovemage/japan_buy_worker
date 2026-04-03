@@ -445,9 +445,23 @@
       <div class="admin-sub-panel hidden" data-subtab-panel="pricing">
         <div class="settings-group">
           <h3 class="settings-group__title">匯率設定</h3>
-          <label><span class="currency-label">每筆加價</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
           <label style="margin-top:8px;"><span class="src-currency">JPY</span> → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
-          <button id="admin-save-pricing" class="button" type="button" style="margin-top:8px;">儲存</button>
+        </div>
+
+        <div class="settings-group" style="margin-top:16px;">
+          <h3 class="settings-group__title">代購利潤設定</h3>
+          <div style="display:flex;gap:4px;margin-bottom:12px;">
+            <button id="markup-mode-flat" type="button" class="button secondary" style="flex:1;font-size:12px;padding:8px;">每筆加價</button>
+            <button id="markup-mode-percent" type="button" class="button secondary" style="flex:1;font-size:12px;padding:8px;">百分比利潤</button>
+          </div>
+          <div id="markup-flat-fields">
+            <label><span class="currency-label">每筆加價金額</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
+          </div>
+          <div id="markup-percent-fields" class="hidden">
+            <label><span class="currency-label">利潤百分比</span> <span style="font-size:12px;color:var(--admin-text-muted);">%</span><input id="markup-percent" type="number" min="0" max="100" step="1" value="15" class="input-cute" /></label>
+            <p class="meta" style="margin-top:4px;">商品日幣價格 × 匯率 ×（1 + 利潤%）= 台幣售價</p>
+          </div>
+          <button id="admin-save-pricing" class="button" type="button" style="margin-top:12px;">儲存定價設定</button>
         </div>
 
         <div class="settings-group">
