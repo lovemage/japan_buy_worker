@@ -220,7 +220,7 @@ export default {
     }
 
     // ── Legacy routes: serve bootstrap store at root (backward compat) ──
-    const LEGACY_PAGES = ["/store", "/store.html", "/product", "/product.html",
+    const LEGACY_PAGES = ["/product", "/product.html",
       "/request", "/request.html", "/success", "/success.html",
       "/admin", "/admin.html", "/admin-login.html"];
     const isLegacyPage = LEGACY_PAGES.includes(url.pathname);
