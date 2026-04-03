@@ -66,7 +66,7 @@ function renderProductGrid(products, paging) {
       <div class="manage-card__body">
         <p class="manage-card__title">${name}</p>
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
-        <p class="manage-card__meta">${p.brand || ""}${p.category ? " · " + p.category : ""}</p>
+        <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
           <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
           <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">網址</button>
