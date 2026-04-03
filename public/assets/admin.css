@@ -956,10 +956,10 @@
 
 .manage-card__actions button {
   flex: 1;
-  padding: 6px 0;
+  padding: 4px 0;
   font-size: 12px;
   border-radius: var(--admin-radius-sm);
-  min-height: 32px;
+  min-height: 28px;
 }
 
 .manage-paging {
@@ -1046,6 +1046,22 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.edit-gallery__item--locked {
+  opacity: 0.45;
+  position: relative;
+}
+
+.edit-gallery__lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  pointer-events: none;
 }
 
 .edit-gallery__item .edit-gallery__remove {

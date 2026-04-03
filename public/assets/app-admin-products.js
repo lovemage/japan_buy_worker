@@ -69,7 +69,7 @@ function renderProductGrid(products, paging) {
         <p class="manage-card__meta">${p.brand || ""}${p.category ? " · " + p.category : ""}</p>
         <div class="manage-card__actions">
           <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
-          <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">🔗 網址</button>
+          <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">網址</button>
         </div>
       </div>
     </div>`;
@@ -148,22 +148,35 @@ let editNewImages = [];
 function renderEditGallery() {
   const container = document.getElementById("edit-gallery");
   if (!container) return;
+  const maxImages = window.__MAX_IMAGES || 3;
   const all = [...editGallery];
+  const totalCount = all.length + editNewImages.length;
+  const countHtml = `<p class="meta" style="width:100%;margin:0;">圖片 ${totalCount} / ${maxImages}</p>`;
   if (all.length === 0 && editNewImages.length === 0) {
-    container.innerHTML = '<p class="meta">尚無圖片</p>';
+    container.innerHTML = countHtml;
     return;
   }
-  container.innerHTML = all.map((url, idx) => `
-    <div class="edit-gallery__item">
+  let runningIdx = 0;
+  container.innerHTML = all.map((url, idx) => {
+    const locked = runningIdx >= maxImages;
+    runningIdx++;
+    return `
+    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}">
       <img src="${prefixImageUrl(url)}" alt="圖片 ${idx + 1}" />
+      ${locked ? '<div class="edit-gallery__lock">🔒</div>' : ""}
       <button class="edit-gallery__remove" data-idx="${idx}" data-type="existing" type="button">&times;</button>
-    </div>
-  `).join("") + editNewImages.map((img, idx) => `
-    <div class="edit-gallery__item" style="border-color:var(--brand)">
+    </div>`;
+  }).join("") + editNewImages.map((img, idx) => {
+    const locked = runningIdx >= maxImages;
+    runningIdx++;
+    return `
+    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}" style="border-color:var(--brand)">
       <img src="${img.dataUrl}" alt="新圖 ${idx + 1}" />
+      ${locked ? '<div class="edit-gallery__lock">🔒</div>' : ""}
       <button class="edit-gallery__remove" data-idx="${idx}" data-type="new" type="button">&times;</button>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("") + countHtml +
+    (totalCount > maxImages ? '<p class="meta" style="width:100%;margin:4px 0 0;color:var(--admin-warning,#D4960A);">升級方案享更多功能</p>' : "");
 
   container.querySelectorAll(".edit-gallery__remove").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -259,14 +272,10 @@ async function openEditModal(btn) {
 }
 
 async function onEditPhotos(event) {
-  const maxImages = window.__MAX_IMAGES || 3;
-  const currentCount = editGallery.length + editNewImages.length;
-  const remaining = Math.max(0, maxImages - currentCount);
   const files = Array.from(event.target.files || []);
-  for (const file of files.slice(0, remaining)) {
+  for (const file of files) {
     try { editNewImages.push(await compressImageToWebp(file)); } catch { /* skip */ }
   }
-  if (files.length > remaining) { alert(`目前方案最多 ${maxImages} 張圖片`); }
   renderEditGallery();
   event.target.value = "";
 }

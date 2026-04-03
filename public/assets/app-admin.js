@@ -197,7 +197,6 @@ function initSubTabs(scope) {
 // ── Bootstrap ──
 
 function bootstrap() {
-  const viewStoreLink = document.getElementById("view-store-link");
   const publicUrlLink = document.getElementById("public-url-link");
   const baseUrl = buildStorePublicBaseUrl({
     plan: window.__STORE_PLAN,
@@ -208,9 +207,6 @@ function bootstrap() {
     apiBase: window.__API_BASE || "",
   });
 
-  if (viewStoreLink instanceof HTMLAnchorElement) {
-    viewStoreLink.href = `${baseUrl}/`;
-  }
   if (publicUrlLink instanceof HTMLAnchorElement) {
     publicUrlLink.href = `${baseUrl}/`;
     publicUrlLink.textContent = buildStorePublicDisplayText({

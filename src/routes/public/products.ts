@@ -149,7 +149,13 @@ ${where.whereSql}
   return new Response(
     JSON.stringify({
       ok: true,
-      products: products.map(mapProduct),
+      products: products.map((p) => {
+        const mapped = mapProduct(p);
+        const galLimits: Record<string, number> = { free: 3, starter: 4, pro: 8 };
+        const galMax = galLimits[ctx.storePlan] || 3;
+        if (mapped.gallery.length > galMax) mapped.gallery = mapped.gallery.slice(0, galMax);
+        return mapped;
+      }),
       filters: {
         category: hasCategory ? category : "",
         brands,
@@ -308,8 +314,11 @@ LIMIT 1
   const mapped = mapProduct(product);
   const main = mapped.displayImageUrl || mapped.imageUrl;
   const storedPayload = parseStoredProductPayload(product.source_payload_json);
+  const galleryLimits: Record<string, number> = { free: 3, starter: 4, pro: 8 };
+  const maxGallery = galleryLimits[ctx.storePlan] || 3;
   const galleryRaw = storedPayload.gallery;
-  const gallery = galleryRaw.length > 0 ? galleryRaw : main ? [main] : [];
+  const galleryFull = galleryRaw.length > 0 ? galleryRaw : main ? [main] : [];
+  const gallery = galleryFull.slice(0, maxGallery);
   const description =
     storedPayload.description
       ? storedPayload.description
