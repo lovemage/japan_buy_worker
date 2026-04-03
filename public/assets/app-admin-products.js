@@ -353,7 +353,6 @@ function initManageSearch() {
   });
 }
 
-const MAX_PHOTOS = 3;
 const MAX_IMAGE_SIZE = 800;
 const WEBP_QUALITY = 0.8;
 
@@ -403,13 +402,13 @@ function renderManualPreviews() {
 
 function updateManualCount() {
   const el = document.getElementById("manual-photo-count");
-  if (el) el.textContent = `已選 ${manualImages.length} / ${MAX_PHOTOS} 張`;
+  const max = window.__MAX_IMAGES || 3;
+  if (el) el.textContent = `已選 ${manualImages.length} / ${max} 張`;
 }
 
 async function onManualPhotos(event) {
   const files = Array.from(event.target.files || []);
-  const remaining = MAX_PHOTOS - manualImages.length;
-  for (const file of files.slice(0, remaining)) {
+  for (const file of files) {
     try { manualImages.push(await compressImageToWebp(file)); } catch { /* skip */ }
   }
   renderManualPreviews();

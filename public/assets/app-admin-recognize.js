@@ -1,4 +1,3 @@
-const MAX_PHOTOS = 3;
 const MAX_IMAGE_SIZE = 800;
 const WEBP_QUALITY = 0.8;
 
@@ -19,7 +18,7 @@ function updateButtons() {
   const hasImages = selectedImages.length > 0;
   if (quickBtn) quickBtn.disabled = !hasImages;
   const count = document.getElementById("photo-count");
-  if (count) count.textContent = `已選 ${selectedImages.length} / ${MAX_PHOTOS} 張`;
+  if (count) count.textContent = `已選 ${selectedImages.length} / ${window.__MAX_IMAGES || 3} 張`;
 }
 
 function compressImage(file) {
@@ -78,7 +77,7 @@ function renderPreviews() {
 
 async function onPhotosSelected(event) {
   const files = Array.from(event.target.files || []);
-  const remaining = MAX_PHOTOS - selectedImages.length;
+  const remaining = (window.__MAX_IMAGES || 3) - selectedImages.length;
   const toProcess = files.slice(0, remaining);
 
   for (const file of toProcess) {
