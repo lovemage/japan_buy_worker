@@ -122,9 +122,11 @@ function renderProductGrid(products, paging) {
   if (pagingEl && paging) {
     const { page, totalPages, total } = paging;
     pagingEl.innerHTML = `
-      <button class="button secondary" ${page <= 1 ? "disabled" : ""} id="manage-prev">上一頁</button>
-      <span class="meta">${page} / ${totalPages}（${total} 件）</span>
-      <button class="button secondary" ${page >= totalPages ? "disabled" : ""} id="manage-next">下一頁</button>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+        <button class="button secondary" ${page <= 1 ? "disabled" : ""} id="manage-prev">上一頁</button>
+        <button class="button secondary" ${page >= totalPages ? "disabled" : ""} id="manage-next">下一頁</button>
+      </div>
+      <p class="meta" style="text-align:center;margin:6px 0 0;">${page} / ${totalPages}（${total} 件）</p>
     `;
     document.getElementById("manage-prev")?.addEventListener("click", () => { managePage--; loadManagedProducts(); });
     document.getElementById("manage-next")?.addEventListener("click", () => { managePage++; loadManagedProducts(); });
