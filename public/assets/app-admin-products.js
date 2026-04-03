@@ -94,8 +94,8 @@ function renderProductGrid(products, paging) {
       });
       navigator.clipboard.writeText(url).then(() => {
         const orig = btn.textContent;
-        btn.textContent = "✓ 已複製";
-        setTimeout(() => { btn.textContent = orig; }, 1500);
+        btn.textContent = "✓";
+        setTimeout(() => { btn.textContent = orig; }, 1200);
       });
     });
   });
