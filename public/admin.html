@@ -356,14 +356,14 @@
         <div class="settings-group">
           <h3 class="settings-group__title">帳號資訊</h3>
           <div class="admin-info-box">
-            <p class="label">會員 Email</p>
-            <p class="value"><span id="member-email">載入中...</span> <span id="plan-expires" style="font-size:11px;color:var(--admin-text-muted);font-weight:400;"></span></p>
+            <p class="value"><span id="member-email">載入中...</span></p>
+            <p class="value" id="plan-expires" style="font-size:12px;color:var(--admin-text-muted);font-weight:400;"></p>
           </div>
           <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
           <p class="meta">顯示在商店首頁的名稱</p>
           <label style="margin-top:10px;">網站介紹<input id="store-description" type="text" class="input-cute" placeholder="日韓代購，品質保證" maxlength="200" /></label>
           <p class="meta">顯示在商店名稱下方（最多 200 字）</p>
-          <label style="margin-top:10px;">店面網址 (slug)
+          <label style="margin-top:10px;">子網域 (*.vovosnap.com)
             <input id="store-slug-edit" type="text" class="input-cute" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
           </label>
           <p class="meta" id="store-slug-meta">僅 Pro 可修改，終身一次。</p>
