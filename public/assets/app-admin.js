@@ -1,6 +1,7 @@
 import { initOrders, refreshOrders } from "./app-admin-orders.js";
 import { initProducts } from "./app-admin-products.js";
 import { initSettings } from "./app-admin-settings.js";
+import { initMarketing } from "./app-admin-marketing.js";
 import {
   buildStorePublicBaseUrl,
   buildStorePublicDisplayText,
@@ -231,6 +232,7 @@ function bootstrap() {
   tabInitialized["products"] = true;
   tabInitialized["camera"] = true;
   initProducts();
+  initMarketing();
 
   import("./app-admin-recognize.js");
 }

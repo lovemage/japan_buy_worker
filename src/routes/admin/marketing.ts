@@ -1,0 +1,220 @@
+import type { RequestContext } from "../../context";
+import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel } from "./settings";
+
+const TONE_MAP: Record<string, string> = {
+  professional: "專業、有信賴感的語氣，用詞精準，強調品質與服務",
+  friendly: "親切溫暖的語氣，像朋友推薦好物，用「你」稱呼讀者",
+  list: "條列式重點整理，簡潔有力，方便快速瀏覽",
+  lively: "活潑有趣、帶點俏皮的語氣，善用表情符號和流行用語",
+};
+
+const PLATFORM_MAP: Record<string, string> = {
+  line: "Line 群組/官方帳號貼文，適合較長的推薦文，可分段，含商品連結",
+  threads: "Threads 貼文，簡短有力，500字以內，適合引起討論",
+  "ig-post": "Instagram 貼文文案，搭配照片使用，含 hashtag，字數適中",
+  "ig-reels": "Instagram Reels 短影片腳本，包含開場hook、重點、結尾CTA，15-30秒節奏",
+  fb: "Facebook 貼文，可較長，適合社團或粉專發文，含互動引導",
+  other: "通用社群行銷文案，適用於各種平台",
+};
+
+const MONTHLY_LIMITS: Record<string, number> = {
+  free: 5,
+  starter: 10,
+  pro: -1,
+};
+
+function getMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export async function handleMarketingUsage(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  const json = (data: unknown, status = 200) =>
+    new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
+
+  const plan = ctx.storePlan || "free";
+  const limit = MONTHLY_LIMITS[plan] ?? 5;
+  const monthKey = getMonthKey();
+  const settingKey = `ai_marketing_count_${monthKey}`;
+
+  const row = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = ?")
+    .bind(ctx.storeId, settingKey)
+    .first<{ value: string }>();
+  const used = parseInt(row?.value || "0", 10);
+
+  return json({ ok: true, used, limit });
+}
+
+export async function handleMarketing(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  const json = (data: unknown, status = 200) =>
+    new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
+
+  if (request.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+
+  // Check usage limit
+  const plan = ctx.storePlan || "free";
+  const limit = MONTHLY_LIMITS[plan] ?? 5;
+  const monthKey = getMonthKey();
+  const settingKey = `ai_marketing_count_${monthKey}`;
+
+  if (limit !== -1) {
+    const row = await ctx.db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = ?")
+      .bind(ctx.storeId, settingKey)
+      .first<{ value: string }>();
+    const used = parseInt(row?.value || "0", 10);
+    if (used >= limit) {
+      return json({ ok: false, error: `本月 AI 行銷次數已達上限（${limit} 次）。升級方案可獲得更多次數。` }, 403);
+    }
+  }
+
+  // Parse body
+  let body: { tone?: string; platform?: string };
+  try {
+    body = (await request.json()) as { tone?: string; platform?: string };
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  const tone = TONE_MAP[body.tone || "professional"] || TONE_MAP.professional;
+  const platform = PLATFORM_MAP[body.platform || "line"] || PLATFORM_MAP.line;
+
+  // Gather store context
+  const storeInfo = await ctx.db
+    .prepare("SELECT display_name, slug, destination_country FROM stores WHERE id = ?")
+    .bind(ctx.storeId)
+    .first<{ display_name: string; slug: string; destination_country: string }>();
+
+  const storeName = storeInfo?.display_name || "我的商店";
+  const country = storeInfo?.destination_country || "jp";
+  const slug = storeInfo?.slug || "";
+
+  // Get store rules
+  const rulesRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+    .bind(ctx.storeId)
+    .first<{ value: string }>();
+  let storeRules = "";
+  if (rulesRow?.value) {
+    try {
+      const ds = JSON.parse(rulesRow.value);
+      storeRules = ds.storeRules || "";
+    } catch {}
+  }
+
+  // Get products (top 20 active)
+  const products = await ctx.db
+    .prepare("SELECT title_ja, title_zh_tw, brand, category, price_jpy_tax_in FROM products WHERE store_id = ? AND is_active = 1 ORDER BY id DESC LIMIT 20")
+    .bind(ctx.storeId)
+    .all<{ title_ja: string; title_zh_tw: string; brand: string; category: string; price_jpy_tax_in: number }>();
+
+  const productList = (products.results || []).map((p, i) =>
+    `${i + 1}. ${p.title_zh_tw || p.title_ja}${p.brand ? ` (${p.brand})` : ""}${p.category ? ` [${p.category}]` : ""}`
+  ).join("\n");
+
+  const countryNames: Record<string, string> = { jp: "日本", kr: "韓國", th: "泰國", tw: "台灣" };
+  const countryName = countryNames[country] || country;
+
+  // Build store URL
+  const storeUrl = slug ? `https://${slug}.vovosnap.com` : "vovosnap.com";
+
+  // Build prompt
+  const prompt = `你是一位專業的社群行銷文案撰寫專家。請根據以下資訊，為代購商店撰寫一篇行銷文案。
+
+## 商店資訊
+- 商店名稱：${storeName}
+- 代購來源國：${countryName}
+- 商店連結：${storeUrl}
+${storeRules ? `- 賣場規則：${storeRules}` : ""}
+
+## 目前上架商品
+${productList || "（尚無商品）"}
+
+## 要求
+- 語氣風格：${tone}
+- 目標平台：${platform}
+- 文案中自然融入商店連結（${storeUrl}）
+- 如適合，可提及幾個熱門商品名稱作為推薦
+- 若為 IG 貼文，請加入相關 hashtag
+- 若為 Reels 腳本，請標示畫面/秒數
+- 文案需為繁體中文
+- 直接輸出文案內容，不要加其他說明`;
+
+  // Call AI
+  const aiModel = await getAiModel(ctx.db, ctx.storeId);
+  const useOpenRouter = aiModel === "v2" && plan === "pro";
+
+  let content: string;
+
+  if (useOpenRouter) {
+    const apiKey = await getOpenRouterApiKey(ctx.db);
+    const modelId = await getOpenRouterModel(ctx.db);
+    if (!apiKey || !modelId) {
+      return json({ ok: false, error: "OpenRouter 設定不完整，請聯繫平台管理員" }, 400);
+    }
+
+    const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: modelId,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    if (!orRes.ok) {
+      const errText = await orRes.text().catch(() => "");
+      return json({ ok: false, error: `AI 產生失敗 (${orRes.status})：${errText.slice(0, 200)}` }, 502);
+    }
+
+    const orData = (await orRes.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    content = orData?.choices?.[0]?.message?.content || "";
+  } else {
+    const apiKey = await getGeminiApiKey(ctx.db, ctx.storeId, plan);
+    if (!apiKey) {
+      return json({ ok: false, error: "API Key 尚未設定" }, 400);
+    }
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const geminiRes = await fetch(geminiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    });
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text().catch(() => "");
+      return json({ ok: false, error: `AI 產生失敗 (${geminiRes.status})：${errText.slice(0, 200)}` }, 502);
+    }
+
+    const geminiData = (await geminiRes.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+    content = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  }
+
+  if (!content) {
+    return json({ ok: false, error: "AI 未回傳結果" }, 502);
+  }
+
+  // Increment usage counter
+  await ctx.db
+    .prepare(
+      `INSERT INTO app_settings (store_id, key, value, updated_at)
+       VALUES (?, ?, '1', datetime('now'))
+       ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
+    )
+    .bind(ctx.storeId, settingKey)
+    .run();
+
+  return json({ ok: true, content });
+}

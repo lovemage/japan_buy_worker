@@ -28,6 +28,7 @@
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="manage">產品管理</button>
         <button class="tab-sub-btn" data-subtab="categories">分類管理</button>
+        <button class="tab-sub-btn" data-subtab="ai-marketing">AI行銷</button>
       </div>
       <div class="admin-sub-panel" data-subtab-panel="manage">
         <div class="admin-manage-header">
@@ -76,6 +77,55 @@
             <button id="category-add-btn" class="button" type="button" style="flex:3;white-space:nowrap;">新增</button>
           </div>
           <div id="category-list" class="category-list"></div>
+        </div>
+      </div>
+      <div class="admin-sub-panel hidden" data-subtab-panel="ai-marketing">
+        <div class="admin-form-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="margin:0;font-size:15px;font-weight:700;">AI 行銷文案產生器</h3>
+            <span class="meta" id="marketing-usage"></span>
+          </div>
+
+          <p style="font-size:12px;font-weight:600;color:var(--admin-text-secondary);margin-bottom:6px;">行銷語氣</p>
+          <div class="country-toggle-group" id="tone-selector" style="margin-bottom:14px;">
+            <button class="country-toggle-btn selected" data-tone="professional" type="button">專業語氣</button>
+            <button class="country-toggle-btn" data-tone="friendly" type="button">親切語氣</button>
+            <button class="country-toggle-btn" data-tone="list" type="button">條列式</button>
+            <button class="country-toggle-btn" data-tone="lively" type="button">活潑型</button>
+          </div>
+
+          <p style="font-size:12px;font-weight:600;color:var(--admin-text-secondary);margin-bottom:6px;">社群平台</p>
+          <div class="country-toggle-group" id="platform-selector" style="margin-bottom:14px;">
+            <button class="country-toggle-btn selected" data-platform="line" type="button">Line</button>
+            <button class="country-toggle-btn" data-platform="threads" type="button">Threads</button>
+            <button class="country-toggle-btn" data-platform="ig-post" type="button">IG貼文</button>
+          </div>
+          <div class="country-toggle-group" id="platform-selector-2" style="margin-bottom:14px;">
+            <button class="country-toggle-btn" data-platform="ig-reels" type="button">IG Reels</button>
+            <button class="country-toggle-btn" data-platform="fb" type="button">FB貼文</button>
+            <button class="country-toggle-btn" data-platform="other" type="button">其他</button>
+          </div>
+
+          <button id="btn-generate-marketing" class="button" type="button" style="width:100%;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            產生行銷文案
+          </button>
+
+          <div id="marketing-loading" class="hidden" style="text-align:center;padding:20px;">
+            <p class="meta">AI 正在撰寫文案中...</p>
+          </div>
+
+          <div id="marketing-output" class="hidden" style="margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <p style="font-size:12px;font-weight:600;color:var(--admin-text-secondary);margin:0;">產生結果</p>
+              <button id="btn-copy-marketing" type="button" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--admin-text-muted);" title="複製文案">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                複製
+              </button>
+            </div>
+            <div id="marketing-result" style="background:var(--admin-hover);border-radius:8px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto;"></div>
+          </div>
+          <p id="marketing-status" class="meta" style="margin-top:8px;"></p>
         </div>
       </div>
     </section>
