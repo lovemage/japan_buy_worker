@@ -10,47 +10,6 @@
     <script>if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };</script>
   </head>
   <body>
-    <!-- In-app browser detection banner -->
-    <div id="inapp-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#fffbeb;border-bottom:1px solid #f59e0b;padding:12px 16px;text-align:center;font-size:13px;color:#92400e;">
-      <p style="margin:0 0 6px;font-weight:600;">請使用瀏覽器 (Chrome, Safari) 才能使用本網站完整功能</p>
-      <p style="margin:0 0 8px;font-size:12px;color:#a16207;">目前您正在使用 <span id="inapp-name">應用程式</span> 內建瀏覽器，部分功能可能受限</p>
-      <button id="inapp-copy-btn" style="display:inline-flex;align-items:center;gap:4px;padding:6px 16px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#92400e;font-size:12px;font-weight:600;cursor:pointer;" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        複製網址到瀏覽器開啟
-      </button>
-    </div>
-    <script>
-    (function(){
-      var ua = navigator.userAgent || "";
-      var isLine = /\bLine\b/i.test(ua);
-      var isFB = /\bFBAV\b/i.test(ua) || /\bFB_IAB\b/i.test(ua);
-      var isIG = /\bInstagram\b/i.test(ua);
-      var appName = isLine ? "LINE" : isFB ? "Facebook" : isIG ? "Instagram" : "";
-      if (!appName) return;
-      var banner = document.getElementById("inapp-banner");
-      if (banner) {
-        banner.style.display = "block";
-        var nameEl = document.getElementById("inapp-name");
-        if (nameEl) nameEl.textContent = appName;
-        document.body.style.paddingTop = banner.offsetHeight + "px";
-      }
-      var btn = document.getElementById("inapp-copy-btn");
-      if (btn) {
-        btn.addEventListener("click", function() {
-          var url = location.href;
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(function() { btn.textContent = "已複製！"; setTimeout(function() { btn.innerHTML = '複製網址到瀏覽器開啟'; }, 2000); });
-          } else {
-            var ta = document.createElement("textarea");
-            ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
-            document.body.appendChild(ta); ta.select();
-            try { document.execCommand("copy"); btn.textContent = "已複製！"; setTimeout(function() { btn.innerHTML = '複製網址到瀏覽器開啟'; }, 2000); } catch(e) {}
-            document.body.removeChild(ta);
-          }
-        });
-      }
-    })();
-    </script>
     <div id="loading-overlay" class="loading-overlay" aria-live="polite" aria-label="載入中">
       <div class="loading-bar-wrap">
         <div class="loading-bar"></div>
