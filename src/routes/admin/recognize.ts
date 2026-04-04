@@ -1,6 +1,6 @@
 import type { RequestContext } from "../../context";
 import type { D1DatabaseLike } from "../../types/d1";
-import { getGeminiApiKey, getAiModel, getOpenRouterApiKey } from "./settings";
+import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel } from "./settings";
 
 type RecognizeRequest = {
   images: string[]; // base64 encoded JPEG, max 3
@@ -142,13 +142,14 @@ export async function handleAdminRecognize(
 
   if (useOpenRouter) {
     // OpenRouter API (OpenAI-compatible)
+    const orModelId = await getOpenRouterModel(ctx.db);
     const imageContent = body.images.map((b64) => ({
       type: "image_url" as const,
       image_url: { url: `data:image/jpeg;base64,${b64}` },
     }));
 
     const orBody = {
-      model: "google/gemini-2.5-flash-preview",
+      model: orModelId,
       messages: [
         {
           role: "user" as const,

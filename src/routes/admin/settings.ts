@@ -44,6 +44,13 @@ export async function getAiModel(db: D1DatabaseLike, storeId: number): Promise<s
   return row?.value || "v1";
 }
 
+export async function getOpenRouterModel(db: D1DatabaseLike): Promise<string> {
+  const row = await db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'openrouter_model'")
+    .first<{ value: string }>();
+  return row?.value || "google/gemini-2.5-flash-preview";
+}
+
 export async function getOpenRouterApiKey(db: D1DatabaseLike): Promise<string> {
   const row = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'openrouter_api_key_pro'")

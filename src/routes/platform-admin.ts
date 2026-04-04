@@ -324,7 +324,7 @@ export async function handlePlatformAdmin(
     }
 
     const keys = await db
-      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro', 'openrouter_api_key_pro')")
+      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro', 'openrouter_api_key_pro', 'openrouter_model')")
       .all<{ key: string; value: string }>();
 
     const result: Record<string, string> = {};
@@ -336,14 +336,15 @@ export async function handlePlatformAdmin(
       starterKey: result["gemini_api_key_starter"] || "",
       proKey: result["gemini_api_key_pro"] || "",
       openrouterProKey: result["openrouter_api_key_pro"] || "",
+      openrouterModel: result["openrouter_model"] || "",
     });
   }
 
   // Set platform API keys (super-admin only)
   if (url.pathname === "/api/platform-admin/api-keys" && request.method === "POST") {
-    let body: { starterKey?: string; proKey?: string; openrouterProKey?: string; email?: string };
+    let body: { starterKey?: string; proKey?: string; openrouterProKey?: string; openrouterModel?: string; email?: string };
     try {
-      body = (await request.json()) as { starterKey?: string; proKey?: string; openrouterProKey?: string; email?: string };
+      body = (await request.json()) as { starterKey?: string; proKey?: string; openrouterProKey?: string; openrouterModel?: string; email?: string };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
@@ -368,6 +369,12 @@ export async function handlePlatformAdmin(
       await db
         .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'openrouter_api_key_pro', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
         .bind(body.openrouterProKey)
+        .run();
+    }
+    if (body.openrouterModel) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'openrouter_model', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.openrouterModel)
         .run();
     }
 

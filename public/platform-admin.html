@@ -276,6 +276,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
           <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="fetchOpenRouterModels()">載入模型列表</button>
         </div>
       </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:#666;">目前模型：</span>
+        <strong style="font-size:13px;" id="openrouter-selected-model">未選擇</strong>
+      </div>
       <div id="openrouter-models-section" style="display:none;margin-top:12px;">
         <input type="text" id="openrouter-model-search" placeholder="搜尋模型名稱..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;">
         <div id="openrouter-model-list" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;"></div>
@@ -664,6 +668,10 @@ async function loadApiKeys() {
     document.getElementById("api-key-starter").value = data.starterKey || "";
     document.getElementById("api-key-pro").value = data.proKey || "";
     document.getElementById("api-key-openrouter-pro").value = data.openrouterProKey || "";
+    if (data.openrouterModel) {
+      selectedOpenRouterModel = data.openrouterModel;
+      document.getElementById("openrouter-selected-model").textContent = data.openrouterModel;
+    }
   }
 }
 
@@ -676,6 +684,7 @@ async function saveApiKeys() {
       starterKey: document.getElementById("api-key-starter").value.trim(),
       proKey: document.getElementById("api-key-pro").value.trim(),
       openrouterProKey: document.getElementById("api-key-openrouter-pro").value.trim(),
+      openrouterModel: selectedOpenRouterModel || undefined,
     }),
   });
   if ((await res.json()).ok) {
@@ -686,6 +695,7 @@ async function saveApiKeys() {
 }
 
 let allOpenRouterModels = [];
+let selectedOpenRouterModel = "";
 
 async function fetchOpenRouterModels() {
   var key = document.getElementById("api-key-openrouter-pro").value.trim();
@@ -715,6 +725,13 @@ async function fetchOpenRouterModels() {
   }
 }
 
+function selectOpenRouterModel(modelId) {
+  selectedOpenRouterModel = modelId;
+  document.getElementById("openrouter-selected-model").textContent = modelId;
+  var searchVal = (document.getElementById("openrouter-model-search") || {}).value || "";
+  renderOpenRouterModels(searchVal.toLowerCase());
+}
+
 function renderOpenRouterModels(query) {
   var listEl = document.getElementById("openrouter-model-list");
   var filtered = allOpenRouterModels.filter(function(m) {
@@ -731,15 +748,19 @@ function renderOpenRouterModels(query) {
   }
 
   listEl.innerHTML = filtered.slice(0, 100).map(function(m) {
+    var isSel = m.id === selectedOpenRouterModel;
+    var bg = isSel ? "background:#222;color:#fff;" : "";
     var pricing = "";
     if (m.pricing) {
       var promptCost = m.pricing.prompt ? (parseFloat(m.pricing.prompt) * 1000000).toFixed(2) : "?";
       var completionCost = m.pricing.completion ? (parseFloat(m.pricing.completion) * 1000000).toFixed(2) : "?";
-      pricing = '<span style="color:#999;font-size:11px;">$' + promptCost + ' / $' + completionCost + ' per 1M tokens</span>';
+      var pc = isSel ? "color:rgba(255,255,255,0.6);" : "color:#999;";
+      pricing = '<span style="' + pc + 'font-size:11px;">$' + promptCost + ' / $' + completionCost + ' per 1M tokens</span>';
     }
-    return '<div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px;">' +
-      '<div style="font-weight:600;">' + m.id + '</div>' +
-      (m.name && m.name !== m.id ? '<div style="color:#666;font-size:12px;">' + m.name + '</div>' : '') +
+    var nc = isSel ? "color:rgba(255,255,255,0.7);" : "color:#666;";
+    return '<div onclick="selectOpenRouterModel(\'' + m.id.replace(/'/g, "\\'") + '\')" style="padding:10px 12px;border-bottom:1px solid ' + (isSel ? '#333' : '#f0f0f0') + ';font-size:13px;cursor:pointer;' + bg + '">' +
+      '<div style="font-weight:600;">' + (isSel ? '● ' : '') + m.id + '</div>' +
+      (m.name && m.name !== m.id ? '<div style="' + nc + 'font-size:12px;">' + m.name + '</div>' : '') +
       (pricing ? '<div>' + pricing + '</div>' : '') +
       '</div>';
   }).join("") + (filtered.length > 100 ? '<p style="padding:8px 12px;color:#999;font-size:12px;">... 顯示前 100 筆，請使���搜尋��小範圍</p>' : '');
