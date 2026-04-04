@@ -79,21 +79,18 @@ export async function handleAdminRecognize(
     });
   }
 
-  // Monthly AI recognize limits per plan
-  const recognizeLimits: Record<string, number> = { free: 5, starter: 20, pro: 50 };
-  const recognizeLimit = recognizeLimits[ctx.storePlan || "free"] ?? 5;
-  const now = new Date();
-  const monthKey = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const recognizeCountKey = `ai_recognize_count_${monthKey}`;
-  {
+  // Free plan: 5 AI recognize uses per month
+  if (ctx.storePlan === "free") {
+    const now = new Date();
+    const monthKey = `ai_recognize_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
     const usage = await ctx.db
       .prepare("SELECT COALESCE((SELECT value FROM app_settings WHERE store_id = ? AND key = ?), '0') as cnt")
-      .bind(ctx.storeId, recognizeCountKey)
+      .bind(ctx.storeId, monthKey)
       .first<{ cnt: string }>();
     const count = parseInt(usage?.cnt || "0", 10);
-    if (count >= recognizeLimit) {
+    if (count >= 5) {
       return new Response(
-        JSON.stringify({ ok: false, error: `本月 AI 辨識次數已達上限（${recognizeLimit} 次）。下個月將自動恢復額度。` }),
+        JSON.stringify({ ok: false, error: "本月 AI 辨識次數已用完（5 次/月）。下個月將自動恢復額度，或升級方案解鎖無限使用。" }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
     }
@@ -290,14 +287,16 @@ export async function handleAdminRecognize(
 
   const result = parsed as RecognizeResult;
 
-  // Increment monthly AI recognize counter
+  // Increment AI recognize counter (monthly, for free plan tracking)
+  const now = new Date();
+  const recognizeMonthKey = `ai_recognize_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
   await ctx.db
     .prepare(
       `INSERT INTO app_settings (store_id, key, value, updated_at)
        VALUES (?, ?, '1', datetime('now'))
        ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
     )
-    .bind(ctx.storeId, recognizeCountKey)
+    .bind(ctx.storeId, recognizeMonthKey)
     .run()
     .catch(() => {}); // non-blocking
 
