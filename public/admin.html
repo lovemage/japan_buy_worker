@@ -317,12 +317,12 @@
 
         <div class="settings-group">
           <h3 class="settings-group__title">代購來源國家</h3>
-          <p class="admin-section-desc">選擇後系統自動設定對應幣別和匯率。</p>
-          <div class="country-grid" id="country-selector">
-            <button class="country-btn" data-country="jp" onclick="selectCountry('jp')">🇯🇵<strong>日本</strong><span class="sub">JPY 日圓</span></button>
-            <button class="country-btn" data-country="kr" onclick="selectCountry('kr')">🇰🇷<strong>韓國</strong><span class="sub">KRW 韓元</span></button>
-            <button class="country-btn" data-country="th" onclick="selectCountry('th')">🇹🇭<strong>泰國</strong><span class="sub">THB 泰銖</span></button>
-            <button class="country-btn" data-country="tw" onclick="selectCountry('tw')">🇹🇼<strong>台灣</strong><span class="sub">TWD 台幣</span></button>
+          <p class="admin-section-desc">切換國家後，所有商品價格將顯示為該國幣別。</p>
+          <div class="country-toggle-group" id="country-selector">
+            <button class="country-toggle-btn" data-country="jp" type="button">日本<span class="sub">JPY</span></button>
+            <button class="country-toggle-btn" data-country="kr" type="button">韓國<span class="sub">KRW</span></button>
+            <button class="country-toggle-btn" data-country="th" type="button">泰國<span class="sub">THB</span></button>
+            <button class="country-toggle-btn" data-country="tw" type="button">台灣<span class="sub">TWD</span></button>
           </div>
           <p id="country-status" class="admin-status">已儲存</p>
         </div>
@@ -539,7 +539,7 @@
     }
 
     // Country selector highlight
-    document.querySelectorAll(".country-btn").forEach(function(btn) {
+    document.querySelectorAll(".country-toggle-btn").forEach(function(btn) {
       if (btn.dataset.country === country) btn.classList.add("selected");
     });
 
@@ -553,20 +553,32 @@
     });
   });
 
-  function selectCountry(code) {
-    apiFetch("/api/admin/store-info", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ destinationCountry: code }),
-    }).then(function(r) { return r.json(); }).then(function(data) {
-      if (data.ok) {
-        var st = document.getElementById("country-status");
-        st.style.display = "block";
-        st.textContent = "已儲存，重新載入中...";
-        setTimeout(function() { location.reload(); }, 800);
-      }
+  var COUNTRY_NAMES = { jp: "日本 (JPY)", kr: "韓國 (KRW)", th: "泰國 (THB)", tw: "台灣 (TWD)" };
+
+  function initCountryToggle() {
+    var btns = document.querySelectorAll(".country-toggle-btn");
+    btns.forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var code = btn.getAttribute("data-country");
+        if (btn.classList.contains("selected")) return;
+        var name = COUNTRY_NAMES[code] || code;
+        if (!confirm("確定要切換至「" + name + "」嗎？\n\n切換後所有商品價格將顯示為該國幣別，請確認此操作。")) return;
+        apiFetch("/api/admin/store-info", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ destinationCountry: code }),
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          if (data.ok) {
+            var st = document.getElementById("country-status");
+            st.style.display = "block";
+            st.textContent = "已儲存，重新載入中...";
+            setTimeout(function() { location.reload(); }, 800);
+          }
+        });
+      });
     });
   }
+  initCountryToggle();
 
   // Template selector
   var TPL_COLORS = {
