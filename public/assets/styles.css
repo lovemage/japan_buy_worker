@@ -1,39 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
 
 :root {
-  --bg-color: #F9F7F1;
-  --card-bg: #FFFEFA;
-  --primary-color: #8A9A5B;
-  --primary-hover: #768a4a;
-  --text-color: #3D3A35;
-  --shadow: 0 4px 12px rgba(140, 130, 110, 0.1);
+  --bg-color: #F7F7F7;
+  --card-bg: #FFFFFF;
+  --primary-color: #333;
+  --primary-hover: #111;
+  --text-color: #222;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
-  /* Secondary: warm terracotta for prices & emphasis */
-  --accent-warm: #9E5F38;
-  --accent-warm-hover: #8C502C;
-  --accent-warm-subtle: #F5EDE6;
+  /* Accent colors (neutral) */
+  --accent-warm: #333;
+  --accent-warm-hover: #111;
+  --accent-warm-subtle: #F2F2F2;
 
-  /* Accent: gold for promos & highlights */
-  --accent-gold: #D4960A;
-  --accent-gold-bg: #FFF8E6;
+  /* Accent: highlight */
+  --accent-gold: #888;
+  --accent-gold-bg: #F5F5F5;
 
   --bg: var(--bg-color);
   --card: var(--card-bg);
   --text: var(--text-color);
-  --muted: #7A756D;
-  --muted-brand: #828A6F;
-  --line: #E5E0D6;
+  --muted: #888;
+  --muted-brand: #888;
+  --line: #E0E0E0;
   --brand: var(--primary-color);
 
-  /* Derived: button/card/shadow colors that follow primary */
-  --btn-secondary: #6B7A5A;
-  --btn-secondary-hover: #5A6A4A;
-  --btn-added: #3b8f5a;
-  --card-border: rgba(138, 154, 91, 0.1);
-  --brand-shadow-sm: rgba(138, 154, 91, 0.2);
-  --brand-shadow-md: rgba(138, 154, 91, 0.25);
-  --brand-shadow-lg: rgba(138, 154, 91, 0.3);
-  --focus-ring: rgba(138, 154, 91, 0.1);
+  /* Derived: button/card/shadow colors */
+  --btn-secondary: #555;
+  --btn-secondary-hover: #333;
+  --btn-added: #444;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --brand-shadow-sm: rgba(0, 0, 0, 0.08);
+  --brand-shadow-md: rgba(0, 0, 0, 0.1);
+  --brand-shadow-lg: rgba(0, 0, 0, 0.15);
+  --focus-ring: rgba(0, 0, 0, 0.08);
 
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --transition-fast: 150ms var(--ease-out-quart);
@@ -429,7 +429,7 @@ body {
 }
 
 .product-card__media.image-loading {
-  background: linear-gradient(90deg, #eae8e4 0%, #f6f5f2 50%, #eae8e4 100%);
+  background: linear-gradient(90deg, #e8e8e8 0%, #f4f4f4 50%, #e8e8e8 100%);
   background-size: 440px 100%;
   animation: shimmer-loading 1.05s linear infinite;
 }
@@ -464,10 +464,10 @@ body {
 }
 .promo-badge {
   top: 8px;
-  color: #6B4A00;
-  background: linear-gradient(135deg, #FFE066, #FFCC33);
-  border: 1px solid var(--accent-gold);
-  box-shadow: 0 2px 6px rgba(212, 150, 10, 0.25);
+  color: #fff;
+  background: #333;
+  border: 1px solid #444;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Product tags: stacked below promo badge */
@@ -606,16 +606,17 @@ body {
   font-weight: 500;
   border-radius: 10px;
   line-height: 1;
-  background: #333;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  background: var(--line);
+  color: var(--text-color);
+  box-shadow: none;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
   align-self: flex-end;
 }
 .product-card__body .button:hover {
-  background: #111;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  background: #ccc;
+  color: #111;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .meta {
@@ -1229,7 +1230,7 @@ select:disabled {
   margin: 0;
 }
 
-/* Price block — prominent TWD with warm accent */
+/* Price block */
 .detail-price-block {
   margin: 6px 0 2px;
   padding: 10px 14px;
@@ -1592,7 +1593,7 @@ select:disabled {
   border-radius: 999px;
   border: 0;
   background: transparent;
-  color: #5f6a55;
+  color: var(--muted);
   box-shadow: none;
   cursor: pointer;
   font-family: inherit;
@@ -1600,8 +1601,8 @@ select:disabled {
 }
 
 .view-switch__btn:hover {
-  background: #e3ead6;
-  color: #3f4936;
+  background: var(--line);
+  color: var(--text-color);
 }
 
 .view-switch__btn.is-active {
@@ -1660,14 +1661,14 @@ select:disabled {
 .loading-bar-wrap {
   width: min(200px, 50vw);
   height: 3px;
-  background: var(--line, #e5e0d6);
+  background: var(--line, #E0E0E0);
   border-radius: 2px;
   overflow: hidden;
 }
 .loading-bar {
   width: 40%;
   height: 100%;
-  background: var(--primary-color, #8A9A5B);
+  background: var(--primary-color, #333);
   border-radius: 2px;
   animation: loading-slide 1.2s ease-in-out infinite;
 }

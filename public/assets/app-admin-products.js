@@ -76,7 +76,7 @@ function renderProductGrid(products, paging) {
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
-          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
+          <button class="button secondary js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
           <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">網址</button>
         </div>
       </div>
@@ -230,7 +230,6 @@ async function openEditModal(btn) {
   document.getElementById("edit-brand").value = btn.getAttribute("data-brand") || "";
   document.getElementById("edit-category").value = btn.getAttribute("data-category") || "";
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
-  document.getElementById("edit-description").value = "";
   document.getElementById("edit-status").textContent = "";
 
   // Set toggle button state
@@ -277,8 +276,6 @@ async function openEditModal(btn) {
     if (res.ok) {
       const data = await res.json();
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
-      const descEl = document.getElementById("edit-description");
-      if (descEl) descEl.value = data.product?.description || "";
     }
   }
   renderEditGallery();
@@ -317,7 +314,6 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
-    description: document.getElementById("edit-description")?.value?.trim() || "",
     gallery: editGallery,
     newImages: editNewImages.map(img => img.base64),
     tags,
@@ -365,6 +361,115 @@ function initManageSearch() {
   });
 }
 
+const MAX_IMAGE_SIZE = 800;
+const WEBP_QUALITY = 0.8;
+
+let manualImages = [];
+
+function compressImageToWebp(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement("canvas");
+      let w = img.width, h = img.height;
+      if (w > MAX_IMAGE_SIZE || h > MAX_IMAGE_SIZE) {
+        if (w > h) { h = Math.round((h * MAX_IMAGE_SIZE) / w); w = MAX_IMAGE_SIZE; }
+        else { w = Math.round((w * MAX_IMAGE_SIZE) / h); h = MAX_IMAGE_SIZE; }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/webp", WEBP_QUALITY);
+      const base64 = dataUrl.split(",")[1];
+      resolve({ file, dataUrl, base64 });
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function renderManualPreviews() {
+  const row = document.getElementById("manual-photo-previews");
+  if (!row) return;
+  row.innerHTML = manualImages.map((img, idx) => `
+    <div class="photo-preview-item">
+      <img src="${img.dataUrl}" alt="照片 ${idx + 1}" />
+      <button class="photo-remove" data-idx="${idx}" type="button">&times;</button>
+    </div>
+  `).join("");
+  row.querySelectorAll(".photo-remove").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      manualImages.splice(Number(btn.getAttribute("data-idx")), 1);
+      renderManualPreviews();
+      updateManualCount();
+    });
+  });
+}
+
+function updateManualCount() {
+  const el = document.getElementById("manual-photo-count");
+  const max = window.__MAX_IMAGES || 3;
+  if (el) el.textContent = `已選 ${manualImages.length} / ${max} 張`;
+}
+
+async function onManualPhotos(event) {
+  const files = Array.from(event.target.files || []);
+  for (const file of files) {
+    try { manualImages.push(await compressImageToWebp(file)); } catch { /* skip */ }
+  }
+  renderManualPreviews();
+  updateManualCount();
+  event.target.value = "";
+}
+
+function showStatus(text) {
+  const el = document.getElementById("manual-status");
+  if (el) el.textContent = text;
+}
+
+async function submitManualProduct() {
+  const get = (id) => document.getElementById(id)?.value?.trim() || "";
+  const titleJa = get("manual-title-ja");
+  const titleZhTw = get("manual-title-zh");
+  if (!titleJa && !titleZhTw) { showStatus("商品名稱為必填"); return; }
+
+  const priceRaw = get("manual-price");
+  const payload = {
+    titleJa, titleZhTw,
+    brand: get("manual-brand"),
+    category: get("manual-category"),
+    priceJpyTaxIn: priceRaw ? Number(priceRaw) : null,
+    description: get("manual-description"),
+    specs: {},
+    sizeOptions: get("manual-sizes").split(",").map(s => s.trim()).filter(Boolean),
+    colorOptions: get("manual-colors").split(",").map(s => s.trim()).filter(Boolean),
+    images: manualImages.map(img => img.base64),
+  };
+
+  showStatus("上架中...");
+  const btn = document.getElementById("manual-submit");
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await apiFetch("/api/admin/products", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    const data = await res.json();
+    if (!data.ok) { showStatus(`上架失敗：${data.error}`); return; }
+    showStatus(`上架成功！商品代碼：${data.code}`);
+    manualImages = [];
+    renderManualPreviews();
+    updateManualCount();
+    loadManagedProducts();
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
 async function loadCategories() {
   const res = await apiFetch("/api/admin/categories");
@@ -438,6 +543,9 @@ export function initProducts() {
   initEditModal();
   loadManagedProducts();
 
+  // Manual upload
+  document.getElementById("manual-photo-input")?.addEventListener("change", onManualPhotos);
+  document.getElementById("manual-submit")?.addEventListener("click", submitManualProduct);
 
   // Categories
   document.getElementById("category-add-btn")?.addEventListener("click", addCategory);
