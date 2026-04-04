@@ -143,6 +143,12 @@ export async function handleAdminRecognize(
   if (useOpenRouter) {
     // OpenRouter API (OpenAI-compatible)
     const orModelId = await getOpenRouterModel(ctx.db);
+    if (!orModelId) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "OpenRouter 模型尚未選擇，請至平台管理 API Key 頁面選擇模型" }),
+        { status: 400, headers: { "content-type": "application/json" } }
+      );
+    }
     const imageContent = body.images.map((b64) => ({
       type: "image_url" as const,
       image_url: { url: `data:image/jpeg;base64,${b64}` },
@@ -182,7 +188,7 @@ export async function handleAdminRecognize(
     if (!orRes.ok) {
       const errText = await orRes.text().catch(() => "");
       return new Response(
-        JSON.stringify({ ok: false, error: `OpenRouter API 錯誤 (${orRes.status})：${errText.slice(0, 300)}` }),
+        JSON.stringify({ ok: false, error: `OpenRouter API 錯誤 (${orRes.status}) 模型:${orModelId}：${errText.slice(0, 300)}` }),
         { status: 502, headers: { "content-type": "application/json" } }
       );
     }
