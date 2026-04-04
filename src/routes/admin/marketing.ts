@@ -18,9 +18,9 @@ const PLATFORM_MAP: Record<string, string> = {
 };
 
 const MONTHLY_LIMITS: Record<string, number> = {
-  free: 5,
-  starter: 10,
-  pro: -1,
+  free: 3,
+  starter: 6,
+  pro: 12,
 };
 
 function getMonthKey(): string {

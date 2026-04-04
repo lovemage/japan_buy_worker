@@ -28,7 +28,7 @@
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="manage">產品管理</button>
         <button class="tab-sub-btn" data-subtab="categories">分類管理</button>
-        <button class="tab-sub-btn" data-subtab="ai-marketing">AI行銷</button>
+        <button class="tab-sub-btn" data-subtab="ai-marketing">AI行銷 <span style="font-size:9px;background:#888;color:#fff;padding:0 4px;border-radius:3px;vertical-align:middle;">Beta</span></button>
       </div>
       <div class="admin-sub-panel" data-subtab-panel="manage">
         <div class="admin-manage-header">
@@ -81,9 +81,16 @@
       </div>
       <div class="admin-sub-panel hidden" data-subtab-panel="ai-marketing">
         <div class="admin-form-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <h3 style="margin:0;font-size:15px;font-weight:700;">AI 行銷文案產生器</h3>
-            <span class="meta" id="marketing-usage"></span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <h3 style="margin:0;font-size:15px;font-weight:700;">AI 行銷文案產生器 <span style="font-size:11px;font-weight:600;color:#fff;background:#888;padding:1px 6px;border-radius:4px;vertical-align:middle;">Beta</span></h3>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span class="meta" style="font-size:11px;" id="marketing-usage-text"></span>
+            </div>
+            <div style="height:6px;background:var(--admin-border-light);border-radius:3px;overflow:hidden;">
+              <div id="marketing-usage-bar" style="height:100%;background:#222;border-radius:3px;transition:width 0.3s;width:0%;"></div>
+            </div>
           </div>
 
           <p style="font-size:12px;font-weight:600;color:var(--admin-text-secondary);margin-bottom:6px;">行銷語氣</p>

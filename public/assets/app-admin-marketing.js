@@ -30,12 +30,18 @@ async function loadMarketingUsage() {
     if (!res.ok) return;
     const data = await res.json();
     if (!data.ok) return;
-    const el = document.getElementById("marketing-usage");
-    if (!el) return;
-    if (data.limit === -1) {
-      el.textContent = "本月已用 " + data.used + " 次（無限制）";
-    } else {
-      el.textContent = "本月 " + data.used + " / " + data.limit + " 次";
+    const textEl = document.getElementById("marketing-usage-text");
+    const barEl = document.getElementById("marketing-usage-bar");
+    if (!textEl) return;
+    var used = data.used || 0;
+    var limit = data.limit || 0;
+    textEl.textContent = "本月已使用 " + used + " / " + limit + " 次";
+    if (barEl && limit > 0) {
+      var pct = Math.min(100, Math.round((used / limit) * 100));
+      barEl.style.width = pct + "%";
+      if (pct >= 100) barEl.style.background = "var(--admin-danger, #ef4444)";
+      else if (pct >= 80) barEl.style.background = "var(--admin-warning, #f59e0b)";
+      else barEl.style.background = "#222";
     }
   } catch {}
 }
