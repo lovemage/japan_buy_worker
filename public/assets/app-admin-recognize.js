@@ -1,3 +1,5 @@
+import { loadManagedProducts } from "./app-admin-products.js";
+
 const MAX_IMAGE_SIZE = 800;
 const WEBP_QUALITY = 0.8;
 
@@ -15,8 +17,10 @@ function showListingStatus(text) {
 
 function updateButtons() {
   const quickBtn = document.getElementById("btn-recognize-quick");
+  const manualEntryBtn = document.getElementById("btn-manual-entry");
   const hasImages = selectedImages.length > 0;
   if (quickBtn) quickBtn.disabled = !hasImages;
+  if (manualEntryBtn) manualEntryBtn.disabled = !hasImages;
   const count = document.getElementById("photo-count");
   if (count) count.textContent = `已選 ${selectedImages.length} / ${window.__MAX_IMAGES || 3} 張`;
   if (typeof updateHint === "function") updateHint();
@@ -249,6 +253,7 @@ async function confirmListing() {
     selectedImages = [];
     renderPreviews();
     updateButtons();
+    loadManagedProducts();
     setTimeout(() => cancelDraft(), 2000);
   } finally {
     if (btn) btn.disabled = false;
@@ -266,6 +271,108 @@ function updateHint() {
   }
 }
 
+// ── Camera mode toggle (auto / manual) ──
+
+function initCameraModeToggle() {
+  const toggle = document.getElementById("camera-mode-toggle");
+  const label = document.getElementById("camera-mode-label");
+  const autoBtn = document.getElementById("camera-auto-btn");
+  const manualBtn = document.getElementById("camera-manual-btn");
+  if (!toggle) return;
+
+  toggle.addEventListener("change", () => {
+    const isManual = toggle.checked;
+    if (label) label.textContent = isManual ? "手動選圖" : "自動拍照";
+    if (autoBtn) autoBtn.classList.toggle("hidden", isManual);
+    if (manualBtn) manualBtn.classList.toggle("hidden", !isManual);
+  });
+}
+
+// ── Manual entry (手動輸入上架) ──
+
+function showManualEntryForm() {
+  const form = document.getElementById("manual-entry-form");
+  const draft = document.getElementById("recognize-draft");
+  if (draft) draft.classList.add("hidden");
+  if (form) form.classList.remove("hidden");
+
+  // Load categories into datalist
+  loadManualEntryCategories();
+}
+
+function cancelManualEntry() {
+  const form = document.getElementById("manual-entry-form");
+  if (form) form.classList.add("hidden");
+  const status = document.getElementById("manual-entry-status");
+  if (status) status.textContent = "";
+}
+
+async function loadManualEntryCategories() {
+  try {
+    const res = await apiFetch("/api/admin/categories");
+    if (!res.ok) return;
+    const body = await res.json();
+    const dl = document.getElementById("me-category-datalist");
+    if (dl && body.categories) {
+      dl.innerHTML = body.categories.map(c => `<option value="${c.name}">`).join("");
+    }
+  } catch { /* ignore */ }
+}
+
+async function submitManualEntry() {
+  const get = (id) => document.getElementById(id)?.value?.trim() || "";
+  const titleJa = get("me-title-ja");
+  const titleZhTw = get("me-title-zh");
+  if (!titleJa && !titleZhTw) {
+    showManualEntryStatus("商品名稱（日文或中文）為必填");
+    return;
+  }
+
+  const priceRaw = get("me-price");
+  const priceJpy = priceRaw ? Number(priceRaw) : null;
+
+  const payload = {
+    titleJa,
+    titleZhTw,
+    brand: get("me-brand"),
+    category: get("me-category"),
+    priceJpyTaxIn: Number.isFinite(priceJpy) ? priceJpy : null,
+    description: get("me-description"),
+    specs: {},
+    sizeOptions: get("me-sizes").split(",").map(s => s.trim()).filter(Boolean),
+    colorOptions: get("me-colors").split(",").map(s => s.trim()).filter(Boolean),
+    images: selectedImages.map(img => img.base64),
+  };
+
+  showManualEntryStatus("上架中...");
+  const btn = document.getElementById("btn-manual-confirm");
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await apiFetch("/api/admin/products", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    const data = await res.json();
+    if (!data.ok) { showManualEntryStatus(`上架失敗：${data.error || "未知錯誤"}`); return; }
+    showManualEntryStatus(`上架成功！商品代碼：${data.code}`);
+    selectedImages = [];
+    renderPreviews();
+    updateButtons();
+    loadManagedProducts();
+    setTimeout(() => cancelManualEntry(), 2000);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function showManualEntryStatus(text) {
+  const el = document.getElementById("manual-entry-status");
+  if (el) el.textContent = text;
+}
+
 function initPhotoRecognize() {
   const input = document.getElementById("photo-input");
   if (input) input.addEventListener("change", onPhotosSelected);
@@ -281,6 +388,19 @@ function initPhotoRecognize() {
 
   const confirmBtn = document.getElementById("btn-confirm-listing");
   if (confirmBtn) confirmBtn.addEventListener("click", confirmListing);
+
+  // Manual entry buttons
+  const manualEntryBtn = document.getElementById("btn-manual-entry");
+  if (manualEntryBtn) manualEntryBtn.addEventListener("click", showManualEntryForm);
+
+  const manualConfirmBtn = document.getElementById("btn-manual-confirm");
+  if (manualConfirmBtn) manualConfirmBtn.addEventListener("click", submitManualEntry);
+
+  const manualCancelBtn = document.getElementById("btn-manual-cancel");
+  if (manualCancelBtn) manualCancelBtn.addEventListener("click", cancelManualEntry);
+
+  // Camera mode toggle
+  initCameraModeToggle();
 
   updateButtons();
 }
