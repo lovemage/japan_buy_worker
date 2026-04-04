@@ -278,14 +278,19 @@ function initCameraModeToggle() {
   const label = document.getElementById("camera-mode-label");
   const autoBtn = document.getElementById("camera-auto-btn");
   const manualBtn = document.getElementById("camera-manual-btn");
+  const manualEntryBtn = document.getElementById("btn-manual-entry");
   if (!toggle) return;
 
-  toggle.addEventListener("change", () => {
+  function applyCameraMode() {
     const isManual = toggle.checked;
-    if (label) label.textContent = isManual ? "手動選圖" : "自動拍照";
+    if (label) label.textContent = isManual ? "手動選圖" : "自動拍照上架";
     if (autoBtn) autoBtn.classList.toggle("hidden", isManual);
     if (manualBtn) manualBtn.classList.toggle("hidden", !isManual);
-  });
+    if (manualEntryBtn) manualEntryBtn.classList.toggle("hidden", !isManual);
+  }
+
+  toggle.addEventListener("change", applyCameraMode);
+  applyCameraMode();
 }
 
 // ── Manual entry (手動輸入上架) ──
