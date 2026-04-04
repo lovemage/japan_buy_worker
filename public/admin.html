@@ -566,7 +566,7 @@
   var COUNTRY_NAMES = { jp: "日本 (JPY)", kr: "韓國 (KRW)", th: "泰國 (THB)", tw: "台灣 (TWD)" };
 
   function initCountryToggle() {
-    var btns = document.querySelectorAll(".country-toggle-btn");
+    var btns = document.querySelectorAll("#country-selector .country-toggle-btn");
     btns.forEach(function(btn) {
       btn.addEventListener("click", function() {
         var code = btn.getAttribute("data-country");
