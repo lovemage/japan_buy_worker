@@ -366,10 +366,8 @@
           <label style="margin-top:10px;">子網域 (*.vovosnap.com)
             <input id="store-slug-edit" type="text" class="input-cute" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
           </label>
-          <p class="meta" id="store-slug-meta">僅 Pro 可修改，終身一次。</p>
-          <button class="button secondary" type="button" id="store-slug-save-btn" onclick="saveStoreSlug()">更新網址</button>
-          <p id="store-slug-status" class="admin-status">已更新，重新導向中...</p>
-          <button class="button" type="button" onclick="saveStoreName()">儲存</button>
+          <p class="meta" id="store-slug-meta"></p>
+          <button class="button" type="button" id="btn-save-account" onclick="saveAccountSettings()">儲存</button>
           <p id="store-name-status" class="admin-status">已儲存</p>
         </div>
 
@@ -840,13 +838,9 @@
         if (emailEl) emailEl.textContent = d.store.owner_email || "";
         storeCanChangeSlugOnce = !!d.store.can_change_slug_once;
         var slugMeta = document.getElementById("store-slug-meta");
-        var slugBtn = document.getElementById("store-slug-save-btn");
-        if (slugBtn) slugBtn.disabled = !storeCanChangeSlugOnce;
-        if (slugInput && !storeCanChangeSlugOnce) { slugInput.disabled = true; slugInput.style.opacity = "0.5"; }
-        if (slugMeta) {
-          if (storeCanChangeSlugOnce) slugMeta.textContent = "僅 Pro 可修改，終身一次（你目前可用 1 次）。";
-          else if (d.store.effective_plan !== "pro") slugMeta.textContent = "目前方案不可修改 slug（需 Pro）。";
-          else slugMeta.textContent = "你已使用過 slug 修改機會（終身一次）。";
+        if (!storeCanChangeSlugOnce) {
+          if (slugInput) { slugInput.disabled = true; slugInput.style.opacity = "0.5"; }
+          if (slugMeta) slugMeta.textContent = d.store.effective_plan !== "pro" ? "需升級 Pro 方案才可修改" : "已使用修改機會";
         }
         var expiresEl = document.getElementById("plan-expires");
         if (expiresEl && d.store.plan_expires_at) {
@@ -860,60 +854,39 @@
     });
   })();
 
-  function saveStoreName() {
+  function saveAccountSettings() {
     var name = document.getElementById("store-display-name").value.trim();
     var description = (document.getElementById("store-description")?.value || "").trim();
+    var statusEl = document.getElementById("store-name-status");
     if (!name) return;
+
+    // Save name & description
     apiFetch("/api/admin/store-name", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name: name, description: description }),
     }).then(function(r){return r.json()}).then(function(d) {
-      if (d.ok) { var st = document.getElementById("store-name-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
-    });
-  }
+      if (!d.ok) { if (statusEl) { statusEl.textContent = d.error || "儲存失敗"; statusEl.style.display = "block"; } return; }
 
-  function saveStoreSlug() {
-    var slug = document.getElementById("store-slug-edit")?.value?.trim() || "";
-    var statusEl = document.getElementById("store-slug-status");
-    if (!storeCanChangeSlugOnce) {
-      if (statusEl) {
-        statusEl.textContent = "目前不可修改 slug";
-        statusEl.style.display = "block";
-      }
-      return;
-    }
-    if (!slug || slug.length < 3) {
-      if (statusEl) {
-        statusEl.textContent = "網址至少 3 個字元";
-        statusEl.style.display = "block";
-      }
-      return;
-    }
-    apiFetch("/api/admin/store-slug", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ slug: slug }),
-    }).then(function(r){return r.json()}).then(function(d) {
-      if (!statusEl) return;
-      if (d.ok) {
-        var buildDomainChangeMessage = window.__buildStoreDomainChangeMessage;
-        statusEl.textContent = typeof buildDomainChangeMessage === "function"
-          ? buildDomainChangeMessage({
-              plan: window.__STORE_PLAN,
-              slug: slug,
-              mainDomain: window.__MAIN_DOMAIN,
-              protocol: location.protocol,
-              origin: location.origin,
-              apiBase: "/s/" + slug,
-            })
-          : "已更新，新的網址可能需要等待幾分鐘才會完全生效。";
-        statusEl.style.display = "block";
-        var to = d.redirectUrl || ("/s/" + slug + "/admin");
-        setTimeout(function(){ location.href = to; }, 1800);
+      // If slug can be changed and user modified it, save slug too
+      var slugInput = document.getElementById("store-slug-edit");
+      var newSlug = slugInput ? slugInput.value.trim() : "";
+      if (storeCanChangeSlugOnce && newSlug && newSlug.length >= 3) {
+        apiFetch("/api/admin/store-slug", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ slug: newSlug }),
+        }).then(function(r){return r.json()}).then(function(sd) {
+          if (sd.ok) {
+            if (statusEl) { statusEl.textContent = "已儲存，網址更新中..."; statusEl.style.display = "block"; }
+            var to = sd.redirectUrl || ("/s/" + newSlug + "/admin");
+            setTimeout(function(){ location.href = to; }, 1800);
+          } else {
+            if (statusEl) { statusEl.textContent = sd.error || "網址更新失敗"; statusEl.style.display = "block"; }
+          }
+        });
       } else {
-        statusEl.textContent = d.error || "更新失敗";
-        statusEl.style.display = "block";
+        if (statusEl) { statusEl.textContent = "已儲存"; statusEl.style.display = "block"; setTimeout(function(){ statusEl.style.display = "none"; }, 2000); }
       }
     });
   }
