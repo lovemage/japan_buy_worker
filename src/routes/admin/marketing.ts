@@ -88,11 +88,11 @@ export async function handleMarketing(
 
   // Gather store context
   const storeInfo = await ctx.db
-    .prepare("SELECT display_name, slug, destination_country FROM stores WHERE id = ?")
+    .prepare("SELECT name, slug, destination_country FROM stores WHERE id = ?")
     .bind(ctx.storeId)
-    .first<{ display_name: string; slug: string; destination_country: string }>();
+    .first<{ name: string; slug: string; destination_country: string }>();
 
-  const storeName = storeInfo?.display_name || "我的商店";
+  const storeName = storeInfo?.name || "我的商店";
   const country = storeInfo?.destination_country || "jp";
   const slug = storeInfo?.slug || "";
 
