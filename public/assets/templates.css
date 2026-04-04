@@ -5,8 +5,8 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;700&family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Kosugi+Maru&family=Shippori+Mincho:wght@400;500;700&display=swap');
 
-/* ── Template: default (原有抹茶暖色) ── */
-/* No overrides needed — uses styles.css :root (Zen Maru Gothic) */
+/* ── Template: default (極簡黑白) ── */
+/* No overrides needed — uses styles.css :root (Zen Maru Gothic, black/white/gray) */
 
 
 /* ══════════════════════════════════════════
@@ -103,184 +103,192 @@
 
 
 /* ══════════════════════════════════════════
-   Template: sand (暖沙灰)
-   手寫溫暖風 — 手寫字體 + 暖色
+   Template: sand → 薰衣紫
+   優雅紫色風 — 襯線手寫混搭 + 大圓角
    ══════════════════════════════════════════ */
 [data-template="sand"] {
   font-family: "Klee One", "Zen Maru Gothic", cursive;
-  --bg-color: #F7F5F0;
-  --card-bg: #FDFCF9;
-  --primary-color: #8C7B6B;
-  --primary-hover: #76675A;
-  --text-color: #3E3630;
-  --accent-warm: #A07858;
-  --accent-warm-hover: #8A6548;
-  --accent-warm-subtle: #F2ECE4;
-  --accent-gold: #B09060;
-  --accent-gold-bg: #FAF5EC;
-  --muted: #8A8078;
-  --muted-brand: #7A7068;
-  --line: #E5DFD6;
-  --shadow: 0 4px 12px rgba(140, 123, 107, 0.08);
-  --btn-secondary: #7A6E62;
-  --btn-secondary-hover: #6A5E52;
-  --btn-added: #6A8A68;
-  --card-border: rgba(140, 123, 107, 0.12);
-  --brand-shadow-sm: rgba(140, 123, 107, 0.15);
-  --brand-shadow-md: rgba(140, 123, 107, 0.2);
-  --brand-shadow-lg: rgba(140, 123, 107, 0.28);
-  --focus-ring: rgba(140, 123, 107, 0.1);
-}
-[data-template="sand"] .page-header {
-  border-image: linear-gradient(90deg, #8C7B6B 0%, #A07858 60%, #B09060 100%) 1;
+  --bg-color: #F8F5FC;
+  --card-bg: #FDFCFF;
+  --primary-color: #7C5CBF;
+  --primary-hover: #6A4AAE;
+  --text-color: #2E2340;
+  --accent-warm: #6B4FA0;
+  --accent-warm-hover: #5A3E8E;
+  --accent-warm-subtle: #F0EAFA;
+  --accent-gold: #9B7FD4;
+  --accent-gold-bg: #F5F0FF;
+  --muted: #8878A0;
+  --muted-brand: #7A6898;
+  --line: #E4DCF0;
+  --shadow: 0 4px 12px rgba(124, 92, 191, 0.08);
+  --btn-secondary: #7060A0;
+  --btn-secondary-hover: #604E90;
+  --btn-added: #5A5A5A;
+  --card-border: rgba(124, 92, 191, 0.12);
+  --brand-shadow-sm: rgba(124, 92, 191, 0.15);
+  --brand-shadow-md: rgba(124, 92, 191, 0.2);
+  --brand-shadow-lg: rgba(124, 92, 191, 0.28);
+  --focus-ring: rgba(124, 92, 191, 0.1);
 }
 [data-template="sand"] .promo-badge {
-  color: #5A4428;
-  background: linear-gradient(135deg, #EDE3D0, #DDD0B8);
-  border-color: #B09060;
-  box-shadow: 0 2px 6px rgba(176, 144, 96, 0.2);
+  color: #fff;
+  background: #7C5CBF;
+  border-color: #9B7FD4;
+  box-shadow: 0 2px 6px rgba(124, 92, 191, 0.25);
 }
 [data-template="sand"] .btn-pill.secondary {
-  background: #EDE8E0;
-  color: #6E6258;
-  border-color: #D8D0C5;
+  background: #EDE8F8;
+  color: #6B4FA0;
+  border-color: #D8CEF0;
 }
 [data-template="sand"] .btn-pill.secondary:hover {
-  background: #E3DCD2;
-  color: #5A4E44;
+  background: #E2DAF2;
+  color: #5A3E8E;
 }
 [data-template="sand"] .button {
-  background: #8C7B6B;
+  background: #7C5CBF;
   border-radius: 20px;
 }
 [data-template="sand"] .button:hover {
-  background: #76675A;
+  background: #6A4AAE;
 }
 [data-template="sand"] .button.secondary {
-  background: #EDE8E0;
-  color: #6E6258;
-  border: 1px solid #D8D0C5;
+  background: #EDE8F8;
+  color: #6B4FA0;
+  border: 1px solid #D8CEF0;
   border-radius: 20px;
 }
 [data-template="sand"] .button.secondary:hover {
-  background: #E3DCD2;
-  color: #5A4E44;
+  background: #E2DAF2;
+  color: #5A3E8E;
 }
 [data-template="sand"] .floating-request-btn,
 [data-template="sand"] .floating-back-btn,
 [data-template="sand"] .detail-add-btn {
-  background: #A07858;
-  box-shadow: 0 4px 16px rgba(160, 120, 88, 0.35);
+  background: #7C5CBF;
+  box-shadow: 0 4px 16px rgba(124, 92, 191, 0.35);
 }
 [data-template="sand"] .floating-request-btn:hover,
 [data-template="sand"] .floating-back-btn:hover,
 [data-template="sand"] .detail-add-btn:hover {
-  background: #8A6548;
-  box-shadow: 0 6px 24px rgba(160, 120, 88, 0.4);
+  background: #6A4AAE;
+  box-shadow: 0 6px 24px rgba(124, 92, 191, 0.4);
 }
 [data-template="sand"] .product-card__body .button {
-  background: #E3DCD2; color: #5A4E44; box-shadow: none;
+  background: #E8E0F5; color: #5A3E8E; box-shadow: none;
 }
 [data-template="sand"] .product-card__body .button:hover {
-  background: #D6CEC3; color: #4A3E34; box-shadow: none;
+  background: #DDD4EE; color: #4A2E7E; box-shadow: none;
 }
 [data-template="sand"] .product-card {
-  border-radius: 16px;
+  border-radius: 20px;
+}
+[data-template="sand"] .detail-price-block {
+  background: #F0EAFA;
+  border-left: 3px solid #7C5CBF;
+}
+[data-template="sand"] .detail-price-twd {
+  color: #6B4FA0;
 }
 [data-template="sand"] .qty-stepper__btn:hover {
-  background: #F2ECE4;
-  color: #A07858;
+  background: #F0EAFA;
+  color: #7C5CBF;
 }
 
 
 /* ══════════════════════════════════════════
-   Template: moss (苔蘚灰綠)
-   自然柔和風 — 圓體 + 綠色調
+   Template: moss → 櫻花粉
+   甜美可愛風 — 圓體 + 粉色調 + 圓角
    ══════════════════════════════════════════ */
 [data-template="moss"] {
   font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
-  --bg-color: #F3F5F2;
-  --card-bg: #FAFBF9;
-  --primary-color: #6B7F6B;
-  --primary-hover: #5A6D5A;
-  --text-color: #2E3830;
-  --accent-warm: #7A6D58;
-  --accent-warm-hover: #665C48;
-  --accent-warm-subtle: #EDE8E0;
-  --accent-gold: #8E8050;
-  --accent-gold-bg: #F5F2E8;
-  --muted: #788078;
-  --muted-brand: #687868;
-  --line: #DDE2DA;
-  --shadow: 0 4px 12px rgba(107, 127, 107, 0.08);
-  --btn-secondary: #5E7060;
-  --btn-secondary-hover: #4E6050;
-  --btn-added: #4A7A5A;
-  --card-border: rgba(107, 127, 107, 0.1);
-  --brand-shadow-sm: rgba(107, 127, 107, 0.15);
-  --brand-shadow-md: rgba(107, 127, 107, 0.2);
-  --brand-shadow-lg: rgba(107, 127, 107, 0.28);
-  --focus-ring: rgba(107, 127, 107, 0.1);
-}
-[data-template="moss"] .page-header {
-  border-image: linear-gradient(90deg, #6B7F6B 0%, #7A6D58 60%, #8E8050 100%) 1;
+  --bg-color: #FDF5F7;
+  --card-bg: #FFFAFC;
+  --primary-color: #C76B8A;
+  --primary-hover: #B55A78;
+  --text-color: #3A2030;
+  --accent-warm: #B05670;
+  --accent-warm-hover: #9E4560;
+  --accent-warm-subtle: #FCF0F3;
+  --accent-gold: #D98EA5;
+  --accent-gold-bg: #FFF5F8;
+  --muted: #A08090;
+  --muted-brand: #B07888;
+  --line: #F0DDE4;
+  --shadow: 0 4px 12px rgba(199, 107, 138, 0.08);
+  --btn-secondary: #A8607A;
+  --btn-secondary-hover: #98506A;
+  --btn-added: #5A5A5A;
+  --card-border: rgba(199, 107, 138, 0.12);
+  --brand-shadow-sm: rgba(199, 107, 138, 0.15);
+  --brand-shadow-md: rgba(199, 107, 138, 0.2);
+  --brand-shadow-lg: rgba(199, 107, 138, 0.28);
+  --focus-ring: rgba(199, 107, 138, 0.1);
 }
 [data-template="moss"] .promo-badge {
-  color: #3E3A20;
-  background: linear-gradient(135deg, #E0DCC8, #D0C8A8);
-  border-color: #8E8050;
-  box-shadow: 0 2px 6px rgba(142, 128, 80, 0.2);
+  color: #fff;
+  background: #C76B8A;
+  border-color: #D98EA5;
+  box-shadow: 0 2px 6px rgba(199, 107, 138, 0.25);
 }
 [data-template="moss"] .btn-pill.secondary {
-  background: #E5EAE3;
-  color: #5A6D5A;
-  border-color: #CDD6CA;
+  background: #FAE8EE;
+  color: #B05670;
+  border-color: #F0CED8;
 }
 [data-template="moss"] .btn-pill.secondary:hover {
-  background: #DAE0D7;
-  color: #4A5C4A;
+  background: #F4DCE4;
+  color: #9E4560;
 }
 [data-template="moss"] .button {
-  background: #6B7F6B;
-  border-radius: 12px;
+  background: #C76B8A;
+  border-radius: 14px;
 }
 [data-template="moss"] .button:hover {
-  background: #5A6D5A;
+  background: #B55A78;
 }
 [data-template="moss"] .button.secondary {
-  background: #E5EAE3;
-  color: #5A6D5A;
-  border: 1px solid #CDD6CA;
-  border-radius: 12px;
+  background: #FAE8EE;
+  color: #B05670;
+  border: 1px solid #F0CED8;
+  border-radius: 14px;
 }
 [data-template="moss"] .button.secondary:hover {
-  background: #DAE0D7;
-  color: #4A5C4A;
+  background: #F4DCE4;
+  color: #9E4560;
 }
 [data-template="moss"] .floating-request-btn,
 [data-template="moss"] .floating-back-btn,
 [data-template="moss"] .detail-add-btn {
-  background: #6B7F6B;
-  box-shadow: 0 4px 16px rgba(107, 127, 107, 0.35);
+  background: #C76B8A;
+  box-shadow: 0 4px 16px rgba(199, 107, 138, 0.35);
 }
 [data-template="moss"] .floating-request-btn:hover,
 [data-template="moss"] .floating-back-btn:hover,
 [data-template="moss"] .detail-add-btn:hover {
-  background: #5A6D5A;
-  box-shadow: 0 6px 24px rgba(107, 127, 107, 0.4);
+  background: #B55A78;
+  box-shadow: 0 6px 24px rgba(199, 107, 138, 0.4);
 }
 [data-template="moss"] .product-card__body .button {
-  background: #DAE0D7; color: #4A5C4A; box-shadow: none;
+  background: #FAE8EE; color: #9E4560; box-shadow: none;
 }
 [data-template="moss"] .product-card__body .button:hover {
-  background: #CDD4CA; color: #3A4C3A; box-shadow: none;
+  background: #F4DCE4; color: #8E3550; box-shadow: none;
 }
 [data-template="moss"] .product-card {
-  border-radius: 14px;
+  border-radius: 16px;
+}
+[data-template="moss"] .detail-price-block {
+  background: #FCF0F3;
+  border-left: 3px solid #C76B8A;
+}
+[data-template="moss"] .detail-price-twd {
+  color: #B05670;
 }
 [data-template="moss"] .qty-stepper__btn:hover {
-  background: #E5EAE3;
-  color: #6B7F6B;
+  background: #FCF0F3;
+  color: #C76B8A;
 }
 
 
