@@ -112,7 +112,7 @@ export async function handlePlatformAdmin(
 
     const expiresAt = Date.now() + 86400_000; // 24 hours
     const token = await signToken(platformPassword, expiresAt);
-    return json({ ok: true, token });
+    return json({ ok: true, token, email, role: email === "lovemage@gmail.com" ? "super-admin" : "admin" });
   }
 
   // All other endpoints require auth
@@ -315,10 +315,16 @@ export async function handlePlatformAdmin(
     return json({ ok: true, testStoreIds: ids });
   }
 
-  // Get platform API keys
+  // Get platform API keys (super-admin only)
   if (url.pathname === "/api/platform-admin/api-keys" && request.method === "GET") {
+    // Require super-admin email via query param (token already verified above)
+    const reqEmail = url.searchParams.get("email") || "";
+    if (reqEmail !== "lovemage@gmail.com") {
+      return json({ ok: false, error: "權限不足" }, 403);
+    }
+
     const keys = await db
-      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro')")
+      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro', 'openrouter_api_key_pro')")
       .all<{ key: string; value: string }>();
 
     const result: Record<string, string> = {};
@@ -329,19 +335,23 @@ export async function handlePlatformAdmin(
       ok: true,
       starterKey: result["gemini_api_key_starter"] || "",
       proKey: result["gemini_api_key_pro"] || "",
+      openrouterProKey: result["openrouter_api_key_pro"] || "",
     });
   }
 
-  // Set platform API keys
+  // Set platform API keys (super-admin only)
   if (url.pathname === "/api/platform-admin/api-keys" && request.method === "POST") {
-    let body: { starterKey?: string; proKey?: string };
+    let body: { starterKey?: string; proKey?: string; openrouterProKey?: string; email?: string };
     try {
-      body = (await request.json()) as { starterKey?: string; proKey?: string };
+      body = (await request.json()) as { starterKey?: string; proKey?: string; openrouterProKey?: string; email?: string };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
 
-    // Ensure store_id=0 exists for platform settings (no FK issue since we don't reference stores table)
+    if ((body.email || "") !== "lovemage@gmail.com") {
+      return json({ ok: false, error: "權限不足" }, 403);
+    }
+
     if (body.starterKey !== undefined) {
       await db
         .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'gemini_api_key_starter', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
@@ -352,6 +362,12 @@ export async function handlePlatformAdmin(
       await db
         .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'gemini_api_key_pro', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
         .bind(body.proKey)
+        .run();
+    }
+    if (body.openrouterProKey !== undefined) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'openrouter_api_key_pro', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.openrouterProKey)
         .run();
     }
 

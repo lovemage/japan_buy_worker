@@ -252,23 +252,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="member-list" id="member-list"></div>
   </div>
 
-  <!-- Tab: API Keys -->
+  <!-- Tab: API Keys (super-admin only) -->
   <div class="page-content hidden" id="page-keys">
     <div class="card">
-      <h3>🔑 API Key</h3>
+      <h3>Gemini API Key</h3>
       <div class="row">
         <div>
-          <label>Starter 方案</label>
-          <input type="password" id="api-key-starter" placeholder="Starter API Key">
+          <label>Starter 方案 (Gemini)</label>
+          <input type="password" id="api-key-starter" placeholder="Starter Gemini API Key">
         </div>
         <div>
-          <label>Pro 方案</label>
-          <input type="password" id="api-key-pro" placeholder="Pro API Key">
+          <label>Pro 方案 (Gemini)</label>
+          <input type="password" id="api-key-pro" placeholder="Pro Gemini API Key">
         </div>
       </div>
-      <button class="btn btn-dark" onclick="saveApiKeys()">儲存</button>
-      <span class="toast" id="api-key-toast">已儲存</span>
     </div>
+    <div class="card" style="margin-top:12px;">
+      <h3>OpenRouter API Key</h3>
+      <div class="row">
+        <div>
+          <label>Pro 方案 (OpenRouter)</label>
+          <input type="password" id="api-key-openrouter-pro" placeholder="Pro OpenRouter API Key">
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-dark" onclick="saveApiKeys()" style="margin-top:12px;">儲存</button>
+    <span class="toast" id="api-key-toast">已儲存</span>
   </div>
 
   <!-- Tab: 設定 -->
@@ -334,6 +343,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <script>
 let adminToken = sessionStorage.getItem("platform_admin_token") || "";
+let adminEmail = sessionStorage.getItem("platform_admin_email") || "";
+let adminRole = sessionStorage.getItem("platform_admin_role") || "";
 let allStores = [];
 let testStoreIds = [];
 let allLogs = [];
@@ -406,7 +417,11 @@ async function login() {
   const data = await res.json();
   if (data.ok) {
     adminToken = data.token;
+    adminEmail = data.email || "";
+    adminRole = data.role || "admin";
     sessionStorage.setItem("platform_admin_token", adminToken);
+    sessionStorage.setItem("platform_admin_email", adminEmail);
+    sessionStorage.setItem("platform_admin_role", adminRole);
     showDashboard();
   } else {
     errEl.textContent = data.error || "密碼錯誤";
@@ -416,7 +431,11 @@ async function login() {
 
 function logout() {
   adminToken = "";
+  adminEmail = "";
+  adminRole = "";
   sessionStorage.removeItem("platform_admin_token");
+  sessionStorage.removeItem("platform_admin_email");
+  sessionStorage.removeItem("platform_admin_role");
   document.getElementById("login-section").style.display = "";
   document.getElementById("dashboard").classList.remove("active");
 }
@@ -424,12 +443,21 @@ function logout() {
 async function showDashboard() {
   document.getElementById("login-section").style.display = "none";
   document.getElementById("dashboard").classList.add("active");
+
+  // Hide API Keys tab for non-super-admin
+  var keysNav = document.querySelector('.nav-item[data-page="keys"]');
+  if (adminRole !== "super-admin") {
+    if (keysNav) keysNav.style.display = "none";
+  } else {
+    if (keysNav) keysNav.style.display = "";
+  }
+
   initMonthSelector();
   await loadPlanOffers();
   await loadTestStores();
   await loadStores();
   await loadRevenueLogs();
-  await loadApiKeys();
+  if (adminRole === "super-admin") await loadApiKeys();
   await loadSystemPrompt();
   await loadPlanLimits();
 }
@@ -624,11 +652,12 @@ async function updateStore(storeId, action, planExpiresAt, amount, days, months)
 }
 
 async function loadApiKeys() {
-  const res = await fetch("/api/platform-admin/api-keys", { headers: { authorization: "Bearer " + adminToken } });
+  const res = await fetch("/api/platform-admin/api-keys?email=" + encodeURIComponent(adminEmail), { headers: { authorization: "Bearer " + adminToken } });
   const data = await res.json();
   if (data.ok) {
     document.getElementById("api-key-starter").value = data.starterKey || "";
     document.getElementById("api-key-pro").value = data.proKey || "";
+    document.getElementById("api-key-openrouter-pro").value = data.openrouterProKey || "";
   }
 }
 
@@ -637,8 +666,10 @@ async function saveApiKeys() {
     method: "POST",
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
     body: JSON.stringify({
+      email: adminEmail,
       starterKey: document.getElementById("api-key-starter").value.trim(),
       proKey: document.getElementById("api-key-pro").value.trim(),
+      openrouterProKey: document.getElementById("api-key-openrouter-pro").value.trim(),
     }),
   });
   if ((await res.json()).ok) {
