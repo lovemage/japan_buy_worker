@@ -225,17 +225,17 @@ body {
 .hamburger-btn {
   width: 40px;
   height: 40px;
-  border: 1.5px solid var(--line);
+  border: none;
   border-radius: 10px;
-  background: var(--card-bg);
+  background: transparent;
   color: var(--text-color);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
+  transition: background 0.2s ease, color 0.2s ease;
 }
-.hamburger-btn:hover { border-color: var(--primary-color); }
+.hamburger-btn:hover { background: var(--line, #f0f0f0); }
 
 /* Drawer */
 .drawer-overlay {
@@ -294,6 +294,17 @@ body {
   font-size: 13px;
   border-radius: 8px;
   width: 100%;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-secondary, #555);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.drawer-filter-list .btn-pill:hover {
+  background: var(--line, #f0f0f0);
+  color: var(--text-primary, #333);
+  transform: none;
+  box-shadow: none;
 }
 .drawer-filter-list .btn-pill.is-active {
   background: var(--brand);
@@ -403,6 +414,7 @@ body {
 .product-card__media {
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .product-card__media.image-loading {
@@ -462,9 +474,29 @@ body {
 
 .product-card img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
   display: block;
+}
+
+/* Overlay: hidden by default, shown on click */
+.product-card__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.product-card__overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Gallery Nav — visible on hover (desktop) and always on mobile for multi-image cards */
@@ -518,15 +550,16 @@ body {
 }
 
 .product-card__title {
-  margin: 0 0 6px;
-  font-size: 15px;
+  margin: 0;
+  font-size: clamp(11px, 3.2vw, 15px);
   font-weight: 500;
   line-height: 1.4;
-  height: calc(2 * 1.4em);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  color: #fff;
+  width: 100%;
 }
 
 .product-card__title a {
@@ -557,10 +590,23 @@ body {
   align-items: center;
   justify-content: center;
   margin-top: auto;
-  padding: 8px 12px;
+  padding: 0;
+  width: 40px;
+  height: 40px;
   font-size: 13px;
-  border-radius: 8px;
+  font-weight: 500;
+  border-radius: 50%;
   line-height: 1;
+  background: var(--accent-warm);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--brand-shadow-lg);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  align-self: flex-end;
+}
+.product-card__body .button:hover {
+  background: var(--accent-warm-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px var(--brand-shadow-lg);
 }
 
 .meta {
@@ -1638,7 +1684,7 @@ select:disabled {
 
   .product-grid.product-grid--list .product-card img {
     height: 100%;
-    aspect-ratio: auto;
+    aspect-ratio: 3 / 4;
   }
 
   .product-grid.product-grid--list .product-card__body {
@@ -1720,7 +1766,8 @@ select:disabled {
   }
 
   .product-card__body .button {
-    min-height: 44px;
+    width: 44px;
+    height: 44px;
   }
 
   .floating-request-btn {

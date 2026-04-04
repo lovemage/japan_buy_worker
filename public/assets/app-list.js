@@ -180,6 +180,17 @@ function bindProductNavigationState() {
   });
 }
 
+function initOverlayToggle() {
+  document.querySelectorAll("[data-card-overlay]").forEach((overlay) => {
+    const media = overlay.closest(".product-card__media");
+    if (!media) return;
+    media.addEventListener("click", (e) => {
+      if (e.target.closest(".product-card__nav")) return;
+      overlay.classList.toggle("is-visible");
+    });
+  });
+}
+
 function renderProducts(products, pricing, promoMaxTwd) {
   const grid = document.getElementById("product-grid");
   if (!grid) {
@@ -208,13 +219,15 @@ function renderProducts(products, pricing, promoMaxTwd) {
           <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" data-image-loading="1" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
+          <div class="product-card__overlay" data-card-overlay>
+            <h2 class="product-card__title">${escapeHtml(title)}</h2>
+          </div>
         </div>
         <div class="product-card__body">
-          <h2 class="product-card__title">${escapeHtml(title)}</h2>
           <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
           <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${adjusted.src !== null ? ` <span class="meta" style="font-weight:400">(${fmtSrcPrice(adjusted.src)})</span>` : ""}</p>
           <p class="product-card__category">${escapeHtml(translateCategoryLabel(item.category))}${item.colorCount ? ` · ${item.colorCount} 色` : ""}</p>
-          <a class="button" data-product-detail-link="1" href="${window.__API_BASE || ""}/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">查看詳情</a>
+          <a class="button" data-product-detail-link="1" href="${window.__API_BASE || ""}/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">詳情</a>
         </div>
       </article>
       `;
@@ -629,6 +642,7 @@ async function bootstrap() {
     }
     renderProducts(products, pricing, promoMaxTwd);
     initProductCardGalleries();
+    initOverlayToggle();
     renderPagination(body.paging || null);
     renderFloatingPagination(body.paging || null);
     const restoreY = consumeListScrollState();
