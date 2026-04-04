@@ -36,12 +36,15 @@ export async function handleAdminGeminiSettings(
   );
 }
 
-export async function getAiModel(db: D1DatabaseLike, storeId: number): Promise<string> {
+export async function getAiModel(db: D1DatabaseLike, storeId: number, storePlan?: string): Promise<string> {
   const row = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'ai_model'")
     .bind(storeId)
     .first<{ value: string }>();
-  return row?.value || "v1";
+  const model = row?.value || "v1";
+  // v2 is Pro-only; force v1 if downgraded
+  if (model === "v2" && storePlan !== "pro") return "v1";
+  return model;
 }
 
 export async function getGeminiModel(db: D1DatabaseLike): Promise<string> {
@@ -73,7 +76,7 @@ export async function handleAdminAiModel(
     new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
 
   if (request.method === "GET") {
-    const model = await getAiModel(ctx.db, ctx.storeId);
+    const model = await getAiModel(ctx.db, ctx.storeId, ctx.storePlan);
     return json({ ok: true, model });
   }
 

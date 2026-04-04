@@ -96,7 +96,7 @@ export async function handleAdminRecognize(
     }
   }
 
-  const aiModel = await getAiModel(ctx.db, ctx.storeId);
+  const aiModel = await getAiModel(ctx.db, ctx.storeId, ctx.storePlan);
   const useOpenRouter = aiModel === "v2" && ctx.storePlan === "pro";
 
   let apiKey: string;

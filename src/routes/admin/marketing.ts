@@ -160,7 +160,7 @@ ${productList || "（尚無商品）"}
 - 直接輸出文案內容，不要加其他說明`;
 
   // Call AI
-  const aiModel = await getAiModel(ctx.db, ctx.storeId);
+  const aiModel = await getAiModel(ctx.db, ctx.storeId, plan);
   const useOpenRouter = aiModel === "v2" && plan === "pro";
 
   let content: string;
