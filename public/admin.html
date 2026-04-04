@@ -476,8 +476,6 @@
               <span class="tag-preview tag-color-popular" id="tag-preview-popular">人氣特賣</span>
             </div>
           </div>
-          <button class="button" type="button" style="margin-top:12px;" onclick="saveTagNames()">儲存標籤</button>
-          <p id="tag-names-status" class="admin-status">已儲存</p>
         </div>
 
         <div class="settings-group">
@@ -512,7 +510,8 @@
           </div>
         </div>
 
-        <button class="button" type="button" style="margin-top:4px;" onclick="saveDisplaySettings()">儲存標籤設定</button>
+        <button class="button" type="button" style="margin-top:4px;" onclick="saveBrandingAll()">儲存</button>
+        <p id="tag-names-status" class="admin-status">已儲存</p>
       </div>
 
       <!-- 定價與運輸 -->
@@ -535,7 +534,6 @@
             <label><span class="currency-label">利潤百分比</span> <span style="font-size:12px;color:var(--admin-text-muted);">%</span><input id="markup-percent" type="number" min="0" max="100" step="1" value="15" class="input-cute" /></label>
             <p class="meta" style="margin-top:4px;">商品日幣價格 × 匯率 ×（1 + 利潤%）= 台幣售價</p>
           </div>
-          <button id="admin-save-pricing" class="button" type="button" style="margin-top:12px;">儲存定價設定</button>
         </div>
 
         <div class="settings-group">
@@ -543,9 +541,10 @@
           <p class="meta" style="margin-bottom:12px;">自訂配送方式和運費。客人下單時可選擇這些選項。</p>
           <div id="shipping-methods-editor" style="display:flex;flex-direction:column;gap:10px;"></div>
           <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addShippingMethod()">+ 新增運輸方式</button>
-          <button class="button" type="button" style="margin-top:12px;" onclick="saveShippingMethods()">儲存運輸設定</button>
-          <p id="shipping-methods-status" class="admin-status">已儲存</p>
         </div>
+
+        <button class="button" type="button" style="margin-top:4px;" onclick="savePricingAll()">儲存</button>
+        <p id="shipping-methods-status" class="admin-status">已儲存</p>
       </div>
     </section>
   </main>
@@ -1103,6 +1102,18 @@
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("tag-names-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
+  }
+
+  function saveBrandingAll() {
+    saveTagNames();
+    saveDisplaySettings();
+  }
+
+  function savePricingAll() {
+    document.getElementById("admin-save-pricing")?.setAttribute("disabled", "");
+    savePricing();
+    saveShippingMethods();
+    setTimeout(function() { document.getElementById("admin-save-pricing")?.removeAttribute("disabled"); }, 1000);
   }
 
   function uploadStoreLogo(file) {

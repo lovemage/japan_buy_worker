@@ -148,8 +148,10 @@ async function clearProducts(type) {
   }
 }
 
+// Expose savePricing globally for combined save button
+window.savePricing = savePricing;
+
 export function initSettings() {
-  document.getElementById("admin-save-pricing")?.addEventListener("click", savePricing);
   document.getElementById("markup-mode-flat")?.addEventListener("click", () => setMarkupMode("flat"));
   document.getElementById("markup-mode-percent")?.addEventListener("click", () => setMarkupMode("percent"));
   document.getElementById("admin-save-gemini-key")?.addEventListener("click", saveGeminiKey);
