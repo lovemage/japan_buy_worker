@@ -22,7 +22,10 @@ function updateButtons() {
   if (quickBtn) quickBtn.disabled = !hasImages;
   if (manualEntryBtn) manualEntryBtn.disabled = !hasImages;
   const count = document.getElementById("photo-count");
-  if (count) count.textContent = `已選 ${selectedImages.length} / ${window.__MAX_IMAGES || 3} 張`;
+  if (count) {
+    const total = selectedImages.length;
+    count.textContent = total > 3 ? `已選 ${total} 張（AI 辨識前 3 張）` : `已選 ${total} 張`;
+  }
   if (typeof updateHint === "function") updateHint();
 }
 
@@ -82,8 +85,7 @@ function renderPreviews() {
 
 async function onPhotosSelected(event) {
   const files = Array.from(event.target.files || []);
-  const remaining = (window.__MAX_IMAGES || 3) - selectedImages.length;
-  const toProcess = files.slice(0, remaining);
+  const toProcess = files;
 
   for (const file of toProcess) {
     try {
@@ -134,7 +136,7 @@ async function doRecognize() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        images: selectedImages.map((img) => img.base64),
+        images: selectedImages.slice(0, 3).map((img) => img.base64),
         mode: "quick",
       }),
     });

@@ -125,12 +125,14 @@ export async function handleAdminRecognize(
     });
   }
 
-  if (!Array.isArray(body.images) || body.images.length === 0 || body.images.length > 3) {
+  if (!Array.isArray(body.images) || body.images.length === 0) {
     return new Response(
-      JSON.stringify({ ok: false, error: "images 需為 1-3 張 base64 圖片" }),
+      JSON.stringify({ ok: false, error: "請至少提供 1 張圖片" }),
       { status: 400, headers: { "content-type": "application/json" } }
     );
   }
+  // Only use first 3 images for recognition
+  body.images = body.images.slice(0, 3);
 
   const mode = body.mode === "search" ? "search" : "quick";
   const basePrompt = await getRecognizePrompt(ctx.db);
