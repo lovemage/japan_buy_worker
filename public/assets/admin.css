@@ -1130,6 +1130,13 @@
 .edit-modal__actions .button {
   flex: 1;
   min-height: 44px;
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+}
+.edit-modal__actions .button:hover {
+  background: var(--admin-hover);
+  opacity: 1;
 }
 
 /* ── Danger actions ── */

@@ -479,9 +479,9 @@ body {
 .promo-badge ~ .product-tag:nth-of-type(1) { top: 34px; }
 .promo-badge ~ .product-tag:nth-of-type(2) { top: 58px; }
 .promo-badge ~ .product-tag:nth-of-type(3) { top: 82px; }
-.product-tag--hot { background: #e53e3e; }
-.product-tag--limited { background: #d97706; }
-.product-tag--popular { background: var(--primary-color); }
+.product-tag--hot { background: #F2E28D; color: #7A6B1A; }
+.product-tag--limited { background: #B8C99D; color: #4A5A34; }
+.product-tag--popular { background: #8FB8A0; color: #355E47; }
 
 .product-card img {
   width: 100%;
