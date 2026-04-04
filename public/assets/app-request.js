@@ -210,7 +210,7 @@ function renderTotals() {
     shippingTwdNode.textContent = `運費：NT$${shippingTwd.toLocaleString("en-US")}`;
   }
   if (totalJpyNode) {
-    totalJpyNode.textContent = `商品合計：\u00a5${totalJpy.toLocaleString("en-US")}`;
+    totalJpyNode.textContent = `商品合計：\u00a5${totalJpy.toLocaleString("en-US")} / NT$${itemsTotalTwd.toLocaleString("en-US")}`;
   }
   if (totalTwdNode) {
     totalTwdNode.textContent = `合計：NT$${totalTwd.toLocaleString("en-US")}`;
