@@ -158,8 +158,8 @@ ${where.whereSql}
       ok: true,
       products: products.map((p) => {
         const mapped = mapProduct(p);
-        const galLimits: Record<string, number> = { free: 3, starter: 4, pro: 8 };
-        const galMax = galLimits[ctx.storePlan] || 3;
+        const galLimits: Record<string, number> = { free: 4, starter: 6, pro: 8 };
+        const galMax = galLimits[ctx.storePlan] || 4;
         if (mapped.gallery.length > galMax) mapped.gallery = mapped.gallery.slice(0, galMax);
         return mapped;
       }),
@@ -326,8 +326,8 @@ LIMIT 1
   const mapped = mapProduct(product);
   const main = mapped.displayImageUrl || mapped.imageUrl;
   const storedPayload = parseStoredProductPayload(product.source_payload_json);
-  const galleryLimits: Record<string, number> = { free: 3, starter: 4, pro: 8 };
-  const maxGallery = galleryLimits[ctx.storePlan] || 3;
+  const galleryLimits: Record<string, number> = { free: 4, starter: 6, pro: 8 };
+  const maxGallery = galleryLimits[ctx.storePlan] || 4;
   const galleryRaw = storedPayload.gallery;
   const galleryFull = galleryRaw.length > 0 ? galleryRaw : main ? [main] : [];
   const gallery = galleryFull.slice(0, maxGallery);

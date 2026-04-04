@@ -79,16 +79,21 @@ export async function handleAdminRecognize(
     });
   }
 
-  // Free plan: 5 AI recognize uses total
-  if (ctx.storePlan === "free") {
+  // Monthly AI recognize limits per plan
+  const recognizeLimits: Record<string, number> = { free: 5, starter: 20, pro: 50 };
+  const recognizeLimit = recognizeLimits[ctx.storePlan || "free"] ?? 5;
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const recognizeCountKey = `ai_recognize_count_${monthKey}`;
+  {
     const usage = await ctx.db
-      .prepare("SELECT COALESCE((SELECT value FROM app_settings WHERE store_id = ? AND key = 'ai_recognize_count'), '0') as cnt")
-      .bind(ctx.storeId)
+      .prepare("SELECT COALESCE((SELECT value FROM app_settings WHERE store_id = ? AND key = ?), '0') as cnt")
+      .bind(ctx.storeId, recognizeCountKey)
       .first<{ cnt: string }>();
     const count = parseInt(usage?.cnt || "0", 10);
-    if (count >= 5) {
+    if (count >= recognizeLimit) {
       return new Response(
-        JSON.stringify({ ok: false, error: "Free 方案的 AI 辨識次數已用完（5 次）。升級方案以解鎖無限使用。" }),
+        JSON.stringify({ ok: false, error: `本月 AI 辨識次數已達上限（${recognizeLimit} 次）。下個月將自動恢復額度。` }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
     }
@@ -285,14 +290,14 @@ export async function handleAdminRecognize(
 
   const result = parsed as RecognizeResult;
 
-  // Increment AI recognize counter (for free plan tracking)
+  // Increment monthly AI recognize counter
   await ctx.db
     .prepare(
       `INSERT INTO app_settings (store_id, key, value, updated_at)
-       VALUES (?, 'ai_recognize_count', '1', datetime('now'))
+       VALUES (?, ?, '1', datetime('now'))
        ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
     )
-    .bind(ctx.storeId)
+    .bind(ctx.storeId, recognizeCountKey)
     .run()
     .catch(() => {}); // non-blocking
 
