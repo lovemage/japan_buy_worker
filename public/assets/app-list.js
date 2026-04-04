@@ -14,7 +14,7 @@ const PROMO_FILTER_VALUES = ["all", 350, 450, 550];
 const DEFAULT_PROMO_FILTER = "all";
 
 // Tag labels from display settings or defaults
-const TAG_DEFAULTS = { hot: "熱門商品", limited: "限時發售", popular: "人氣特賣" };
+const TAG_DEFAULTS = { hot: "熱門商品", limited: "限時發售", popular: "人氣特賣", instock: "現貨", preorder: "預購" };
 function getTagLabel(key) {
   const ds = window.__DISPLAY_SETTINGS || {};
   const names = ds.tagNames || {};

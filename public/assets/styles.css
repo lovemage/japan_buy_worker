@@ -165,9 +165,8 @@ body {
 }
 
 .page-header .container {
-  max-height: 82px;
-  display: flex;
-  align-items: center;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 /* Deadline countdown bar */
@@ -485,13 +484,19 @@ body {
 .product-tag:nth-of-type(1) { top: 8px; }
 .product-tag:nth-of-type(2) { top: 32px; }
 .product-tag:nth-of-type(3) { top: 56px; }
+.product-tag:nth-of-type(4) { top: 80px; }
+.product-tag:nth-of-type(5) { top: 104px; }
 /* If promo badge exists, push tags down */
 .promo-badge ~ .product-tag:nth-of-type(1) { top: 34px; }
 .promo-badge ~ .product-tag:nth-of-type(2) { top: 58px; }
 .promo-badge ~ .product-tag:nth-of-type(3) { top: 82px; }
+.promo-badge ~ .product-tag:nth-of-type(4) { top: 106px; }
+.promo-badge ~ .product-tag:nth-of-type(5) { top: 130px; }
 .product-tag--hot { background: #F2E28D; color: #7A6B1A; }
 .product-tag--limited { background: #B8C99D; color: #4A5A34; }
 .product-tag--popular { background: #8FB8A0; color: #355E47; }
+.product-tag--instock { background: #A8D8EA; color: #1A5276; }
+.product-tag--preorder { background: #D7BDE2; color: #6C3483; }
 
 .product-card img {
   width: 100%;

@@ -258,12 +258,10 @@ async function openEditModal(btn) {
   // Populate tag checkboxes
   const tagStr = btn.getAttribute("data-tags") || "";
   const tagSet = new Set(tagStr.split(",").filter(Boolean));
-  const hotCb = document.getElementById("edit-tag-hot");
-  const limitedCb = document.getElementById("edit-tag-limited");
-  const popularCb = document.getElementById("edit-tag-popular");
-  if (hotCb) hotCb.checked = tagSet.has("hot");
-  if (limitedCb) limitedCb.checked = tagSet.has("limited");
-  if (popularCb) popularCb.checked = tagSet.has("popular");
+  ["hot", "limited", "popular", "instock", "preorder"].forEach(function(t) {
+    var cb = document.getElementById("edit-tag-" + t);
+    if (cb) cb.checked = tagSet.has(t);
+  });
 
   editNewImages = [];
   editGallery = [];
@@ -306,9 +304,9 @@ async function saveEdit() {
 
   const status = document.getElementById("edit-status");
   const tags = [];
-  if (document.getElementById("edit-tag-hot")?.checked) tags.push("hot");
-  if (document.getElementById("edit-tag-limited")?.checked) tags.push("limited");
-  if (document.getElementById("edit-tag-popular")?.checked) tags.push("popular");
+  ["hot", "limited", "popular", "instock", "preorder"].forEach(function(t) {
+    if (document.getElementById("edit-tag-" + t)?.checked) tags.push(t);
+  });
 
   const payload = {
     id,

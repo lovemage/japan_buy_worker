@@ -23,6 +23,10 @@
   --tag-matcha-text: #4A5A34;
   --tag-grass: #8FB8A0;        /* 青草綠 莫蘭迪 */
   --tag-grass-text: #355E47;
+  --tag-sky: #A8D8EA;          /* 天空藍 */
+  --tag-sky-text: #1A5276;
+  --tag-lavender: #D7BDE2;     /* 薰衣草紫 */
+  --tag-lavender-text: #6C3483;
 
   /* 功能色 */
   --admin-success: #2D9D5A;
@@ -678,6 +682,16 @@
 .tag-color-popular {
   background: var(--tag-grass);
   color: var(--tag-grass-text);
+}
+
+.tag-color-instock {
+  background: var(--tag-sky);
+  color: var(--tag-sky-text);
+}
+
+.tag-color-preorder {
+  background: var(--tag-lavender);
+  color: var(--tag-lavender-text);
 }
 
 .tag-preview {
