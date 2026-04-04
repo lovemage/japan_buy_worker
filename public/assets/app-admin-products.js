@@ -230,6 +230,7 @@ async function openEditModal(btn) {
   document.getElementById("edit-brand").value = btn.getAttribute("data-brand") || "";
   document.getElementById("edit-category").value = btn.getAttribute("data-category") || "";
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
+  document.getElementById("edit-description").value = "";
   document.getElementById("edit-status").textContent = "";
 
   // Set toggle button state
@@ -276,6 +277,8 @@ async function openEditModal(btn) {
     if (res.ok) {
       const data = await res.json();
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
+      const descEl = document.getElementById("edit-description");
+      if (descEl) descEl.value = data.product?.description || "";
     }
   }
   renderEditGallery();
@@ -314,6 +317,7 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
+    description: document.getElementById("edit-description")?.value?.trim() || "",
     gallery: editGallery,
     newImages: editNewImages.map(img => img.base64),
     tags,
