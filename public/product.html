@@ -19,12 +19,19 @@
     }
   }
   if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };
-  // Fetch country config if not injected by serveTenantHtml
+  // Fetch store info if not injected by serveTenantHtml
   if (!window.__COUNTRY_CONFIG && window.__API_BASE) {
     fetch(window.__API_BASE + "/api/admin/store-info").then(function(r){return r.json()}).then(function(d) {
-      if (d.ok && d.store && d.store.countryConfig) {
-        window.__COUNTRY_CONFIG = d.store.countryConfig;
+      if (d.ok && d.store) {
+        if (d.store.countryConfig) window.__COUNTRY_CONFIG = d.store.countryConfig;
+        if (d.store.name) window.__STORE_NAME = d.store.name;
       }
+    }).catch(function(){});
+  }
+  // Fetch display settings if not injected
+  if (!window.__DISPLAY_SETTINGS && window.__API_BASE) {
+    fetch(window.__API_BASE + "/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
+      if (d.ok) { window.__DISPLAY_SETTINGS = d; document.dispatchEvent(new Event("ds-ready")); }
     }).catch(function(){});
   }
   </script>
@@ -42,6 +49,7 @@
         </div>
       </div>
     </header>
+    <div id="deadline-countdown" class="deadline-countdown" style="display:none;"></div>
     <script>
     (function(){
       var ds = window.__DISPLAY_SETTINGS || {};
@@ -74,32 +82,33 @@
         backBtn.href = returnTo && returnTo.startsWith("/") ? returnTo : (base + "/store.html");
       }
       // Deadline countdown
-      if (ds.deadlineEnabled && ds.deadlineTime) {
+      function initDeadline(settings) {
+        if (!settings || !settings.deadlineEnabled || !settings.deadlineTime) return;
         var cdEl = document.getElementById("deadline-countdown");
-        if (cdEl) {
-          var deadline = new Date(ds.deadlineTime).getTime();
-          function tickProduct() {
-            var now = Date.now();
-            var diff = deadline - now;
-            if (diff <= 0) { cdEl.textContent = "代購已截止"; return; }
-            var d = Math.floor(diff / 86400000);
-            var hr = Math.floor((diff % 86400000) / 3600000);
-            var min = Math.floor((diff % 3600000) / 60000);
-            var sec = Math.floor((diff % 60000) / 1000);
-            var parts = [];
-            if (d > 0) parts.push(d + " 天");
-            parts.push(String(hr).padStart(2, "0") + ":" + String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0"));
-            cdEl.textContent = "代購截止倒數 " + parts.join(" ");
-            requestAnimationFrame(function() { setTimeout(tickProduct, 1000); });
-          }
-          cdEl.style.display = "";
-          tickProduct();
+        if (!cdEl) return;
+        var deadline = new Date(settings.deadlineTime).getTime();
+        function tickProduct() {
+          var now = Date.now();
+          var diff = deadline - now;
+          if (diff <= 0) { cdEl.textContent = "代購已截止"; return; }
+          var d = Math.floor(diff / 86400000);
+          var hr = Math.floor((diff % 86400000) / 3600000);
+          var min = Math.floor((diff % 3600000) / 60000);
+          var sec = Math.floor((diff % 60000) / 1000);
+          var parts = [];
+          if (d > 0) parts.push(d + " 天");
+          parts.push(String(hr).padStart(2, "0") + ":" + String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0"));
+          cdEl.textContent = "代購截止倒數 " + parts.join(" ");
+          requestAnimationFrame(function() { setTimeout(tickProduct, 1000); });
         }
+        cdEl.style.display = "";
+        tickProduct();
       }
+      initDeadline(ds);
+      // Also listen for async display settings load
+      document.addEventListener("ds-ready", function() { initDeadline(window.__DISPLAY_SETTINGS); });
     })();
     </script>
-
-    <div id="deadline-countdown" class="deadline-countdown" style="display:none;"></div>
 
     <main class="container">
       <section id="detail-error" class="notice hidden"></section>
@@ -146,7 +155,7 @@
         </svg>
       </button>
     </div>
-    <a class="floating-back-btn" id="floating-back-btn" href="/store.html" aria-label="上一頁">
+    <a class="floating-back-btn" id="floating-back-btn" href="#" aria-label="上一頁" onclick="event.preventDefault(); history.back();">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
     <a class="floating-request-btn" href="/request.html" aria-label="購物車">

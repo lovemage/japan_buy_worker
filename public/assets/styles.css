@@ -157,24 +157,34 @@ body {
 }
 
 .page-header {
-  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--card-bg, #fff);
   border-bottom: none;
+}
+
+.page-header .container {
+  max-height: 82px;
+  display: flex;
+  align-items: center;
 }
 
 /* Deadline countdown bar */
 .deadline-countdown {
+  position: sticky;
+  top: 82px;
+  z-index: 29;
   text-align: center;
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 0 16px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.5px;
   color: var(--text-color);
   background: var(--bg-color);
   border-bottom: 1px solid var(--line);
-}
-
-.page-header .container {
-  position: relative;
 }
 
 .page-header h1 {
@@ -199,8 +209,8 @@ body {
   height: 44px;
   object-fit: contain;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: none;
+  background: transparent;
 }
 
 /* Sub-page header (product, request) */
@@ -1464,8 +1474,8 @@ select:disabled {
 /* Floating back button (product detail) */
 .floating-back-btn {
   position: fixed;
-  left: 20px;
-  bottom: 20px;
+  right: 20px;
+  bottom: 80px;
   z-index: 40;
   display: inline-flex;
   align-items: center;
@@ -1783,9 +1793,11 @@ select:disabled {
   }
 
   /* Push floating buttons above the fixed action bar */
-  body:has(.detail-actions) .floating-request-btn,
-  body:has(.detail-actions) .floating-back-btn {
+  body:has(.detail-actions) .floating-request-btn {
     bottom: 76px;
+  }
+  body:has(.detail-actions) .floating-back-btn {
+    bottom: 136px;
   }
 
   .detail-main-wrap:hover .detail-main-image {
