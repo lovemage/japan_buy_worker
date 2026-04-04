@@ -88,13 +88,14 @@ export async function handleMarketing(
 
   // Gather store context
   const storeInfo = await ctx.db
-    .prepare("SELECT name, slug, destination_country FROM stores WHERE id = ?")
+    .prepare("SELECT name, slug, destination_country, plan FROM stores WHERE id = ?")
     .bind(ctx.storeId)
-    .first<{ name: string; slug: string; destination_country: string }>();
+    .first<{ name: string; slug: string; destination_country: string; plan: string }>();
 
   const storeName = storeInfo?.name || "我的商店";
   const country = storeInfo?.destination_country || "jp";
   const slug = storeInfo?.slug || "";
+  const storePlan = storeInfo?.plan || "free";
 
   // Get store rules
   const rulesRow = await ctx.db
@@ -111,19 +112,30 @@ export async function handleMarketing(
 
   // Get products (top 20 active)
   const products = await ctx.db
-    .prepare("SELECT title_ja, title_zh_tw, brand, category, price_jpy_tax_in FROM products WHERE store_id = ? AND is_active = 1 ORDER BY id DESC LIMIT 20")
+    .prepare("SELECT code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in FROM products WHERE store_id = ? AND is_active = 1 ORDER BY id DESC LIMIT 20")
     .bind(ctx.storeId)
-    .all<{ title_ja: string; title_zh_tw: string; brand: string; category: string; price_jpy_tax_in: number }>();
+    .all<{ code: string; title_ja: string; title_zh_tw: string; brand: string; category: string; price_jpy_tax_in: number }>();
 
-  const productList = (products.results || []).map((p, i) =>
-    `${i + 1}. ${p.title_zh_tw || p.title_ja}${p.brand ? ` (${p.brand})` : ""}${p.category ? ` [${p.category}]` : ""}`
-  ).join("\n");
+  const returnTo = storePlan === "pro" ? "/" : `/s/${slug}/`;
+  const productList = (products.results || []).map((p, i) => {
+    const name = p.title_zh_tw || p.title_ja;
+    const link = `${storeUrl}/product?code=${p.code}&returnTo=${encodeURIComponent(returnTo)}`;
+    return `${i + 1}. ${name}${p.brand ? ` (${p.brand})` : ""} - ${link}`;
+  }).join("\n");
 
   const countryNames: Record<string, string> = { jp: "日本", kr: "韓國", th: "泰國", tw: "台灣" };
   const countryName = countryNames[country] || country;
 
   // Build store URL
-  const storeUrl = slug ? `https://${slug}.vovosnap.com` : "vovosnap.com";
+  const mainDomain = "vovosnap.com";
+  let storeUrl: string;
+  if (slug && storePlan === "pro") {
+    storeUrl = `https://${slug}.${mainDomain}`;
+  } else if (slug) {
+    storeUrl = `https://${mainDomain}/s/${slug}`;
+  } else {
+    storeUrl = `https://${mainDomain}`;
+  }
 
   // Build prompt
   const prompt = `你是一位專業的社群行銷文案撰寫專家。請根據以下資訊，為代購商店撰寫一篇行銷文案。
