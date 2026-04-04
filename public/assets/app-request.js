@@ -443,7 +443,7 @@ async function onSubmit(event) {
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "送出需求單";
+      submitBtn.textContent = "送出訂單";
     }
   }
 }

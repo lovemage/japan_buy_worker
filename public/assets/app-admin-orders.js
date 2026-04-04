@@ -73,7 +73,7 @@ function renderForms(forms) {
   const filtered = activeFilter === "all" ? forms : forms.filter((f) => f.status === activeFilter);
 
   if (!Array.isArray(filtered) || filtered.length === 0) {
-    wrapper.innerHTML = `<p class="notice notice--info">目前沒有${activeFilter === "all" ? "" : FILTER_TABS.find((t) => t.value === activeFilter)?.label || ""}需求單。</p>`;
+    wrapper.innerHTML = `<p class="notice notice--info">目前沒有${activeFilter === "all" ? "" : FILTER_TABS.find((t) => t.value === activeFilter)?.label || ""}訂單。</p>`;
     return;
   }
 
@@ -98,7 +98,7 @@ function renderForms(forms) {
     return `
     <article class="admin-form-card" data-status="${form.status}">
       <div class="admin-form-header">
-        <h2 class="product-card__title">需求單 #${displayCode}</h2>
+        <h2 class="product-card__title">訂單 #${displayCode}</h2>
         <div class="admin-form-status">${statusSelectHtml(form.id, form.status)}</div>
       </div>
       <p class="meta">建立時間：${new Date(form.createdAt).toLocaleString("zh-TW")}</p>
@@ -108,7 +108,7 @@ function renderForms(forms) {
       <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
       <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)}</p>
       <p class="meta">整單備註：${form.notes || "無"}</p>
-      ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此需求單</button>` : ""}
+      ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此訂單</button>` : ""}
       <ul class="admin-form-items">${itemsHtml}</ul>
     </article>`;
   }).join("");
@@ -137,7 +137,7 @@ function renderForms(forms) {
     button.addEventListener("click", async () => {
       const id = Number(button.getAttribute("data-form-id") || "");
       if (!Number.isInteger(id) || id <= 0) return;
-      if (!confirm(`確定刪除需求單 #${id}？此操作無法復原。`)) return;
+      if (!confirm(`確定刪除訂單 #${id}？此操作無法復原。`)) return;
       hideError();
       const res = await apiFetch(`/api/admin/requirements?id=${id}`, { method: "DELETE" });
       if (res.status === 401) { location.href = "/admin-login.html"; return; }

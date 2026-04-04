@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>需求單</title>
+    <title>訂單</title>
     <link rel="stylesheet" href="/assets/styles.css" />
     <link rel="stylesheet" href="/assets/templates.css" />
     <script>
@@ -15,7 +15,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var base = window.__API_BASE || "";
       var back = document.getElementById("back-to-store");
-      if (back && base) back.href = base + "/";
+      if (back) back.href = base + "/";
     });
     </script>
   </head>
@@ -60,28 +60,34 @@
 
     <main class="container">
       <section id="request-error" class="notice hidden" role="alert" aria-live="assertive"></section>
-      <section id="request-items" class="request-items" role="list" aria-label="需求單商品列表"></section>
+      <section id="request-items" class="request-items" role="list" aria-label="訂單商品列表"></section>
 
       <form id="request-form" class="request-form">
+        <p class="trust-signal" aria-label="隱私保護說明">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>您的資料僅用於本次代購配送，不會用於其他用途
+        </p>
         <label for="memberName">
           會員姓名
-          <input id="memberName" name="memberName" type="text" class="input-cute" required aria-required="true" />
+          <input id="memberName" name="memberName" type="text" class="input-cute" required aria-required="true" placeholder="收件人真實姓名" />
         </label>
-        <label for="memberPhone">
-          會員電話
-          <input id="memberPhone" name="memberPhone" type="tel" class="input-cute" required aria-required="true" />
-        </label>
+        <div class="form-row-half">
+          <label for="memberPhone">
+            會員電話
+            <input id="memberPhone" name="memberPhone" type="tel" class="input-cute" required aria-required="true" placeholder="09xx-xxx-xxx" />
+          </label>
+          <label for="lineId">
+            Line ID
+            <span class="field-hint">用於配送進度通知與對帳確認</span>
+            <input id="lineId" name="lineId" type="text" class="input-cute" required aria-required="true" />
+          </label>
+        </div>
         <label for="recipientCity">
           收件縣市
           <select id="recipientCity" name="recipientCity" class="input-cute" required aria-required="true"></select>
         </label>
         <label for="recipientAddress">
           收件地址
-          <input id="recipientAddress" name="recipientAddress" type="text" class="input-cute" required aria-required="true" />
-        </label>
-        <label for="lineId">
-          Line ID
-          <input id="lineId" name="lineId" type="text" class="input-cute" required aria-required="true" />
+          <input id="recipientAddress" name="recipientAddress" type="text" class="input-cute" required aria-required="true" placeholder="街道路名、門牌號碼、樓層" />
         </label>
         <fieldset id="shipping-options-box" class="shipping-options">
           <legend>配送方式</legend>
@@ -89,21 +95,21 @@
             <input type="radio" name="shippingMethod" value="consolidated_tw" checked />
             <span>
               <strong>集運回台灣</strong>
-              <span class="meta">國際運費 + 國內 7-11 店到店</span>
+              <span class="meta">國際運費 + 國內 7-11 店到店｜預估 NT$150–350 依重量</span>
             </span>
           </label>
           <label class="shipping-option">
             <input type="radio" name="shippingMethod" value="jp_direct" />
             <span>
               <strong>日本直送</strong>
-              <span class="meta">僅國際運費，需完成 EZWAY 驗證</span>
+              <span class="meta">僅國際運費｜預估 NT$300–800 依重量｜需完成 EZWAY 驗證</span>
             </span>
           </label>
           <label class="shipping-option">
             <input type="radio" name="shippingMethod" value="limited_proxy" />
             <span>
               <strong>限時連線代購</strong>
-              <span class="meta">固定運費</span>
+              <span class="meta">固定運費 NT$200</span>
             </span>
           </label>
           <p id="shipping-note" class="meta"></p>
@@ -124,7 +130,7 @@
           <p class="meta" id="total-jpy">商品合計：&yen;0</p>
           <p id="total-twd" class="request-total-highlight">合計：NT$0</p>
         </section>
-        <button id="submit-btn" class="btn-pill" type="submit">送出需求單</button>
+        <button id="submit-btn" class="btn-pill" type="submit">送出訂單</button>
       </form>
     </main>
 

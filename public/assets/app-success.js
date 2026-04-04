@@ -92,21 +92,21 @@ async function bootstrap() {
   const titleNode = document.getElementById("success-id");
   if (titleNode) {
     const display = code || id || "未知";
-    titleNode.textContent = `需求單編號：#${display}`;
+    titleNode.textContent = `訂單編號：#${display}`;
   }
   if (!id) {
-    showError("缺少需求單編號");
+    showError("缺少訂單編號");
     return;
   }
 
   const res = await apiFetch(`/api/requirement?id=${encodeURIComponent(id)}`);
   if (!res.ok) {
-    showError(`讀取需求單失敗：${res.status}`);
+    showError(`讀取訂單失敗：${res.status}`);
     return;
   }
   const body = await res.json();
   if (!body.ok || !body.requirement) {
-    showError("讀取需求單失敗");
+    showError("讀取訂單失敗");
     return;
   }
 

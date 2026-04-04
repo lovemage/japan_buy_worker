@@ -698,6 +698,33 @@ body {
   color: var(--text-color);
 }
 
+.form-row-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.trust-signal {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--bg-color);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.field-hint {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
 .request-total-box {
   border: 1px solid var(--accent-warm);
   border-radius: 10px;
@@ -830,8 +857,58 @@ select:disabled {
 }
 
 .success-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+/* Animated checkmark */
+.checkmark-anim {
+  display: block;
+  margin: 0 auto;
+}
+.checkmark-circle {
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: checkmark-circle-draw 0.6s ease-out 0.1s forwards;
+}
+.checkmark-check {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: checkmark-check-draw 0.35s ease-out 0.55s forwards;
+}
+@keyframes checkmark-circle-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes checkmark-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Staggered entrance for success page sections */
+.success-header h1,
+.success-header .order-code,
+.success-msg,
+.success-cta-line,
+.order-summary,
+.success-actions {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: success-fade-up 0.4s ease-out forwards;
+}
+.success-header h1        { animation-delay: 0.5s; }
+.success-header .order-code { animation-delay: 0.65s; }
+.success-msg              { animation-delay: 0.75s; }
+.success-cta-line         { animation-delay: 0.85s; }
+.order-summary            { animation-delay: 0.95s; }
+.success-actions          { animation-delay: 1.05s; }
+@keyframes success-fade-up {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkmark-circle, .checkmark-check { animation: none; stroke-dashoffset: 0; }
+  .success-header h1, .success-header .order-code,
+  .success-msg, .success-cta-line, .order-summary, .success-actions {
+    animation: none; opacity: 1; transform: none;
+  }
 }
 
 .success-header h1 {
@@ -852,7 +929,7 @@ select:disabled {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-size: 14px;
   color: var(--text-color);
   line-height: 1.7;
@@ -861,6 +938,19 @@ select:disabled {
 .success-msg strong {
   display: block;
   margin-bottom: 4px;
+}
+
+/* CTA: screenshot & send to Line */
+.success-cta-line {
+  margin-bottom: 16px;
+}
+.success-cta-line .btn-pill {
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  padding: 14px 20px;
+  background: var(--primary-color);
+  color: #fff;
 }
 
 .order-summary {

@@ -202,16 +202,19 @@
       fetch(base + "/api/admin/popup-ads").then(function(r){return r.json()}).then(function(d) {
         if (!d.ok || !d.images || !d.images.length) return;
         var images = d.images;
-        var interval = (d.interval || 0.5) * 1000;
+        var interval = (d.interval || 2) * 1000;
+        var maxRounds = 3;
         var overlay = document.getElementById("popup-ad-overlay");
         var img = document.getElementById("popup-ad-img");
         var idx = 0;
         overlay.style.display = "flex";
         img.src = base + "/api/images/" + images[0];
         if (images.length > 1) {
-          setInterval(function() {
+          var remaining = images.length * maxRounds - 1;
+          var tid = setInterval(function() {
             idx = (idx + 1) % images.length;
             img.src = base + "/api/images/" + images[idx];
+            if (--remaining <= 0) clearInterval(tid);
           }, interval);
         }
       });

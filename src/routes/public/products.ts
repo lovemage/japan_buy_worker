@@ -334,7 +334,7 @@ LIMIT 1
   const description =
     storedPayload.description
       ? storedPayload.description
-      : "此商品為日本站同步資料。實際尺寸與顏色以需求單備註為準。";
+      : "此商品為日本站同步資料。實際尺寸與顏色以訂單備註為準。";
   const schema = storedPayload.schema;
 
   return new Response(

@@ -56,7 +56,7 @@
   background: #DCE2E8;
   color: #3B5064;
 }
-/* Buttons: 查看詳情 / 加入需求單 / 返回 */
+/* Buttons: 查看詳情 / 加入訂單 / 返回 */
 [data-template="ink-blue"] .button {
   background: #4A6178;
   border-radius: 6px;
