@@ -73,8 +73,33 @@
         var returnTo = new URLSearchParams(location.search).get("returnTo") || "";
         backBtn.href = returnTo && returnTo.startsWith("/") ? returnTo : (base + "/store.html");
       }
+      // Deadline countdown
+      if (ds.deadlineEnabled && ds.deadlineTime) {
+        var cdEl = document.getElementById("deadline-countdown");
+        if (cdEl) {
+          var deadline = new Date(ds.deadlineTime).getTime();
+          function tickProduct() {
+            var now = Date.now();
+            var diff = deadline - now;
+            if (diff <= 0) { cdEl.textContent = "代購已截止"; return; }
+            var d = Math.floor(diff / 86400000);
+            var hr = Math.floor((diff % 86400000) / 3600000);
+            var min = Math.floor((diff % 3600000) / 60000);
+            var sec = Math.floor((diff % 60000) / 1000);
+            var parts = [];
+            if (d > 0) parts.push(d + " 天");
+            parts.push(String(hr).padStart(2, "0") + ":" + String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0"));
+            cdEl.textContent = "代購截止倒數 " + parts.join(" ");
+            requestAnimationFrame(function() { setTimeout(tickProduct, 1000); });
+          }
+          cdEl.style.display = "";
+          tickProduct();
+        }
+      }
     })();
     </script>
+
+    <div id="deadline-countdown" class="deadline-countdown" style="display:none;"></div>
 
     <main class="container">
       <section id="detail-error" class="notice hidden"></section>

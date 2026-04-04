@@ -450,6 +450,18 @@
           <p id="popup-ad-status" class="admin-status">已儲存</p>
         </div>
 
+        <div class="settings-group">
+          <h3 class="settings-group__title">代購結束時間</h3>
+          <p class="meta" style="margin-bottom:8px;">開啟後，商店首頁及商品詳情頁會顯示倒數計時。</p>
+          <label class="toggle-row" style="margin-bottom:8px;">
+            <input type="checkbox" id="deadline-toggle" onchange="onDeadlineToggle()" />
+            <span id="deadline-toggle-label">關閉</span>
+          </label>
+          <div id="deadline-picker-wrap" style="display:none;">
+            <input type="datetime-local" id="deadline-input" class="input-cute" style="max-width:260px;" />
+          </div>
+        </div>
+
         <button class="button" type="button" style="margin-top:4px;" onclick="saveDisplaySettings()">儲存外觀設定</button>
         <p id="display-status" class="admin-status">已儲存</p>
       </div>
@@ -769,6 +781,11 @@
       // Store rules
       var rulesInput = document.getElementById("store-rules-input");
       if (rulesInput && d.storeRules) rulesInput.value = d.storeRules;
+      // Deadline
+      var dlToggle = document.getElementById("deadline-toggle");
+      if (dlToggle) { dlToggle.checked = !!d.deadlineEnabled; onDeadlineToggle(); }
+      var dlInput = document.getElementById("deadline-input");
+      if (dlInput && d.deadlineTime) dlInput.value = d.deadlineTime;
     });
   }
 
@@ -804,6 +821,14 @@
     });
   }
 
+  function onDeadlineToggle() {
+    var on = document.getElementById("deadline-toggle").checked;
+    var label = document.getElementById("deadline-toggle-label");
+    var wrap = document.getElementById("deadline-picker-wrap");
+    if (label) label.textContent = on ? "開啟" : "關閉";
+    if (wrap) wrap.style.display = on ? "" : "none";
+  }
+
   function saveDisplaySettings() {
     var mode = "2card";
     document.querySelectorAll(".view-mode-opt.selected").forEach(function(b) { mode = b.dataset.mode; });
@@ -811,10 +836,12 @@
     var storeRules = (document.getElementById("store-rules-input") || {}).value || "";
     var promoTagOn = document.getElementById("promo-tag-toggle").checked;
     var promoTagVal = Number(document.getElementById("promo-tag-threshold").value) || 500;
+    var deadlineOn = document.getElementById("deadline-toggle").checked;
+    var deadlineVal = (document.getElementById("deadline-input") || {}).value || "";
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
+      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal, deadlineEnabled: deadlineOn, deadlineTime: deadlineVal }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("display-status"); if (st) { st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); } }
     });
