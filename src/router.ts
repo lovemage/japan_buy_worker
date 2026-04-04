@@ -24,7 +24,7 @@ import {
 import { handleAdminChangePassword } from "./routes/admin/password";
 import { handleAdminCategories } from "./routes/admin/categories";
 import { handleAdminRecognize } from "./routes/admin/recognize";
-import { handleAdminGeminiSettings } from "./routes/admin/settings";
+import { handleAdminGeminiSettings, handleAdminAiModel } from "./routes/admin/settings";
 import {
   handleAdminClearSyncProducts,
   handleAdminClearManualProducts,
@@ -205,6 +205,10 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/settings/gemini") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleAdminGeminiSettings(request, ctx);
+  }
+  if (subPath === "/api/admin/ai-model") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleAdminAiModel(request, ctx);
   }
   if (subPath === "/api/admin/change-password") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

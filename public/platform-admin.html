@@ -273,7 +273,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <div>
           <label>Pro 方案 (OpenRouter)</label>
           <input type="password" id="api-key-openrouter-pro" placeholder="Pro OpenRouter API Key">
+          <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="fetchOpenRouterModels()">載入模型列表</button>
         </div>
+      </div>
+      <div id="openrouter-models-section" style="display:none;margin-top:12px;">
+        <input type="text" id="openrouter-model-search" placeholder="搜尋模型名稱..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;">
+        <div id="openrouter-model-list" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;"></div>
+        <p style="font-size:11px;color:#999;margin-top:4px;" id="openrouter-model-count"></p>
       </div>
     </div>
     <button class="btn btn-dark" onclick="saveApiKeys()" style="margin-top:12px;">儲存</button>
@@ -677,6 +683,66 @@ async function saveApiKeys() {
     t.style.display = "inline";
     setTimeout(function(){ t.style.display = "none"; }, 2000);
   }
+}
+
+let allOpenRouterModels = [];
+
+async function fetchOpenRouterModels() {
+  var key = document.getElementById("api-key-openrouter-pro").value.trim();
+  if (!key) { alert("請先輸入 OpenRouter API Key"); return; }
+
+  var section = document.getElementById("openrouter-models-section");
+  var listEl = document.getElementById("openrouter-model-list");
+  var countEl = document.getElementById("openrouter-model-count");
+  listEl.innerHTML = '<p style="padding:12px;color:#999;">載入中...</p>';
+  section.style.display = "block";
+
+  try {
+    var res = await fetch("https://openrouter.ai/api/v1/models", {
+      headers: { "Authorization": "Bearer " + key }
+    });
+    if (!res.ok) { listEl.innerHTML = '<p style="padding:12px;color:red;">載入失敗 (' + res.status + ')</p>'; return; }
+    var data = await res.json();
+    allOpenRouterModels = (data.data || []).sort(function(a, b) { return a.id.localeCompare(b.id); });
+    renderOpenRouterModels("");
+    countEl.textContent = "共 " + allOpenRouterModels.length + " 個模型";
+
+    document.getElementById("openrouter-model-search").addEventListener("input", function() {
+      renderOpenRouterModels(this.value.toLowerCase());
+    });
+  } catch (err) {
+    listEl.innerHTML = '<p style="padding:12px;color:red;">載入失敗：' + err + '</p>';
+  }
+}
+
+function renderOpenRouterModels(query) {
+  var listEl = document.getElementById("openrouter-model-list");
+  var filtered = allOpenRouterModels.filter(function(m) {
+    if (!query) return true;
+    return m.id.toLowerCase().indexOf(query) !== -1 || (m.name || "").toLowerCase().indexOf(query) !== -1;
+  });
+
+  var countEl = document.getElementById("openrouter-model-count");
+  countEl.textContent = query ? "搜尋結果：" + filtered.length + " / " + allOpenRouterModels.length + " 個模型" : "共 " + allOpenRouterModels.length + " 個模型";
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<p style="padding:12px;color:#999;">沒有符合的模型</p>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.slice(0, 100).map(function(m) {
+    var pricing = "";
+    if (m.pricing) {
+      var promptCost = m.pricing.prompt ? (parseFloat(m.pricing.prompt) * 1000000).toFixed(2) : "?";
+      var completionCost = m.pricing.completion ? (parseFloat(m.pricing.completion) * 1000000).toFixed(2) : "?";
+      pricing = '<span style="color:#999;font-size:11px;">$' + promptCost + ' / $' + completionCost + ' per 1M tokens</span>';
+    }
+    return '<div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px;">' +
+      '<div style="font-weight:600;">' + m.id + '</div>' +
+      (m.name && m.name !== m.id ? '<div style="color:#666;font-size:12px;">' + m.name + '</div>' : '') +
+      (pricing ? '<div>' + pricing + '</div>' : '') +
+      '</div>';
+  }).join("") + (filtered.length > 100 ? '<p style="padding:8px 12px;color:#999;font-size:12px;">... 顯示前 100 筆，請使���搜尋��小範圍</p>' : '');
 }
 
 async function loadSystemPrompt() {
