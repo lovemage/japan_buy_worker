@@ -1197,6 +1197,9 @@
 .admin-body .photo-add-btn {
   display: inline-flex; align-items: center; justify-content: center; cursor: pointer; min-height: 44px;
 }
+.admin-body .photo-add-btn.hidden {
+  display: none;
+}
 .admin-body .photo-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
 .admin-body .recognize-draft { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--admin-border); }
 .admin-body .recognize-draft label { display: block; margin-bottom: 0.5rem; font-size: 14px; font-weight: 500; }
