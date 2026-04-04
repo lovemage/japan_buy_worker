@@ -31,21 +31,47 @@
   </head>
   <body>
     <header class="page-header">
-      <div class="container sub-header">
-        <a id="detail-back-link" class="sub-header__back" href="/store.html">← 返回商店</a>
-        <img id="store-logo" class="sub-header__logo" style="display:none;" alt="商店 Logo" />
+      <div class="container">
+        <div class="header-top">
+          <div class="header-left">
+            <a href="/" id="store-logo-link"><img id="store-logo" class="store-logo-header" src="/assets/images/logo2.png" alt="商店 Logo" /></a>
+            <div>
+              <h1 id="store-header-name">商品詳情</h1>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
     <script>
     (function(){
       var ds = window.__DISPLAY_SETTINGS || {};
-      if (ds.storeLogo) { var el = document.getElementById("store-logo"); if (el) { el.src = (window.__API_BASE || "") + "/api/images/" + ds.storeLogo; el.style.display = ""; } }
+      var base = window.__API_BASE || "";
+      // Store logo
+      var logoLink = document.getElementById("store-logo-link");
+      if (logoLink && base) logoLink.href = base + "/";
+      if (ds.storeLogo) {
+        var logoSrc = base + "/api/images/" + ds.storeLogo;
+        var el = document.getElementById("store-logo");
+        if (el) el.src = logoSrc;
+      }
+      // Store name
+      var h = document.getElementById("store-header-name");
+      if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+      // Store rules
       if (ds.storeRules) {
         document.addEventListener("DOMContentLoaded", function() {
           var box = document.getElementById("store-rules-box");
           var content = document.getElementById("store-rules-content");
           if (box && content) { content.textContent = ds.storeRules; box.style.display = ""; }
         });
+      }
+      // Fix floating button hrefs
+      var reqBtn = document.querySelector(".floating-request-btn");
+      if (reqBtn) reqBtn.href = base + "/request.html";
+      var backBtn = document.getElementById("floating-back-btn");
+      if (backBtn) {
+        var returnTo = new URLSearchParams(location.search).get("returnTo") || "";
+        backBtn.href = returnTo && returnTo.startsWith("/") ? returnTo : (base + "/store.html");
       }
     })();
     </script>
@@ -95,6 +121,9 @@
         </svg>
       </button>
     </div>
+    <a class="floating-back-btn" id="floating-back-btn" href="/store.html" aria-label="上一頁">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
     <a class="floating-request-btn" href="/request.html" aria-label="購物車">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <span class="floating-cart-badge" id="floating-draft-count" style="display:none;">0</span>

@@ -228,21 +228,8 @@ function renderDraftCount() {
   countNode.style.display = count > 0 ? "" : "none";
 }
 
-function initBackLink() {
-  const link = document.getElementById("detail-back-link");
-  if (!(link instanceof HTMLAnchorElement)) {
-    return;
-  }
-  const returnTo = (new URL(location.href).searchParams.get("returnTo") || "").trim();
-  if (!returnTo.startsWith("/")) {
-    return;
-  }
-  link.href = returnTo;
-}
-
 async function bootstrap() {
   renderDraftCount();
-  initBackLink();
   const pricingRes = await apiFetch("/api/pricing");
   const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
   const pricing = pricingBody?.pricing || DEFAULT_PRICING;
