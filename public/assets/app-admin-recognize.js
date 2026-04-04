@@ -148,7 +148,7 @@ async function doRecognize() {
 
     const data = await res.json();
     if (!data.ok) {
-      showRecognizeStatus(`辨識失敗：${data.error || "未知錯誤"}`);
+      showRecognizeStatus("辨識失敗，請重新拍照或稍後再試");
       return;
     }
 
@@ -156,7 +156,7 @@ async function doRecognize() {
     fillDraft(data.result);
   } catch (err) {
     showRecognizeLoading(false);
-    showRecognizeStatus(`辨識失敗：${String(err)}`);
+    showRecognizeStatus("辨識失敗，請檢查網路連線後重試");
   } finally {
     updateButtons();
   }
