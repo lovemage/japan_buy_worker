@@ -169,11 +169,8 @@ body {
   padding-bottom: 12px;
 }
 
-/* Deadline countdown bar */
+/* Deadline countdown bar — inside page-header so it stacks with no gap */
 .deadline-countdown {
-  position: sticky;
-  top: 82px;
-  z-index: 29;
   text-align: center;
   padding: 0 16px;
   height: 40px;
@@ -183,7 +180,7 @@ body {
   letter-spacing: 0.5px;
   color: var(--text-color);
   background: var(--bg-color);
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
 }
 
 .page-header h1 {

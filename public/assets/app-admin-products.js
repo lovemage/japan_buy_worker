@@ -65,16 +65,19 @@ function renderProductGrid(products, paging) {
     return;
   }
 
+  const TAG_LABELS = { hot: "熱門", limited: "限時", popular: "人氣", instock: "現貨", preorder: "預購" };
+
   grid.innerHTML = products.map((p) => {
     const imgSrc = withProductImageFallback(p.displayImageUrl || p.imageUrl || "");
     const name = p.nameZhTw || p.nameJa || "未命名";
+    const tagHtml = (p.tags || []).map(t => `<span class="tag-preview tag-color-${t}" style="font-size:10px;padding:2px 6px;border-radius:4px;">${TAG_LABELS[t] || t}</span>`).join(" ");
     return `
     <div class="manage-card">
       <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
         <p class="manage-card__title">${name}</p>
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
-        <p class="manage-card__meta">${p.brand || ""}</p>
+        <p class="manage-card__meta">${p.brand || ""}${tagHtml ? ' ' + tagHtml : ''}</p>
         <div class="manage-card__actions">
           <button class="button secondary js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
           <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">網址</button>
