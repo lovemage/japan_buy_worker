@@ -260,7 +260,7 @@
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background: var(--admin-border);
+  background: #222;
   border-radius: 24px;
   transition: background 0.25s;
 }
@@ -276,7 +276,7 @@
   transition: transform 0.25s;
 }
 .toggle-switch input:checked + .toggle-slider {
-  background: var(--admin-primary, #4f46e5);
+  background: #222;
 }
 .toggle-switch input:checked + .toggle-slider::before {
   transform: translateX(20px);
