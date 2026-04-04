@@ -1,5 +1,5 @@
 import type { RequestContext } from "../../context";
-import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel } from "./settings";
+import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel, getGeminiModel } from "./settings";
 
 const TONE_MAP: Record<string, string> = {
   professional: "專業、有信賴感的語氣，用詞精準，強調品質與服務",
@@ -182,7 +182,8 @@ ${productList || "（尚無商品）"}
       return json({ ok: false, error: "API Key 尚未設定" }, 400);
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const geminiModelId = await getGeminiModel(ctx.db);
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModelId}:generateContent?key=${apiKey}`;
     const geminiRes = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

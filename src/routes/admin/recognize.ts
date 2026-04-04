@@ -1,6 +1,6 @@
 import type { RequestContext } from "../../context";
 import type { D1DatabaseLike } from "../../types/d1";
-import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel } from "./settings";
+import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel, getGeminiModel } from "./settings";
 
 type RecognizeRequest = {
   images: string[]; // base64 encoded JPEG, max 3
@@ -223,7 +223,8 @@ export async function handleAdminRecognize(
       ];
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const geminiModelId = await getGeminiModel(ctx.db);
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModelId}:generateContent?key=${apiKey}`;
 
     let geminiRes: Response;
     try {
