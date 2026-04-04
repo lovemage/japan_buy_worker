@@ -283,7 +283,7 @@ function initCameraModeToggle() {
 
   function applyCameraMode() {
     const isManual = toggle.checked;
-    if (label) label.textContent = isManual ? "手動選圖" : "自動拍照上架";
+    if (label) label.textContent = isManual ? "半自動" : "全自動";
     if (autoBtn) autoBtn.classList.toggle("hidden", isManual);
     if (manualBtn) manualBtn.classList.toggle("hidden", !isManual);
     if (manualEntryBtn) manualEntryBtn.classList.toggle("hidden", !isManual);
