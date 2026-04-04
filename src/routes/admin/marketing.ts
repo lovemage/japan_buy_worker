@@ -182,7 +182,7 @@ ${productList || "（尚無商品）"}
       return json({ ok: false, error: "API Key 尚未設定" }, 400);
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
     const geminiRes = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
