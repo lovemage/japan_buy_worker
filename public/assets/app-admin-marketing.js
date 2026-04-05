@@ -1,6 +1,69 @@
 let selectedTone = "professional";
 let selectedPlatform = "line";
 
+function ensureMarketingLoadingUi() {
+  const loading = document.getElementById("marketing-loading");
+  if (!loading) return;
+
+  // Reuse the same octopus animation markup as AI recognize.
+  if (!loading.querySelector(".octopus-anim")) {
+    const source = document.querySelector("#recognize-loading .octopus-anim");
+    if (source) {
+      loading.appendChild(source.cloneNode(true));
+    }
+  }
+
+  if (!loading.querySelector(".sync-loading-bar")) {
+    const bar = document.createElement("div");
+    bar.className = "sync-loading-bar";
+    bar.style.marginTop = "8px";
+
+    const fill = document.createElement("div");
+    fill.className = "sync-loading-bar__fill";
+    fill.id = "marketing-bar-fill";
+
+    bar.appendChild(fill);
+    loading.appendChild(bar);
+  }
+
+  if (!document.getElementById("marketing-loading-text")) {
+    const text = document.createElement("p");
+    text.className = "sync-loading-text";
+    text.id = "marketing-loading-text";
+    text.textContent = "vovoci AI 處理中";
+    loading.appendChild(text);
+  }
+}
+
+function showMarketingLoading(show) {
+  const loading = document.getElementById("marketing-loading");
+  const barFill = document.getElementById("marketing-bar-fill");
+  const loadingText = document.getElementById("marketing-loading-text");
+
+  if (!loading) return;
+
+  if (show) {
+    loading.classList.remove("hidden");
+    if (barFill) {
+      barFill.className = "sync-loading-bar__fill";
+      void barFill.offsetWidth;
+      barFill.classList.add("phase-1");
+    }
+    if (loadingText) loadingText.textContent = "vovoci AI 處理中";
+    setTimeout(() => {
+      if (barFill) barFill.classList.replace("phase-1", "phase-2");
+      if (loadingText) loadingText.textContent = "vovoci AI 撰寫中";
+    }, 600);
+  } else {
+    if (barFill) barFill.classList.replace("phase-2", "phase-3");
+    if (loadingText) loadingText.textContent = "vovoci AI 編輯中";
+    setTimeout(() => {
+      loading.classList.add("hidden");
+      if (barFill) barFill.className = "sync-loading-bar__fill";
+    }, 400);
+  }
+}
+
 function initToneSelector() {
   document.querySelectorAll("#tone-selector .country-toggle-btn").forEach(function(btn) {
     btn.addEventListener("click", function() {
@@ -48,13 +111,12 @@ async function loadMarketingUsage() {
 
 async function generateMarketing() {
   const btn = document.getElementById("btn-generate-marketing");
-  const loading = document.getElementById("marketing-loading");
   const output = document.getElementById("marketing-output");
   const result = document.getElementById("marketing-result");
   const status = document.getElementById("marketing-status");
 
   if (btn) btn.disabled = true;
-  if (loading) loading.classList.remove("hidden");
+  showMarketingLoading(true);
   if (output) output.classList.add("hidden");
   if (status) status.textContent = "";
 
@@ -75,12 +137,13 @@ async function generateMarketing() {
 
     if (result) result.textContent = data.content || "";
     if (output) output.classList.remove("hidden");
+    if (status) status.textContent = "文案產生完成！";
     loadMarketingUsage();
   } catch (err) {
     if (status) status.textContent = "產生失敗：" + String(err);
   } finally {
     if (btn) btn.disabled = false;
-    if (loading) loading.classList.add("hidden");
+    showMarketingLoading(false);
   }
 }
 
@@ -115,6 +178,7 @@ function showCopyFeedback() {
 }
 
 export function initMarketing() {
+  ensureMarketingLoadingUi();
   initToneSelector();
   initPlatformSelector();
 

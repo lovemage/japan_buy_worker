@@ -110,22 +110,6 @@ export async function handleMarketing(
     } catch {}
   }
 
-  // Get products (top 20 active)
-  const products = await ctx.db
-    .prepare("SELECT code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in FROM products WHERE store_id = ? AND is_active = 1 ORDER BY id DESC LIMIT 20")
-    .bind(ctx.storeId)
-    .all<{ code: string; title_ja: string; title_zh_tw: string; brand: string; category: string; price_jpy_tax_in: number }>();
-
-  const returnTo = storePlan === "pro" ? "/" : `/s/${slug}/`;
-  const productList = (products.results || []).map((p, i) => {
-    const name = p.title_zh_tw || p.title_ja;
-    const link = `${storeUrl}/product?code=${p.code}&returnTo=${encodeURIComponent(returnTo)}`;
-    return `${i + 1}. ${name}${p.brand ? ` (${p.brand})` : ""} - ${link}`;
-  }).join("\n");
-
-  const countryNames: Record<string, string> = { jp: "日本", kr: "韓國", th: "泰國", tw: "台灣" };
-  const countryName = countryNames[country] || country;
-
   // Build store URL
   const mainDomain = "vovosnap.com";
   let storeUrl: string;
@@ -136,6 +120,22 @@ export async function handleMarketing(
   } else {
     storeUrl = `https://${mainDomain}`;
   }
+
+  // Get products (top 20 active)
+  const products = await ctx.db
+    .prepare("SELECT source_product_code AS code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in FROM products WHERE store_id = ? AND is_active = 1 ORDER BY id DESC LIMIT 20")
+    .bind(ctx.storeId)
+    .all<{ code: string; title_ja: string; title_zh_tw: string; brand: string; category: string; price_jpy_tax_in: number }>();
+
+  const returnTo = storePlan === "pro" ? "/" : `/s/${slug}/`;
+  const productList = (products.results || []).map((p, i) => {
+    const name = p.title_zh_tw || p.title_ja;
+    const link = `${storeUrl}/product?code=${encodeURIComponent(p.code || "")}&returnTo=${encodeURIComponent(returnTo)}`;
+    return `${i + 1}. ${name}${p.brand ? ` (${p.brand})` : ""} - ${link}`;
+  }).join("\n");
+
+  const countryNames: Record<string, string> = { jp: "日本", kr: "韓國", th: "泰國", tw: "台灣" };
+  const countryName = countryNames[country] || country;
 
   // Build prompt
   const prompt = `你是一位專業的社群行銷文案撰寫專家。請根據以下資訊，為代購商店撰寫一篇行銷文案。
