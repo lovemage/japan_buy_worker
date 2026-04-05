@@ -62,6 +62,47 @@ function json(payload: unknown, status = 200, headers: Record<string, string> = 
   });
 }
 
+function xmlEscape(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function toIsoDate(value: string | null | undefined): string {
+  if (!value) return new Date().toISOString().slice(0, 10);
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return new Date().toISOString().slice(0, 10);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function makeSitemapEntry(
+  loc: string,
+  lastmod: string,
+  changefreq: "daily" | "weekly" | "monthly" | "yearly",
+  priority: string
+): string {
+  return [
+    "  <url>",
+    `    <loc>${xmlEscape(loc)}</loc>`,
+    `    <lastmod>${xmlEscape(lastmod)}</lastmod>`,
+    `    <changefreq>${changefreq}</changefreq>`,
+    `    <priority>${priority}</priority>`,
+    "  </url>",
+  ].join("\n");
+}
+
+function sitemapXml(entries: string[]): string {
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...entries,
+    "</urlset>",
+  ].join("\n");
+}
+
 function getAuthEnv(env: Env) {
   return {
     GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
@@ -114,6 +155,79 @@ export default {
     // ── Health check ──
     if (request.method === "GET" && url.pathname === "/healthz") {
       return json({ ok: true, service: "vovosnap" });
+    }
+
+    // ── Dynamic sitemap: platform + active member public pages ──
+    if (request.method === "GET" && url.pathname === "/sitemap.xml") {
+      const today = new Date().toISOString().slice(0, 10);
+      const entries: string[] = [];
+      const seen = new Set<string>();
+
+      const add = (
+        loc: string,
+        lastmod: string,
+        changefreq: "daily" | "weekly" | "monthly" | "yearly",
+        priority: string
+      ) => {
+        if (!loc || seen.has(loc)) return;
+        seen.add(loc);
+        entries.push(makeSitemapEntry(loc, lastmod, changefreq, priority));
+      };
+
+      // Platform pages
+      add(`https://${mainDomain}/`, today, "weekly", "1.0");
+      add(`https://${mainDomain}/privacy.html`, today, "yearly", "0.3");
+      add(`https://${mainDomain}/terms.html`, today, "yearly", "0.3");
+      add(`https://${mainDomain}/blog/`, today, "weekly", "0.9");
+      add(`https://${mainDomain}/blog/first-time-daigou-guide.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/daigou-profit-calculation.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/daigou-preparation-checklist.html`, today, "monthly", "0.8");
+
+      const storesRows = await env.DB
+        .prepare("SELECT id, slug, plan, updated_at FROM stores WHERE is_active = 1")
+        .all<{ id: number; slug: string; plan: string; updated_at: string | null }>();
+      const stores = Array.isArray(storesRows?.results) ? storesRows.results : [];
+
+      const productsRows = await env.DB
+        .prepare("SELECT store_id, source_product_code, updated_at FROM products WHERE is_active = 1 AND source_product_code IS NOT NULL")
+        .all<{ store_id: number; source_product_code: string; updated_at: string | null }>();
+      const products = Array.isArray(productsRows?.results) ? productsRows.results : [];
+
+      const productsByStore = new Map<number, Array<{ code: string; updatedAt: string | null }>>();
+      for (const row of products) {
+        const list = productsByStore.get(row.store_id) || [];
+        list.push({ code: row.source_product_code, updatedAt: row.updated_at });
+        productsByStore.set(row.store_id, list);
+      }
+
+      for (const store of stores) {
+        const slug = (store.slug || "").trim().toLowerCase();
+        if (!slug) continue;
+
+        const baseUrl = store.plan === "pro"
+          ? `https://${slug}.${mainDomain}`
+          : `https://${mainDomain}/s/${slug}`;
+        const storeLastmod = toIsoDate(store.updated_at);
+
+        // Member public storefront page
+        add(`${baseUrl}/`, storeLastmod, "daily", "0.7");
+
+        // Member public product pages
+        const storeProducts = productsByStore.get(store.id) || [];
+        for (const product of storeProducts) {
+          const code = (product.code || "").trim();
+          if (!code) continue;
+          add(`${baseUrl}/product?code=${encodeURIComponent(code)}`, toIsoDate(product.updatedAt), "weekly", "0.6");
+        }
+      }
+
+      return new Response(sitemapXml(entries), {
+        status: 200,
+        headers: {
+          "content-type": "application/xml; charset=UTF-8",
+          "cache-control": "public, max-age=3600",
+        },
+      });
     }
 
     // ── Platform admin ──

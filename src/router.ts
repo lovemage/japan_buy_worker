@@ -62,6 +62,14 @@ function json(payload: unknown, status = 200, headers: Record<string, string> = 
   });
 }
 
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // Serve tenant HTML pages with __API_BASE and __STORE_SLUG injection
 async function serveTenantHtml(
   request: Request,
@@ -90,6 +98,14 @@ async function serveTenantHtml(
   const storeDesc = storeRow?.description || "";
   const template = storeRow?.template || "default";
   const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
+  const canonicalUrl = new URL(request.url);
+  canonicalUrl.search = "";
+  canonicalUrl.hash = "";
+  const canonicalTag = `<link rel="canonical" href="${escapeHtmlAttr(canonicalUrl.toString())}" />`;
+  const noIndexPages = new Set(["request.html", "success.html", "admin.html", "admin-login.html"]);
+  const robotsTag = noIndexPages.has(filename)
+    ? '<meta name="robots" content="noindex, nofollow" />'
+    : '<meta name="robots" content="index, follow" />';
 
   // Replace page title: "原標題" → "商店名稱" or "原標題 — 商店名稱"
   html = html.replace(/<title>([^<]*)<\/title>/, (_, orig) => {
@@ -125,6 +141,12 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
   // Inject template data attribute on <body>
   if (template && template !== "default") {
     html = html.replace("<body>", `<body data-template="${template}">`);
+  }
+
+  if (!/<link\s+rel=["']canonical["']/i.test(html)) {
+    html = html.replace("</head>", `${canonicalTag}\n${robotsTag}\n</head>`);
+  } else if (!/<meta\s+name=["']robots["']/i.test(html)) {
+    html = html.replace("</head>", `${robotsTag}\n</head>`);
   }
 
   // Rewrite internal navigation links to be store-scoped
