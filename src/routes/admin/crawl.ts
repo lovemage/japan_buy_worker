@@ -20,6 +20,15 @@ export async function handleAdminCrawl(request: Request, ctx: RequestContext, cr
   }
 
   try {
+    let maxProducts: number | null = null;
+    if (ctx.storePlan === "free") {
+      const store = await ctx.db
+        .prepare("SELECT phone_verified FROM stores WHERE id = ?")
+        .bind(ctx.storeId)
+        .first<{ phone_verified: number }>();
+      maxProducts = store?.phone_verified ? 10 : 5;
+    }
+
     const crawled = await crawlProducts({
       CLOUDFLARE_ACCOUNT_ID: crawlEnv.CLOUDFLARE_ACCOUNT_ID,
       CLOUDFLARE_API_TOKEN: crawlEnv.CLOUDFLARE_API_TOKEN,
@@ -29,7 +38,7 @@ export async function handleAdminCrawl(request: Request, ctx: RequestContext, cr
     });
 
     const normalized = normalizeProducts(crawled.products);
-    const writeResult = await upsertProducts(ctx.db, normalized, ctx.storeId);
+    const writeResult = await upsertProducts(ctx.db, normalized, ctx.storeId, maxProducts);
 
     return new Response(
       JSON.stringify({
@@ -38,6 +47,7 @@ export async function handleAdminCrawl(request: Request, ctx: RequestContext, cr
         source: crawled.source,
         crawledCount: crawled.products.length,
         upserted: writeResult.upserted,
+        skippedByLimit: writeResult.skippedByLimit,
       }),
       { status: 200, headers: { "content-type": "application/json" } }
     );

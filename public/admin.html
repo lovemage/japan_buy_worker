@@ -372,6 +372,26 @@
         </div>
 
         <div class="settings-group">
+          <h3 class="settings-group__title">手機驗證</h3>
+          <p id="phone-verify-current" class="meta" style="margin-bottom:8px;">載入中...</p>
+          <div id="phone-verify-form" class="hidden">
+            <label>手機號碼</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="padding:10px 12px;background:#f5f5f5;border:1.5px solid #ddd;border-radius:8px;font-size:14px;color:#555;white-space:nowrap;">+886</span>
+              <input type="tel" id="admin-phone-input" class="input-cute" placeholder="912345678" style="flex:1;" />
+            </div>
+            <button class="button secondary" type="button" id="admin-send-phone-code" style="margin-top:8px;">發送驗證碼</button>
+            <div id="admin-phone-code-wrap" class="hidden" style="margin-top:8px;">
+              <label>驗證碼</label>
+              <input type="text" id="admin-phone-code-input" class="input-cute" placeholder="123456" maxlength="6" />
+              <button class="button" type="button" id="admin-verify-phone-code" style="margin-top:8px;">完成手機驗證</button>
+            </div>
+            <div id="admin-recaptcha-container"></div>
+          </div>
+          <p id="phone-verify-status" class="admin-status" style="display:block;"></p>
+        </div>
+
+        <div class="settings-group">
           <h3 class="settings-group__title">代購來源國家</h3>
           <p class="admin-section-desc">切換國家後，所有商品價格將顯示為該國幣別。</p>
           <div class="country-toggle-group" id="country-selector">
@@ -1227,6 +1247,144 @@
       if (d.promoTagThreshold) document.getElementById("promo-tag-threshold").value = d.promoTagThreshold;
     });
   }, 600);
+  </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-du36pezrcL6l_RWxoAxGnl3rQIrMPro",
+    authDomain: "vovosnap-f6c12.firebaseapp.com",
+    projectId: "vovosnap-f6c12",
+    storageBucket: "vovosnap-f6c12.firebasestorage.app",
+    messagingSenderId: "201485964855",
+    appId: "1:201485964855:web:c14b0ce08584ff01a0d1b2",
+    measurementId: "G-E3TD4YZSWY"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  auth.languageCode = "zh-TW";
+
+  let phoneConfirmation = null;
+  let recaptchaVerifier = null;
+
+  function formatPhoneNumber(raw) {
+    let num = String(raw || "").replace(/[\s\-()]/g, "");
+    if (num.startsWith("0")) num = num.substring(1);
+    if (!num.startsWith("+")) num = "+886" + num;
+    return num;
+  }
+
+  function setPhoneStatus(text, color) {
+    const el = document.getElementById("phone-verify-status");
+    if (!el) return;
+    el.textContent = text || "";
+    el.style.display = text ? "block" : "none";
+    if (color) el.style.color = color;
+  }
+
+  function ensureRecaptcha() {
+    if (recaptchaVerifier) return recaptchaVerifier;
+    recaptchaVerifier = new RecaptchaVerifier(auth, "admin-recaptcha-container", {
+      size: "invisible",
+      callback: () => {},
+    });
+    return recaptchaVerifier;
+  }
+
+  async function loadPhoneVerifyState() {
+    try {
+      const resp = await fetch("/auth/me", { credentials: "same-origin" });
+      const data = await resp.json();
+      if (!data.ok || !data.store) return;
+
+      const currentEl = document.getElementById("phone-verify-current");
+      const formEl = document.getElementById("phone-verify-form");
+      const isVerified = !!data.store.phone_verified;
+      const phone = data.store.phone_number || "";
+
+      if (isVerified) {
+        if (currentEl) currentEl.textContent = phone ? `已完成驗證（${phone}）` : "已完成手機驗證";
+        if (formEl) formEl.classList.add("hidden");
+        setPhoneStatus("手機驗證已完成", "var(--admin-success)");
+      } else {
+        if (currentEl) currentEl.textContent = "尚未完成手機驗證（Free 方案未驗證最多上架 5 件，驗證後可上架 10 件）";
+        if (formEl) formEl.classList.remove("hidden");
+        setPhoneStatus("", "");
+      }
+    } catch {}
+  }
+
+  async function sendPhoneCodeFromAdmin() {
+    const input = document.getElementById("admin-phone-input");
+    const btn = document.getElementById("admin-send-phone-code");
+    const wrap = document.getElementById("admin-phone-code-wrap");
+    if (!input || !btn || !wrap) return;
+
+    const raw = input.value.trim();
+    if (!raw) {
+      setPhoneStatus("請先輸入手機號碼", "var(--admin-danger)");
+      return;
+    }
+
+    const phone = formatPhoneNumber(raw);
+    btn.disabled = true;
+    setPhoneStatus("發送中...", "var(--admin-text-muted)");
+
+    try {
+      const appVerifier = ensureRecaptcha();
+      phoneConfirmation = await signInWithPhoneNumber(auth, phone, appVerifier);
+      wrap.classList.remove("hidden");
+      setPhoneStatus("驗證碼已發送", "var(--admin-success)");
+      btn.textContent = "重新發送";
+      btn.disabled = false;
+    } catch (err) {
+      setPhoneStatus("發送失敗，請稍後重試", "var(--admin-danger)");
+      btn.disabled = false;
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear();
+        recaptchaVerifier = null;
+      }
+    }
+  }
+
+  async function confirmPhoneCodeFromAdmin() {
+    const codeEl = document.getElementById("admin-phone-code-input");
+    const phoneEl = document.getElementById("admin-phone-input");
+    if (!codeEl || !phoneEl || !phoneConfirmation) return;
+
+    const code = codeEl.value.trim();
+    if (!code) {
+      setPhoneStatus("請輸入驗證碼", "var(--admin-danger)");
+      return;
+    }
+
+    try {
+      const result = await phoneConfirmation.confirm(code);
+      const idToken = await result.user.getIdToken();
+      const phone = formatPhoneNumber(phoneEl.value.trim());
+      const resp = await fetch("/auth/verify-phone", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ idToken, phoneNumber: phone }),
+      });
+      const data = await resp.json();
+      if (!data.ok) {
+        setPhoneStatus(data.error || "手機驗證失敗", "var(--admin-danger)");
+        return;
+      }
+      setPhoneStatus("手機驗證成功，重新載入中...", "var(--admin-success)");
+      setTimeout(() => location.reload(), 600);
+    } catch {
+      setPhoneStatus("驗證碼錯誤或已過期，請重試", "var(--admin-danger)");
+    }
+  }
+
+  document.getElementById("admin-send-phone-code")?.addEventListener("click", sendPhoneCodeFromAdmin);
+  document.getElementById("admin-verify-phone-code")?.addEventListener("click", confirmPhoneCodeFromAdmin);
+  loadPhoneVerifyState();
   </script>
   <script type="module" src="/assets/app-admin.js"></script>
 </body>

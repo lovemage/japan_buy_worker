@@ -13,6 +13,11 @@ type ManualProductRequest = {
   images: string[];
 };
 
+type ProductLimitState = {
+  limit: number | null;
+  phoneVerified: boolean;
+};
+
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
   const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);
@@ -20,6 +25,33 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes.buffer;
+}
+
+async function getProductLimitState(ctx: RequestContext): Promise<ProductLimitState> {
+  if (ctx.storePlan === "free") {
+    const store = await ctx.db
+      .prepare("SELECT phone_verified FROM stores WHERE id = ?")
+      .bind(ctx.storeId)
+      .first<{ phone_verified: number }>();
+    const phoneVerified = !!store?.phone_verified;
+    return { limit: phoneVerified ? 10 : 5, phoneVerified };
+  }
+
+  const limitsRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
+    .first<{ value: string }>();
+  const planLimits = limitsRow?.value ? JSON.parse(limitsRow.value) : { free: 10, starter: 50, pro: -1 };
+  const limit = Number(planLimits[ctx.storePlan]);
+  if (!Number.isFinite(limit) || limit < 0) return { limit: null, phoneVerified: true };
+  return { limit, phoneVerified: true };
+}
+
+async function getActiveProductCount(ctx: RequestContext): Promise<number> {
+  const row = await ctx.db
+    .prepare("SELECT COUNT(1) as c FROM products WHERE store_id = ? AND is_active = 1")
+    .bind(ctx.storeId)
+    .first<{ c: number }>();
+  return Number(row?.c || 0);
 }
 
 export async function handleAdminProducts(
@@ -41,20 +73,15 @@ export async function handleAdminProducts(
     });
   }
 
-  // Plan product limits: read from platform config (store_id=0)
-  const limitsRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
-    .first<{ value: string }>();
-  const planLimits = limitsRow?.value ? JSON.parse(limitsRow.value) : { free: 10, starter: 50, pro: -1 };
-  const limit = planLimits[ctx.storePlan];
-  if (limit && limit > 0) {
-    const countRow = await ctx.db
-      .prepare("SELECT COUNT(1) as c FROM products WHERE store_id = ?")
-      .bind(ctx.storeId)
-      .first<{ c: number }>();
-    if ((countRow?.c || 0) >= limit) {
+  const limitState = await getProductLimitState(ctx);
+  if (limitState.limit && limitState.limit > 0) {
+    const activeCount = await getActiveProductCount(ctx);
+    if (activeCount >= limitState.limit) {
+      const msg = ctx.storePlan === "free" && !limitState.phoneVerified
+        ? "Free 方案未完成手機驗證最多上架 5 件商品；完成手機驗證後可上架 10 件。"
+        : `${ctx.storePlan.toUpperCase()} 方案最多 ${limitState.limit} 件商品。`;
       return new Response(
-        JSON.stringify({ ok: false, error: `${ctx.storePlan.toUpperCase()} 方案最多 ${limit} 件商品。升級方案以解鎖更多商品。` }),
+        JSON.stringify({ ok: false, error: msg }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
     }
@@ -153,6 +180,33 @@ export async function handleAdminProductToggle(
     return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
       status: 400, headers: { "content-type": "application/json" },
     });
+  }
+
+  if (isActive === 1) {
+    const current = await ctx.db
+      .prepare("SELECT is_active FROM products WHERE id = ? AND store_id = ?")
+      .bind(id, ctx.storeId)
+      .first<{ is_active: number }>();
+    if (!current) {
+      return new Response(JSON.stringify({ ok: false, error: "商品不存在" }), {
+        status: 404, headers: { "content-type": "application/json" },
+      });
+    }
+
+    if (current.is_active !== 1) {
+      const limitState = await getProductLimitState(ctx);
+      if (limitState.limit && limitState.limit > 0) {
+        const activeCount = await getActiveProductCount(ctx);
+        if (activeCount >= limitState.limit) {
+          const msg = ctx.storePlan === "free" && !limitState.phoneVerified
+            ? "Free 方案未完成手機驗證最多上架 5 件商品；完成手機驗證後可上架 10 件。"
+            : `${ctx.storePlan.toUpperCase()} 方案最多 ${limitState.limit} 件商品。`;
+          return new Response(JSON.stringify({ ok: false, error: msg }), {
+            status: 403, headers: { "content-type": "application/json" },
+          });
+        }
+      }
+    }
   }
 
   await ctx.db
