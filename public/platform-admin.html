@@ -497,6 +497,18 @@ async function toggleTest(storeId) {
   } else alert(data.error || "操作失敗");
 }
 
+async function skipPhonePending(storeId) {
+  if (!confirm("確定要幫此會員跳過手機驗證 pending？")) return;
+  var res = await fetch("/api/platform-admin/stores/" + storeId, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ action: "skip_phone_pending" }),
+  });
+  var data = await res.json();
+  if (data.ok) await loadStores();
+  else alert(data.error || "操作失敗");
+}
+
 async function loadStores() {
   const res = await fetch("/api/platform-admin/stores", { headers: { authorization: "Bearer " + adminToken } });
   const data = await res.json();
@@ -555,6 +567,7 @@ function renderStores(stores) {
         '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'starter\')">Starter</button>' +
         '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
         '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
+        (s.onboarding_step === "phone_pending" ? '<button style="color:#b45309;" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
         (s.is_active ? '<button style="color:#ef4444;" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button style="color:#16a34a;" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
         '<button style="color:#991b1b;" onclick="deleteStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')">刪除</button>' +
       '</div>' +

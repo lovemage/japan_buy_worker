@@ -244,6 +244,29 @@ export async function handlePlatformAdmin(
           .bind(storeId)
           .run();
         return json({ ok: true });
+      case "skip_phone_pending": {
+        const store = await db
+          .prepare("SELECT email_verified, onboarding_step FROM stores WHERE id = ?")
+          .bind(storeId)
+          .first<{ email_verified: number; onboarding_step: string }>();
+        if (!store) return json({ ok: false, error: "Store not found" }, 404);
+        if (!store.email_verified) return json({ ok: false, error: "Email 尚未驗證，無法跳過手機驗證" }, 400);
+        if (store.onboarding_step !== "phone_pending") {
+          return json({ ok: false, error: "目前不是手機驗證待完成狀態" }, 400);
+        }
+
+        await db
+          .prepare(
+            `UPDATE stores
+             SET phone_verified = 1,
+                 onboarding_step = 'store_setup',
+                 updated_at = datetime('now')
+             WHERE id = ?`
+          )
+          .bind(storeId)
+          .run();
+        return json({ ok: true, onboarding_step: "store_setup", phone_verified: 1 });
+      }
       default:
         return json({ ok: false, error: "Unknown action" }, 400);
     }
