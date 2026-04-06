@@ -312,7 +312,7 @@ async function doAiImageEdit() {
       return;
     }
 
-    // Fetch the returned image and replace selectedImages[0]
+    // Fetch the AI image and convert to webp base64 via canvas
     const imageRes = await apiFetch(data.imageUrl);
     if (!imageRes.ok) {
       setAiImageEditPopupMsg("圖片下載失敗，請重試");
@@ -321,19 +321,29 @@ async function doAiImageEdit() {
     }
 
     const blob = await imageRes.blob();
-    const dataUrl = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
+    const bmpUrl = URL.createObjectURL(blob);
+    const newDataUrl = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(bmpUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const c = canvas.getContext("2d");
+        c.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/webp", WEBP_QUALITY));
+      };
+      img.onerror = () => { URL.revokeObjectURL(bmpUrl); reject(new Error("圖片載入失敗")); };
+      img.src = bmpUrl;
     });
 
-    const base64 = dataUrl.split(",")[1];
-    selectedImages[0] = { dataUrl, base64, file: selectedImages[0].file };
+    const newBase64 = newDataUrl.split(",")[1];
+    selectedImages[0] = { dataUrl: newDataUrl, base64: newBase64, file: selectedImages[0].file };
     renderPreviews();
     updateButtons();
 
     showAiImageEditPopup(false);
-    showRecognizeStatus("AI 圖片編輯完成！已替換第一張圖片。");
+    showRecognizeStatus("AI 圖片優化完成！已替換第一張圖片。");
   } catch (err) {
     setAiImageEditPopupMsg(`錯誤：${String(err)}`);
     setTimeout(() => showAiImageEditPopup(false), 2500);
