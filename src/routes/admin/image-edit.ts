@@ -144,7 +144,9 @@ export async function handleAdminImageEdit(
     },
   };
 
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+  // Use v1alpha for image generation models (v1beta doesn't support responseModalities for some models)
+  const apiVersion = modelId.includes("image") ? "v1alpha" : "v1beta";
+  const geminiUrl = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelId}:generateContent?key=${apiKey}`;
 
   let geminiRes: Response;
   try {
@@ -187,8 +189,15 @@ export async function handleAdminImageEdit(
   const imagePart = parts.find((p) => p.inline_data?.data);
 
   if (!imagePart?.inline_data?.data) {
+    // Log what Gemini actually returned for debugging
+    const textParts = parts.filter((p) => p.text).map((p) => p.text).join(" ");
+    const partTypes = parts.map((p) => p.inline_data ? `image(${p.inline_data.mime_type})` : p.text ? "text" : "unknown").join(", ");
     return new Response(
-      JSON.stringify({ ok: false, error: "AI 未回傳圖片，請稍後再試" }),
+      JSON.stringify({
+        ok: false,
+        error: `AI 未回傳圖片（模型: ${modelId}，回傳: [${partTypes || "空"}]）。請至平台管理選擇支援圖片生成的模型。`,
+        debug: textParts.slice(0, 200),
+      }),
       { status: 502, headers: { "content-type": "application/json" } }
     );
   }
