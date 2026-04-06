@@ -155,28 +155,26 @@ export async function loadManagedProducts() {
 let editGallery = [];
 let editNewImages = [];
 
-function getEditGalleryItems() {
-  return [
-    ...editGallery.map((url, idx) => ({ type: "existing", idx, src: prefixImageUrl(url), url })),
-    ...editNewImages.map((img, idx) => ({ type: "new", idx, src: img.dataUrl, img })),
+// Unified ordered list: { type: "existing", url } or { type: "new", img }
+let editOrderedItems = [];
+
+function rebuildEditOrdered() {
+  editOrderedItems = [
+    ...editGallery.map(url => ({ type: "existing", url })),
+    ...editNewImages.map(img => ({ type: "new", img })),
   ];
 }
 
-function swapEditGalleryItems(fromPos, toPos) {
-  const items = getEditGalleryItems();
-  if (toPos < 0 || toPos >= items.length) return;
-  const a = items[fromPos], b = items[toPos];
-  // Rebuild both arrays from the swapped order
-  [items[fromPos], items[toPos]] = [b, a];
-  editGallery = items.filter(i => i.type === "existing").map(i => i.url);
-  editNewImages = items.filter(i => i.type === "new").map(i => i.img);
+function syncFromOrdered() {
+  editGallery = editOrderedItems.filter(i => i.type === "existing").map(i => i.url);
+  editNewImages = editOrderedItems.filter(i => i.type === "new").map(i => i.img);
 }
 
 function renderEditGallery() {
   const container = document.getElementById("edit-gallery");
   if (!container) return;
   const maxImages = window.__MAX_IMAGES || 3;
-  const items = getEditGalleryItems();
+  const items = editOrderedItems;
   const totalCount = items.length;
   const countHtml = `<p class="meta" style="width:100%;margin:0;">圖片 ${totalCount} / ${maxImages}</p>`;
   if (totalCount === 0) {
@@ -186,11 +184,12 @@ function renderEditGallery() {
   container.innerHTML = items.map((item, pos) => {
     const locked = pos >= maxImages;
     const isNew = item.type === "new";
+    const src = isNew ? item.img.dataUrl : prefixImageUrl(item.url);
     return `
     <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}"${isNew ? ' style="border-color:var(--brand)"' : ""}>
-      <img src="${item.src}" alt="圖片 ${pos + 1}" />
+      <img src="${src}" alt="圖片 ${pos + 1}" />
       ${locked ? '<div class="edit-gallery__lock">🔒</div>' : ""}
-      <button class="edit-gallery__remove" data-pos="${pos}" data-type="${item.type}" data-idx="${item.idx}" type="button">&times;</button>
+      <button class="edit-gallery__remove" data-pos="${pos}" type="button">&times;</button>
       <div class="photo-reorder">
         ${pos > 0 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="-1" type="button">◀</button>` : ""}
         ${pos < totalCount - 1 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="1" type="button">▶</button>` : ""}
@@ -201,24 +200,28 @@ function renderEditGallery() {
 
   container.querySelectorAll(".edit-gallery__remove").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const type = btn.getAttribute("data-type");
-      const idx = Number(btn.getAttribute("data-idx"));
-      if (type === "new") {
-        editNewImages.splice(idx, 1);
+      const pos = Number(btn.getAttribute("data-pos"));
+      const item = editOrderedItems[pos];
+      if (!item) return;
+      if (item.type === "new") {
+        editOrderedItems.splice(pos, 1);
+        syncFromOrdered();
         renderEditGallery();
       } else {
-        const url = editGallery[idx];
         const id = Number(document.getElementById("edit-id")?.value);
-        if (!url || !id) return;
+        if (!item.url || !id) return;
         btn.disabled = true;
         const res = await apiFetch("/api/admin/products/image-delete", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ id, imageUrl: url }),
+          body: JSON.stringify({ id, imageUrl: item.url }),
         });
         if (res.ok) {
           const data = await res.json();
+          editOrderedItems.splice(pos, 1);
+          // Also update editGallery from server response
           editGallery = data.gallery || [];
+          syncFromOrdered();
           renderEditGallery();
         } else {
           showError("刪除圖片失敗");
@@ -230,7 +233,10 @@ function renderEditGallery() {
     btn.addEventListener("click", () => {
       const pos = Number(btn.getAttribute("data-pos"));
       const dir = Number(btn.getAttribute("data-dir"));
-      swapEditGalleryItems(pos, pos + dir);
+      const target = pos + dir;
+      if (target < 0 || target >= editOrderedItems.length) return;
+      [editOrderedItems[pos], editOrderedItems[target]] = [editOrderedItems[target], editOrderedItems[pos]];
+      syncFromOrdered();
       renderEditGallery();
     });
   });
@@ -286,6 +292,7 @@ async function openEditModal(btn) {
 
   editNewImages = [];
   editGallery = [];
+  editOrderedItems = [];
 
   modal.classList.remove("hidden");
 
@@ -297,13 +304,18 @@ async function openEditModal(btn) {
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
     }
   }
+  rebuildEditOrdered();
   renderEditGallery();
 }
 
 async function onEditPhotos(event) {
   const files = Array.from(event.target.files || []);
   for (const file of files) {
-    try { editNewImages.push(await compressImageToWebp(file)); } catch { /* skip */ }
+    try {
+      const img = await compressImageToWebp(file);
+      editNewImages.push(img);
+      editOrderedItems.push({ type: "new", img });
+    } catch { /* skip */ }
   }
   renderEditGallery();
   event.target.value = "";
@@ -314,6 +326,7 @@ function closeEditModal() {
   if (modal) modal.classList.add("hidden");
   editNewImages = [];
   editGallery = [];
+  editOrderedItems = [];
 }
 
 async function saveEdit() {
@@ -333,8 +346,8 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
-    gallery: editGallery,
-    newImages: editNewImages.map(img => img.base64),
+    gallery: editOrderedItems.filter(i => i.type === "existing").map(i => i.url),
+    newImages: editOrderedItems.filter(i => i.type === "new").map(i => i.img.base64),
     tags,
   };
 
@@ -447,8 +460,10 @@ async function doEditAiImage() {
       img.src = bmpUrl;
     });
 
-    // Insert AI image as first, keep original as second
-    editNewImages.unshift({ dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] });
+    // Insert AI image as first, keep all originals
+    const newImg = { dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] };
+    editNewImages.unshift(newImg);
+    editOrderedItems.unshift({ type: "new", img: newImg });
     renderEditGallery();
 
     if (popup) popup.style.display = "none";
