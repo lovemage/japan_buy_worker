@@ -231,6 +231,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .cta h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
 .cta p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
 
+/* ── AI Before/After ── */
+.ba-section { background: var(--bg-alt); }
+.ba-grid { display: flex; gap: 16px; justify-content: center; align-items: flex-start; }
+.ba-card { flex: 1; max-width: 420px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
+.ba-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.ba-card img { width: 100%; height: auto; display: block; }
+.ba-label { text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.ba-label span { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; }
+.ba-label .before-tag { background: #fef3c7; color: #92400e; }
+.ba-label .after-tag { background: #dcfce7; color: #166534; }
+.ba-overlay { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; cursor: zoom-out; }
+.ba-overlay.active { display: flex; }
+.ba-overlay img { max-width: 92vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+
 /* ── Footer ── */
 .footer { padding: 24px 20px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); }
 .footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
@@ -512,6 +526,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </section>
 
+<!-- AI Image Before/After -->
+<section class="section ba-section fade-in">
+  <div class="section-inner">
+    <h2 class="section-title">AI 圖片優化</h2>
+    <p class="section-sub">手機隨拍即上架，AI 自動去背、去手、白底置中</p>
+    <div class="ba-grid">
+      <div class="ba-card" onclick="openBaPopup('/assets/images/before.webp')">
+        <img src="/assets/images/before.webp" alt="優化前" loading="lazy" />
+        <div class="ba-label"><span class="before-tag">Before</span></div>
+      </div>
+      <div class="ba-card" onclick="openBaPopup('/assets/images/after.webp')">
+        <img src="/assets/images/after.webp" alt="優化後" loading="lazy" />
+        <div class="ba-label"><span class="after-tag">After</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Pricing -->
 <section class="section fade-in" id="pricing">
   <div class="section-inner">
@@ -696,6 +728,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <p>卉田國際有限公司｜統一編號：91093506</p>
   <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
 </footer>
+
+<!-- BA Popup Overlay -->
+<div class="ba-overlay" id="ba-overlay" onclick="closeBaPopup()">
+  <img id="ba-overlay-img" src="" alt="" />
+</div>
+
+<script>
+function openBaPopup(src) {
+  var overlay = document.getElementById("ba-overlay");
+  var img = document.getElementById("ba-overlay-img");
+  if (overlay && img) { img.src = src; overlay.classList.add("active"); }
+}
+function closeBaPopup() {
+  var overlay = document.getElementById("ba-overlay");
+  if (overlay) overlay.classList.remove("active");
+}
+</script>
 
 <script>
 // FAQ toggle
