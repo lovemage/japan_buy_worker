@@ -356,7 +356,7 @@ async function doEditAiImage() {
     if (btn) btn.disabled = true;
 
     try {
-      const imgRes = await apiFetch(prefixImageUrl(editGallery[0]));
+      const imgRes = await apiFetch(editGallery[0]);
       if (!imgRes.ok) throw new Error("圖片下載失敗");
       const blob = await imgRes.blob();
       const bmpUrl = URL.createObjectURL(blob);
