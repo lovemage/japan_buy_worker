@@ -58,12 +58,17 @@ function compressImage(file) {
 function renderPreviews() {
   const row = document.getElementById("photo-previews");
   if (!row) return;
+  const len = selectedImages.length;
   row.innerHTML = selectedImages
     .map(
       (img, idx) => `
     <div class="photo-preview-item">
       <img src="${img.dataUrl}" alt="照片 ${idx + 1}" />
       <button class="photo-remove" data-idx="${idx}" type="button">&times;</button>
+      <div class="photo-reorder">
+        ${idx > 0 ? `<button class="photo-move" data-idx="${idx}" data-dir="-1" type="button">◀</button>` : ""}
+        ${idx < len - 1 ? `<button class="photo-move" data-idx="${idx}" data-dir="1" type="button">▶</button>` : ""}
+      </div>
     </div>`
     )
     .join("");
@@ -74,6 +79,16 @@ function renderPreviews() {
       selectedImages.splice(idx, 1);
       renderPreviews();
       updateButtons();
+    });
+  });
+  row.querySelectorAll(".photo-move").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.getAttribute("data-idx"));
+      const dir = Number(btn.getAttribute("data-dir"));
+      const target = idx + dir;
+      if (target < 0 || target >= selectedImages.length) return;
+      [selectedImages[idx], selectedImages[target]] = [selectedImages[target], selectedImages[idx]];
+      renderPreviews();
     });
   });
 }

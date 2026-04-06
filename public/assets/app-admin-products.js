@@ -155,35 +155,46 @@ export async function loadManagedProducts() {
 let editGallery = [];
 let editNewImages = [];
 
+function getEditGalleryItems() {
+  return [
+    ...editGallery.map((url, idx) => ({ type: "existing", idx, src: prefixImageUrl(url), url })),
+    ...editNewImages.map((img, idx) => ({ type: "new", idx, src: img.dataUrl, img })),
+  ];
+}
+
+function swapEditGalleryItems(fromPos, toPos) {
+  const items = getEditGalleryItems();
+  if (toPos < 0 || toPos >= items.length) return;
+  const a = items[fromPos], b = items[toPos];
+  // Rebuild both arrays from the swapped order
+  [items[fromPos], items[toPos]] = [b, a];
+  editGallery = items.filter(i => i.type === "existing").map(i => i.url);
+  editNewImages = items.filter(i => i.type === "new").map(i => i.img);
+}
+
 function renderEditGallery() {
   const container = document.getElementById("edit-gallery");
   if (!container) return;
   const maxImages = window.__MAX_IMAGES || 3;
-  const all = [...editGallery];
-  const totalCount = all.length + editNewImages.length;
+  const items = getEditGalleryItems();
+  const totalCount = items.length;
   const countHtml = `<p class="meta" style="width:100%;margin:0;">圖片 ${totalCount} / ${maxImages}</p>`;
-  if (all.length === 0 && editNewImages.length === 0) {
+  if (totalCount === 0) {
     container.innerHTML = countHtml;
     return;
   }
-  let runningIdx = 0;
-  container.innerHTML = all.map((url, idx) => {
-    const locked = runningIdx >= maxImages;
-    runningIdx++;
+  container.innerHTML = items.map((item, pos) => {
+    const locked = pos >= maxImages;
+    const isNew = item.type === "new";
     return `
-    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}">
-      <img src="${prefixImageUrl(url)}" alt="圖片 ${idx + 1}" />
+    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}"${isNew ? ' style="border-color:var(--brand)"' : ""}>
+      <img src="${item.src}" alt="圖片 ${pos + 1}" />
       ${locked ? '<div class="edit-gallery__lock">🔒</div>' : ""}
-      <button class="edit-gallery__remove" data-idx="${idx}" data-type="existing" type="button">&times;</button>
-    </div>`;
-  }).join("") + editNewImages.map((img, idx) => {
-    const locked = runningIdx >= maxImages;
-    runningIdx++;
-    return `
-    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}" style="border-color:var(--brand)">
-      <img src="${img.dataUrl}" alt="新圖 ${idx + 1}" />
-      ${locked ? '<div class="edit-gallery__lock">🔒</div>' : ""}
-      <button class="edit-gallery__remove" data-idx="${idx}" data-type="new" type="button">&times;</button>
+      <button class="edit-gallery__remove" data-pos="${pos}" data-type="${item.type}" data-idx="${item.idx}" type="button">&times;</button>
+      <div class="photo-reorder">
+        ${pos > 0 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="-1" type="button">◀</button>` : ""}
+        ${pos < totalCount - 1 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="1" type="button">▶</button>` : ""}
+      </div>
     </div>`;
   }).join("") + countHtml +
     (totalCount > maxImages ? '<p class="meta" style="width:100%;margin:4px 0 0;color:var(--admin-warning,#D4960A);">升級方案享更多功能</p>' : "");
@@ -213,6 +224,14 @@ function renderEditGallery() {
           showError("刪除圖片失敗");
         }
       }
+    });
+  });
+  container.querySelectorAll(".edit-gallery__move").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const pos = Number(btn.getAttribute("data-pos"));
+      const dir = Number(btn.getAttribute("data-dir"));
+      swapEditGalleryItems(pos, pos + dir);
+      renderEditGallery();
     });
   });
 }

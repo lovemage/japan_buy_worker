@@ -1135,6 +1135,35 @@
   place-items: center;
 }
 
+/* Reorder buttons for image galleries */
+.photo-reorder {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+.photo-reorder button,
+.edit-gallery__move {
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  width: 22px;
+  height: 18px;
+  font-size: 10px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+.photo-reorder button:hover,
+.edit-gallery__move:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
 .edit-modal__actions {
   display: flex;
   gap: 8px;
