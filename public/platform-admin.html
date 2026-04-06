@@ -361,6 +361,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
 
     <div class="card">
+      <h3>❓ 首頁問與答</h3>
+      <p class="desc">管理首頁 FAQ。每題包含問題和回答。問題開頭建議加「我|我拍」。</p>
+      <div id="faq-editor"></div>
+      <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="addFaqItem()">+ 新增問題</button>
+      <button class="btn btn-dark" style="margin-top:8px;" onclick="saveFaq()">儲存</button>
+      <span class="toast" id="faq-toast">已儲存</span>
+    </div>
+
+    <div class="card">
       <button class="btn btn-dark" onclick="logout()">登出</button>
     </div>
   </div>
@@ -505,6 +514,7 @@ async function showDashboard() {
   if (adminRole === "super-admin") await loadApiKeys();
   await loadSystemPrompt();
   await loadImagePrompt();
+  await loadFaq();
   await loadPlanLimits();
 }
 
@@ -924,6 +934,59 @@ async function saveImagePrompt() {
     body: JSON.stringify({ prompt: document.getElementById("image-gen-prompt").value }),
   });
   if ((await res.json()).ok) { var t = document.getElementById("image-prompt-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000); }
+}
+
+var faqItems = [];
+async function loadFaq() {
+  var res = await fetch("/api/platform-admin/faq", { headers: { authorization: "Bearer " + adminToken } });
+  var data = await res.json();
+  if (data.ok && Array.isArray(data.items) && data.items.length > 0) faqItems = data.items;
+  renderFaqEditor();
+}
+function renderFaqEditor() {
+  var el = document.getElementById("faq-editor");
+  if (!el) return;
+  el.innerHTML = faqItems.map(function(item, idx) {
+    return '<div style="border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fafafa;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+        '<span style="font-size:11px;color:#999;">Q' + (idx + 1) + '</span>' +
+        '<div style="display:flex;gap:4px;">' +
+          (idx > 0 ? '<button class="btn" style="font-size:10px;padding:2px 6px;" onclick="moveFaqItem(' + idx + ',-1)">▲</button>' : '') +
+          (idx < faqItems.length - 1 ? '<button class="btn" style="font-size:10px;padding:2px 6px;" onclick="moveFaqItem(' + idx + ',1)">▼</button>' : '') +
+          '<button class="btn" style="font-size:10px;padding:2px 6px;color:#ef4444;" onclick="removeFaqItem(' + idx + ')">刪除</button>' +
+        '</div>' +
+      '</div>' +
+      '<input type="text" value="' + (item.q || "").replace(/"/g, "&quot;") + '" onchange="faqItems[' + idx + '].q=this.value" placeholder="問題" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:4px;">' +
+      '<textarea onchange="faqItems[' + idx + '].a=this.value" placeholder="回答" rows="2" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;">' + (item.a || "").replace(/</g, "&lt;") + '</textarea>' +
+    '</div>';
+  }).join("");
+}
+function addFaqItem() {
+  faqItems.push({ q: "我|我拍 ", a: "" });
+  renderFaqEditor();
+  // Scroll to bottom of editor
+  var el = document.getElementById("faq-editor");
+  if (el) el.lastElementChild?.scrollIntoView({ behavior: "smooth" });
+}
+function removeFaqItem(idx) {
+  faqItems.splice(idx, 1);
+  renderFaqEditor();
+}
+function moveFaqItem(idx, dir) {
+  var target = idx + dir;
+  if (target < 0 || target >= faqItems.length) return;
+  var tmp = faqItems[idx];
+  faqItems[idx] = faqItems[target];
+  faqItems[target] = tmp;
+  renderFaqEditor();
+}
+async function saveFaq() {
+  var res = await fetch("/api/platform-admin/faq", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ items: faqItems }),
+  });
+  if ((await res.json()).ok) { var t = document.getElementById("faq-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000); }
 }
 
 async function fetchImageGenModels() {

@@ -250,6 +250,12 @@ export default {
       const limits = row?.value ? JSON.parse(row.value) : { free: 10, starter: 50, pro: -1 };
       return json({ ok: true, limits });
     }
+    if (url.pathname === "/api/faq") {
+      const row = await env.DB
+        .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'faq_items'")
+        .first<{ value: string }>();
+      return json({ ok: true, items: row?.value ? JSON.parse(row.value) : [] });
+    }
     if (url.pathname === "/api/plan-offers") {
       return json({ ok: true, offers: DEFAULT_PLAN_OFFERS });
     }

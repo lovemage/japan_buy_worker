@@ -469,6 +469,29 @@ export async function handlePlatformAdmin(
     return json({ ok: true });
   }
 
+  // Get/Set FAQ items
+  if (url.pathname === "/api/platform-admin/faq" && request.method === "GET") {
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'faq_items'")
+      .first<{ value: string }>();
+    return json({ ok: true, items: row?.value ? JSON.parse(row.value) : [] });
+  }
+
+  if (url.pathname === "/api/platform-admin/faq" && request.method === "POST") {
+    let body: { items?: Array<{ q: string; a: string }> };
+    try {
+      body = (await request.json()) as { items?: Array<{ q: string; a: string }> };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    const items = Array.isArray(body.items) ? body.items.filter(i => i.q && i.a) : [];
+    await db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'faq_items', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(JSON.stringify(items))
+      .run();
+    return json({ ok: true });
+  }
+
   // Get/Set plan product limits
   if (url.pathname === "/api/platform-admin/plan-limits" && request.method === "GET") {
     const row = await db

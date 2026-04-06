@@ -785,6 +785,19 @@ function toggleFaq(btn) {
   }
 }
 
+// Dynamic FAQ
+fetch("/api/faq").then(function(r){return r.json()}).then(function(d) {
+  if (!d.ok || !Array.isArray(d.items) || d.items.length === 0) return;
+  var list = document.querySelector(".faq-list");
+  if (!list) return;
+  list.innerHTML = d.items.map(function(item) {
+    return '<div class="faq-item">' +
+      '<button class="faq-q" onclick="toggleFaq(this)">' + item.q.replace(/</g,"&lt;") + '</button>' +
+      '<div class="faq-a"><p>' + item.a.replace(/</g,"&lt;") + '</p></div>' +
+    '</div>';
+  }).join("");
+}).catch(function(){});
+
 // Plan limits
 fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
   if (!d.ok) return;
