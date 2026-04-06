@@ -313,10 +313,10 @@ async function onEditPhotos(event) {
   for (const file of files) {
     try {
       const img = await compressImageToWebp(file);
-      editNewImages.push(img);
       editOrderedItems.push({ type: "new", img });
     } catch { /* skip */ }
   }
+  syncFromOrdered();
   renderEditGallery();
   event.target.value = "";
 }
@@ -462,8 +462,8 @@ async function doEditAiImage() {
 
     // Insert AI image as first, keep all originals
     const newImg = { dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] };
-    editNewImages.unshift(newImg);
     editOrderedItems.unshift({ type: "new", img: newImg });
+    syncFromOrdered();
     renderEditGallery();
 
     if (popup) popup.style.display = "none";
