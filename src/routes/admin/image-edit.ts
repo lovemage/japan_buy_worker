@@ -1,12 +1,25 @@
 import type { RequestContext } from "../../context";
 
-const DEFAULT_IMAGE_GEN_PROMPT = `Transform this product photo into a professional e-commerce product image:
-- Remove the background and replace with a pure white background
-- Keep the product's original appearance, colors, and text completely unchanged
-- Adjust brightness and contrast to make the product clearer
-- Center the product with appropriate white space around it
-- Image aspect ratio 4:3
-- Keep the product image as-is, do not modify any text`;
+const DEFAULT_IMAGE_GEN_PROMPT = `You are a professional e-commerce product photographer. Transform this product photo into a clean, professional product listing image.
+
+MUST DO:
+- Remove the entire background and replace with a pure white (#FFFFFF) background
+- Center the product in the frame with balanced white space on all sides
+- Maintain the original aspect ratio of the product, output image ratio 4:3
+- Enhance brightness and contrast slightly for a crisp, well-lit look
+- Preserve all original product details: colors, textures, labels, logos, barcodes
+- Preserve every character of text on the product packaging exactly as-is (Japanese, Chinese, English, numbers)
+- Keep reflections and shadows natural and subtle
+
+DO NOT:
+- DO NOT alter, redraw, rearrange, or regenerate any text or characters on the product
+- DO NOT change the product shape, proportions, or physical appearance in any way
+- DO NOT add any text, watermark, badge, label, price tag, or overlay
+- DO NOT add any decorative elements, props, or additional objects
+- DO NOT change the product color, brand logo, or packaging design
+- DO NOT crop or cut off any part of the product
+- DO NOT invent or hallucinate details that are not in the original photo
+- DO NOT apply artistic filters, stylization, or cartoon effects — keep it photorealistic`;
 
 const IMAGE_EDIT_LIMITS: Record<string, number> = {
   free: 10,
