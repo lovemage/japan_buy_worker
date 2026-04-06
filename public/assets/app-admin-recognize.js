@@ -338,12 +338,13 @@ async function doAiImageEdit() {
     });
 
     const newBase64 = newDataUrl.split(",")[1];
-    selectedImages[0] = { dataUrl: newDataUrl, base64: newBase64, file: selectedImages[0].file };
+    // Insert AI image as first, move original to second
+    selectedImages.splice(0, 0, { dataUrl: newDataUrl, base64: newBase64, file: selectedImages[0].file });
     renderPreviews();
     updateButtons();
 
     showAiImageEditPopup(false);
-    showRecognizeStatus("AI 圖片優化完成！已替換第一張圖片。");
+    showRecognizeStatus("AI 圖片優化完成！已插入為第一張，原圖移至第二張。");
   } catch (err) {
     setAiImageEditPopupMsg(`錯誤：${String(err)}`);
     setTimeout(() => showAiImageEditPopup(false), 2500);

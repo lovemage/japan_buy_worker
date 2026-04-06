@@ -428,14 +428,8 @@ async function doEditAiImage() {
       img.src = bmpUrl;
     });
 
-    // Replace the first image
-    if (editGallery.length > 0) {
-      // For existing gallery: replace URL with the new AI image as a "new" image, remove old
-      editGallery.splice(0, 1);
-      editNewImages.unshift({ dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] });
-    } else {
-      editNewImages[0] = { dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] };
-    }
+    // Insert AI image as first, keep original as second
+    editNewImages.unshift({ dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] });
     renderEditGallery();
 
     if (popup) popup.style.display = "none";

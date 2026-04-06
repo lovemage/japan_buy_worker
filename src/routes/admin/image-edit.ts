@@ -1,18 +1,21 @@
 import type { RequestContext } from "../../context";
 import { getGeminiApiKey } from "./settings";
 
-const DEFAULT_IMAGE_GEN_PROMPT = `You are a professional e-commerce product photographer. Transform this product photo into a clean, professional product listing image.
+const DEFAULT_IMAGE_GEN_PROMPT = `You are a professional e-commerce product photographer. Transform this product photo into a clean, professional product listing image suitable for online shopping platforms.
 
 MUST DO:
 - Remove the entire background and replace with a pure white (#FFFFFF) background
+- If a human hand, fingers, or arm is holding or touching the product, remove the hand/body completely — show ONLY the product as if it were standing or lying on its own
 - Center the product in the frame with balanced white space on all sides
 - Maintain the original aspect ratio of the product, output image ratio 4:3
-- Enhance brightness and contrast slightly for a crisp, well-lit look
+- Enhance brightness and contrast slightly for a crisp, well-lit studio look
 - Preserve all original product details: colors, textures, labels, logos, barcodes
 - Preserve every character of text on the product packaging exactly as-is (Japanese, Chinese, English, numbers)
-- Keep reflections and shadows natural and subtle
+- Add a subtle, natural drop shadow beneath the product for depth
+- The final image should look like a professional product shot from Amazon, Rakuten, or similar e-commerce platforms
 
 DO NOT:
+- DO NOT keep any human body parts (hands, fingers, arms, skin) in the output image
 - DO NOT alter, redraw, rearrange, or regenerate any text or characters on the product
 - DO NOT change the product shape, proportions, or physical appearance in any way
 - DO NOT add any text, watermark, badge, label, price tag, or overlay
@@ -20,7 +23,8 @@ DO NOT:
 - DO NOT change the product color, brand logo, or packaging design
 - DO NOT crop or cut off any part of the product
 - DO NOT invent or hallucinate details that are not in the original photo
-- DO NOT apply artistic filters, stylization, or cartoon effects — keep it photorealistic`;
+- DO NOT apply artistic filters, stylization, or cartoon effects — keep it photorealistic
+- DO NOT keep store shelves, price tags, shopping baskets, or any retail environment elements`;
 
 const IMAGE_EDIT_LIMITS: Record<string, number> = {
   free: 10,
