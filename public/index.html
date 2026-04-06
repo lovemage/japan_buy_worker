@@ -233,17 +233,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 /* ── AI Before/After ── */
 .ba-section { background: var(--bg-alt); }
-.ba-grid { display: flex; gap: 16px; justify-content: center; align-items: flex-start; }
-.ba-card { flex: 1; max-width: 420px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
+.ba-grid { display: flex; gap: 16px; justify-content: center; align-items: stretch; }
+.ba-card { flex: 1; max-width: 420px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; display: flex; flex-direction: column; }
 .ba-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
-.ba-card img { width: 100%; height: auto; display: block; }
-.ba-label { text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.ba-card-img { flex: 1; overflow: hidden; }
+.ba-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ba-label { text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
 .ba-label span { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; }
 .ba-label .before-tag { background: #fef3c7; color: #92400e; }
 .ba-label .after-tag { background: #dcfce7; color: #166534; }
-.ba-overlay { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; cursor: zoom-out; }
+.ba-overlay { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
 .ba-overlay.active { display: flex; }
-.ba-overlay img { max-width: 92vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.ba-overlay img { max-width: 92vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); cursor: pointer; }
+.ba-overlay-tag { padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; pointer-events: none; }
+.ba-overlay-hint { font-size: 12px; color: rgba(255,255,255,0.5); pointer-events: none; }
 
 /* ── Footer ── */
 .footer { padding: 24px 20px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); }
@@ -532,12 +535,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <h2 class="section-title">AI 圖片優化</h2>
     <p class="section-sub">Amazon・Rakuten 大平台等級商業圖片，一鍵優化</p>
     <div class="ba-grid">
-      <div class="ba-card" onclick="openBaPopup('/assets/images/before.webp')">
-        <img src="/assets/images/before.webp" alt="優化前" loading="lazy" />
+      <div class="ba-card" onclick="openBaPopup('before')">
+        <div class="ba-card-img"><img src="/assets/images/before.webp" alt="優化前" loading="lazy" /></div>
         <div class="ba-label"><span class="before-tag">Before</span></div>
       </div>
-      <div class="ba-card" onclick="openBaPopup('/assets/images/after.webp')">
-        <img src="/assets/images/after.webp" alt="優化後" loading="lazy" />
+      <div class="ba-card" onclick="openBaPopup('after')">
+        <div class="ba-card-img"><img src="/assets/images/after.webp" alt="優化後" loading="lazy" /></div>
         <div class="ba-label"><span class="after-tag">After</span></div>
       </div>
     </div>
@@ -730,20 +733,38 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </footer>
 
 <!-- BA Popup Overlay -->
-<div class="ba-overlay" id="ba-overlay" onclick="closeBaPopup()">
-  <img id="ba-overlay-img" src="" alt="" />
+<div class="ba-overlay" id="ba-overlay">
+  <span class="ba-overlay-tag" id="ba-overlay-tag"></span>
+  <img id="ba-overlay-img" src="" alt="" onclick="toggleBaPopup(event)" />
+  <span class="ba-overlay-hint">點擊圖片切換 Before / After</span>
 </div>
 
 <script>
-function openBaPopup(src) {
-  var overlay = document.getElementById("ba-overlay");
+var baState = "before";
+var baSrcs = { before: "/assets/images/before.webp", after: "/assets/images/after.webp" };
+function openBaPopup(which) {
+  baState = which;
+  updateBaPopup();
+  document.getElementById("ba-overlay").classList.add("active");
+}
+function updateBaPopup() {
   var img = document.getElementById("ba-overlay-img");
-  if (overlay && img) { img.src = src; overlay.classList.add("active"); }
+  var tag = document.getElementById("ba-overlay-tag");
+  if (img) img.src = baSrcs[baState];
+  if (tag) {
+    tag.textContent = baState === "before" ? "Before" : "After";
+    tag.style.background = baState === "before" ? "#fef3c7" : "#dcfce7";
+    tag.style.color = baState === "before" ? "#92400e" : "#166534";
+  }
 }
-function closeBaPopup() {
-  var overlay = document.getElementById("ba-overlay");
-  if (overlay) overlay.classList.remove("active");
+function toggleBaPopup(e) {
+  e.stopPropagation();
+  baState = baState === "before" ? "after" : "before";
+  updateBaPopup();
 }
+document.getElementById("ba-overlay").addEventListener("click", function(e) {
+  if (e.target === this) this.classList.remove("active");
+});
 </script>
 
 <script>
