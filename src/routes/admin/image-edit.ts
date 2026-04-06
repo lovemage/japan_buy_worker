@@ -42,7 +42,7 @@ async function getImageGenModel(db: RequestContext["db"]): Promise<string> {
   const row = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'image_gen_model'")
     .first<{ value: string }>();
-  return row?.value || "gemini-2.0-flash-exp";
+  return row?.value || "gemini-2.5-flash-preview-image-generation";
 }
 
 async function getImageGenPrompt(db: RequestContext["db"]): Promise<string> {
@@ -99,7 +99,7 @@ export async function handleAdminImageEdit(
   const apiKey = await getImageGenApiKey(ctx.db, ctx.storeId, ctx.storePlan);
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ ok: false, error: "AI 圖片編輯 API Key 尚未設定，請聯繫平台管理員" }),
+      JSON.stringify({ ok: false, error: "AI 圖片優化功能尚未啟用，請聯繫 vovosnap 管理員處理" }),
       { status: 400, headers: { "content-type": "application/json" } }
     );
   }
@@ -129,12 +129,17 @@ export async function handleAdminImageEdit(
   // Strip data URL prefix if present
   const base64Data = imageBase64.includes(",") ? imageBase64.split(",")[1] : imageBase64;
 
+  // Detect mime type from data URL prefix, default to jpeg for best compatibility
+  let inputMime = "image/jpeg";
+  if (imageBase64.startsWith("data:image/png")) inputMime = "image/png";
+  else if (imageBase64.startsWith("data:image/webp")) inputMime = "image/webp";
+
   // Call Gemini image generation API
   const geminiBody = {
     contents: [
       {
         parts: [
-          { inline_data: { mime_type: "image/webp" as const, data: base64Data } },
+          { inline_data: { mime_type: inputMime, data: base64Data } },
           { text: prompt },
         ],
       },
@@ -144,9 +149,8 @@ export async function handleAdminImageEdit(
     },
   };
 
-  // Use v1alpha for image generation models (v1beta doesn't support responseModalities for some models)
-  const apiVersion = modelId.includes("image") ? "v1alpha" : "v1beta";
-  const geminiUrl = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelId}:generateContent?key=${apiKey}`;
+  // Image generation models require v1alpha endpoint
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1alpha/models/${modelId}:generateContent?key=${apiKey}`;
 
   let geminiRes: Response;
   try {
@@ -173,29 +177,29 @@ export async function handleAdminImageEdit(
     );
   }
 
-  const geminiData = (await geminiRes.json()) as {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{
-          inline_data?: { mime_type: string; data: string };
-          text?: string;
-        }>;
-      };
-    }>;
-  };
+  const geminiRaw = await geminiRes.json() as Record<string, any>;
 
-  // Find the image part in the response
-  const parts = geminiData?.candidates?.[0]?.content?.parts || [];
-  const imagePart = parts.find((p) => p.inline_data?.data);
+  // Gemini API may return inline_data (snake_case) or inlineData (camelCase) depending on version
+  const candidates = geminiRaw?.candidates || [];
+  const parts = candidates[0]?.content?.parts || [];
 
-  if (!imagePart?.inline_data?.data) {
-    // Log what Gemini actually returned for debugging
-    const textParts = parts.filter((p) => p.text).map((p) => p.text).join(" ");
-    const partTypes = parts.map((p) => p.inline_data ? `image(${p.inline_data.mime_type})` : p.text ? "text" : "unknown").join(", ");
+  // Normalize: check both snake_case and camelCase
+  const imagePart = parts.find((p: any) =>
+    (p.inline_data?.data) || (p.inlineData?.data)
+  );
+  const imageData = imagePart?.inline_data?.data || imagePart?.inlineData?.data;
+
+  if (!imageData) {
+    const partTypes = parts.map((p: any) => {
+      if (p.inline_data || p.inlineData) return `image(${p.inline_data?.mime_type || p.inlineData?.mimeType || "?"})`;
+      if (p.text) return "text";
+      return `unknown(${Object.keys(p).join(",")})`;
+    }).join(", ");
+    const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(" ");
     return new Response(
       JSON.stringify({
         ok: false,
-        error: `AI 未回傳圖片（模型: ${modelId}，回傳: [${partTypes || "空"}]）。請至平台管理選擇支援圖片生成的模型。`,
+        error: `AI 圖片優化暫時無法使用，請聯繫 vovosnap 管理員處理（${modelId}: ${partTypes || "空"}）`,
         debug: textParts.slice(0, 200),
       }),
       { status: 502, headers: { "content-type": "application/json" } }
@@ -211,11 +215,13 @@ export async function handleAdminImageEdit(
   }
 
   const timestamp = Date.now();
-  const r2Key = `${ctx.storeId}/ai-edit/${timestamp}.webp`;
-  const imageBuffer = base64ToArrayBuffer(imagePart.inline_data.data);
+  const outputMime = imagePart?.inline_data?.mime_type || imagePart?.inlineData?.mimeType || "image/png";
+  const ext = outputMime.includes("png") ? "png" : outputMime.includes("webp") ? "webp" : "png";
+  const r2Key = `${ctx.storeId}/ai-edit/${timestamp}.${ext}`;
+  const imageBuffer = base64ToArrayBuffer(imageData);
 
   await ctx.r2.put(r2Key, imageBuffer, {
-    httpMetadata: { contentType: "image/webp" },
+    httpMetadata: { contentType: outputMime },
   });
 
   // Increment usage counter (non-blocking)

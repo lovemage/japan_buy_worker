@@ -181,7 +181,7 @@ ${productList || "（尚無商品）"}
     const apiKey = await getOpenRouterApiKey(ctx.db);
     const modelId = await getOpenRouterModel(ctx.db);
     if (!apiKey || !modelId) {
-      return json({ ok: false, error: "OpenRouter 設定不完整，請聯繫平台管理員" }, 400);
+      return json({ ok: false, error: "AI 功能設定不完整，請聯繫 vovosnap 管理員處理" }, 400);
     }
 
     const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {

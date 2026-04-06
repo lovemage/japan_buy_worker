@@ -104,7 +104,7 @@ export async function handleAdminRecognize(
     apiKey = await getOpenRouterApiKey(ctx.db);
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ ok: false, error: "OpenRouter API Key 尚未設定，請聯繫平台管理員" }),
+        JSON.stringify({ ok: false, error: "AI 功能尚未啟用，請聯繫 vovosnap 管理員處理" }),
         { status: 400, headers: { "content-type": "application/json" } }
       );
     }
@@ -149,7 +149,7 @@ export async function handleAdminRecognize(
     const orModelId = await getOpenRouterModel(ctx.db);
     if (!orModelId) {
       return new Response(
-        JSON.stringify({ ok: false, error: "OpenRouter 模型尚未選擇，請至平台管理 API Key 頁面選擇模型" }),
+        JSON.stringify({ ok: false, error: "AI 模型尚未設定完成，請聯繫 vovosnap 管理員處理" }),
         { status: 400, headers: { "content-type": "application/json" } }
       );
     }
