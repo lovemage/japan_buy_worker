@@ -17,15 +17,10 @@ function showListingStatus(text) {
 
 function updateButtons() {
   const quickBtn = document.getElementById("btn-recognize-quick");
-  const manualEntryBtn = document.getElementById("btn-manual-entry");
   const hasImages = selectedImages.length > 0;
   if (quickBtn) quickBtn.disabled = !hasImages;
-  if (manualEntryBtn) manualEntryBtn.disabled = !hasImages;
   const count = document.getElementById("photo-count");
-  if (count) {
-    const total = selectedImages.length;
-    count.textContent = total > 3 ? `已選 ${total} 張（AI 辨識前 3 張）` : `已選 ${total} 張`;
-  }
+  if (count) count.textContent = `已選 ${selectedImages.length} / ${window.__MAX_IMAGES || 3} 張`;
   if (typeof updateHint === "function") updateHint();
 }
 
@@ -85,7 +80,8 @@ function renderPreviews() {
 
 async function onPhotosSelected(event) {
   const files = Array.from(event.target.files || []);
-  const toProcess = files;
+  const remaining = (window.__MAX_IMAGES || 3) - selectedImages.length;
+  const toProcess = files.slice(0, remaining);
 
   for (const file of toProcess) {
     try {
@@ -136,7 +132,7 @@ async function doRecognize() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        images: selectedImages.slice(0, 3).map((img) => img.base64),
+        images: selectedImages.map((img) => img.base64),
         mode: "quick",
       }),
     });
@@ -150,7 +146,7 @@ async function doRecognize() {
 
     const data = await res.json();
     if (!data.ok) {
-      showRecognizeStatus("辨識失敗，請重新拍照或稍後再試");
+      showRecognizeStatus(`辨識失敗：${data.error || "未知錯誤"}`);
       return;
     }
 
@@ -158,7 +154,7 @@ async function doRecognize() {
     fillDraft(data.result);
   } catch (err) {
     showRecognizeLoading(false);
-    showRecognizeStatus("辨識失敗，請檢查網路連線後重試");
+    showRecognizeStatus(`辨識失敗：${String(err)}`);
   } finally {
     updateButtons();
   }
@@ -273,111 +269,77 @@ function updateHint() {
   }
 }
 
-// ── Camera mode toggle (auto / manual) ──
-
-function initCameraModeToggle() {
-  const toggle = document.getElementById("camera-mode-toggle");
-  const label = document.getElementById("camera-mode-label");
-  const autoBtn = document.getElementById("camera-auto-btn");
-  const manualBtn = document.getElementById("camera-manual-btn");
-  const manualEntryBtn = document.getElementById("btn-manual-entry");
-  if (!toggle) return;
-
-  function applyCameraMode() {
-    const isManual = toggle.checked;
-    if (label) label.textContent = isManual ? "半自動" : "全自動";
-    if (autoBtn) autoBtn.classList.toggle("hidden", isManual);
-    if (manualBtn) manualBtn.classList.toggle("hidden", !isManual);
-    if (manualEntryBtn) manualEntryBtn.classList.toggle("hidden", !isManual);
-  }
-
-  toggle.addEventListener("change", applyCameraMode);
-  applyCameraMode();
+function showAiImageEditPopup(show) {
+  const popup = document.getElementById("ai-image-edit-popup");
+  if (!popup) return;
+  popup.style.display = show ? "flex" : "none";
 }
 
-// ── Manual entry (手動輸入上架) ──
-
-function showManualEntryForm() {
-  const form = document.getElementById("manual-entry-form");
-  const draft = document.getElementById("recognize-draft");
-  if (draft) draft.classList.add("hidden");
-  if (form) form.classList.remove("hidden");
-
-  // Load categories into datalist
-  loadManualEntryCategories();
+function setAiImageEditPopupMsg(msg) {
+  const el = document.getElementById("ai-image-edit-popup-msg");
+  if (el) el.textContent = msg;
 }
 
-function cancelManualEntry() {
-  const form = document.getElementById("manual-entry-form");
-  if (form) form.classList.add("hidden");
-  const status = document.getElementById("manual-entry-status");
-  if (status) status.textContent = "";
-}
-
-async function loadManualEntryCategories() {
-  try {
-    const res = await apiFetch("/api/admin/categories");
-    if (!res.ok) return;
-    const body = await res.json();
-    const dl = document.getElementById("me-category-datalist");
-    if (dl && body.categories) {
-      dl.innerHTML = body.categories.map(c => `<option value="${c.name}">`).join("");
-    }
-  } catch { /* ignore */ }
-}
-
-async function submitManualEntry() {
-  const get = (id) => document.getElementById(id)?.value?.trim() || "";
-  const titleJa = get("me-title-ja");
-  const titleZhTw = get("me-title-zh");
-  if (!titleJa && !titleZhTw) {
-    showManualEntryStatus("商品名稱（日文或中文）為必填");
+async function doAiImageEdit() {
+  if (selectedImages.length === 0) {
+    alert("請先選擇商品照片");
     return;
   }
 
-  const priceRaw = get("me-price");
-  const priceJpy = priceRaw ? Number(priceRaw) : null;
+  showAiImageEditPopup(true);
+  setAiImageEditPopupMsg("");
 
-  const payload = {
-    titleJa,
-    titleZhTw,
-    brand: get("me-brand"),
-    category: get("me-category"),
-    priceJpyTaxIn: Number.isFinite(priceJpy) ? priceJpy : null,
-    description: get("me-description"),
-    specs: {},
-    sizeOptions: get("me-sizes").split(",").map(s => s.trim()).filter(Boolean),
-    colorOptions: get("me-colors").split(",").map(s => s.trim()).filter(Boolean),
-    images: selectedImages.map(img => img.base64),
-  };
-
-  showManualEntryStatus("上架中...");
-  const btn = document.getElementById("btn-manual-confirm");
+  const btn = document.getElementById("btn-ai-image-edit");
   if (btn) btn.disabled = true;
 
   try {
-    const res = await apiFetch("/api/admin/products", {
+    const res = await apiFetch("/api/admin/ai-image-edit", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ imageBase64: selectedImages[0].base64 }),
     });
-    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+
+    if (res.status === 401) {
+      location.href = "/admin-login.html";
+      return;
+    }
+
     const data = await res.json();
-    if (!data.ok) { showManualEntryStatus(`上架失敗：${data.error || "未知錯誤"}`); return; }
-    showManualEntryStatus(`上架成功！商品代碼：${data.code}`);
-    selectedImages = [];
+
+    if (!data.ok) {
+      setAiImageEditPopupMsg(`失敗：${data.error || "未知錯誤"}`);
+      setTimeout(() => showAiImageEditPopup(false), 2500);
+      return;
+    }
+
+    // Fetch the returned image and replace selectedImages[0]
+    const imageRes = await apiFetch(data.imageUrl);
+    if (!imageRes.ok) {
+      setAiImageEditPopupMsg("圖片下載失敗，請重試");
+      setTimeout(() => showAiImageEditPopup(false), 2500);
+      return;
+    }
+
+    const blob = await imageRes.blob();
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+
+    const base64 = dataUrl.split(",")[1];
+    selectedImages[0] = { dataUrl, base64, file: selectedImages[0].file };
     renderPreviews();
     updateButtons();
-    loadManagedProducts();
-    setTimeout(() => cancelManualEntry(), 2000);
+
+    showAiImageEditPopup(false);
+    showRecognizeStatus("AI 圖片編輯完成！已替換第一張圖片。");
+  } catch (err) {
+    setAiImageEditPopupMsg(`錯誤：${String(err)}`);
+    setTimeout(() => showAiImageEditPopup(false), 2500);
   } finally {
     if (btn) btn.disabled = false;
   }
-}
-
-function showManualEntryStatus(text) {
-  const el = document.getElementById("manual-entry-status");
-  if (el) el.textContent = text;
 }
 
 function initPhotoRecognize() {
@@ -396,18 +358,8 @@ function initPhotoRecognize() {
   const confirmBtn = document.getElementById("btn-confirm-listing");
   if (confirmBtn) confirmBtn.addEventListener("click", confirmListing);
 
-  // Manual entry buttons
-  const manualEntryBtn = document.getElementById("btn-manual-entry");
-  if (manualEntryBtn) manualEntryBtn.addEventListener("click", showManualEntryForm);
-
-  const manualConfirmBtn = document.getElementById("btn-manual-confirm");
-  if (manualConfirmBtn) manualConfirmBtn.addEventListener("click", submitManualEntry);
-
-  const manualCancelBtn = document.getElementById("btn-manual-cancel");
-  if (manualCancelBtn) manualCancelBtn.addEventListener("click", cancelManualEntry);
-
-  // Camera mode toggle
-  initCameraModeToggle();
+  const aiEditBtn = document.getElementById("btn-ai-image-edit");
+  if (aiEditBtn) aiEditBtn.addEventListener("click", doAiImageEdit);
 
   updateButtons();
 }

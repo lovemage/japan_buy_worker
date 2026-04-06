@@ -24,6 +24,7 @@ import {
 import { handleAdminChangePassword } from "./routes/admin/password";
 import { handleAdminCategories } from "./routes/admin/categories";
 import { handleAdminRecognize } from "./routes/admin/recognize";
+import { handleAdminImageEdit } from "./routes/admin/image-edit";
 import { handleMarketing, handleMarketingUsage } from "./routes/admin/marketing";
 import { handleAdminGeminiSettings, handleAdminAiModel } from "./routes/admin/settings";
 import {
@@ -93,11 +94,11 @@ async function serveTenantHtml(
     .prepare("SELECT destination_country, name, description, template FROM stores WHERE id = ?")
     .bind(ctx.storeId)
     .first<{ destination_country: string; name: string; description: string; template: string }>();
-  const country = storeRow?.destination_country || "jp";
+  const country = storeRow?.destination_country || "tw";
   const storeName = storeRow?.name || "vovosnap";
   const storeDesc = storeRow?.description || "";
   const template = storeRow?.template || "default";
-  const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["jp"];
+  const countryConf = COUNTRY_CONFIG[country] || COUNTRY_CONFIG["tw"];
   const canonicalUrl = new URL(request.url);
   canonicalUrl.search = "";
   canonicalUrl.hash = "";
@@ -244,6 +245,10 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/recognize") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleAdminRecognize(request, ctx);
+  }
+  if (subPath === "/api/admin/ai-image-edit") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleAdminImageEdit(request, ctx);
   }
   if (subPath === "/api/admin/ai-marketing") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

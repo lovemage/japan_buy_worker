@@ -311,6 +311,7 @@
           <div id="draft-sources" class="meta hidden"></div>
           <div class="photo-actions">
             <button id="btn-confirm-listing" class="button" type="button">確認上架</button>
+            <button id="btn-ai-image-edit" class="button secondary" type="button">AI 商品編輯</button>
             <button id="btn-cancel-draft" class="button secondary" type="button">取消</button>
           </div>
           <p id="listing-status" class="meta"></p>
@@ -1387,5 +1388,18 @@
   loadPhoneVerifyState();
   </script>
   <script type="module" src="/assets/app-admin.js"></script>
+
+  <!-- AI 圖片編輯 Loading Popup -->
+  <div id="ai-image-edit-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:14px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">vovoimageAI 修改中</div>
+      <div style="font-size:13px;color:#888;margin-bottom:20px;">請勿關閉視窗</div>
+      <div style="width:48px;height:48px;border:4px solid #f0f0f0;border-top-color:#6366f1;border-radius:50%;animation:aiEditSpin 0.8s linear infinite;margin:0 auto 16px;"></div>
+      <div id="ai-image-edit-popup-msg" style="font-size:13px;color:#444;min-height:20px;"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes aiEditSpin { to { transform: rotate(360deg); } }
+  </style>
 </body>
 </html>
