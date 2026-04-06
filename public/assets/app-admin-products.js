@@ -65,21 +65,18 @@ function renderProductGrid(products, paging) {
     return;
   }
 
-  const TAG_LABELS = { hot: "熱門", limited: "限時", popular: "人氣", instock: "現貨", preorder: "預購" };
-
   grid.innerHTML = products.map((p) => {
     const imgSrc = withProductImageFallback(p.displayImageUrl || p.imageUrl || "");
     const name = p.nameZhTw || p.nameJa || "未命名";
-    const tagHtml = (p.tags || []).map(t => `<span class="tag-preview tag-color-${t}" style="font-size:10px;padding:2px 6px;border-radius:4px;">${TAG_LABELS[t] || t}</span>`).join(" ");
     return `
     <div class="manage-card">
       <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
         <p class="manage-card__title">${name}</p>
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
-        <p class="manage-card__meta">${p.brand || ""}${tagHtml ? ' ' + tagHtml : ''}</p>
+        <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
-          <button class="button secondary js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
+          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
           <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">網址</button>
         </div>
       </div>
@@ -240,7 +237,7 @@ async function openEditModal(btn) {
   const toggleBtn = document.getElementById("edit-toggle");
   if (toggleBtn) {
     toggleBtn.textContent = isActive ? "下架" : "上架";
-    toggleBtn.style.color = "";
+    toggleBtn.style.color = isActive ? "#ef4444" : "#22c55e";
     toggleBtn.onclick = async function() {
       toggleBtn.disabled = true;
       const res = await apiFetch("/api/admin/products/toggle", {
@@ -261,25 +258,24 @@ async function openEditModal(btn) {
   // Populate tag checkboxes
   const tagStr = btn.getAttribute("data-tags") || "";
   const tagSet = new Set(tagStr.split(",").filter(Boolean));
-  ["hot", "limited", "popular", "instock", "preorder"].forEach(function(t) {
-    var cb = document.getElementById("edit-tag-" + t);
-    if (cb) cb.checked = tagSet.has(t);
-  });
+  const hotCb = document.getElementById("edit-tag-hot");
+  const limitedCb = document.getElementById("edit-tag-limited");
+  const popularCb = document.getElementById("edit-tag-popular");
+  if (hotCb) hotCb.checked = tagSet.has("hot");
+  if (limitedCb) limitedCb.checked = tagSet.has("limited");
+  if (popularCb) popularCb.checked = tagSet.has("popular");
 
   editNewImages = [];
   editGallery = [];
 
   modal.classList.remove("hidden");
 
-  // Fetch product detail to get gallery + description
-  document.getElementById("edit-description").value = "";
+  // Fetch product detail to get gallery
   if (code) {
     const res = await apiFetch(`/api/product?code=${encodeURIComponent(code)}`);
     if (res.ok) {
       const data = await res.json();
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
-      const descEl = document.getElementById("edit-description");
-      if (descEl) descEl.value = data.product?.description || "";
     }
   }
   renderEditGallery();
@@ -307,9 +303,9 @@ async function saveEdit() {
 
   const status = document.getElementById("edit-status");
   const tags = [];
-  ["hot", "limited", "popular", "instock", "preorder"].forEach(function(t) {
-    if (document.getElementById("edit-tag-" + t)?.checked) tags.push(t);
-  });
+  if (document.getElementById("edit-tag-hot")?.checked) tags.push("hot");
+  if (document.getElementById("edit-tag-limited")?.checked) tags.push("limited");
+  if (document.getElementById("edit-tag-popular")?.checked) tags.push("popular");
 
   const payload = {
     id,
@@ -318,7 +314,6 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
-    description: document.getElementById("edit-description")?.value?.trim() || "",
     gallery: editGallery,
     newImages: editNewImages.map(img => img.base64),
     tags,

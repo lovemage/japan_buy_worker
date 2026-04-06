@@ -29,7 +29,7 @@ export async function handleStoreInfo(
 
     if (!store) return json({ ok: false, error: "Store not found" }, 404);
 
-    const countryConf = COUNTRY_CONFIG[store.destination_country] || COUNTRY_CONFIG["jp"];
+    const countryConf = COUNTRY_CONFIG[store.destination_country] || COUNTRY_CONFIG["tw"];
 
     return json({
       ok: true,

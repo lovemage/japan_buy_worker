@@ -17,6 +17,15 @@ const PLATFORM_MAP: Record<string, string> = {
   other: "通用社群行銷文案，適用於各種平台",
 };
 
+const PLATFORM_OUTPUT_RULES: Record<string, string> = {
+  line: "輸出 1 則 Line 貼文，2-4 段，語句自然，保留清楚行動呼籲。",
+  threads: "輸出 1 則 Threads 貼文，精簡有力，控制在 500 字內。",
+  "ig-post": "輸出 1 則 Instagram 貼文文案，末段附上 5-10 個相關 hashtag。",
+  "ig-reels": "輸出 1 則 Instagram Reels 腳本，分成開場 Hook、重點內容、結尾 CTA，標示大致秒數節奏。",
+  fb: "輸出 1 則 Facebook 貼文，可稍長，包含互動引導問題。",
+  other: "輸出 1 則通用社群貼文文案，適合多數平台直接使用。",
+};
+
 const MONTHLY_LIMITS: Record<string, number> = {
   free: 3,
   starter: 6,
@@ -84,7 +93,9 @@ export async function handleMarketing(
   }
 
   const tone = TONE_MAP[body.tone || "professional"] || TONE_MAP.professional;
-  const platform = PLATFORM_MAP[body.platform || "line"] || PLATFORM_MAP.line;
+  const platformKey = body.platform || "line";
+  const platform = PLATFORM_MAP[platformKey] || PLATFORM_MAP.line;
+  const platformOutputRule = PLATFORM_OUTPUT_RULES[platformKey] || PLATFORM_OUTPUT_RULES.line;
 
   // Gather store context
   const storeInfo = await ctx.db
@@ -93,7 +104,7 @@ export async function handleMarketing(
     .first<{ name: string; slug: string; destination_country: string; plan: string }>();
 
   const storeName = storeInfo?.name || "我的商店";
-  const country = storeInfo?.destination_country || "jp";
+  const country = storeInfo?.destination_country || "tw";
   const slug = storeInfo?.slug || "";
   const storePlan = storeInfo?.plan || "free";
 
@@ -152,10 +163,11 @@ ${productList || "（尚無商品）"}
 ## 要求
 - 語氣風格：${tone}
 - 目標平台：${platform}
+- 只輸出「1 種」平台版本，且必須符合目標平台格式
+- 絕對不要提供其他平台版本、替代版本、平台比較或多段選項
+- 平台輸出規格：${platformOutputRule}
 - 文案中自然融入商店連結（${storeUrl}）
 - 如適合，可提及幾個熱門商品名稱作為推薦
-- 若為 IG 貼文，請加入相關 hashtag
-- 若為 Reels 腳本，請標示畫面/秒數
 - 文案需為繁體中文
 - 直接輸出文案內容，不要加其他說明`;
 

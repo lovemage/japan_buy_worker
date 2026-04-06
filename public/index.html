@@ -251,14 +251,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .fade-in { opacity: 0; transform: translateY(12px); transition: opacity 0.45s, transform 0.45s cubic-bezier(0.25,1,0.5,1); }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
+/* ── Tablet ── */
+@media (max-width: 1024px) {
+  .hero h1 { font-size: 44px; }
+  .hero h1 em { font-size: 24px; }
+  .flow-step { max-width: 160px; }
+}
+
 /* ── Mobile ── */
 @media (max-width: 768px) {
+  .nav-inner { padding: 10px 14px; gap: 10px; }
+  .nav-actions { gap: 6px; }
+  .nav-link, .btn-sm { min-height: 40px; }
   .hero { min-height: 440px; }
   .hero-overlay { min-height: 440px; padding: 60px 20px 48px; }
   .hero h1 { font-size: 38px; }
   .hero h1 em { font-size: 20px; }
   .hero-sub { font-size: 14px; }
-  .btn-hero { padding: 14px 24px; font-size: 14px; }
+  .hero-cta { width: min(360px, 100%); flex-direction: column; }
+  .btn-hero { padding: 14px 24px; font-size: 14px; min-height: 46px; width: 100%; justify-content: center; }
+  .flow { flex-direction: column; gap: 8px; }
+  .flow-step { width: 100%; max-width: 360px; padding: 10px 8px; }
+  .flow-arrow { padding: 0; transform: rotate(90deg); }
   .flow-step p { font-size: 11px; }
   .flow-icon { font-size: 28px; }
   .feat-header h2 { font-size: 18px; }
@@ -267,6 +281,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .section { padding: 40px 16px; }
   .section-title { font-size: 20px; }
   .nav-link { font-size: 12px; padding: 5px 8px; }
+  .faq-q { min-height: 44px; line-height: 1.45; }
+  .cta .btn-hero { max-width: 320px; width: 100%; }
+  .cta .btn-hero + .btn-hero { margin-top: 10px !important; }
+}
+@media (max-width: 480px) {
+  .nav-actions .nav-link { display: none; }
+  .hero-badge { font-size: 12px; padding: 6px 12px; }
+  .hero-overlay { padding-left: 14px; padding-right: 14px; }
+  .compare-table table { min-width: 520px; }
 }
 @media (max-width: 380px) {
   .hero h1 { font-size: 30px; }
@@ -425,7 +448,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .wf-arrow svg { width: 32px; height: 20px; overflow: visible; }
 .wf-arrow-line { stroke-dasharray: 12 4; animation: wf-dash 1.2s linear infinite; }
 @keyframes wf-dash { to { stroke-dashoffset: -16; } }
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .wf-flow { justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
   .wf-node { width: 80px; min-width: 80px; }
   .wf-icon { width: 42px; height: 42px; border-radius: 11px; }

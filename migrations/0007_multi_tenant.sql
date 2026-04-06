@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS stores (
   owner_email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   password_salt TEXT NOT NULL,
-  destination_country TEXT NOT NULL DEFAULT 'jp',
+  destination_country TEXT NOT NULL DEFAULT 'tw',
   display_currency TEXT NOT NULL DEFAULT 'TWD',
   line_id TEXT,
   plan TEXT NOT NULL DEFAULT 'free',
