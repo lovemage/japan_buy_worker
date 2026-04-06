@@ -62,10 +62,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <!-- Step 1: Email Verification -->
   <div class="card hidden" id="step-email">
     <h2>📧 驗證 Email</h2>
-    <p>我們已發送驗證信到 <strong id="user-email"></strong>。請檢查你的信箱並點擊驗證連結。</p>
-    <button class="btn btn-secondary" id="resend-email-btn" onclick="resendEmail()">重新發送驗證信</button>
-    <p id="resend-status" style="font-size:13px;margin-top:8px;" class="hidden"></p>
-    <p id="resend-cooldown" style="font-size:12px;color:#888;margin-top:4px;" class="hidden"></p>
+    <!-- If email exists, show verification message -->
+    <div id="email-verify-section">
+      <p>我們已發送驗證信到 <strong id="user-email"></strong>。請檢查你的信箱並點擊驗證連結。</p>
+      <button class="btn btn-secondary" id="resend-email-btn" onclick="resendEmail()">重新發送驗證信</button>
+      <p id="resend-status" style="font-size:13px;margin-top:8px;" class="hidden"></p>
+      <p id="resend-cooldown" style="font-size:12px;color:#888;margin-top:4px;" class="hidden"></p>
+    </div>
+    <!-- If no email (LINE Login), ask user to enter email -->
+    <div id="email-input-section" class="hidden">
+      <p>請輸入你的 Email 以完成帳號驗證。</p>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email-input" placeholder="you@example.com" />
+      </div>
+      <button class="btn btn-primary" onclick="submitEmail()">發送驗證信</button>
+      <p id="email-submit-error" style="font-size:13px;color:#ef4444;margin-top:8px;" class="hidden"></p>
+    </div>
   </div>
 
   <!-- Step 2: Phone Verification -->
@@ -96,7 +109,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <!-- Step 3: Store Setup -->
   <div class="card hidden" id="step-store">
     <h2>🏪 設定你的店面</h2>
-    <p>最後一步! 設定你的店面名稱和網址。</p>
+    <p>最後一步! 設定你的店面名稱和網址。預設代購國家/幣值為台灣，可在後台設定內再調整代購國家。</p>
     <div class="form-group">
       <label>店面名稱</label>
       <input type="text" id="store-name" placeholder="小美日本代購" maxlength="100" />
@@ -153,7 +166,8 @@ async function initFirebase() {
     // Not logged in — show login prompt instead of redirect loop
     document.getElementById("loading").innerHTML =
       '<p style="margin-bottom:16px;">請先登入</p>' +
-      '<a href="/auth/google" style="display:inline-block;padding:10px 20px;background:#1a1a1a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">使用 Google 登入</a>';
+      '<a href="/auth/google" style="display:inline-block;padding:10px 20px;background:#1a1a1a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">使用 Google 登入</a>' +
+      '<a href="/auth/line" style="display:inline-block;padding:10px 20px;background:#06C755;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;margin-top:8px;">使用 LINE 登入</a>';
     return;
   }
   currentStore = configData.store;
@@ -166,17 +180,24 @@ async function init() {
 
   document.getElementById("loading").classList.add("hidden");
 
-  const step = currentStore.onboarding_step;
+  const step = currentStore.onboarding_step === "phone_pending"
+    ? "store_setup"
+    : currentStore.onboarding_step;
   updateDots(step);
 
   if (step === "email_pending") {
-    document.getElementById("user-email").textContent = currentStore.owner_email;
+    if (currentStore.owner_email) {
+      // Has email — show verification UI
+      document.getElementById("user-email").textContent = currentStore.owner_email;
+      document.getElementById("email-verify-section").classList.remove("hidden");
+      document.getElementById("email-input-section").classList.add("hidden");
+      pollEmailVerification();
+    } else {
+      // No email (LINE Login) — show email input form
+      document.getElementById("email-verify-section").classList.add("hidden");
+      document.getElementById("email-input-section").classList.remove("hidden");
+    }
     document.getElementById("step-email").classList.remove("hidden");
-    // Poll for email verification
-    pollEmailVerification();
-  } else if (step === "phone_pending") {
-    document.getElementById("step-phone").classList.remove("hidden");
-    setupRecaptcha();
   } else if (step === "store_setup") {
     document.getElementById("step-store").classList.remove("hidden");
   } else if (step === "complete") {
@@ -186,7 +207,7 @@ async function init() {
 }
 
 function updateDots(step) {
-  const steps = ["email_pending", "phone_pending", "store_setup", "complete"];
+  const steps = ["email_pending", "store_setup", "complete"];
   const idx = steps.indexOf(step);
   for (let i = 0; i < 3; i++) {
     const dot = document.getElementById("dot-" + (i + 1));
@@ -386,8 +407,45 @@ async function completeSetup() {
   }
 }
 
+// Submit email for LINE Login users without email
+async function submitEmail() {
+  const email = document.getElementById("email-input").value.trim();
+  const errEl = document.getElementById("email-submit-error");
+  errEl.classList.add("hidden");
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = "請輸入有效的 Email";
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  const resp = await fetch("/auth/set-email", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ email }),
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    if (data.merged) {
+      // Account merged with existing store — reload to pick up merged store state
+      window.location.reload();
+      return;
+    }
+    // Switch to verification UI
+    document.getElementById("user-email").textContent = email;
+    document.getElementById("email-input-section").classList.add("hidden");
+    document.getElementById("email-verify-section").classList.remove("hidden");
+    pollEmailVerification();
+  } else {
+    errEl.textContent = data.error || "設定失敗";
+    errEl.classList.remove("hidden");
+  }
+}
+
 // Expose functions to HTML onclick handlers (module scope is not global)
 window.resendEmail = resendEmail;
+window.submitEmail = submitEmail;
 window.sendPhoneCode = sendPhoneCode;
 window.verifyPhoneCode = verifyPhoneCode;
 window.completeSetup = completeSetup;

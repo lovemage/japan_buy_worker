@@ -8,6 +8,9 @@ import { routeTenantRequest } from "./router";
 import {
   handleGoogleAuthRedirect,
   handleGoogleAuthCallback,
+  handleLineAuthRedirect,
+  handleLineAuthCallback,
+  handleSetEmail,
   handleVerifyEmail,
   handleResendVerificationEmail,
   handleVerifyPhone,
@@ -32,6 +35,8 @@ type Env = {
   // Auth providers
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  LINE_CHANNEL_ID: string;
+  LINE_CHANNEL_SECRET: string;
   RESEND_API_KEY: string;
   FIREBASE_PROJECT_ID: string;
   APP_URL: string;
@@ -107,6 +112,8 @@ function getAuthEnv(env: Env) {
   return {
     GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
+    LINE_CHANNEL_ID: env.LINE_CHANNEL_ID,
+    LINE_CHANNEL_SECRET: env.LINE_CHANNEL_SECRET,
     RESEND_API_KEY: env.RESEND_API_KEY,
     FIREBASE_PROJECT_ID: env.FIREBASE_PROJECT_ID,
     APP_URL: env.APP_URL,
@@ -253,6 +260,15 @@ export default {
     }
     if (url.pathname === "/auth/google/callback") {
       return handleGoogleAuthCallback(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/line") {
+      return handleLineAuthRedirect(getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/line/callback") {
+      return handleLineAuthCallback(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/set-email") {
+      return handleSetEmail(request, env.DB, getAuthEnv(env));
     }
     if (url.pathname === "/auth/verify-email") {
       return handleVerifyEmail(request, env.DB, getAuthEnv(env));

@@ -128,6 +128,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .badge-onboarding { background: var(--pa-amber-bg); color: var(--pa-amber); }
 .badge-inactive { background: var(--pa-red-bg); color: var(--pa-red); }
 .badge-test { background: var(--pa-amber-bg); color: var(--pa-amber); }
+.badge-google { background: #fef3c7; color: #92400e; }
+.badge-line { background: #d1fae5; color: #065f46; }
 
 /* ── Bottom nav ── */
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--pa-card); border-top: 1px solid var(--pa-line); display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
@@ -544,6 +546,8 @@ function renderStores(stores) {
     var isTest = testStoreIds.indexOf(s.id) >= 0;
     var planClass = "badge-" + s.plan;
     var badges = '<span class="badge ' + planClass + '">' + s.plan.toUpperCase() + '</span> ';
+    if (s.line_login_id) badges += '<span class="badge badge-line">LINE</span> ';
+    else if (s.google_id) badges += '<span class="badge badge-google">Google</span> ';
     if (isTest) badges += '<span class="badge badge-test">測試</span> ';
     var statusBadge = s.onboarding_step !== "complete"
       ? '<span class="badge badge-onboarding">' + s.onboarding_step + '</span>'

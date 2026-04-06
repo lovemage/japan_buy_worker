@@ -130,7 +130,7 @@ export async function handlePlatformAdmin(
         SELECT
           s.id, s.slug, s.name, s.owner_email, s.plan, s.plan_expires_at,
           s.is_active, s.onboarding_step, s.email_verified, s.phone_verified,
-          s.phone_number, s.google_id, s.line_id, s.template,
+          s.phone_number, s.google_id, s.line_login_id, s.line_id, s.template,
           s.created_at, s.updated_at,
           (SELECT COUNT(1) FROM products p WHERE p.store_id = s.id) as product_count,
           (SELECT COUNT(1) FROM requirement_forms rf WHERE rf.store_id = s.id) as order_count

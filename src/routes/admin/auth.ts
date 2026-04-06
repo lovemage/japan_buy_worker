@@ -121,6 +121,8 @@ type GoogleUserInfo = {
 type AuthEnv = {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  LINE_CHANNEL_ID: string;
+  LINE_CHANNEL_SECRET: string;
   RESEND_API_KEY: string;
   FIREBASE_PROJECT_ID: string;
   APP_URL: string; // e.g. "https://vovosnap.com"
@@ -180,6 +182,27 @@ export function handleGoogleAuthRedirect(authEnv: AuthEnv): Response {
   });
 }
 
+// ── Shared: login existing store and redirect ──
+
+async function loginAndRedirect(
+  db: D1DatabaseLike,
+  store: { id: number; slug: string; onboarding_step: string },
+  authEnv: AuthEnv
+): Promise<Response> {
+  const sessionToken = await createStoreSession(db, store.id);
+  const redirectPath = store.onboarding_step === "complete"
+    ? `/s/${store.slug}/admin`
+    : `/onboarding`;
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: `${authEnv.APP_URL}${redirectPath}`,
+      "set-cookie": `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`,
+    },
+  });
+}
+
 // ── Google OAuth: callback ──
 
 export async function handleGoogleAuthCallback(
@@ -212,27 +235,30 @@ export async function handleGoogleAuthCallback(
     .first<{ id: number; slug: string; onboarding_step: string }>();
 
   if (existingStore) {
-    // Login: create session and redirect
-    const sessionToken = await createStoreSession(db, existingStore.id);
-    const redirectPath = existingStore.onboarding_step === "complete"
-      ? `/s/${existingStore.slug}/admin`
-      : `/onboarding`;
+    return loginAndRedirect(db, existingStore, authEnv);
+  }
 
-    return new Response(null, {
-      status: 302,
-      headers: {
-        location: `${authEnv.APP_URL}${redirectPath}`,
-        "set-cookie": `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`,
-      },
-    });
+  // Account merge: check if a store with the same email already exists (e.g. registered via LINE)
+  const emailStore = await db
+    .prepare("SELECT id, slug, onboarding_step FROM stores WHERE owner_email = ? AND google_id IS NULL")
+    .bind(userInfo.email)
+    .first<{ id: number; slug: string; onboarding_step: string }>();
+
+  if (emailStore) {
+    // Link Google account to existing store
+    await db
+      .prepare("UPDATE stores SET google_id = ?, updated_at = datetime('now') WHERE id = ?")
+      .bind(userInfo.sub, emailStore.id)
+      .run();
+    return loginAndRedirect(db, emailStore, authEnv);
   }
 
   // Register: create new store
   const tempSlug = `store-${Date.now()}`;
   await db
     .prepare(
-      `INSERT INTO stores (slug, name, owner_email, password_hash, password_salt, google_id, is_active, onboarding_step)
-       VALUES (?, ?, ?, '', '', ?, 1, 'email_pending')`
+      `INSERT INTO stores (slug, name, owner_email, password_hash, password_salt, google_id, destination_country, display_currency, is_active, onboarding_step)
+       VALUES (?, ?, ?, '', '', ?, 'tw', 'TWD', 1, 'email_pending')`
     )
     .bind(tempSlug, userInfo.name || "My Store", userInfo.email, userInfo.sub)
     .run();
@@ -257,6 +283,172 @@ export async function handleGoogleAuthCallback(
     await sendVerificationEmail(authEnv.RESEND_API_KEY, userInfo.email, emailToken, authEnv.APP_URL);
   } catch (e) {
     console.error("Failed to send verification email:", e);
+  }
+
+  // Create session for the new store
+  const sessionToken = await createStoreSession(db, newStore.id);
+
+  const headers = new Headers();
+  headers.set("location", `${authEnv.APP_URL}/onboarding`);
+  headers.append("set-cookie", `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`);
+  headers.append("set-cookie", `oauth_state=; Path=/; HttpOnly; Max-Age=0`);
+
+  return new Response(null, { status: 302, headers });
+}
+
+// ── LINE Login OAuth ──
+
+type LineTokenResponse = {
+  access_token: string;
+  id_token: string;
+  token_type: string;
+  scope: string;
+};
+
+type LineIdTokenPayload = {
+  sub: string; // LINE user ID
+  name: string;
+  email?: string;
+};
+
+function getLineAuthUrl(authEnv: AuthEnv, state: string): string {
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: authEnv.LINE_CHANNEL_ID,
+    redirect_uri: `${authEnv.APP_URL}/auth/line/callback`,
+    state,
+    scope: "profile openid email",
+  });
+  return `https://access.line.me/oauth2/v2.1/authorize?${params}`;
+}
+
+async function exchangeLineCode(code: string, authEnv: AuthEnv): Promise<LineTokenResponse> {
+  const resp = await fetch("https://api.line.me/oauth2/v2.1/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: `${authEnv.APP_URL}/auth/line/callback`,
+      client_id: authEnv.LINE_CHANNEL_ID,
+      client_secret: authEnv.LINE_CHANNEL_SECRET,
+    }),
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`LINE token exchange failed: ${text}`);
+  }
+  return resp.json() as Promise<LineTokenResponse>;
+}
+
+function decodeLineIdToken(idToken: string): LineIdTokenPayload {
+  const parts = idToken.split(".");
+  if (parts.length !== 3) throw new Error("Invalid LINE ID token");
+  const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(parts[1])));
+  return { sub: payload.sub, name: payload.name || "", email: payload.email };
+}
+
+// ── LINE Login: initiate ──
+
+export function handleLineAuthRedirect(authEnv: AuthEnv): Response {
+  const state = generateToken().slice(0, 32);
+  const url = getLineAuthUrl(authEnv, state);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: url,
+      "set-cookie": `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600`,
+    },
+  });
+}
+
+// ── LINE Login: callback ──
+
+export async function handleLineAuthCallback(
+  request: Request,
+  db: D1DatabaseLike,
+  authEnv: AuthEnv
+): Promise<Response> {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
+
+  if (error) return json({ ok: false, error: `LINE auth error: ${error}` }, 400);
+  if (!code || !state) return json({ ok: false, error: "Missing code or state" }, 400);
+
+  // Verify state
+  const cookies = parseCookieHeader(request.headers.get("cookie"));
+  if (cookies["oauth_state"] !== state) {
+    return json({ ok: false, error: "Invalid OAuth state" }, 400);
+  }
+
+  // Exchange code for tokens
+  const tokens = await exchangeLineCode(code, authEnv);
+  const lineUser = decodeLineIdToken(tokens.id_token);
+
+  // Check if store already exists for this LINE account
+  const existingStore = await db
+    .prepare("SELECT id, slug, onboarding_step FROM stores WHERE line_login_id = ?")
+    .bind(lineUser.sub)
+    .first<{ id: number; slug: string; onboarding_step: string }>();
+
+  if (existingStore) {
+    return loginAndRedirect(db, existingStore, authEnv);
+  }
+
+  // Account merge: if LINE provided email, check if a store with that email already exists (e.g. registered via Google)
+  if (lineUser.email) {
+    const emailStore = await db
+      .prepare("SELECT id, slug, onboarding_step FROM stores WHERE owner_email = ? AND line_login_id IS NULL")
+      .bind(lineUser.email)
+      .first<{ id: number; slug: string; onboarding_step: string }>();
+
+    if (emailStore) {
+      // Link LINE account to existing store
+      await db
+        .prepare("UPDATE stores SET line_login_id = ?, updated_at = datetime('now') WHERE id = ?")
+        .bind(lineUser.sub, emailStore.id)
+        .run();
+      return loginAndRedirect(db, emailStore, authEnv);
+    }
+  }
+
+  // Register: create new store
+  const tempSlug = `store-${Date.now()}`;
+  // owner_email is NOT NULL UNIQUE — use placeholder if LINE didn't provide email
+  const ownerEmail = lineUser.email || `line-pending-${lineUser.sub}@placeholder.local`;
+
+  await db
+    .prepare(
+      `INSERT INTO stores (slug, name, owner_email, password_hash, password_salt, line_login_id, destination_country, display_currency, is_active, onboarding_step)
+       VALUES (?, ?, ?, '', '', ?, 'tw', 'TWD', 1, 'email_pending')`
+    )
+    .bind(tempSlug, lineUser.name || "My Store", ownerEmail, lineUser.sub)
+    .run();
+
+  // Fetch the newly created store ID
+  const newStore = await db
+    .prepare("SELECT id FROM stores WHERE line_login_id = ?")
+    .bind(lineUser.sub)
+    .first<{ id: number }>();
+
+  if (!newStore) return json({ ok: false, error: "Failed to create store" }, 500);
+
+  // If LINE provided a real email, send verification email immediately
+  if (lineUser.email) {
+    const emailToken = generateToken();
+    const expiresAt = new Date(Date.now() + 3600_000).toISOString();
+    await db
+      .prepare("INSERT INTO email_verifications (store_id, token, expires_at) VALUES (?, ?, ?)")
+      .bind(newStore.id, emailToken, expiresAt)
+      .run();
+
+    try {
+      await sendVerificationEmail(authEnv.RESEND_API_KEY, lineUser.email, emailToken, authEnv.APP_URL);
+    } catch (e) {
+      console.error("Failed to send verification email:", e);
+    }
   }
 
   // Create session for the new store
@@ -326,18 +518,118 @@ export async function handleVerifyEmail(request: Request, db: D1DatabaseLike, au
   }
 
   await db
-    .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'phone_pending', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
+    .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
     .bind(row.store_id)
     .run();
 
   // Clean up used token
   await db.prepare("DELETE FROM email_verifications WHERE token = ?").bind(token).run();
 
-  // Redirect to onboarding (phone verification step)
+  // Redirect to onboarding (store setup step)
   return new Response(null, {
     status: 302,
     headers: { location: `${authEnv.APP_URL}/onboarding` },
   });
+}
+
+// ── Set email for LINE Login users who didn't grant email scope ──
+
+export async function handleSetEmail(
+  request: Request,
+  db: D1DatabaseLike,
+  authEnv: AuthEnv
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+
+  const cookies = parseCookieHeader(request.headers.get("cookie"));
+  const sessionToken = cookies[STORE_COOKIE_NAME];
+  if (!sessionToken) return json({ ok: false, error: "Unauthorized" }, 401);
+
+  const session = await db
+    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
+    .bind(sessionToken)
+    .first<{ store_id: number }>();
+  if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
+
+  const store = await db
+    .prepare("SELECT owner_email, email_verified FROM stores WHERE id = ?")
+    .bind(session.store_id)
+    .first<{ owner_email: string | null; email_verified: number }>();
+  if (!store) return json({ ok: false, error: "Store not found" }, 404);
+  if (store.email_verified) return json({ ok: true, message: "Already verified" });
+
+  let body: { email?: string };
+  try {
+    body = (await request.json()) as { email?: string };
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  const email = (body.email || "").trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return json({ ok: false, error: "請輸入有效的 Email" }, 400);
+  }
+
+  // Check if email is already used by another store
+  const existing = await db
+    .prepare("SELECT id, line_login_id, google_id FROM stores WHERE owner_email = ? AND id != ?")
+    .bind(email, session.store_id)
+    .first<{ id: number; line_login_id: string | null; google_id: string | null }>();
+
+  if (existing) {
+    // Account merge: current store is a LINE-only placeholder, target has the same email
+    // Get current store's line_login_id to transfer it
+    const currentStore = await db
+      .prepare("SELECT line_login_id FROM stores WHERE id = ?")
+      .bind(session.store_id)
+      .first<{ line_login_id: string | null }>();
+
+    if (currentStore?.line_login_id && !existing.line_login_id) {
+      // Merge: link LINE provider to existing store, delete placeholder
+      await db
+        .prepare("UPDATE stores SET line_login_id = ?, updated_at = datetime('now') WHERE id = ?")
+        .bind(currentStore.line_login_id, existing.id)
+        .run();
+
+      // Move session to the merged store
+      await db
+        .prepare("UPDATE store_sessions SET store_id = ? WHERE token = ?")
+        .bind(existing.id, sessionToken)
+        .run();
+
+      // Delete placeholder store
+      await db.prepare("DELETE FROM email_verifications WHERE store_id = ?").bind(session.store_id).run();
+      await db.prepare("DELETE FROM store_sessions WHERE store_id = ?").bind(session.store_id).run();
+      await db.prepare("DELETE FROM stores WHERE id = ?").bind(session.store_id).run();
+
+      return json({ ok: true, message: "Account merged", merged: true });
+    }
+
+    return json({ ok: false, error: "此 Email 已被其他帳號使用" }, 409);
+  }
+
+  // Update store email
+  await db
+    .prepare("UPDATE stores SET owner_email = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(email, session.store_id)
+    .run();
+
+  // Send verification email
+  const emailToken = generateToken();
+  const expiresAt = new Date(Date.now() + 3600_000).toISOString();
+  await db
+    .prepare("INSERT INTO email_verifications (store_id, token, expires_at) VALUES (?, ?, ?)")
+    .bind(session.store_id, emailToken, expiresAt)
+    .run();
+
+  try {
+    await sendVerificationEmail(authEnv.RESEND_API_KEY, email, emailToken, authEnv.APP_URL);
+  } catch (e) {
+    console.error("Failed to send verification email:", e);
+    return json({ ok: false, error: "發送驗證信失敗，請稍後再試" }, 500);
+  }
+
+  return json({ ok: true, message: "Verification email sent" });
 }
 
 // ── Resend verification email ──
@@ -523,7 +815,6 @@ export async function handleCompleteOnboarding(
 
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
   if (!store.email_verified) return json({ ok: false, error: "Email not verified" }, 400);
-  if (!store.phone_verified) return json({ ok: false, error: "Phone not verified" }, 400);
 
   let body: { slug?: string; name?: string; lineId?: string };
   try {
@@ -603,9 +894,21 @@ export async function handleGetCurrentStore(
        FROM stores WHERE id = ?`
     )
     .bind(session.store_id)
-    .first();
+    .first<Record<string, any>>();
 
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
+  // Phone step is currently disabled. Auto-upgrade legacy phone_pending accounts.
+  if (store.onboarding_step === "phone_pending") {
+    await db
+      .prepare("UPDATE stores SET onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ?")
+      .bind(session.store_id)
+      .run();
+    store.onboarding_step = "store_setup";
+  }
+  // Hide placeholder email from LINE Login users
+  if (store.owner_email && store.owner_email.endsWith("@placeholder.local")) {
+    store.owner_email = null;
+  }
   return json({ ok: true, store });
 }
 
