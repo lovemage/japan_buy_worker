@@ -13,8 +13,8 @@
       <img src="/assets/images/logo2.png" alt="VOVOSnap" style="height:34px;display:block;" />
       <div class="admin-topbar__actions" id="admin-topbar-actions">
         <span id="plan-badge" class="plan-badge"></span>
-        <a id="public-url-link" href="/store.html" target="_blank" rel="noopener" style="font-size:12px;color:var(--admin-text-muted);text-decoration:none;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-          /store.html
+        <a id="public-url-link" href="/store.html" target="_blank" rel="noopener" style="font-size:12px;color:var(--admin-text-muted);text-decoration:none;">
+          我的商店
         </a>
       </div>
     </div>
@@ -43,10 +43,13 @@
             <input id="edit-id" type="hidden" />
             <input id="edit-code" type="hidden" />
             <div class="edit-gallery" id="edit-gallery"></div>
-            <label class="btn-pill secondary photo-add-btn" style="margin-bottom:8px">
-              新增圖片
-              <input id="edit-photo-input" type="file" accept="image/*" multiple hidden />
-            </label>
+            <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+              <label class="btn-pill secondary photo-add-btn" style="margin:0">
+                新增圖片
+                <input id="edit-photo-input" type="file" accept="image/*" multiple hidden />
+              </label>
+              <button id="btn-edit-ai-image" class="btn-pill secondary" type="button" style="margin:0">AI 圖片優化</button>
+            </div>
             <label><span class="origin-lang-label">原文品名</span><input id="edit-title-ja" type="text" class="input-cute" /></label>
             <label>中文品名<input id="edit-title-zh" type="text" class="input-cute" /></label>
             <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>

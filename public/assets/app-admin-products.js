@@ -341,10 +341,117 @@ async function saveEdit() {
   }
 }
 
+async function doEditAiImage() {
+  // Determine the first image source: existing gallery URL or new image base64
+  let imageBase64 = null;
+
+  if (editGallery.length > 0) {
+    // Fetch the first existing image from gallery URL and convert to base64
+    const popup = document.getElementById("ai-image-edit-popup");
+    const popupMsg = document.getElementById("ai-image-edit-popup-msg");
+    if (popup) popup.style.display = "flex";
+    if (popupMsg) popupMsg.textContent = "";
+
+    const btn = document.getElementById("btn-edit-ai-image");
+    if (btn) btn.disabled = true;
+
+    try {
+      const imgRes = await apiFetch(prefixImageUrl(editGallery[0]));
+      if (!imgRes.ok) throw new Error("圖片下載失敗");
+      const blob = await imgRes.blob();
+      const bmpUrl = URL.createObjectURL(blob);
+      imageBase64 = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(bmpUrl);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          canvas.getContext("2d").drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/webp", 0.8).split(",")[1]);
+        };
+        img.onerror = () => { URL.revokeObjectURL(bmpUrl); reject(new Error("圖片載入失敗")); };
+        img.src = bmpUrl;
+      });
+    } catch (err) {
+      if (popupMsg) popupMsg.textContent = String(err);
+      setTimeout(() => { if (popup) popup.style.display = "none"; }, 2000);
+      if (btn) btn.disabled = false;
+      return;
+    }
+  } else if (editNewImages.length > 0) {
+    imageBase64 = editNewImages[0].base64;
+  } else {
+    alert("請先新增至少一張商品圖片");
+    return;
+  }
+
+  // Show popup if not already shown (for editNewImages path)
+  const popup = document.getElementById("ai-image-edit-popup");
+  const popupMsg = document.getElementById("ai-image-edit-popup-msg");
+  if (popup) popup.style.display = "flex";
+  if (popupMsg) popupMsg.textContent = "";
+
+  const btn = document.getElementById("btn-edit-ai-image");
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await apiFetch("/api/admin/ai-image-edit", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ imageBase64 }),
+    });
+
+    const data = await res.json();
+    if (!data.ok) {
+      if (popupMsg) popupMsg.textContent = data.error || "失敗";
+      setTimeout(() => { if (popup) popup.style.display = "none"; }, 2500);
+      return;
+    }
+
+    // Fetch the AI image and convert to webp
+    const aiRes = await apiFetch(data.imageUrl);
+    if (!aiRes.ok) throw new Error("AI 圖片下載失敗");
+    const aiBlob = await aiRes.blob();
+    const bmpUrl = URL.createObjectURL(aiBlob);
+    const newDataUrl = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(bmpUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/webp", 0.8));
+      };
+      img.onerror = () => { URL.revokeObjectURL(bmpUrl); reject(new Error("圖片載入失敗")); };
+      img.src = bmpUrl;
+    });
+
+    // Replace the first image
+    if (editGallery.length > 0) {
+      // For existing gallery: replace URL with the new AI image as a "new" image, remove old
+      editGallery.splice(0, 1);
+      editNewImages.unshift({ dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] });
+    } else {
+      editNewImages[0] = { dataUrl: newDataUrl, base64: newDataUrl.split(",")[1] };
+    }
+    renderEditGallery();
+
+    if (popup) popup.style.display = "none";
+  } catch (err) {
+    if (popupMsg) popupMsg.textContent = String(err);
+    setTimeout(() => { if (popup) popup.style.display = "none"; }, 2500);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 function initEditModal() {
   document.getElementById("edit-cancel")?.addEventListener("click", closeEditModal);
   document.getElementById("edit-save")?.addEventListener("click", saveEdit);
   document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
+  document.getElementById("btn-edit-ai-image")?.addEventListener("click", doEditAiImage);
   document.querySelector(".edit-modal__backdrop")?.addEventListener("click", closeEditModal);
 }
 

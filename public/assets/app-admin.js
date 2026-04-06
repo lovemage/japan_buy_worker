@@ -210,14 +210,7 @@ function bootstrap() {
 
   if (publicUrlLink instanceof HTMLAnchorElement) {
     publicUrlLink.href = `${baseUrl}/`;
-    publicUrlLink.textContent = buildStorePublicDisplayText({
-      plan: window.__STORE_PLAN,
-      slug: window.__STORE_SLUG,
-      mainDomain: window.__MAIN_DOMAIN,
-      protocol: location.protocol,
-      origin: location.origin,
-      apiBase: window.__API_BASE || "",
-    });
+    publicUrlLink.textContent = "我的商店";
   }
 
   document.querySelectorAll(".admin-nav-item").forEach((btn) => {
