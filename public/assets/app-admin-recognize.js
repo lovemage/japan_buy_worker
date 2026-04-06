@@ -146,15 +146,15 @@ async function doRecognize() {
 
     const data = await res.json();
     if (!data.ok) {
-      showRecognizeStatus(`辨識失敗：${data.error || "未知錯誤"}`);
+      showRecognizeStatus(data.error || "辨識失敗");
       return;
     }
 
-    showRecognizeStatus("辨識完成！請檢查草稿內容。");
+    showRecognizeStatus("辨識完成");
     fillDraft(data.result);
   } catch (err) {
     showRecognizeLoading(false);
-    showRecognizeStatus(`辨識失敗：${String(err)}`);
+    showRecognizeStatus("辨識失敗");
   } finally {
     updateButtons();
   }
@@ -243,11 +243,11 @@ async function confirmListing() {
 
     const data = await res.json();
     if (!data.ok) {
-      showListingStatus(`上架失敗：${data.error || "未知錯誤"}`);
+      showListingStatus(data.error || "上架失敗");
       return;
     }
 
-    showListingStatus(`上架成功！商品代碼：${data.code}`);
+    showListingStatus("上架成功");
     selectedImages = [];
     renderPreviews();
     updateButtons();
@@ -307,7 +307,7 @@ async function doAiImageEdit() {
     const data = await res.json();
 
     if (!data.ok) {
-      setAiImageEditPopupMsg(`失敗：${data.error || "未知錯誤"}`);
+      setAiImageEditPopupMsg(data.error || "優化失敗");
       setTimeout(() => showAiImageEditPopup(false), 2500);
       return;
     }
@@ -344,9 +344,8 @@ async function doAiImageEdit() {
     updateButtons();
 
     showAiImageEditPopup(false);
-    showRecognizeStatus("AI 圖片優化完成！已插入為第一張，原圖移至第二張。");
   } catch (err) {
-    setAiImageEditPopupMsg(`錯誤：${String(err)}`);
+    setAiImageEditPopupMsg("圖片優化失敗");
     setTimeout(() => showAiImageEditPopup(false), 2500);
   } finally {
     if (btn) btn.disabled = false;
