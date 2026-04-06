@@ -4,35 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>vovosnap — 設定你的店面</title>
+<link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
 <style>
+:root {
+  --brand: #8A9A5B;
+  --brand-dark: #768a4a;
+  --text: #3D3A35;
+  --text-secondary: #7A756D;
+  --text-muted: #A09A90;
+  --bg: #F9F7F1;
+  --bg-card: #FFFEFA;
+  --border: #E5E0D6;
+}
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #f8f9fa; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); min-height: 100vh; }
 .container { max-width: 480px; margin: 0 auto; padding: 40px 20px; }
-.logo { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 32px; }
-.logo span { color: #6366f1; }
-.card { background: #fff; border-radius: 12px; padding: 32px 24px; border: 1px solid #eee; margin-bottom: 16px; }
-.card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-.card p { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 16px; }
+.logo { text-align: center; margin-bottom: 32px; }
+.logo img { height: 36px; }
+.card { background: var(--bg-card); border-radius: 12px; padding: 32px 24px; border: 1px solid var(--border); margin-bottom: 16px; }
+.card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
 
 /* Steps indicator */
 .steps { display: flex; gap: 4px; margin-bottom: 32px; }
-.steps .dot { flex: 1; height: 4px; border-radius: 2px; background: #e5e7eb; }
-.steps .dot.active { background: #6366f1; }
+.steps .dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+.steps .dot.active { background: var(--brand); }
 .steps .dot.done { background: #22c55e; }
 
 /* Forms */
 .form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-.form-group input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; }
-.form-group input:focus { outline: none; border-color: #6366f1; }
-.form-group .hint { font-size: 12px; color: #999; margin-top: 4px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.form-group input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; background: #fff; color: var(--text); }
+.form-group input:focus { outline: none; border-color: var(--brand); }
+.form-group .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .form-group .error { font-size: 12px; color: #ef4444; margin-top: 4px; display: none; }
 
 .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; width: 100%; text-align: center; }
-.btn-primary { background: #1a1a1a; color: #fff; }
-.btn-primary:hover { background: #333; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-dark); }
 .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-.btn-secondary { background: #f5f5f5; color: #333; margin-top: 8px; }
+.btn-secondary { background: var(--bg); color: var(--text); margin-top: 8px; border: 1px solid var(--border); }
 .btn-secondary:hover { background: #eee; }
 
 .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
@@ -40,7 +51,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .status-done { background: #dcfce7; color: #166534; }
 
 .hidden { display: none !important; }
-.loading { text-align: center; padding: 20px; color: #888; }
+.loading { text-align: center; padding: 20px; color: var(--text-muted); }
 
 /* Phone input */
 #phone-container { min-height: 50px; }
@@ -49,7 +60,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <body>
 
 <div class="container">
-  <div class="logo">vovo<span>snap</span></div>
+  <div class="logo"><a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" /></a></div>
 
   <div class="steps">
     <div class="dot" id="dot-1"></div>
@@ -166,8 +177,10 @@ async function initFirebase() {
     // Not logged in — show login prompt instead of redirect loop
     document.getElementById("loading").innerHTML =
       '<p style="margin-bottom:16px;">請先登入</p>' +
-      '<a href="/auth/google" style="display:inline-block;padding:10px 20px;background:#1a1a1a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">使用 Google 登入</a>' +
-      '<a href="/auth/line" style="display:inline-block;padding:10px 20px;background:#06C755;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;margin-top:8px;">使用 LINE 登入</a>';
+      '<div style="display:flex;flex-direction:column;gap:10px;max-width:260px;margin:0 auto;">' +
+      '<a href="/auth/google" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;background:#1a1a1a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Google 登入</a>' +
+      '<a href="/auth/line" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;background:#06C755;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">LINE 登入</a>' +
+      '</div>';
     return;
   }
   currentStore = configData.store;
