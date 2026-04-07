@@ -8,22 +8,53 @@ const TONE_MAP: Record<string, string> = {
   lively: "活潑有趣、帶點俏皮的語氣，善用表情符號和流行用語",
 };
 
-const PLATFORM_MAP: Record<string, string> = {
-  line: "Line 群組/官方帳號貼文，適合較長的推薦文，可分段，含商品連結",
-  threads: "Threads 貼文，簡短有力，500字以內，適合引起討論",
-  "ig-post": "Instagram 貼文文案，搭配照片使用，含 hashtag，字數適中",
-  "ig-reels": "Instagram Reels 短影片腳本，包含開場hook、重點、結尾CTA，15-30秒節奏",
-  fb: "Facebook 貼文，可較長，適合社團或粉專發文，含互動引導",
-  other: "通用社群行銷文案，適用於各種平台",
-};
+const PLATFORM_PROMPTS: Record<string, string> = {
+  line: `## 平台：LINE 群組 / 官方帳號貼文
+- 字數：300-500 字，分 2-4 段，段落之間空一行
+- 連結處理：LINE 內連結可直接點擊且會顯示預覽卡片，將商店連結獨立放一行，前後各空一行，讓預覽卡片完整顯示
+- 格式：純文字，可用少量表情符號點綴段落開頭（每段最多 1 個），不要用 Markdown 或 HTML
+- 結構：開場情境引入 → 商品亮點推薦 → 商店連結（獨立一行）→ 行動呼籲（下單方式/截止時間）
+- 語感：像在群組裡跟朋友說話，自然不刻意，避免廣告感太重`,
 
-const PLATFORM_OUTPUT_RULES: Record<string, string> = {
-  line: "輸出 1 則 Line 貼文，2-4 段，語句自然，保留清楚行動呼籲。",
-  threads: "輸出 1 則 Threads 貼文，精簡有力，控制在 500 字內。",
-  "ig-post": "輸出 1 則 Instagram 貼文文案，末段附上 5-10 個相關 hashtag。",
-  "ig-reels": "輸出 1 則 Instagram Reels 腳本，分成開場 Hook、重點內容、結尾 CTA，標示大致秒數節奏。",
-  fb: "輸出 1 則 Facebook 貼文，可稍長，包含互動引導問題。",
-  other: "輸出 1 則通用社群貼文文案，適合多數平台直接使用。",
+  threads: `## 平台：Threads 貼文
+- 字數：嚴格控制在 300 字以內（Threads 超過 500 字會被截斷，但 300 字內閱讀效果最佳）
+- 連結處理：Threads 貼文內的連結不會顯示預覽，且外觀不好看。將商店連結放在文末最後一行，格式為「逛逛 → {連結}」，不要在文中重複貼連結
+- 格式：純文字短段落，每段 1-2 句，節奏輕快。可用 1-2 個表情符號但不要過度
+- 結構：一句話 hook → 痛點或情境 → 解決方案/商品亮點 → 連結
+- 語感：像發推文一樣精簡，要有觀點或態度，適合引起討論和轉發`,
+
+  "ig-post": `## 平台：Instagram 貼文（Feed Post）
+- 字數：150-300 字為最佳（IG 貼文上限 2200 字，但多數人只看前兩行）
+- 連結處理：IG 貼文內的連結「不可點擊」，絕對不要把網址貼在文案中。改用引導語：「連結在個人檔案」或「點限動連結」
+- 格式：第一行就要吸睛（會顯示在摺疊前）。正文用短段落。末段附 8-15 個相關 hashtag，hashtag 與正文之間空一行
+- 結構：吸睛第一行 → 情境描述/商品推薦 → 行動呼籲「連結在個人檔案」 → 空行 → hashtag 區塊
+- Hashtag 規則：混合大標籤（#代購 #日本代購）和長尾標籤（#日本藥妝推薦 #代購好物分享），不要自創無人搜尋的標籤
+- 語感：視覺導向、簡潔有力，搭配照片使用，文案是輔助不是主角`,
+
+  "ig-reels": `## 平台：Instagram Reels 短影片腳本
+- 總長度：15-30 秒的口語腳本，約 80-150 字
+- 連結處理：Reels 說明欄的連結不可點擊。在腳本結尾用口語引導：「連結放在我的個人檔案」，不要在腳本中念出網址
+- 格式：分成三段，每段標示秒數。純口語稿，是「要講的話」不是「要寫的字」
+- 結構：
+  [0-5秒] Hook — 用問句或驚人數字抓住注意力，前 3 秒決定觀眾會不會繼續看
+  [5-20秒] 內容 — 展示商品亮點或使用場景，語速自然不要太趕
+  [20-30秒] CTA — 行動呼籲，引導到個人檔案連結
+- 語感：口語化、有節奏感，像在跟一個朋友講話而不是念稿`,
+
+  fb: `## 平台：Facebook 貼文（粉專/社團）
+- 字數：200-400 字（FB 沒有嚴格限制，但太長會被摺疊，前 3 行最關鍵）
+- 連結處理：FB 貼文的連結會自動生成預覽卡片。將商店連結放在文末獨立一行，FB 會自動抓取預覽圖和標題。不要在文中重複貼連結
+- 格式：前 3 行要能獨立吸引點擊「查看更多」。段落間空行。可用少量表情符號
+- 結構：吸睛開場（問句或共鳴句）→ 內容/商品推薦 → 互動引導（留言問句）→ 商店連結（獨立一行）
+- 互動引導：結尾加一個引導留言的問句，例如「你最想帶哪一款？留言告訴我」
+- 語感：親切但有資訊量，適合社團或粉專的交流氛圍`,
+
+  other: `## 平台：通用社群文案
+- 字數：200-350 字
+- 連結處理：將商店連結自然放在文末，格式為獨立一行
+- 格式：純文字，分段清楚，可用少量表情符號
+- 結構：開場 → 商品亮點 → 行動呼籲 → 連結
+- 語感：通用格式，可直接複製到多數平台使用`,
 };
 
 const MONTHLY_LIMITS: Record<string, number> = {
@@ -94,8 +125,7 @@ export async function handleMarketing(
 
   const tone = TONE_MAP[body.tone || "professional"] || TONE_MAP.professional;
   const platformKey = body.platform || "line";
-  const platform = PLATFORM_MAP[platformKey] || PLATFORM_MAP.line;
-  const platformOutputRule = PLATFORM_OUTPUT_RULES[platformKey] || PLATFORM_OUTPUT_RULES.line;
+  const platformPrompt = PLATFORM_PROMPTS[platformKey] || PLATFORM_PROMPTS.other;
 
   // Gather store context
   const storeInfo = await ctx.db
@@ -149,7 +179,7 @@ export async function handleMarketing(
   const countryName = countryNames[country] || country;
 
   // Build prompt
-  const prompt = `你是一位專業的社群行銷文案撰寫專家。請根據以下資訊，為代購商店撰寫一篇行銷文案。
+  const prompt = `你是一位專業的社群行銷文案撰寫專家，擅長針對不同平台特性產出最適合的文案格式。
 
 ## 商店資訊
 - 商店名稱：${storeName}
@@ -160,13 +190,13 @@ ${storeRules ? `- 賣場規則：${storeRules}` : ""}
 ## 目前上架商品
 ${productList || "（尚無商品）"}
 
-## 要求
-- 語氣風格：${tone}
-- 目標平台：${platform}
-- 只輸出「1 種」平台版本，且必須符合目標平台格式
-- 絕對不要提供其他平台版本、替代版本、平台比較或多段選項
-- 平台輸出規格：${platformOutputRule}
-- 文案中自然融入商店連結（${storeUrl}）
+${platformPrompt}
+
+## 語氣風格
+${tone}
+
+## 通用規則
+- 只輸出「1 種」文案，絕對不要提供其他平台版本、替代版本或多段選項
 - 如適合，可提及幾個熱門商品名稱作為推薦
 - 文案需為繁體中文
 
