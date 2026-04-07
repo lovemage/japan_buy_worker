@@ -7,14 +7,14 @@
 <style>
 /* ── Tokens ── */
 :root {
-  --pa-accent: #6366f1;
-  --pa-accent-light: #ede9fe;
-  --pa-accent-hover: #4f46e5;
-  --pa-bg: #f8f9fa;
-  --pa-card: #fff;
-  --pa-text: #1a1a1a;
-  --pa-muted: #888;
-  --pa-line: #e5e7eb;
+  --pa-accent: #8a9a5b;
+  --pa-accent-light: #eef1e6;
+  --pa-accent-hover: #768a4a;
+  --pa-bg: #f9f7f1;
+  --pa-card: #fffefa;
+  --pa-text: #3d3a35;
+  --pa-muted: #7a756d;
+  --pa-line: #e5e0d6;
   --pa-radius: 10px;
   --pa-radius-sm: 6px;
   --pa-radius-pill: 20px;
@@ -29,32 +29,36 @@
   --pa-red-bg: #fee2e2;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--pa-text); background: var(--pa-bg); padding-bottom: 72px; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--pa-text); background: var(--pa-bg); -webkit-tap-highlight-color: transparent; min-height: 100vh; }
 
 /* ── Login ── */
 .login-wrap { max-width: 360px; margin: 80px auto; padding: 32px; background: var(--pa-card); border-radius: var(--pa-radius); border: 1px solid var(--pa-line); }
 .login-wrap h1 { font-size: 20px; margin-bottom: 4px; }
 .login-wrap h1 span { color: var(--pa-accent); }
 .login-wrap .sub { font-size: 13px; color: var(--pa-muted); margin-bottom: 16px; }
+.brand-logo { display: block; width: auto; height: 34px; }
+.login-logo { height: 42px; margin: 0 auto 10px; }
 .login-wrap input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: var(--pa-radius-sm); font-size: 14px; margin-bottom: 12px; transition: border-color var(--pa-fast); outline: none; }
-.login-wrap input:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-.login-wrap button { width: 100%; padding: 10px; background: var(--pa-text); color: #fff; border: none; border-radius: var(--pa-radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--pa-fast); }
-.login-wrap button:hover { background: #333; }
+.login-wrap input:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(138,154,91,0.16); }
+.login-wrap button { width: 100%; padding: 10px; background: var(--pa-accent); color: #fff; border: none; border-radius: var(--pa-radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--pa-fast); }
+.login-wrap button:hover { background: var(--pa-accent-hover); }
 .login-wrap button:active { transform: scale(0.98); }
 .login-wrap .error { color: #ef4444; font-size: 13px; margin-bottom: 8px; display: none; }
 
 /* ── Dashboard ── */
-.dashboard { display: none; }
+.dashboard { display: none; min-height: 100vh; }
 .dashboard.active { display: block; }
-.page-content { max-width: 1100px; margin: 0 auto; padding: 16px; animation: fadeUp 0.2s ease-out; }
+.page-content { max-width: none; margin: 0 0 0 260px; padding: 18px 24px; animation: fadeUp 0.2s ease-out; }
 .page-content.hidden { display: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── Header ── */
-.header { background: var(--pa-card); border-bottom: 1px solid var(--pa-line); padding: 12px 16px; position: sticky; top: 0; z-index: 50; }
-.header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.header { background: var(--pa-card); border-bottom: 1px solid var(--pa-line); padding: 12px 18px; position: sticky; top: 0; z-index: 50; }
+.header-inner { max-width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
 .header h1 { font-size: 18px; font-weight: 700; }
 .header h1 span { color: var(--pa-accent); }
+.header-meta { display: flex; align-items: center; gap: 12px; }
+.header-meta p { font-size: 12px; color: var(--pa-muted); margin-top: 2px; }
 .header .logout-btn { padding: 6px 14px; background: #f5f5f5; border: none; border-radius: var(--pa-radius-sm); cursor: pointer; font-size: 12px; color: #666; transition: background var(--pa-fast); }
 .header .logout-btn:hover { background: #eee; }
 
@@ -72,7 +76,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 .card label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
 .card input[type="password"], .card input[type="text"], .card input[type="number"], .card textarea { width: 100%; padding: 8px 10px; border: 1.5px solid #ddd; border-radius: var(--pa-radius-sm); font-size: 13px; margin-bottom: 8px; transition: border-color var(--pa-fast); outline: none; }
-.card input:focus, .card textarea:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.card input:focus, .card textarea:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(138,154,91,0.16); }
 .card textarea { resize: vertical; font-family: monospace; }
 .card .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .card .desc { font-size: 12px; color: var(--pa-muted); margin-bottom: 10px; }
@@ -81,8 +85,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 /* ── Buttons ── */
 .btn { padding: 8px 18px; border: none; border-radius: var(--pa-radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--pa-fast); }
 .btn:active { transform: scale(0.97); }
-.btn-dark { background: var(--pa-text); color: #fff; }
-.btn-dark:hover { background: #333; }
+.btn-dark { background: var(--pa-accent); color: #fff; }
+.btn-dark:hover { background: var(--pa-accent-hover); }
 
 /* ── Toast ── */
 .toast { font-size: 12px; color: #16a34a; margin-left: 8px; display: none; }
@@ -94,7 +98,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .pill-btn { padding: 5px 12px; border: 1.5px solid var(--pa-line); background: var(--pa-card); border-radius: var(--pa-radius-pill); font-size: 12px; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
 .pill-btn:hover { border-color: #bbb; background: #fafafa; }
 .pill-btn:active { transform: scale(0.95); }
-.pill-btn.active { background: var(--pa-text); color: #fff; border-color: var(--pa-text); }
+.pill-btn.active { background: var(--pa-accent); color: #fff; border-color: var(--pa-accent); }
 
 /* ── Member list ── */
 .member-list { display: flex; flex-direction: column; gap: 8px; }
@@ -111,7 +115,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .member-actions button { padding: 5px 12px; border: 1.5px solid var(--pa-line); background: var(--pa-card); border-radius: var(--pa-radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
 .member-actions button:hover { background: #f5f5f5; border-color: #ccc; }
 .member-actions button:active { transform: scale(0.95); }
-.member-actions button.active-plan { background: var(--pa-text); color: #fff; border-color: var(--pa-text); }
+.member-actions button.active-plan { background: var(--pa-accent); color: #fff; border-color: var(--pa-accent); }
 .member-actions button.is-test { background: var(--pa-amber-bg); color: var(--pa-amber); border-color: #f59e0b; }
 
 /* ── Member expires ── */
@@ -122,8 +126,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 /* ── Badges ── */
 .badge { display: inline-block; padding: 2px 8px; border-radius: var(--pa-radius-pill); font-size: 11px; font-weight: 600; }
 .badge-free { background: #f3f4f6; color: #6b7280; }
-.badge-starter { background: #dbeafe; color: #1d4ed8; }
-.badge-pro { background: var(--pa-accent-light); color: #6d28d9; }
+.badge-starter { background: #eef1e6; color: #5f7135; }
+.badge-pro { background: #f3e9e1; color: #9e5f38; }
 .badge-active { background: var(--pa-green-bg); color: var(--pa-green); }
 .badge-onboarding { background: var(--pa-amber-bg); color: var(--pa-amber); }
 .badge-inactive { background: var(--pa-red-bg); color: var(--pa-red); }
@@ -131,12 +135,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .badge-google { background: #fef3c7; color: #92400e; }
 .badge-line { background: #d1fae5; color: #065f46; }
 
-/* ── Bottom nav ── */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--pa-card); border-top: 1px solid var(--pa-line); display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0 6px; cursor: pointer; border: none; background: none; color: #999; font-size: 10px; font-family: inherit; gap: 2px; transition: color var(--pa-fast); }
-.nav-item:active { opacity: 0.7; }
-.nav-item.active { color: var(--pa-accent); }
-.nav-item svg { width: 22px; height: 22px; }
+/* ── Navigation ── */
+.bottom-nav {
+  width: 240px;
+  position: fixed;
+  top: 61px;
+  left: 0;
+  bottom: 0;
+  height: auto;
+  overflow-y: auto;
+  background: var(--pa-card);
+  border-right: 1px solid var(--pa-line);
+  box-shadow: 4px 0 18px rgba(61,58,53,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 10px;
+}
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: var(--pa-radius-sm);
+  transition: all var(--pa-fast);
+}
+.nav-item:hover { background: #f4f4f5; color: #4b5563; }
+.nav-item:active { opacity: 0.75; }
+.nav-item.active { color: var(--pa-accent-hover); background: var(--pa-accent-light); }
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
 
 /* ── Revenue log ── */
 .revenue-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -165,7 +201,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-modal .meta { font-size: 12px; color: var(--pa-muted); margin-bottom: 14px; }
 .plan-modal label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 6px; }
 .plan-modal input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: var(--pa-radius-sm); font-size: 16px; text-align: center; margin-bottom: 14px; outline: none; transition: border-color var(--pa-fast); }
-.plan-modal input:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.plan-modal input:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(138,154,91,0.16); }
 .plan-modal .modal-actions { display: flex; gap: 8px; margin-top: 4px; }
 .plan-modal .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: var(--pa-radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
 .plan-modal .modal-actions button:active { transform: scale(0.97); }
@@ -176,7 +212,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 /* ── Plan option radio cards ── */
 .plan-option { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1.5px solid var(--pa-line); border-radius: var(--pa-radius); cursor: pointer; margin-bottom: 8px; transition: all var(--pa-fast); }
-.plan-option:hover { border-color: var(--pa-accent); background: #faf5ff; }
+.plan-option:hover { border-color: var(--pa-accent); background: var(--pa-accent-light); }
 .plan-option:active { transform: scale(0.98); }
 .plan-option.selected { border-color: var(--pa-accent); background: var(--pa-accent-light); }
 .plan-option .po-radio { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color var(--pa-fast); }
@@ -188,6 +224,41 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-option .po-price { font-size: 13px; font-weight: 700; color: var(--pa-text); white-space: nowrap; }
 
 /* ── Responsive ── */
+@media (max-width: 960px) {
+  body { padding-bottom: 72px; }
+  .page-content { margin-left: 0; padding: 16px; }
+  .header-meta p { display: none; }
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    border-right: none;
+    border-top: 1px solid var(--pa-line);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+    flex-direction: row;
+    gap: 0;
+    padding: 0 0 env(safe-area-inset-bottom);
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 0 6px;
+    border-radius: 0;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .nav-item:hover { background: none; }
+  .nav-item.active { background: none; color: var(--pa-accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+}
 @media (max-width: 640px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
   .card .row { grid-template-columns: 1fr; }
@@ -203,7 +274,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <!-- Login -->
 <div id="login-section" class="login-wrap">
-  <h1>vovo<span>snap</span></h1>
+  <a href="/" aria-label="回到首頁"><img src="/assets/images/logo-3.png" alt="VOVOSnap" class="brand-logo login-logo"></a>
   <p class="sub">平台管理員登入</p>
   <div class="error" id="login-error"></div>
   <input type="email" id="admin-email" placeholder="管理員 Email" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('admin-password').focus()">
@@ -215,7 +286,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <div id="dashboard" class="dashboard">
   <div class="header">
     <div class="header-inner">
-      <h1>vovo<span>snap</span></h1>
+      <div class="header-meta">
+        <a href="/" aria-label="回到首頁"><img src="/assets/images/logo-3.png" alt="VOVOSnap" class="brand-logo"></a>
+        <p id="page-title">總覽</p>
+      </div>
       <button class="logout-btn" onclick="logout()">登出</button>
     </div>
   </div>
@@ -412,6 +486,12 @@ var TEMPLATES = [
   { id: "bold-gold", name: "白黃黑" },
   { id: "bold-ocean", name: "白藍黑" },
 ];
+var PAGE_TITLES = {
+  overview: "總覽",
+  members: "會員管理",
+  keys: "API 金鑰",
+  settings: "系統設定",
+};
 
 async function setTemplate(storeId, template) {
   var res = await fetch("/api/platform-admin/stores/" + storeId, {
@@ -452,10 +532,17 @@ async function deleteStore(storeId, storeName) {
 }
 
 function switchPage(page, btn) {
+  var target = document.getElementById("page-" + page);
+  if (!target) return;
   document.querySelectorAll(".page-content").forEach(p => p.classList.add("hidden"));
-  document.getElementById("page-" + page).classList.remove("hidden");
+  target.classList.remove("hidden");
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-  btn.classList.add("active");
+  document.querySelectorAll('.nav-item[data-page="' + page + '"]').forEach(function(n) {
+    n.classList.add("active");
+  });
+  if (btn) btn.classList.add("active");
+  var title = document.getElementById("page-title");
+  if (title) title.textContent = PAGE_TITLES[page] || "平台管理";
 }
 
 async function login() {
@@ -505,6 +592,7 @@ async function showDashboard() {
   } else {
     if (keysNav) keysNav.style.display = "";
   }
+  switchPage("overview");
 
   initMonthSelector();
   await loadPlanOffers();
