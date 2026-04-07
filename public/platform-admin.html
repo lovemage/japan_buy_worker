@@ -688,6 +688,8 @@ async function skipPhonePending(storeId) {
   else alert(data.error || "操作失敗");
 }
 
+var currentMemberFilter = "all";
+
 async function loadStores() {
   const res = await fetch("/api/platform-admin/stores", { headers: { authorization: "Bearer " + adminToken } });
   const data = await res.json();
@@ -699,20 +701,23 @@ async function loadStores() {
   document.getElementById("stat-starter").textContent = nonTest.filter(s => s.plan === "starter").length;
   document.getElementById("stat-pro").textContent = nonTest.filter(s => s.plan === "pro").length;
   // Re-apply current filter
-  var activeBtn = document.querySelector('#member-filters .pill-btn[onclick*="' + currentMemberFilter + '"]');
-  if (activeBtn) filterStores(currentMemberFilter, activeBtn);
-  else renderStores(nonTest);
+  applyCurrentFilter();
 }
-
-var currentMemberFilter = "all";
 function filterStores(filter, btn) {
   currentMemberFilter = filter;
   document.querySelectorAll("#member-filters .pill-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  if (filter === "all") renderStores(allStores.filter(s => testStoreIds.indexOf(s.id) < 0));
-  else if (filter === "test") renderStores(allStores.filter(s => testStoreIds.indexOf(s.id) >= 0));
-  else if (filter === "onboarding") renderStores(allStores.filter(s => s.onboarding_step !== "complete"));
-  else renderStores(allStores.filter(s => s.plan === filter && testStoreIds.indexOf(s.id) < 0));
+  if (btn) btn.classList.add("active");
+  applyCurrentFilter();
+}
+
+function applyCurrentFilter() {
+  var filter = currentMemberFilter;
+  var filtered;
+  if (filter === "test") filtered = allStores.filter(function(s) { return testStoreIds.indexOf(s.id) >= 0; });
+  else if (filter === "onboarding") filtered = allStores.filter(function(s) { return s.onboarding_step !== "complete"; });
+  else if (filter === "all") filtered = allStores.filter(function(s) { return testStoreIds.indexOf(s.id) < 0; });
+  else filtered = allStores.filter(function(s) { return s.plan === filter && testStoreIds.indexOf(s.id) < 0; });
+  renderStores(filtered);
 }
 
 function formatExpires(expiresAt) {
