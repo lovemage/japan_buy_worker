@@ -1,5 +1,5 @@
 import type { RequestContext } from "../../context";
-import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel, getGeminiModel } from "./settings";
+import { getMarketingProvider, getMarketingApiKey, getMarketingModel } from "./settings";
 
 const TONE_MAP: Record<string, string> = {
   professional: "專業、有信賴感的語氣，用詞精準，強調品質與服務",
@@ -207,19 +207,18 @@ ${tone}
 - 禁止輸出 Markdown 標題（#）或分隔線（---）
 - 使用者會直接複製你的輸出貼到社群平台，任何多餘文字都會造成困擾`;
 
-  // Call AI
-  const aiModel = await getAiModel(ctx.db, ctx.storeId, plan);
-  const useOpenRouter = aiModel === "v2" && plan === "pro";
+  // Call AI — use dedicated marketing provider/key/model
+  const provider = await getMarketingProvider(ctx.db);
+  const apiKey = await getMarketingApiKey(ctx.db);
+  const modelId = await getMarketingModel(ctx.db);
+
+  if (!apiKey || !modelId) {
+    return json({ ok: false, error: "文案撰寫 API 尚未設定，請聯繫 vovosnap 管理員處理" }, 400);
+  }
 
   let content: string;
 
-  if (useOpenRouter) {
-    const apiKey = await getOpenRouterApiKey(ctx.db);
-    const modelId = await getOpenRouterModel(ctx.db);
-    if (!apiKey || !modelId) {
-      return json({ ok: false, error: "AI 功能設定不完整，請聯繫 vovosnap 管理員處理" }, 400);
-    }
-
+  if (provider === "openrouter") {
     const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
@@ -237,13 +236,7 @@ ${tone}
     const orData = (await orRes.json()) as { choices?: Array<{ message?: { content?: string } }> };
     content = orData?.choices?.[0]?.message?.content || "";
   } else {
-    const apiKey = await getGeminiApiKey(ctx.db, ctx.storeId, plan);
-    if (!apiKey) {
-      return json({ ok: false, error: "API Key 尚未設定" }, 400);
-    }
-
-    const geminiModelId = await getGeminiModel(ctx.db);
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModelId}:generateContent?key=${apiKey}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
     const geminiRes = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

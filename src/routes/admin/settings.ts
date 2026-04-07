@@ -68,6 +68,30 @@ export async function getOpenRouterApiKey(db: D1DatabaseLike): Promise<string> {
   return row?.value || "";
 }
 
+// ── Marketing (copywriting) dedicated settings ──
+// provider: "gemini" | "openrouter"
+
+export async function getMarketingProvider(db: D1DatabaseLike): Promise<string> {
+  const row = await db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'marketing_provider'")
+    .first<{ value: string }>();
+  return row?.value || "gemini";
+}
+
+export async function getMarketingApiKey(db: D1DatabaseLike): Promise<string> {
+  const row = await db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'marketing_api_key'")
+    .first<{ value: string }>();
+  return row?.value || "";
+}
+
+export async function getMarketingModel(db: D1DatabaseLike): Promise<string> {
+  const row = await db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'marketing_model'")
+    .first<{ value: string }>();
+  return row?.value || "";
+}
+
 export async function handleAdminAiModel(
   request: Request,
   ctx: RequestContext

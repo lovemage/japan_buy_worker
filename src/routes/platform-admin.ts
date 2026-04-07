@@ -379,7 +379,7 @@ export async function handlePlatformAdmin(
     }
 
     const keys = await db
-      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro', 'openrouter_api_key_pro', 'openrouter_model', 'gemini_model', 'image_gen_api_key', 'image_gen_model')")
+      .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('gemini_api_key_starter', 'gemini_api_key_pro', 'openrouter_api_key_pro', 'openrouter_model', 'gemini_model', 'image_gen_api_key', 'image_gen_model', 'marketing_provider', 'marketing_api_key', 'marketing_model')")
       .all<{ key: string; value: string }>();
 
     const result: Record<string, string> = {};
@@ -395,14 +395,17 @@ export async function handlePlatformAdmin(
       geminiModel: result["gemini_model"] || "",
       imageGenApiKey: result["image_gen_api_key"] || "",
       imageGenModel: result["image_gen_model"] || "",
+      marketingProvider: result["marketing_provider"] || "gemini",
+      marketingApiKey: result["marketing_api_key"] || "",
+      marketingModel: result["marketing_model"] || "",
     });
   }
 
   // Set platform API keys (super-admin only)
   if (url.pathname === "/api/platform-admin/api-keys" && request.method === "POST") {
-    let body: { starterKey?: string; proKey?: string; openrouterProKey?: string; openrouterModel?: string; geminiModel?: string; imageGenApiKey?: string; imageGenModel?: string; email?: string };
+    let body: { starterKey?: string; proKey?: string; openrouterProKey?: string; openrouterModel?: string; geminiModel?: string; imageGenApiKey?: string; imageGenModel?: string; marketingProvider?: string; marketingApiKey?: string; marketingModel?: string; email?: string };
     try {
-      body = (await request.json()) as { starterKey?: string; proKey?: string; openrouterProKey?: string; openrouterModel?: string; geminiModel?: string; imageGenApiKey?: string; imageGenModel?: string; email?: string };
+      body = (await request.json()) as typeof body;
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
@@ -451,6 +454,24 @@ export async function handlePlatformAdmin(
       await db
         .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'image_gen_model', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
         .bind(body.imageGenModel)
+        .run();
+    }
+    if (body.marketingProvider) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'marketing_provider', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.marketingProvider)
+        .run();
+    }
+    if (body.marketingApiKey !== undefined) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'marketing_api_key', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.marketingApiKey)
+        .run();
+    }
+    if (body.marketingModel) {
+      await db
+        .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'marketing_model', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+        .bind(body.marketingModel)
         .run();
     }
 
