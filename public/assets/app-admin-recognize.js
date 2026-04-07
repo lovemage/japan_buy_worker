@@ -301,9 +301,8 @@ function initCameraModeToggle() {
     const isSemiAuto = toggle.checked;
     if (label) label.textContent = isSemiAuto ? "半自動" : "全自動";
 
-    // 半自動仍維持「相機拍照」入口，不切到相簿 icon。
-    if (autoBtn) autoBtn.classList.remove("hidden");
-    if (manualBtn) manualBtn.classList.add("hidden");
+    if (autoBtn) autoBtn.classList.toggle("hidden", isSemiAuto);
+    if (manualBtn) manualBtn.classList.toggle("hidden", !isSemiAuto);
     if (manualEntryBtn) manualEntryBtn.classList.toggle("hidden", !isSemiAuto);
 
     if (!isSemiAuto && manualForm) {
