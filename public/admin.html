@@ -54,7 +54,17 @@
             <label><span class="origin-lang-label">原文品名</span><input id="edit-title-ja" type="text" class="input-cute" /></label>
             <label>中文品名<input id="edit-title-zh" type="text" class="input-cute" /></label>
             <label>品牌<input id="edit-brand" type="text" class="input-cute" /></label>
-            <label>分類<input id="edit-category" type="text" class="input-cute" /></label>
+            <label>分類
+              <div style="display:flex;gap:4px;align-items:center;">
+                <input id="edit-category" type="text" class="input-cute" style="flex:1;" />
+                <button type="button" id="edit-category-pick" style="border:1px solid #ddd;background:#f8f8f8;border-radius:6px;padding:6px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;" title="選擇分類">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                </button>
+              </div>
+              <div id="edit-category-dropdown" class="hidden" style="position:relative;">
+                <div style="position:absolute;top:2px;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:10;max-height:180px;overflow-y:auto;"></div>
+              </div>
+            </label>
             <label>價格（<span class="src-currency">JPY</span>）<input id="edit-price" type="number" min="0" class="input-cute" /></label>
             <label>商品描述<textarea id="edit-description" rows="3" class="input-cute"></textarea></label>
             <div id="edit-tags-section" style="display:none;margin:8px 0;">

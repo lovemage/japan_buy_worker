@@ -327,6 +327,43 @@ function closeEditModal() {
   editNewImages = [];
   editGallery = [];
   editOrderedItems = [];
+  hideEditCategoryDropdown();
+}
+
+function hideEditCategoryDropdown() {
+  var dd = document.getElementById("edit-category-dropdown");
+  if (dd) dd.classList.add("hidden");
+}
+
+async function showEditCategoryDropdown() {
+  var dd = document.getElementById("edit-category-dropdown");
+  if (!dd) return;
+  var inner = dd.querySelector("div");
+  if (!inner) return;
+  inner.innerHTML = '<div style="padding:10px;font-size:12px;color:#999;">載入中...</div>';
+  dd.classList.remove("hidden");
+
+  try {
+    var res = await apiFetch("/api/admin/categories");
+    if (!res.ok) { hideEditCategoryDropdown(); return; }
+    var body = await res.json();
+    var cats = (body.categories || []).map(function(c) { return c.name; });
+    if (cats.length === 0) {
+      inner.innerHTML = '<div style="padding:10px;font-size:12px;color:#999;">尚無分類</div>';
+      return;
+    }
+    inner.innerHTML = cats.map(function(name) {
+      return '<div class="edit-cat-option" style="padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background 0.1s;" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'#fff\'">' + name + '</div>';
+    }).join("");
+    inner.querySelectorAll(".edit-cat-option").forEach(function(el) {
+      el.addEventListener("click", function() {
+        document.getElementById("edit-category").value = el.textContent;
+        hideEditCategoryDropdown();
+      });
+    });
+  } catch {
+    hideEditCategoryDropdown();
+  }
 }
 
 async function saveEdit() {
@@ -481,6 +518,18 @@ function initEditModal() {
   document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
   document.getElementById("btn-edit-ai-image")?.addEventListener("click", doEditAiImage);
   document.querySelector(".edit-modal__backdrop")?.addEventListener("click", closeEditModal);
+  document.getElementById("edit-category-pick")?.addEventListener("click", function(e) {
+    e.stopPropagation();
+    var dd = document.getElementById("edit-category-dropdown");
+    if (dd && !dd.classList.contains("hidden")) { hideEditCategoryDropdown(); return; }
+    showEditCategoryDropdown();
+  });
+  document.addEventListener("click", function(e) {
+    var dd = document.getElementById("edit-category-dropdown");
+    if (dd && !dd.classList.contains("hidden") && !dd.contains(e.target) && e.target.id !== "edit-category-pick") {
+      hideEditCategoryDropdown();
+    }
+  });
 }
 
 function initManageSearch() {
