@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>快速上架你的二手不用商品：拍照就能開賣，清空間還能賺一筆｜vovosnap</title>
+<meta name="description" content="家裡堆滿不用的東西？不想花時間一件一件上架到蝦皮？用 vovosnap 拍照就能自動生成商品描述、定價、上架，分享連結到 LINE 群或 IG 就開賣。" />
+<meta property="og:title" content="快速上架你的二手不用商品：拍照就能開賣" />
+<meta property="og:description" content="不想花時間逐一上架？拍照就能自動生成描述、定價、開賣。分享連結到 LINE 群，朋友自助挑選下單。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://vovosnap.com/blog/sell-secondhand-items-fast.html" />
+<meta property="og:image" content="https://vovosnap.com/assets/images/blog/hero-secondhand.webp" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://vovosnap.com/assets/images/blog/hero-secondhand.webp" />
+<meta name="twitter:title" content="快速上架你的二手不用商品：拍照就能開賣" />
+<meta name="twitter:description" content="不想花時間逐一上架？拍照就能自動生成描述、定價、開賣。分享連結到 LINE 群，朋友自助挑選下單。" />
+<link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
+<link rel="canonical" href="https://vovosnap.com/blog/sell-secondhand-items-fast.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap">
+<style>
+:root {
+  --brand: #8A9A5B;
+  --brand-light: #EEF1E6;
+  --brand-dark: #768a4a;
+  --accent: #9E5F38;
+  --text: #3D3A35;
+  --text-secondary: #7A756D;
+  --text-muted: #A09A90;
+  --bg: #F9F7F1;
+  --bg-alt: #F3F0E8;
+  --bg-card: #FFFEFA;
+  --border: #E5E0D6;
+  --success: #8A9A5B;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+.nav-actions { display: flex; gap: 8px; align-items: center; }
+.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
+.nav-link:hover { background: var(--bg-alt); color: var(--text); }
+.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-fill { background: var(--brand); color: #fff; }
+.btn-fill:hover { background: var(--brand-dark); }
+
+.article-wrapper { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+.article-meta { margin-bottom: 32px; }
+.article-breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.article-breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+.article-breadcrumb a:hover { color: var(--brand); }
+.article-header { margin-bottom: 40px; }
+.article-header h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--text); }
+.article-header .lead { font-size: 17px; line-height: 1.8; color: var(--text-secondary); }
+.article-date { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+
+.article-content h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); color: var(--text); letter-spacing: -0.3px; }
+.article-content h3 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; color: var(--text); }
+.article-content p { font-size: 16px; line-height: 1.9; margin-bottom: 16px; color: var(--text); }
+.article-content ul, .article-content ol { margin: 12px 0 20px 24px; }
+.article-content li { font-size: 16px; line-height: 1.8; margin-bottom: 8px; color: var(--text); }
+.article-content strong { color: var(--text); font-weight: 700; }
+.article-content a { color: var(--brand-dark); text-decoration: underline; text-underline-offset: 2px; }
+.article-content a:hover { color: var(--brand); }
+
+.callout { background: var(--brand-light); border-left: 4px solid var(--brand); border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 24px 0; }
+.callout p { margin-bottom: 0; font-size: 15px; }
+.callout strong { color: var(--brand-dark); }
+.callout-warn { background: #FFF8ED; border-left-color: var(--accent); }
+.callout-warn strong { color: var(--accent); }
+
+.step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; }
+.step-card .step-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--brand); color: #fff; border-radius: 50%; font-size: 14px; font-weight: 700; margin-right: 10px; flex-shrink: 0; }
+.step-card .step-title { font-size: 17px; font-weight: 700; display: inline; }
+.step-card p { margin-top: 10px; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
+
+.checklist { list-style: none; margin: 16px 0 24px 0; padding: 0; }
+.checklist li { padding: 8px 0 8px 28px; position: relative; font-size: 15px; line-height: 1.7; color: var(--text); }
+.checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--brand); font-weight: 700; }
+
+.compare-box { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.compare-col { padding: 20px; border-radius: var(--radius); }
+.compare-col.before { background: #FFF3F0; border: 1px solid #F0D0C8; }
+.compare-col.after { background: var(--brand-light); border: 1px solid #C8D6A8; }
+.compare-col h4 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.compare-col.before h4 { color: #C0614A; }
+.compare-col.after h4 { color: var(--brand-dark); }
+.compare-col ul { list-style: none; padding: 0; margin: 0; }
+.compare-col li { font-size: 14px; line-height: 1.7; padding: 3px 0; }
+@media (max-width: 540px) { .compare-box { grid-template-columns: 1fr; } }
+
+.cta-box { background: linear-gradient(135deg, var(--brand-light) 0%, #F5F0E6 100%); border: 1.5px solid var(--brand); border-radius: var(--radius); padding: 32px; margin: 40px 0; text-align: center; }
+.cta-box h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 8px; color: var(--text); }
+.cta-box p { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
+.cta-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none; background: var(--brand); color: #fff; border: none; cursor: pointer; transition: all 0.2s; }
+.cta-btn:hover { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(138,154,91,0.3); }
+
+.toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 0 0 40px; }
+.toc h4 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { font-size: 14px; line-height: 1.8; }
+.toc a { color: var(--text-secondary); text-decoration: none; }
+.toc a:hover { color: var(--brand); }
+
+.related { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.related h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.related-list a { font-size: 15px; color: var(--text); text-decoration: none; font-weight: 500; }
+.related-list a:hover { color: var(--brand); }
+
+.footer { text-align: center; padding: 24px 20px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+.footer a:hover { color: var(--brand); }
+
+.article-hero { margin: 0 -20px 32px; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.article-hero img { width: 100%; height: auto; display: block; }
+@media (min-width: 760px) { .article-hero { margin: 0 0 32px; border-radius: var(--radius); } }
+
+.article-img { margin: 32px 0; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.article-img img { width: 100%; height: auto; display: block; }
+.article-img figcaption { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px 16px; background: var(--bg-alt); }
+
+.faq-section { margin-top: 48px; }
+.faq-item { border-bottom: 1px solid var(--border); padding: 16px 0; }
+.faq-q { font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.faq-q::after { content: "+"; font-size: 20px; color: var(--text-muted); transition: transform 0.2s; }
+.faq-q.open::after { transform: rotate(45deg); }
+.faq-a { font-size: 15px; line-height: 1.8; color: var(--text-secondary); padding-top: 10px; display: none; }
+.faq-a.show { display: block; }
+</style>
+
+<!-- JSON-LD: Article -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "快速上架你的二手不用商品：拍照就能開賣，清空間還能賺一筆",
+  "description": "家裡堆滿不用的東西？用 vovosnap 拍照就能自動生成商品描述、定價、上架，分享連結到 LINE 群就開賣。",
+  "datePublished": "2026-04-07",
+  "dateModified": "2026-04-07",
+  "author": { "@type": "Organization", "name": "vovosnap", "url": "https://vovosnap.com" },
+  "publisher": { "@type": "Organization", "name": "vovosnap", "url": "https://vovosnap.com" },
+  "mainEntityOfPage": "https://vovosnap.com/blog/sell-secondhand-items-fast.html"
+}
+</script>
+
+<!-- JSON-LD: BreadcrumbList -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "首頁", "item": "https://vovosnap.com/" },
+    { "@type": "ListItem", "position": 2, "name": "部落格", "item": "https://vovosnap.com/blog/" },
+    { "@type": "ListItem", "position": 3, "name": "快速上架二手商品" }
+  ]
+}
+</script>
+
+<!-- JSON-LD: FAQPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "二手商品上架需要多久？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "使用 vovosnap 拍照上架，每件商品只需 30 秒。AI 自動辨識商品名稱、生成描述、建議定價，你只需要確認就能上架。傳統方式拍照、修圖、打字至少要 10-15 分鐘一件。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "二手商品怎麼定價比較合理？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "二手商品定價通常是原價的 3-7 折，依商品狀況而定。全新未拆封可以定原價 7-8 折，使用過但狀況良好約 5 折，有明顯使用痕跡約 3 折。vovosnap 的 AI 會根據商品類型建議合理價格，你可以自行調整。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "沒有蝦皮帳號也能賣二手嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以。vovosnap 不需要電商平台帳號，拍照上架後會生成一個專屬商店連結。把連結分享到 LINE 群、IG 限動或 Facebook，朋友就能直接瀏覽下單。適合想快速出清、不想經營電商的人。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "二手商品要怎麼拍照比較好賣？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "找一個光線充足的地方，用乾淨的白色或淺色背景。商品正面拍一張，如果有瑕疵也拍一張。vovosnap 的 AI 會自動辨識商品並生成描述，但清晰的照片能讓買家更有信心下單。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "vovosnap 賣二手商品要收費嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "vovosnap 提供免費方案，足夠一般二手出清使用。免費方案可以上架商品、生成商店連結、接收訂單。不抽成、不收上架費，適合偶爾清空間的人。"
+      }
+    }
+  ]
+}
+</script>
+
+<!-- JSON-LD: HowTo -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "快速上架二手商品教學",
+  "description": "用 vovosnap 拍照快速上架二手不用商品的完整流程，從整理到開賣只需 10 分鐘。",
+  "step": [
+    { "@type": "HowToStep", "name": "整理不用的東西", "text": "把家裡不用的商品集中到一個光線好的地方，分類整理：衣服、3C、書籍、家電、生活用品。" },
+    { "@type": "HowToStep", "name": "註冊並設定商店", "text": "免費註冊 vovosnap，取一個商店名稱，設定收款方式。30 秒完成。" },
+    { "@type": "HowToStep", "name": "拍照上架", "text": "對著商品拍照，AI 自動辨識品名、生成描述、建議定價。確認後一鍵上架。" },
+    { "@type": "HowToStep", "name": "分享連結開賣", "text": "把商店連結分享到 LINE 群、IG 限動或 Facebook，朋友自助瀏覽下單。" },
+    { "@type": "HowToStep", "name": "確認訂單出貨", "text": "收到訂單通知，確認付款後面交或寄出商品。" }
+  ]
+}
+</script>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:62px;height:35px;" /></a>
+    <div class="nav-actions">
+      <a href="/blog/" class="nav-link">代購教學</a>
+      <a href="/login.html" class="btn-sm btn-fill">登入</a>
+    </div>
+  </div>
+</nav>
+
+<article class="article-wrapper">
+
+  <div class="article-meta">
+    <div class="article-breadcrumb">
+      <a href="/">首頁</a> / <a href="/blog/">部落格</a> / 快速上架二手商品
+    </div>
+  </div>
+
+  <div class="article-hero">
+    <img src="/assets/images/blog/hero-secondhand.webp" alt="明亮房間桌上整齊排列的二手商品，手機正在拍照上架" width="1200" height="675" loading="eager">
+  </div>
+
+  <header class="article-header">
+    <h1>快速上架你的二手不用商品：拍照就能開賣，清空間還能賺一筆</h1>
+    <p class="lead">
+      衣櫃塞不下、書架放不滿、抽屜裡的 3C 配件早就換了新的。這些東西丟掉可惜，放著佔空間。過去你可能想過上蝦皮，但光是拍照、修圖、打商品描述、設定運費就讓你放棄了。現在，你只需要做一件事：<strong>拍照</strong>。AI 幫你搞定剩下的。
+    </p>
+    <div class="article-date">2026 年 4 月 7 日 ・ 閱讀時間約 7 分鐘</div>
+  </header>
+
+  <nav class="toc">
+    <h4>文章目錄</h4>
+    <ol>
+      <li><a href="#why">為什麼二手出清這麼難？</a></li>
+      <li><a href="#prepare">整理你的不用商品</a></li>
+      <li><a href="#setup">30 秒建立你的商店</a></li>
+      <li><a href="#photo-list">拍照上架：每件 30 秒</a></li>
+      <li><a href="#pricing">二手定價的技巧</a></li>
+      <li><a href="#share">分享連結開賣</a></li>
+      <li><a href="#deal">交易與出貨</a></li>
+      <li><a href="#tips">讓商品更好賣的實戰建議</a></li>
+      <li><a href="#faq">常見問題</a></li>
+    </ol>
+  </nav>
+
+  <div class="article-content">
+
+    <!-- Before/After -->
+    <div class="compare-box">
+      <div class="compare-col before">
+        <h4>傳統上架方式</h4>
+        <ul>
+          <li>拍照、修圖、調光線</li>
+          <li>手打商品名稱和描述</li>
+          <li>查同類商品比價</li>
+          <li>設定運費、付款方式</li>
+          <li>一件一件上架到蝦皮</li>
+          <li>回覆買家私訊</li>
+          <li>每件商品 10-15 分鐘</li>
+        </ul>
+      </div>
+      <div class="compare-col after">
+        <h4>用 vovosnap</h4>
+        <ul>
+          <li>對著商品拍一張照</li>
+          <li>AI 自動辨識品名和描述</li>
+          <li>AI 建議合理定價</li>
+          <li>一鍵上架到你的商店</li>
+          <li>分享連結，買家自助看</li>
+          <li>訂單自動彙整</li>
+          <li>每件商品只要 30 秒</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- Section 1 -->
+    <h2 id="why">一、為什麼二手出清這麼難？</h2>
+
+    <p>你一定有過這種經驗：看著家裡一堆不用的東西，心想「應該拿去賣」，但打開蝦皮準備上架，光第一件商品就花了 15 分鐘。拍照要調角度、商品描述要自己打、價格要去比價、運費要設定、分類要選⋯⋯上架三件就放棄了。</p>
+
+    <p>問題不是你懶，而是<strong>傳統上架流程太耗時間</strong>。如果你有 20 件東西要出清，按傳統方式至少要花 5 個小時。誰有那個美國時間？</p>
+
+    <div class="callout">
+      <p><strong>真正的瓶頸是上架速度。</strong>很多人不是不想賣二手，而是上架流程太繁瑣，直接放棄。如果每件商品只要 30 秒就能上架，你會不會願意試試？</p>
+    </div>
+
+
+    <!-- Section 2 -->
+    <h2 id="prepare">二、整理你的不用商品</h2>
+
+    <p>開始上架前，先花 10 分鐘整理。把不用的東西集中到一個地方，簡單分類：</p>
+
+    <ul class="checklist">
+      <li>衣服、鞋子、包包</li>
+      <li>3C 產品：手機殼、充電線、耳機、舊手機</li>
+      <li>書籍、文具、桌遊</li>
+      <li>家電小物：吹風機、烤箱、咖啡機</li>
+      <li>生活用品：香氛、保養品、收納盒</li>
+      <li>嬰幼兒用品：推車、衣服、玩具</li>
+    </ul>
+
+    <h3>挑一個光線好的地方</h3>
+
+    <p>不需要專業攝影棚。找一個靠窗、光線充足的地方，鋪一塊淺色布或白紙當背景就夠了。<strong>自然光 + 乾淨背景</strong>是讓商品照片好看的最簡單方法。</p>
+
+    <div class="callout-warn callout">
+      <p><strong>提醒：</strong>先把明顯壞掉或不堪使用的東西淘汰。二手可以有使用痕跡，但不能賣壞掉的東西。誠實描述商品狀況，交易才能愉快。</p>
+    </div>
+
+
+    <!-- Section 3 -->
+    <h2 id="setup">三、30 秒建立你的商店</h2>
+
+    <p>在 vovosnap 免費註冊，只需要三個步驟：</p>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">取一個商店名稱</span>
+      <p>例如「小美的二手出清」「搬家大拍賣」。名稱隨時可以改，不用想太久。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">設定幣別</span>
+      <p>賣二手不用商品，幣別選台幣就好。如果你有海外代購回來用不到的東西，也可以設定日幣或其他外幣自動換算。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">完成，開始拍照</span>
+      <p>商店建好了。接下來就是拍照上架，每一張照片都會變成一件商品。</p>
+    </div>
+
+
+    <!-- Section 4 -->
+    <h2 id="photo-list">四、拍照上架：每件 30 秒</h2>
+
+    <p>這是 vovosnap 最核心的功能。打開 app，<strong>對著商品拍一張照片</strong>，AI 會自動完成以下工作：</p>
+
+    <ol>
+      <li><strong>辨識商品</strong>：AI 看照片就能認出商品名稱和品牌</li>
+      <li><strong>生成描述</strong>：自動產生商品描述，包含規格、特色</li>
+      <li><strong>建議定價</strong>：根據商品類型給出合理的參考價格</li>
+      <li><strong>上架到商店</strong>：確認後一鍵上架，商品立即出現在你的商店頁面</li>
+    </ol>
+
+    <p>整個過程不到 30 秒。如果你有 20 件東西要出清，<strong>10 分鐘就能全部上架完畢</strong>。</p>
+
+    <div class="callout">
+      <p><strong>小技巧：</strong>如果商品有外盒，連外盒一起拍，AI 辨識會更準確。沒有外盒也沒關係，AI 會從商品外觀判斷。拍完可以手動調整品名和價格。</p>
+    </div>
+
+    <h3>多件同類商品怎麼辦？</h3>
+
+    <p>如果你有好幾本書、好幾件衣服，不用一件一件慢慢打字。<strong>一件拍一張照，AI 自動處理</strong>。30 秒一件，10 件也只要 5 分鐘。</p>
+
+
+    <!-- Section 5 -->
+    <h2 id="pricing">五、二手定價的技巧</h2>
+
+    <p>二手定價是門學問。定太高賣不掉，定太低自己虧。以下是常見的定價參考：</p>
+
+    <h3>依商品狀況定價</h3>
+
+    <ul>
+      <li><strong>全新未拆封</strong>：原價的 7-8 折。例如收到的禮物、重複購買的商品</li>
+      <li><strong>幾乎全新（用過 1-2 次）</strong>：原價的 5-6 折</li>
+      <li><strong>正常使用痕跡</strong>：原價的 3-5 折</li>
+      <li><strong>明顯磨損但功能正常</strong>：原價的 2-3 折</li>
+    </ul>
+
+    <h3>熱門品類的定價眉角</h3>
+
+    <ul>
+      <li><strong>3C 產品</strong>：跌價快，即使九成新也建議定原價 5 折以下</li>
+      <li><strong>品牌衣物/包包</strong>：品牌保值性高，狀況好可以定 5-7 折</li>
+      <li><strong>書籍</strong>：暢銷書定價 5 折，冷門書 3 折或直接標「隨緣價」</li>
+      <li><strong>嬰幼兒用品</strong>：需求大、流通快，狀況好可以定 5 折</li>
+    </ul>
+
+    <div class="callout">
+      <p><strong>定價心法：</strong>二手出清的目的是<strong>清空間</strong>，不是開店做生意。價格設得合理一點，東西賣得快，空間清得也快。能賺回一些錢是額外收穫，不要被定價卡住。</p>
+    </div>
+
+
+    <!-- Section 6 -->
+    <h2 id="share">六、分享連結開賣</h2>
+
+    <p>商品上架完成後，vovosnap 會生成一個<strong>專屬商店連結</strong>。你的所有二手商品都在這個頁面上，買家點進去就能瀏覽、下單。</p>
+
+    <h3>分享到哪裡最有效？</h3>
+
+    <ul>
+      <li><strong>LINE 群組</strong>：朋友群、同事群、社區群。一個連結丟進去，大家自己看自己挑</li>
+      <li><strong>IG 限時動態</strong>：拍一張「二手出清中」的照片，附上商店連結</li>
+      <li><strong>Facebook</strong>：發一篇出清文，附上連結。二手社團也很適合</li>
+      <li><strong>辦公室公告</strong>：同事之間最容易成交，面交也方便</li>
+    </ul>
+
+    <p>不用逐一貼商品照片和價格，<strong>一個連結搞定一切</strong>。買家自己看、自己選、自己下單，你不用重複回覆「這個多少錢」。</p>
+
+    <div class="callout">
+      <p><strong>進階玩法：</strong>在分享時加一句「先搶先贏，售完為止」，能有效提高成交速度。二手商品通常只有一件，稀缺感會讓人更快下決定。</p>
+    </div>
+
+
+    <!-- Section 7 -->
+    <h2 id="deal">七、交易與出貨</h2>
+
+    <p>收到訂單後，vovosnap 會通知你。確認買家付款後，選擇適合的出貨方式：</p>
+
+    <h3>面交</h3>
+    <p>如果買家是朋友、同事或住附近，<strong>面交最省事</strong>。約個方便的地點、當面交貨收錢，零成本零風險。</p>
+
+    <h3>寄送</h3>
+    <p>如果需要寄送：</p>
+    <ul>
+      <li><strong>超商店到店</strong>：便利、便宜，買賣雙方都方便</li>
+      <li><strong>郵局包裹</strong>：大型商品用郵局寄，運費合理</li>
+      <li><strong>宅配</strong>：急件或大型家電可以用宅配</li>
+    </ul>
+
+    <div class="callout-warn callout">
+      <p><strong>建議：</strong>運費由買家負擔是二手交易的慣例。在商品描述或商店公告中註明「運費另計」或「面交免運」，避免後續爭議。</p>
+    </div>
+
+    <h3>收款方式</h3>
+    <p>二手交易常見的收款方式：</p>
+    <ul>
+      <li>面交現金</li>
+      <li>銀行轉帳</li>
+      <li>LINE Pay、街口支付等行動支付</li>
+    </ul>
+
+
+    <!-- Section 8 -->
+    <h2 id="tips">八、讓商品更好賣的實戰建議</h2>
+
+    <h3>照片是關鍵</h3>
+    <p>二手買家最在意商品實際狀況。<strong>拍清楚、拍真實</strong>比修圖更重要：</p>
+    <ul class="checklist">
+      <li>正面全貌一張</li>
+      <li>品牌 Logo 或標籤一張</li>
+      <li>如果有瑕疵，誠實拍一張（反而增加信任感）</li>
+      <li>有外盒或配件，一起入鏡</li>
+    </ul>
+
+    <h3>描述要誠實</h3>
+    <p>AI 會自動生成商品描述，但建議你補充：</p>
+    <ul>
+      <li>購買時間和使用頻率（例如「去年買的，用過 3 次」）</li>
+      <li>出售原因（例如「搬家出清」「換新款了」）</li>
+      <li>瑕疵說明（例如「角落有輕微刮痕，不影響使用」）</li>
+    </ul>
+
+    <h3>善用「出清」心態</h3>
+    <p>如果東西放了一週還沒賣掉，<strong>果斷降價</strong>。二手商品放越久越不值錢，早點賣掉換回現金和空間才是正事。</p>
+
+    <div class="callout">
+      <p><strong>經驗法則：</strong>上架一週沒人詢問，降 20%；兩週還沒賣掉，降到你願意接受的最低價。清掉比放著值錢。</p>
+    </div>
+
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>家裡的不用品，10 分鐘全部上架</h3>
+      <p>免費註冊 vovosnap，拍照就能上架。<br>把商店連結丟到 LINE 群，讓朋友自己挑、自己買。</p>
+      <a href="/login.html" class="cta-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        免費開始，拍一張照片試試
+      </a>
+    </div>
+
+
+    <!-- FAQ -->
+    <div class="faq-section" id="faq">
+      <h2>常見問題</h2>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">二手商品上架需要多久？</div>
+        <div class="faq-a">使用 vovosnap 拍照上架，每件商品只需 30 秒。AI 自動辨識商品名稱、生成描述、建議定價，你只需要確認就能上架。傳統方式拍照、修圖、打字至少要 10-15 分鐘一件。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">二手商品怎麼定價比較合理？</div>
+        <div class="faq-a">二手商品定價通常是原價的 3-7 折，依商品狀況而定。全新未拆封可以定原價 7-8 折，使用過但狀況良好約 5 折，有明顯使用痕跡約 3 折。vovosnap 的 AI 會根據商品類型建議合理價格，你可以自行調整。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">沒有蝦皮帳號也能賣二手嗎？</div>
+        <div class="faq-a">可以。vovosnap 不需要電商平台帳號，拍照上架後會生成一個專屬商店連結。把連結分享到 LINE 群、IG 限動或 Facebook，朋友就能直接瀏覽下單。適合想快速出清、不想經營電商的人。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">二手商品要怎麼拍照比較好賣？</div>
+        <div class="faq-a">找一個光線充足的地方，用乾淨的白色或淺色背景。商品正面拍一張，如果有瑕疵也拍一張。vovosnap 的 AI 會自動辨識商品並生成描述，但清晰的照片能讓買家更有信心下單。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">vovosnap 賣二手商品要收費嗎？</div>
+        <div class="faq-a">vovosnap 提供免費方案，足夠一般二手出清使用。免費方案可以上架商品、生成商店連結、接收訂單。不抽成、不收上架費，適合偶爾清空間的人。</div>
+      </div>
+    </div>
+
+
+    <!-- Related -->
+    <div class="related">
+      <h3>延伸閱讀</h3>
+      <ul class="related-list"></ul>
+    </div>
+
+  </div><!-- .article-content -->
+</article>
+<script src="/assets/blog-data.js"></script>
+
+<footer class="footer">
+  <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:50px;height:28px;margin-bottom:8px;" /></a><br>
+  <a href="/privacy.html">隱私權政策</a>
+  <a href="/terms.html">服務條款</a>
+  <p style="margin-top:8px;">聯絡信箱：<a href="mailto:info@vovosnap.com">info@vovosnap.com</a></p>
+  <p>卉田國際有限公司｜統一編號：91093506</p>
+  <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
+</footer>
+
+</body>
+</html>

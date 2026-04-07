@@ -189,6 +189,7 @@ export default {
       add(`https://${mainDomain}/blog/first-time-daigou-guide.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/daigou-profit-calculation.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/daigou-preparation-checklist.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/sell-secondhand-items-fast.html`, today, "monthly", "0.8");
 
       const storesRows = await env.DB
         .prepare("SELECT id, slug, plan, updated_at FROM stores WHERE is_active = 1")

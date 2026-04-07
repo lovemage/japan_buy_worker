@@ -5,6 +5,15 @@
  */
 var BLOG_ARTICLES = [
   {
+    href: "/blog/sell-secondhand-items-fast.html",
+    tag: "上架教學",
+    title: "快速上架你的二手不用商品：拍照就能開賣，清空間還能賺一筆",
+    desc: "家裡堆滿不用的東西？用 vovosnap 拍照就能自動生成描述、定價、上架。分享連結到 LINE 群，朋友自助挑選下單。",
+    thumb: "/assets/images/blog/thumb-secondhand.webp",
+    date: "2026-04-07",
+    readMin: 7,
+  },
+  {
     href: "/blog/daigou-profit-calculation.html",
     tag: "定價策略",
     title: "代購利潤怎麼算？業餘與專業代購的定價策略完整教學",
