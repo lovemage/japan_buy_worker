@@ -58,9 +58,9 @@ const PLATFORM_PROMPTS: Record<string, string> = {
 };
 
 const MONTHLY_LIMITS: Record<string, number> = {
-  free: 3,
-  starter: 6,
-  pro: 12,
+  free: 5,
+  starter: 10,
+  pro: 20,
 };
 
 function getMonthKey(): string {
