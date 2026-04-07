@@ -1364,15 +1364,17 @@
 }
 
 .stats-select {
-  padding: 8px 12px;
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid rgba(0,0,0,0.12);
   font-size: 14px;
   font-family: inherit;
   background: #fff;
   color: var(--admin-text);
-  flex: 1;
-  min-width: 0;
+  margin-bottom: 12px;
+  box-sizing: border-box;
 }
 
 .stats-summary {

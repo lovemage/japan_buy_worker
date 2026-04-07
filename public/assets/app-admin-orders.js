@@ -200,16 +200,15 @@ function renderStatsPanel() {
   } catch {}
 
   const statusOpts = STATS_STATUS_OPTIONS.map((o) => {
-    const sel = cached && cached.filter === o.value ? " selected" : (!cached && o.value === "all" ? " selected" : "");
-    return `<option value="${o.value}"${sel}>${o.label}</option>`;
+    return `<option value="${o.value}"${o.value === "all" ? " selected" : ""}>${o.label}</option>`;
   }).join("");
 
   const statsHtml = cached ? buildStatsHtml(cached.data) : `<p class="meta">尚未統計，請點擊按鈕開始統計。</p>`;
 
   wrapper.innerHTML = `
     <div class="stats-helper">
+      <select id="stats-status-filter" class="stats-select">${statusOpts}</select>
       <div class="stats-actions">
-        <select id="stats-status-filter" class="stats-select">${statusOpts}</select>
         <button class="button primary" id="btn-run-stats">統計</button>
         <button class="button secondary" id="btn-copy-stats" ${cached ? "" : "disabled"}>複製</button>
       </div>
@@ -272,7 +271,7 @@ export function initOrders() {
   if (toggle) {
     toggle.addEventListener("change", () => {
       const isStats = toggle.checked;
-      label.textContent = isStats ? "統計小幫手" : "訂單列表";
+      label.textContent = isStats ? "切換至訂單管理" : "切換至統計小幫手";
       listView.classList.toggle("hidden", isStats);
       statsView.classList.toggle("hidden", !isStats);
       if (isStats && !statsInitialized) {

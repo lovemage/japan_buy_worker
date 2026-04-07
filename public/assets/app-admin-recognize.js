@@ -299,7 +299,7 @@ function initCameraModeToggle() {
 
   function applyCameraMode() {
     const isSemiAuto = toggle.checked;
-    if (label) label.textContent = isSemiAuto ? "半自動" : "全自動";
+    if (label) label.textContent = isSemiAuto ? "切換至全自動" : "切換至半自動";
 
     if (autoBtn) autoBtn.classList.toggle("hidden", isSemiAuto);
     if (manualBtn) manualBtn.classList.toggle("hidden", !isSemiAuto);
