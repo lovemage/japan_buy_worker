@@ -149,6 +149,7 @@ function buildCtxFromStore(
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+   try {
     const url = new URL(request.url);
     const mainDomain = normalizeMainDomain(env.MAIN_DOMAIN);
     const hostname = resolveRequestHostname(request, url.hostname);
@@ -382,5 +383,12 @@ export default {
     }
 
     return json({ ok: false, error: "Not Found" }, 404);
+   } catch (err) {
+    console.error("Unhandled worker error:", err);
+    return new Response(
+      JSON.stringify({ ok: false, error: "Internal server error" }),
+      { status: 500, headers: { "content-type": "application/json" } }
+    );
+   }
   },
 };

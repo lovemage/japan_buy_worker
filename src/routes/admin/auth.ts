@@ -586,6 +586,11 @@ export async function handleSetEmail(
 
     if (currentStore?.line_login_id && !existing.line_login_id) {
       // Merge: link LINE provider to existing store, delete placeholder
+      // Clear line_login_id from placeholder first to avoid UNIQUE constraint violation
+      await db
+        .prepare("UPDATE stores SET line_login_id = NULL, updated_at = datetime('now') WHERE id = ?")
+        .bind(session.store_id)
+        .run();
       await db
         .prepare("UPDATE stores SET line_login_id = ?, updated_at = datetime('now') WHERE id = ?")
         .bind(currentStore.line_login_id, existing.id)
@@ -597,7 +602,7 @@ export async function handleSetEmail(
         .bind(existing.id, sessionToken)
         .run();
 
-      // Delete placeholder store
+      // Delete placeholder store and its orphaned data
       await db.prepare("DELETE FROM email_verifications WHERE store_id = ?").bind(session.store_id).run();
       await db.prepare("DELETE FROM store_sessions WHERE store_id = ?").bind(session.store_id).run();
       await db.prepare("DELETE FROM stores WHERE id = ?").bind(session.store_id).run();
