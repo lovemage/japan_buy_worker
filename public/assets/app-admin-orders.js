@@ -158,10 +158,127 @@ async function loadForms() {
   renderForms(allForms);
 }
 
+const STATS_STORAGE_KEY = "vovosnap_order_stats";
+
+const STATS_STATUS_OPTIONS = [
+  { value: "all", label: "全部訂單" },
+  { value: "pending", label: "待處理" },
+  { value: "paid", label: "已付款" },
+  { value: "preparing", label: "待出貨" },
+  { value: "ordered", label: "已下單" },
+  { value: "shipped", label: "已出貨" },
+  { value: "completed", label: "已完成" },
+  { value: "cancelled", label: "已取消" },
+];
+
+function computeStats(statusFilter) {
+  const forms = statusFilter === "all" ? allForms : allForms.filter((f) => f.status === statusFilter);
+  const counts = {};
+  for (const form of forms) {
+    if (!Array.isArray(form.items)) continue;
+    for (const item of form.items) {
+      const name = item.productNameSnapshot || "未知商品";
+      const qty = Number(item.quantity) || 1;
+      counts[name] = (counts[name] || 0) + qty;
+    }
+  }
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+}
+
+function formatStatsText(stats) {
+  return stats.map(([name, qty]) => `${name} x ${qty}`).join("\n");
+}
+
+function renderStatsPanel() {
+  const wrapper = document.getElementById("stats-content");
+  if (!wrapper) return;
+
+  let cached = null;
+  try {
+    const raw = localStorage.getItem(STATS_STORAGE_KEY);
+    if (raw) cached = JSON.parse(raw);
+  } catch {}
+
+  const statusOpts = STATS_STATUS_OPTIONS.map((o) => {
+    const sel = cached && cached.filter === o.value ? " selected" : (!cached && o.value === "all" ? " selected" : "");
+    return `<option value="${o.value}"${sel}>${o.label}</option>`;
+  }).join("");
+
+  const statsHtml = cached ? buildStatsHtml(cached.data) : `<p class="meta">尚未統計，請點擊按鈕開始統計。</p>`;
+
+  wrapper.innerHTML = `
+    <div class="stats-helper">
+      <div class="stats-actions">
+        <select id="stats-status-filter" class="stats-select">${statusOpts}</select>
+        <button class="button primary" id="btn-run-stats">統計</button>
+        <button class="button secondary" id="btn-copy-stats" ${cached ? "" : "disabled"}>複製</button>
+      </div>
+      <div id="stats-result">${statsHtml}</div>
+    </div>
+  `;
+
+  document.getElementById("btn-run-stats").addEventListener("click", () => {
+    const filter = document.getElementById("stats-status-filter").value;
+    const stats = computeStats(filter);
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify({ filter, data: stats }));
+    document.getElementById("stats-result").innerHTML = buildStatsHtml(stats);
+    const copyBtn = document.getElementById("btn-copy-stats");
+    if (copyBtn) copyBtn.disabled = false;
+  });
+
+  document.getElementById("btn-copy-stats").addEventListener("click", () => {
+    let cached;
+    try { cached = JSON.parse(localStorage.getItem(STATS_STORAGE_KEY)); } catch { return; }
+    if (!cached || !cached.data) return;
+    const text = formatStatsText(cached.data);
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById("btn-copy-stats");
+      const orig = btn.textContent;
+      btn.textContent = "已複製！";
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    });
+  });
+}
+
+function buildStatsHtml(stats) {
+  if (!stats || stats.length === 0) return `<p class="meta">沒有任何商品資料。</p>`;
+  const totalItems = stats.reduce((sum, [, qty]) => sum + qty, 0);
+  const rows = stats.map(([name, qty], i) =>
+    `<tr><td class="stats-rank">${i + 1}</td><td>${name}</td><td class="stats-qty">x ${qty}</td></tr>`
+  ).join("");
+  return `
+    <p class="stats-summary">共 <strong>${stats.length}</strong> 種商品，合計 <strong>${totalItems}</strong> 件</p>
+    <table class="stats-table">
+      <thead><tr><th>#</th><th>商品名稱</th><th>數量</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
 export function refreshOrders() {
   loadForms();
 }
 
+let statsInitialized = false;
+
 export function initOrders() {
   loadForms();
+
+  const toggle = document.getElementById("orders-stats-toggle");
+  const label = document.getElementById("orders-mode-label");
+  const listView = document.getElementById("orders-list-view");
+  const statsView = document.getElementById("orders-stats-view");
+
+  if (toggle) {
+    toggle.addEventListener("change", () => {
+      const isStats = toggle.checked;
+      label.textContent = isStats ? "統計小幫手" : "訂單列表";
+      listView.classList.toggle("hidden", isStats);
+      statsView.classList.toggle("hidden", !isStats);
+      if (isStats && !statsInitialized) {
+        statsInitialized = true;
+        renderStatsPanel();
+      }
+    });
+  }
 }

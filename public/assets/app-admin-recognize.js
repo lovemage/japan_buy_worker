@@ -486,7 +486,9 @@ async function doAiImageEdit() {
     setAiImageEditPopupMsg("圖片優化失敗");
     setTimeout(() => showAiImageEditPopup(false), 2500);
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      setTimeout(() => { btn.disabled = false; }, 30000);
+    }
   }
 }
 

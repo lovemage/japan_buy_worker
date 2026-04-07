@@ -445,7 +445,7 @@ async function doEditAiImage() {
     } catch (err) {
       if (popupMsg) popupMsg.textContent = String(err);
       setTimeout(() => { if (popup) popup.style.display = "none"; }, 2000);
-      if (btn) btn.disabled = false;
+      setTimeout(() => { if (btn) btn.disabled = false; }, 30000);
       return;
     }
   } else if (editNewImages.length > 0) {
@@ -508,7 +508,9 @@ async function doEditAiImage() {
     if (popupMsg) popupMsg.textContent = String(err);
     setTimeout(() => { if (popup) popup.style.display = "none"; }, 2500);
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      setTimeout(() => { btn.disabled = false; }, 30000);
+    }
   }
 }
 
