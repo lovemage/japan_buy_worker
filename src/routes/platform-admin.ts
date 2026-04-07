@@ -142,6 +142,27 @@ export async function handlePlatformAdmin(
     return json({ ok: true, stores: stores.results });
   }
 
+  // API usage logs for all stores (or a specific store)
+  if (url.pathname === "/api/platform-admin/api-usage" && request.method === "GET") {
+    const storeId = url.searchParams.get("store_id");
+    const month = url.searchParams.get("month"); // optional: YYYY_MM
+    let sql = `SELECT store_id, api_type, month_key, call_count, last_called_at FROM api_usage_logs`;
+    const conditions: string[] = [];
+    const binds: (string | number)[] = [];
+    if (storeId) {
+      conditions.push("store_id = ?");
+      binds.push(parseInt(storeId, 10));
+    }
+    if (month) {
+      conditions.push("month_key = ?");
+      binds.push(month);
+    }
+    if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ");
+    sql += " ORDER BY store_id, month_key DESC, api_type";
+    const rows = await db.prepare(sql).bind(...binds).all();
+    return json({ ok: true, usage: rows.results });
+  }
+
   // Toggle test member
   const testMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/test$/);
   if (testMatch && request.method === "POST") {

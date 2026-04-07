@@ -290,15 +290,25 @@ export async function handleAdminRecognize(
   // Increment AI recognize counter (monthly, for free plan tracking)
   const now = new Date();
   const recognizeMonthKey = `ai_recognize_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
-  await ctx.db
-    .prepare(
-      `INSERT INTO app_settings (store_id, key, value, updated_at)
-       VALUES (?, ?, '1', datetime('now'))
-       ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
-    )
-    .bind(ctx.storeId, recognizeMonthKey)
-    .run()
-    .catch(() => {}); // non-blocking
+  const monthKeyShort = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+  await Promise.all([
+    ctx.db
+      .prepare(
+        `INSERT INTO app_settings (store_id, key, value, updated_at)
+         VALUES (?, ?, '1', datetime('now'))
+         ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
+      )
+      .bind(ctx.storeId, recognizeMonthKey)
+      .run(),
+    ctx.db
+      .prepare(
+        `INSERT INTO api_usage_logs (store_id, api_type, month_key, call_count, last_called_at)
+         VALUES (?, 'recognize', ?, 1, datetime('now'))
+         ON CONFLICT(store_id, api_type, month_key) DO UPDATE SET call_count = call_count + 1, last_called_at = datetime('now')`
+      )
+      .bind(ctx.storeId, monthKeyShort)
+      .run(),
+  ]).catch(() => {}); // non-blocking
 
   return new Response(
     JSON.stringify({ ok: true, mode, result }),

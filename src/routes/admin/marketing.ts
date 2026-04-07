@@ -232,14 +232,25 @@ ${productList || "（尚無商品）"}
   }
 
   // Increment usage counter
-  await ctx.db
-    .prepare(
-      `INSERT INTO app_settings (store_id, key, value, updated_at)
-       VALUES (?, ?, '1', datetime('now'))
-       ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
-    )
-    .bind(ctx.storeId, settingKey)
-    .run();
+  const mk = getMonthKey();
+  await Promise.all([
+    ctx.db
+      .prepare(
+        `INSERT INTO app_settings (store_id, key, value, updated_at)
+         VALUES (?, ?, '1', datetime('now'))
+         ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
+      )
+      .bind(ctx.storeId, settingKey)
+      .run(),
+    ctx.db
+      .prepare(
+        `INSERT INTO api_usage_logs (store_id, api_type, month_key, call_count, last_called_at)
+         VALUES (?, 'marketing', ?, 1, datetime('now'))
+         ON CONFLICT(store_id, api_type, month_key) DO UPDATE SET call_count = call_count + 1, last_called_at = datetime('now')`
+      )
+      .bind(ctx.storeId, mk)
+      .run(),
+  ]);
 
   return json({ ok: true, content });
 }

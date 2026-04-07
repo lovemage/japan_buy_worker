@@ -231,15 +231,25 @@ export async function handleAdminImageEdit(
   // Increment usage counter (non-blocking)
   const now = new Date();
   const monthKey = `ai_image_edit_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
-  await ctx.db
-    .prepare(
-      `INSERT INTO app_settings (store_id, key, value, updated_at)
-       VALUES (?, ?, '1', datetime('now'))
-       ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
-    )
-    .bind(ctx.storeId, monthKey)
-    .run()
-    .catch(() => {});
+  const monthKeyShort = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+  await Promise.all([
+    ctx.db
+      .prepare(
+        `INSERT INTO app_settings (store_id, key, value, updated_at)
+         VALUES (?, ?, '1', datetime('now'))
+         ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
+      )
+      .bind(ctx.storeId, monthKey)
+      .run(),
+    ctx.db
+      .prepare(
+        `INSERT INTO api_usage_logs (store_id, api_type, month_key, call_count, last_called_at)
+         VALUES (?, 'image_edit', ?, 1, datetime('now'))
+         ON CONFLICT(store_id, api_type, month_key) DO UPDATE SET call_count = call_count + 1, last_called_at = datetime('now')`
+      )
+      .bind(ctx.storeId, monthKeyShort)
+      .run(),
+  ]).catch(() => {});
 
   return new Response(
     JSON.stringify({ ok: true, imageUrl: `/api/images/${r2Key}` }),
