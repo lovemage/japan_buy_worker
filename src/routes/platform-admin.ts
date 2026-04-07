@@ -170,13 +170,24 @@ export async function handlePlatformAdmin(
     const ids = await getTestStoreIds(db);
     const idx = ids.indexOf(storeId);
     if (idx >= 0) {
+      // Remove from test — revert to free plan
       ids.splice(idx, 1);
-    } else {
-      ids.push(storeId);
-      // Set test members to pro plan with no expiry
       await db
-        .prepare("UPDATE stores SET plan = 'pro', plan_expires_at = NULL, updated_at = datetime('now') WHERE id = ?")
+        .prepare("UPDATE stores SET plan = 'free', plan_expires_at = NULL, updated_at = datetime('now') WHERE id = ?")
         .bind(storeId)
+        .run();
+    } else {
+      // Add to test — parse days from body (default 7, max 30)
+      let days = 7;
+      try {
+        const body = (await request.json()) as { days?: number };
+        if (body.days && body.days >= 1 && body.days <= 30) days = body.days;
+      } catch {}
+      const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
+      ids.push(storeId);
+      await db
+        .prepare("UPDATE stores SET plan = 'pro', plan_expires_at = ?, updated_at = datetime('now') WHERE id = ?")
+        .bind(expiresAt, storeId)
         .run();
     }
     await setTestStoreIds(db, ids);

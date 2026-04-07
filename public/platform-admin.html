@@ -336,6 +336,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <button class="pill-btn" onclick="filterStores('free', this)">Free</button>
       <button class="pill-btn" onclick="filterStores('starter', this)">Starter</button>
       <button class="pill-btn" onclick="filterStores('pro', this)">Pro</button>
+      <button class="pill-btn" onclick="filterStores('test', this)">測試</button>
       <button class="pill-btn" onclick="filterStores('onboarding', this)">Onboarding</button>
     </div>
     <div class="member-list" id="member-list"></div>
@@ -652,14 +653,26 @@ async function loadTestStores() {
 }
 
 async function toggleTest(storeId) {
+  var isCurrentlyTest = testStoreIds.indexOf(storeId) >= 0;
+  var days = 7;
+  if (!isCurrentlyTest) {
+    var input = prompt("設定測試天數（1-30 天，預設 7 天）：", "7");
+    if (input === null) return;
+    days = Math.max(1, Math.min(30, parseInt(input, 10) || 7));
+  }
   var res = await fetch("/api/platform-admin/stores/" + storeId + "/test", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ days: days }),
   });
   var data = await res.json();
   if (data.ok) {
     await loadTestStores();
     await loadStores();
+    // Switch to test tab if newly added, or back to all if removed
+    var targetFilter = isCurrentlyTest ? "all" : "test";
+    var targetBtn = document.querySelector('#member-filters .pill-btn[onclick*="' + targetFilter + '"]');
+    if (targetBtn) filterStores(targetFilter, targetBtn);
   } else alert(data.error || "操作失敗");
 }
 
@@ -680,19 +693,26 @@ async function loadStores() {
   const data = await res.json();
   if (!data.ok) { if (data.error === "Unauthorized") logout(); return; }
   allStores = data.stores.filter(s => s.id > 0);
+  var nonTest = allStores.filter(s => testStoreIds.indexOf(s.id) < 0);
   document.getElementById("stat-total").textContent = allStores.length;
-  document.getElementById("stat-free").textContent = allStores.filter(s => s.plan === "free").length;
-  document.getElementById("stat-starter").textContent = allStores.filter(s => s.plan === "starter").length;
-  document.getElementById("stat-pro").textContent = allStores.filter(s => s.plan === "pro").length;
-  renderStores(allStores);
+  document.getElementById("stat-free").textContent = nonTest.filter(s => s.plan === "free").length;
+  document.getElementById("stat-starter").textContent = nonTest.filter(s => s.plan === "starter").length;
+  document.getElementById("stat-pro").textContent = nonTest.filter(s => s.plan === "pro").length;
+  // Re-apply current filter
+  var activeBtn = document.querySelector('#member-filters .pill-btn[onclick*="' + currentMemberFilter + '"]');
+  if (activeBtn) filterStores(currentMemberFilter, activeBtn);
+  else renderStores(nonTest);
 }
 
+var currentMemberFilter = "all";
 function filterStores(filter, btn) {
+  currentMemberFilter = filter;
   document.querySelectorAll("#member-filters .pill-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-  if (filter === "all") renderStores(allStores);
+  if (filter === "all") renderStores(allStores.filter(s => testStoreIds.indexOf(s.id) < 0));
+  else if (filter === "test") renderStores(allStores.filter(s => testStoreIds.indexOf(s.id) >= 0));
   else if (filter === "onboarding") renderStores(allStores.filter(s => s.onboarding_step !== "complete"));
-  else renderStores(allStores.filter(s => s.plan === filter));
+  else renderStores(allStores.filter(s => s.plan === filter && testStoreIds.indexOf(s.id) < 0));
 }
 
 function formatExpires(expiresAt) {
@@ -717,6 +737,21 @@ function renderStores(stores) {
       ? '<span class="badge badge-onboarding">' + s.onboarding_step + '</span>'
       : s.is_active ? '<span class="badge badge-active">啟用</span>' : '<span class="badge badge-inactive">停用</span>';
     var created = new Date(s.created_at).toLocaleDateString("zh-TW");
+    var storeFullUrl = location.origin + "/s/" + s.slug + "/";
+
+    // Test members: direct plan switch; normal members: plan modal for paid plans
+    var planBtns;
+    if (isTest) {
+      planBtns =
+        '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
+        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'starter\')">Starter</button>' +
+        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'pro\')">Pro</button>';
+    } else {
+      planBtns =
+        '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
+        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'starter\')">Starter</button>' +
+        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>';
+    }
 
     return '<div class="member-card">' +
       '<div class="member-top">' +
@@ -724,16 +759,14 @@ function renderStores(stores) {
         '<div>' + badges + statusBadge + '</div>' +
       '</div>' +
       '<div class="member-meta">' +
-        '<span><a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a></span>' +
+        '<span><a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a> <button onclick="copyUrl(\'' + storeFullUrl + '\',this)" style="border:1px solid #ddd;background:#f8f8f8;border-radius:4px;padding:1px 6px;font-size:10px;cursor:pointer;color:#666;">複製</button></span>' +
         '<span>' + (s.product_count || 0) + ' 商品</span>' +
         '<span>' + (s.order_count || 0) + ' 訂單</span>' +
         '<span>' + created + '</span>' +
         '<span><select onchange="setTemplate(' + s.id + ',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">' + TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></span>' +
       '</div>' +
       '<div class="member-actions">' +
-        '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
-        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'starter\')">Starter</button>' +
-        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
+        planBtns +
         '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
         (s.onboarding_step === "phone_pending" ? '<button style="color:#b45309;" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
         (s.is_active ? '<button style="color:#ef4444;" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button style="color:#16a34a;" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
@@ -741,6 +774,13 @@ function renderStores(stores) {
       '</div>' +
     '</div>';
   }).join("");
+}
+
+function copyUrl(url, btn) {
+  navigator.clipboard.writeText(url).then(function() {
+    btn.textContent = "已複製";
+    setTimeout(function() { btn.textContent = "複製"; }, 1500);
+  });
 }
 
 var PLAN_OFFERS = {
