@@ -22,7 +22,7 @@ async function onSubmit(event) {
     showError(body?.error || `登入失敗：${res.status}`);
     return;
   }
-  location.href = "/admin.html";
+  location.href = (window.__API_BASE || '') + "/admin.html";
 }
 
 function bootstrap() {

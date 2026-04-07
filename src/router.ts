@@ -1,7 +1,7 @@
 // Tenant-scoped route dispatcher
 // All routes under /s/{slug}/ or subdomain are handled here
 
-import { isStoreOwnerAuthorized, handleStoreLogout } from "./routes/admin/auth";
+import { isStoreOwnerAuthorized, handleStoreLogout, handleAdminLogin } from "./routes/admin/auth";
 import { handleAdminCrawl } from "./routes/admin/crawl";
 import { handleAdminRequirements } from "./routes/admin/requirements";
 import {
@@ -180,8 +180,10 @@ export async function routeTenantRequest(
 ): Promise<Response> {
   // ── Auth routes ──
   if (subPath === "/api/admin/login") {
-    // For Google OAuth stores, login goes through /auth/google
-    // This endpoint is kept for bootstrap store backward compat
+    // Bootstrap store (id=1) supports password login for backward compat
+    if (ctx.storeId === 1) {
+      return handleAdminLogin(request, { DB: ctx.db });
+    }
     return json({ ok: false, error: "Use Google login at /auth/google" }, 400);
   }
   if (subPath === "/api/admin/logout") {
