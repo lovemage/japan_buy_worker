@@ -192,6 +192,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .log-status-cancelled { color: var(--pa-red); }
 .log-empty { font-size: 13px; color: var(--pa-muted); text-align: center; padding: 24px 16px; }
 
+/* ── Usage table ── */
+.usage-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.usage-table th { background: #f4f3ef; text-align: left; padding: 8px 12px; font-weight: 600; color: var(--pa-muted); border-bottom: 2px solid var(--pa-line); white-space: nowrap; }
+.usage-table td { padding: 8px 12px; border-bottom: 1px solid var(--pa-line); }
+.usage-table tr:last-child td { border-bottom: none; }
+.usage-table .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.usage-table .muted { color: var(--pa-muted); font-size: 11px; }
+.usage-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.usage-stat { background: var(--pa-card); border: 1px solid var(--pa-line); border-radius: var(--pa-radius); padding: 14px; text-align: center; }
+.usage-stat .us-num { font-size: 24px; font-weight: 800; color: var(--pa-accent); }
+.usage-stat .us-label { font-size: 11px; color: var(--pa-muted); margin-top: 2px; }
+@media (max-width: 640px) { .usage-summary { grid-template-columns: 1fr; } .usage-table { font-size: 12px; } .usage-table th, .usage-table td { padding: 6px 8px; } }
+
 /* ── Plan modal ── */
 .plan-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0); z-index: 200; display: flex; align-items: center; justify-content: center; animation: backdropIn 0.2s ease forwards; }
 @keyframes backdropIn { to { background: rgba(0,0,0,0.4); } }
@@ -374,7 +387,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       </div>
     </div>
     <div class="card" style="margin-top:12px;">
-      <h3>🖼️ AI 圖片編輯 API Key</h3>
+      <h3>AI 圖片編輯 API Key</h3>
       <p class="desc">用於 AI 商品圖片編輯功能的 Gemini API Key（與辨識 API Key 分開管理）。</p>
       <div>
         <label>Gemini API Key（圖片生成）</label>
@@ -395,10 +408,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <span class="toast" id="api-key-toast">已儲存</span>
   </div>
 
+  <!-- Tab: API Usage -->
+  <div class="page-content hidden" id="page-usage">
+    <div class="usage-summary">
+      <div class="usage-stat"><div class="us-num" id="usage-recognize-total">0</div><div class="us-label">AI 辨識</div></div>
+      <div class="usage-stat"><div class="us-num" id="usage-marketing-total">0</div><div class="us-label">AI 行銷文案</div></div>
+      <div class="usage-stat"><div class="us-num" id="usage-image-total">0</div><div class="us-label">AI 圖片編輯</div></div>
+    </div>
+    <div class="revenue-header" style="margin-bottom:12px;">
+      <strong>API 使用紀錄</strong>
+      <select id="usage-month" onchange="loadApiUsage()"></select>
+    </div>
+    <div class="card" style="overflow-x:auto;padding:0;">
+      <table class="usage-table">
+        <thead><tr><th>會員</th><th>AI 辨識</th><th>AI 行銷文案</th><th>AI 圖片編輯</th></tr></thead>
+        <tbody id="usage-table-body"><tr><td colspan="4" class="muted" style="text-align:center;padding:24px;">載入中...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- Tab: 設定 -->
   <div class="page-content hidden" id="page-settings">
     <div class="card">
-      <h3>📦 方案商品上限</h3>
+      <h3>方案商品上限</h3>
       <p class="desc">設定各方案最多可上架的商品數量。此設定也會同步顯示在首頁方案介紹。Pro 設為 -1 代表無限制。</p>
       <div class="row">
         <div>
@@ -419,7 +451,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
 
     <div class="card">
-      <h3>🤖 AI 辨識 System Prompt</h3>
+      <h3>AI 辨識 System Prompt</h3>
       <p class="desc">自訂 AI 辨識的系統提示詞。包含違法商品過濾規則。留空使用預設值。</p>
       <textarea id="system-prompt" rows="12"></textarea>
       <button class="btn btn-dark" style="margin-top:8px;" onclick="saveSystemPrompt()">儲存</button>
@@ -427,7 +459,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
 
     <div class="card">
-      <h3>🖼️ AI 圖片編輯 Prompt</h3>
+      <h3>AI 圖片編輯 Prompt</h3>
       <p class="desc">自訂 AI 圖片編輯的提示詞。留空使用預設值（英文 prompt 效果較佳）。</p>
       <textarea id="image-gen-prompt" rows="10" placeholder="留空使用預設值"></textarea>
       <button class="btn btn-dark" style="margin-top:8px;" onclick="saveImagePrompt()">儲存</button>
@@ -435,7 +467,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
 
     <div class="card">
-      <h3>❓ 首頁問與答</h3>
+      <h3>首頁問與答</h3>
       <p class="desc">管理首頁 FAQ。每題包含問題和回答。問題開頭建議加「我|我拍」。</p>
       <div id="faq-editor"></div>
       <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="addFaqItem()">+ 新增問題</button>
@@ -461,6 +493,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <button class="nav-item" data-page="keys" onclick="switchPage('keys', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
       <span>API</span>
+    </button>
+    <button class="nav-item" data-page="usage" onclick="switchPage('usage', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      <span>用量</span>
     </button>
     <button class="nav-item" data-page="settings" onclick="switchPage('settings', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -490,6 +526,7 @@ var PAGE_TITLES = {
   overview: "總覽",
   members: "會員管理",
   keys: "API 金鑰",
+  usage: "API 用量",
   settings: "系統設定",
 };
 
@@ -595,10 +632,12 @@ async function showDashboard() {
   switchPage("overview");
 
   initMonthSelector();
+  initUsageMonthSelector();
   await loadPlanOffers();
   await loadTestStores();
   await loadStores();
   await loadRevenueLogs();
+  await loadApiUsage();
   if (adminRole === "super-admin") await loadApiKeys();
   await loadSystemPrompt();
   await loadImagePrompt();
@@ -681,15 +720,15 @@ function renderStores(stores) {
 
     return '<div class="member-card">' +
       '<div class="member-top">' +
-        '<div><div class="member-name">' + s.name + ' <button onclick="renameStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')" style="border:none;background:none;cursor:pointer;font-size:11px;color:var(--pa-muted);">✏️</button></div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
+        '<div><div class="member-name">' + s.name + ' <button onclick="renameStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')" style="border:none;background:none;cursor:pointer;font-size:11px;color:var(--pa-muted);">編輯</button></div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
         '<div>' + badges + statusBadge + '</div>' +
       '</div>' +
       '<div class="member-meta">' +
-        '<span>🔗 <a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a></span>' +
-        '<span>📦 ' + (s.product_count || 0) + ' 商品</span>' +
-        '<span>📋 ' + (s.order_count || 0) + ' 訂單</span>' +
-        '<span>📅 ' + created + '</span>' +
-        '<span>🎨 <select onchange="setTemplate(' + s.id + ',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">' + TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></span>' +
+        '<span><a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a></span>' +
+        '<span>' + (s.product_count || 0) + ' 商品</span>' +
+        '<span>' + (s.order_count || 0) + ' 訂單</span>' +
+        '<span>' + created + '</span>' +
+        '<span><select onchange="setTemplate(' + s.id + ',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">' + TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></span>' +
       '</div>' +
       '<div class="member-actions">' +
         '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
@@ -1172,6 +1211,70 @@ function initMonthSelector() {
     var label = d.getFullYear() + " 年 " + (d.getMonth() + 1) + " 月";
     sel.innerHTML += '<option value="' + val + '">' + label + '</option>';
   }
+}
+
+// ── API Usage ──
+function initUsageMonthSelector() {
+  var sel = document.getElementById("usage-month");
+  if (!sel) return;
+  var now = new Date();
+  sel.innerHTML = "";
+  for (var i = 0; i < 12; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var val = d.getFullYear() + "_" + String(d.getMonth() + 1).padStart(2, "0");
+    var label = d.getFullYear() + " 年 " + (d.getMonth() + 1) + " 月";
+    sel.innerHTML += '<option value="' + val + '">' + label + '</option>';
+  }
+}
+
+var API_TYPE_LABELS = { recognize: "AI 辨識", marketing: "AI 行銷文案", image_edit: "AI 圖片編輯" };
+
+async function loadApiUsage() {
+  var month = document.getElementById("usage-month")?.value || "";
+  var qs = month ? "?month=" + month : "";
+  try {
+    var res = await fetch("/api/platform-admin/api-usage" + qs, { headers: { authorization: "Bearer " + adminToken } });
+    var data = await res.json();
+    if (!data.ok) return;
+    renderApiUsage(data.usage || [], month);
+  } catch (e) {}
+}
+
+function renderApiUsage(rows, month) {
+  // Totals
+  var totals = { recognize: 0, marketing: 0, image_edit: 0 };
+  rows.forEach(function(r) { if (totals[r.api_type] !== undefined) totals[r.api_type] += r.call_count; });
+  document.getElementById("usage-recognize-total").textContent = totals.recognize.toLocaleString();
+  document.getElementById("usage-marketing-total").textContent = totals.marketing.toLocaleString();
+  document.getElementById("usage-image-total").textContent = totals.image_edit.toLocaleString();
+
+  // Group by store
+  var storeMap = {};
+  rows.forEach(function(r) {
+    if (!storeMap[r.store_id]) storeMap[r.store_id] = { recognize: null, marketing: null, image_edit: null };
+    storeMap[r.store_id][r.api_type] = r;
+  });
+
+  var tbody = document.getElementById("usage-table-body");
+  var storeIds = Object.keys(storeMap);
+  if (storeIds.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;padding:24px;">本月無 API 使用紀錄</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = storeIds.map(function(sid) {
+    var store = allStores.find(function(s) { return s.id === Number(sid); });
+    var name = store ? store.name : "Store #" + sid;
+    var email = store ? store.owner_email : "";
+    var d = storeMap[sid];
+    function cell(r) {
+      if (!r) return '<td class="num muted">-</td>';
+      var time = r.last_called_at ? new Date(r.last_called_at + "Z").toLocaleString("zh-TW", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+      return '<td class="num">' + r.call_count + '<div class="muted">' + time + '</div></td>';
+    }
+    return '<tr><td><div style="font-weight:600;">' + name + '</div><div class="muted">' + email + '</div></td>' +
+      cell(d.recognize) + cell(d.marketing) + cell(d.image_edit) + '</tr>';
+  }).join("");
 }
 
 async function loadRevenueLogs() {
