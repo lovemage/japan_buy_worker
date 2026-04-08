@@ -522,6 +522,23 @@ export async function handlePlatformAdmin(
     return json({ ok: true });
   }
 
+  // Get/Set tutorial avatar
+  if (url.pathname === "/api/platform-admin/tutorial-avatar" && request.method === "GET") {
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'tutorial_avatar'")
+      .first<{ value: string }>();
+    return json({ ok: true, avatar: row?.value || "" });
+  }
+  if (url.pathname === "/api/platform-admin/tutorial-avatar" && request.method === "POST") {
+    let body: { avatar?: string };
+    try { body = (await request.json()) as { avatar?: string }; } catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
+    await db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'tutorial_avatar', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(body.avatar || "")
+      .run();
+    return json({ ok: true });
+  }
+
   // Get/Set FAQ items
   if (url.pathname === "/api/platform-admin/faq" && request.method === "GET") {
     const row = await db

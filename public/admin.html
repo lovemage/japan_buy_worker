@@ -455,6 +455,12 @@
           </div>
           <p id="ai-model-status" class="admin-status">已儲存</p>
         </div>
+
+        <div class="settings-group">
+          <h3 class="settings-group__title">新手教學</h3>
+          <p class="meta" style="margin-bottom:8px;">重新執行新手引導，了解基本設定流程。</p>
+          <button class="button secondary" type="button" onclick="restartTutorial()">重新跑一次新手教學</button>
+        </div>
       </div>
 
       <!-- 外觀設定 -->
@@ -1444,5 +1450,202 @@
   <style>
     @keyframes aiEditSpin { to { transform: rotate(360deg); } }
   </style>
+
+  <!-- Tutorial Guide -->
+  <div id="tutorial-ask" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:14px;padding:28px;max-width:340px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.15);">
+      <div id="tutorial-ask-avatar" style="width:56px;height:56px;border-radius:50%;background:#e5e5e5;margin:0 auto 14px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:6px;">需要新手教學嗎？</h3>
+      <p style="font-size:13px;color:#888;margin-bottom:18px;line-height:1.6;">我可以帶你完成基本設定，包括定價、匯率、商店外觀和上架第一個商品。</p>
+      <div style="display:flex;gap:8px;">
+        <button onclick="dismissTutorial()" style="flex:1;padding:10px;background:#f3f3f3;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;">不需要</button>
+        <button onclick="startTutorial()" style="flex:1;padding:10px;background:#333;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">開始教學</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorial-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);"></div>
+  <div id="tutorial-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:10001;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,0.12);padding:20px 20px 28px;max-height:70vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div id="tutorial-avatar" style="width:40px;height:40px;border-radius:50%;background:#e5e5e5;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;">新手教學</div>
+        <div id="tutorial-progress" style="font-size:11px;color:#999;">步驟 1 / 4</div>
+      </div>
+      <button onclick="closeTutorialPanel()" style="border:none;background:none;cursor:pointer;padding:4px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="tutorial-steps">
+      <div class="tut-step" data-step="1">
+        <div class="tut-num">1</div>
+        <div class="tut-body">
+          <div class="tut-title">完成定價設定</div>
+          <div class="tut-desc">前往「網站設定 &gt; 定價」確認匯率、利潤和運輸費用。這是商品價格計算的基礎。</div>
+          <button class="tut-btn" onclick="tutorialGoTo('settings','pricing')">前往設定</button>
+        </div>
+      </div>
+      <div class="tut-step" data-step="2">
+        <div class="tut-num">2</div>
+        <div class="tut-body">
+          <div class="tut-title">填寫結帳訊息與賣場規則</div>
+          <div class="tut-desc">前往「網站設定 &gt; 外觀」填寫結帳感謝訊息和賣場規則，讓客人了解你的服務方式。</div>
+          <button class="tut-btn" onclick="tutorialGoTo('settings','display')">前往設定</button>
+        </div>
+      </div>
+      <div class="tut-step" data-step="3">
+        <div class="tut-num">3</div>
+        <div class="tut-body">
+          <div class="tut-title">完成手機驗證</div>
+          <div class="tut-desc">前往「網站設定 &gt; 基本」完成手機驗證，驗證後可多上架 5 件商品。</div>
+          <button class="tut-btn" onclick="tutorialGoTo('settings','account')">前往驗證</button>
+        </div>
+      </div>
+      <div class="tut-step" data-step="4">
+        <div class="tut-num">4</div>
+        <div class="tut-body">
+          <div class="tut-title">拍照上架第一個商品</div>
+          <div class="tut-desc">前往「拍照上架」拍攝你的第一個商品。注意光線充足效果更好，拍攝後可使用編輯修改商品資料。</div>
+          <button class="tut-btn" onclick="tutorialGoTo('camera')">前往拍照</button>
+        </div>
+      </div>
+    </div>
+    <button onclick="completeTutorial()" style="width:100%;margin-top:16px;padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">完成教學</button>
+  </div>
+
+  <style>
+    .tut-step { display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0; }
+    .tut-step:last-child { border-bottom:none; }
+    .tut-step.done .tut-num { background:#333;color:#fff; }
+    .tut-step.done .tut-title { text-decoration:line-through;color:#bbb; }
+    .tut-step.done .tut-desc { color:#ccc; }
+    .tut-step.done .tut-btn { display:none; }
+    .tut-num { width:24px;height:24px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#999;flex-shrink:0;margin-top:2px; }
+    .tut-body { flex:1; }
+    .tut-title { font-size:14px;font-weight:600;margin-bottom:4px; }
+    .tut-desc { font-size:12px;color:#888;line-height:1.6;margin-bottom:8px; }
+    .tut-btn { padding:6px 14px;background:#333;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit; }
+    .tut-btn:hover { background:#555; }
+  </style>
+
+  <script>
+  (function() {
+    var state = window.__TUTORIAL_STATE;
+    var avatarUrl = window.__TUTORIAL_AVATAR || "";
+
+    function setAvatars() {
+      var els = [document.getElementById("tutorial-avatar"), document.getElementById("tutorial-ask-avatar")];
+      els.forEach(function(el) {
+        if (el && avatarUrl) el.innerHTML = '<img src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;" />';
+      });
+    }
+
+    function checkStepCompletion() {
+      var ds = window.__DISPLAY_SETTINGS || {};
+      var step1 = false; // pricing — will check via API
+      var step2 = !!(ds.checkoutMessage || ds.storeRules);
+      var step3 = false; // phone verified — check via store-info
+      var step4 = false; // has products — check via count
+      return { step1: step1, step2: step2, step3: step3, step4: step4 };
+    }
+
+    window.startTutorial = function() {
+      document.getElementById("tutorial-ask").style.display = "none";
+      document.getElementById("tutorial-overlay").style.display = "block";
+      document.getElementById("tutorial-panel").style.display = "block";
+      setAvatars();
+      refreshTutorialSteps();
+    };
+
+    window.dismissTutorial = function() {
+      document.getElementById("tutorial-ask").style.display = "none";
+      apiFetch("/api/admin/tutorial", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dismissed: true }),
+      });
+    };
+
+    window.closeTutorialPanel = function() {
+      document.getElementById("tutorial-overlay").style.display = "none";
+      document.getElementById("tutorial-panel").style.display = "none";
+    };
+
+    window.completeTutorial = function() {
+      closeTutorialPanel();
+      apiFetch("/api/admin/tutorial", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ completed: true }),
+      });
+    };
+
+    window.restartTutorial = function() {
+      apiFetch("/api/admin/tutorial", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ completed: false, dismissed: false }),
+      }).then(function() {
+        startTutorial();
+      });
+    };
+
+    window.tutorialGoTo = function(tab, subtab) {
+      closeTutorialPanel();
+      if (typeof switchTab === "function") switchTab(tab);
+      if (subtab) {
+        setTimeout(function() {
+          var btn = document.querySelector('[data-subtab="' + subtab + '"]');
+          if (btn) btn.click();
+        }, 300);
+      }
+    };
+
+    function refreshTutorialSteps() {
+      // Async check completion
+      Promise.all([
+        apiFetch("/api/admin/pricing").then(function(r) { return r.json(); }),
+        apiFetch("/api/admin/store-info").then(function(r) { return r.json(); }),
+      ]).then(function(results) {
+        var pricing = results[0]?.pricing || {};
+        var store = results[1]?.store || {};
+        var productCount = results[1]?.store?.product_count || 0;
+
+        // Step 1: pricing configured (rate != default or markup changed)
+        var step1 = !!(pricing.jpyToTwd && pricing.jpyToTwd !== 0);
+        // Step 2: checkout message or store rules
+        var ds = window.__DISPLAY_SETTINGS || {};
+        var step2 = !!(ds.checkoutMessage || ds.storeRules);
+        // Step 3: phone verified
+        var step3 = !!store.phone_verified;
+        // Step 4: has products
+        var step4 = productCount > 0;
+
+        var steps = document.querySelectorAll("#tutorial-steps .tut-step");
+        var doneFlags = [step1, step2, step3, step4];
+        var doneCount = 0;
+        steps.forEach(function(el, i) {
+          if (doneFlags[i]) { el.classList.add("done"); doneCount++; }
+          else el.classList.remove("done");
+        });
+        var prog = document.getElementById("tutorial-progress");
+        if (prog) prog.textContent = doneCount + " / 4 完成";
+      });
+    }
+
+    // Auto-show on first load if not completed/dismissed
+    if (!state || (!state.completed && !state.dismissed)) {
+      setTimeout(function() {
+        setAvatars();
+        var ask = document.getElementById("tutorial-ask");
+        if (ask) ask.style.display = "flex";
+      }, 800);
+    }
+  })();
+  </script>
 </body>
 </html>

@@ -493,6 +493,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
 
     <div class="card">
+      <h3>新手教學頭像</h3>
+      <p class="desc">設定會員後台新手教學引導的頭像圖片網址。留空使用預設 placeholder。</p>
+      <input type="text" id="tutorial-avatar-input" placeholder="https://... 頭像圖片網址" style="width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;">
+      <div id="tutorial-avatar-preview" style="margin-bottom:8px;"></div>
+      <button class="btn btn-dark" style="margin-top:4px;" onclick="saveTutorialAvatar()">儲存</button>
+      <span class="toast" id="tutorial-avatar-toast">已儲存</span>
+    </div>
+
+    <div class="card">
       <h3>首頁問與答</h3>
       <p class="desc">管理首頁 FAQ。每題包含問題和回答。問題開頭建議加「我|我拍」。</p>
       <div id="faq-editor"></div>
@@ -668,6 +677,7 @@ async function showDashboard() {
   await loadSystemPrompt();
   await loadImagePrompt();
   await loadFaq();
+  await loadTutorialAvatar();
   await loadPlanLimits();
 }
 
@@ -1150,6 +1160,27 @@ async function saveImagePrompt() {
 }
 
 var faqItems = [];
+async function loadTutorialAvatar() {
+  var res = await fetch("/api/platform-admin/tutorial-avatar", { headers: { authorization: "Bearer " + adminToken } });
+  var data = await res.json();
+  if (data.ok && data.avatar) {
+    document.getElementById("tutorial-avatar-input").value = data.avatar;
+    document.getElementById("tutorial-avatar-preview").innerHTML = '<img src="' + data.avatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #ddd;" />';
+  }
+}
+async function saveTutorialAvatar() {
+  var url = document.getElementById("tutorial-avatar-input").value.trim();
+  var res = await fetch("/api/platform-admin/tutorial-avatar", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ avatar: url }),
+  });
+  if ((await res.json()).ok) {
+    var t = document.getElementById("tutorial-avatar-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000);
+    document.getElementById("tutorial-avatar-preview").innerHTML = url ? '<img src="' + url + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #ddd;" />' : '';
+  }
+}
+
 async function loadFaq() {
   var res = await fetch("/api/platform-admin/faq", { headers: { authorization: "Bearer " + adminToken } });
   var data = await res.json();

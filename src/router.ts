@@ -123,6 +123,17 @@ async function serveTenantHtml(
     .first<{ value: string }>();
   const displaySettings = displayRow?.value || '{"viewMode":"2card","promoFilters":["all","350","450","550"]}';
 
+  // Tutorial state + avatar
+  const tutorialRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'tutorial_state'")
+    .bind(ctx.storeId)
+    .first<{ value: string }>();
+  const tutorialState = tutorialRow?.value || "null";
+  const tutorialAvatarRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'tutorial_avatar'")
+    .first<{ value: string }>();
+  const tutorialAvatar = tutorialAvatarRow?.value || "";
+
   // Inject store context before </head>
   const inject = `<script>
 window.__API_BASE="${ctx.basePath}";
@@ -135,6 +146,8 @@ window.__STORE_COUNTRY="${country}";
 window.__MAIN_DOMAIN="${ctx.mainDomain.replace(/"/g, '\\"')}";
 window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
 window.__DISPLAY_SETTINGS=${displaySettings};
+window.__TUTORIAL_STATE=${tutorialState};
+window.__TUTORIAL_AVATAR="${tutorialAvatar.replace(/"/g, '\\"')}";
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 </script>`;
   html = html.replace("</head>", inject + "\n</head>");
@@ -284,6 +297,24 @@ export async function routeTenantRequest(
     // GET is public (store front reads it), POST requires auth
     if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleDisplaySettings(request, ctx);
+  }
+  if (subPath === "/api/admin/tutorial") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    if (request.method === "GET") {
+      const row = await ctx.db.prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'tutorial_state'").bind(ctx.storeId).first<{ value: string }>();
+      return json({ ok: true, state: row?.value ? JSON.parse(row.value) : null });
+    }
+    if (request.method === "POST") {
+      const body = (await request.json()) as { completed?: boolean; dismissed?: boolean };
+      const existing = await ctx.db.prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'tutorial_state'").bind(ctx.storeId).first<{ value: string }>();
+      const state = existing?.value ? JSON.parse(existing.value) : {};
+      if (body.completed !== undefined) state.completed = body.completed;
+      if (body.dismissed !== undefined) state.dismissed = body.dismissed;
+      state.updatedAt = new Date().toISOString();
+      await ctx.db.prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'tutorial_state', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')").bind(ctx.storeId, JSON.stringify(state)).run();
+      return json({ ok: true, state });
+    }
+    return json({ ok: false, error: "Method Not Allowed" }, 405);
   }
   if (subPath === "/api/admin/store-name") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
