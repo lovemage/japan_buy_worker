@@ -1449,11 +1449,8 @@
   </div>
   <style>
     @keyframes aiEditSpin { to { transform: rotate(360deg); } }
-    .tut-highlight { position: relative; z-index: 10002; }
-    .tut-highlight::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 8px solid #333; animation: tutBounce 1s ease-in-out infinite; pointer-events: none; }
-    .tut-highlight::after { content: ""; position: absolute; inset: -4px; border: 2.5px solid #333; border-radius: 12px; pointer-events: none; animation: tutPulse 1.5s ease-in-out infinite; box-shadow: 0 0 12px rgba(0,0,0,0.15); }
-    @keyframes tutPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(0,0,0,0.15); } 50% { opacity: 0.5; box-shadow: 0 0 20px rgba(0,0,0,0.25); } }
-    @keyframes tutBounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-5px); } }
+    .tut-highlight { position: relative; z-index: 10002; background: #fff; border-radius: 10px; }
+    #tut-mask { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.55); pointer-events:none; }
   </style>
 
   <!-- Tutorial Guide -->
@@ -1471,6 +1468,7 @@
     </div>
   </div>
 
+  <div id="tut-mask"></div>
   <!-- Tutorial floating guide card -->
   <div id="tut-guide" style="display:none;position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:10001;width:92%;max-width:380px;">
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);padding:16px 18px;">
@@ -1548,13 +1546,17 @@
       document.querySelectorAll(".tut-highlight").forEach(function(el) {
         el.classList.remove("tut-highlight");
       });
+      var mask = document.getElementById("tut-mask");
+      if (mask) mask.style.display = "none";
     }
 
     function showGuide() {
       var s = TUT_STEPS[tutStep];
       if (!s) return;
       clearHighlights();
-      // Highlight the target nav element
+      // Show mask and highlight the target nav element
+      var mask = document.getElementById("tut-mask");
+      if (mask) mask.style.display = "block";
       if (s.highlight) {
         var target = document.querySelector(s.highlight);
         if (target) target.classList.add("tut-highlight");
