@@ -20,7 +20,7 @@
 | Database | Cloudflare D1 (SQLite) |
 | Storage | Cloudflare R2 (圖片) |
 | AI | Google Gemini Vision API |
-| Auth | Google OAuth + Firebase Phone Auth + Resend Email |
+| Auth | Google OAuth + Every8D SMS + Resend Email |
 | Frontend | Vanilla JS (MPA, no framework) |
 | Deploy | GitHub Actions → Cloudflare |
 
@@ -109,7 +109,8 @@
 | GET | `/auth/google/callback` | OAuth callback |
 | GET | `/auth/verify-email?token=` | Email 驗證 |
 | POST | `/auth/resend-verification` | 重發驗證信 |
-| POST | `/auth/verify-phone` | Firebase 手機驗證 |
+| POST | `/auth/send-phone-code` | 發送手機驗證碼 |
+| POST | `/auth/verify-phone` | 驗證手機號碼 |
 | POST | `/auth/complete-onboarding` | 完成開通（設 slug/name） |
 | GET | `/auth/me` | 當前 session store 資訊 |
 
@@ -203,7 +204,7 @@
 ```
 Google OAuth → 建立 store (onboarding_step=email_pending)
   → Resend 發驗證信 → 用戶點連結 → email_verified=1, step=phone_pending
-  → Firebase 手機驗證 → phone_verified=1, step=store_setup
+  → Every8D 手機驗證 → phone_verified=1, step=store_setup
   → 填寫 slug + name → step=complete
 ```
 
@@ -235,13 +236,15 @@ Email (白名單: lovemage@gmail.com, aistorm0910@gmail.com) + 密碼 → HMAC s
 ### wrangler.toml [vars]（非敏感）
 - `APP_URL` — 正式域名
 - `MAIN_DOMAIN` — 主域名（子網域判斷用）
-- `FIREBASE_PROJECT_ID` — Firebase 專案 ID
+- `EVERY8D_SITE_URL` — Every8D API 站點 (預設 new.e8d.tw)
 
 ### Secrets（wrangler secret put）
 - `GOOGLE_CLIENT_ID` — Google OAuth
 - `GOOGLE_CLIENT_SECRET` — Google OAuth
 - `RESEND_API_KEY` — Resend Email
-- `PLATFORM_ADMIN_PASSWORD` — 平台管理員密碼
+- `PLATFORM_ADMIN_PASSWORD`
+- `EVERY8D_UID` — Every8D 帳號
+- `EVERY8D_PWD` — Every8D 密碼
 
 ### .dev.vars（本機開發）
 同上，加上 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN`。

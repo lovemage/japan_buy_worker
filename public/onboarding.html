@@ -114,7 +114,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <button class="btn btn-primary" onclick="verifyPhoneCode()">驗證</button>
     </div>
     <p id="phone-error" class="error"></p>
-    <div id="recaptcha-container"></div>
   </div>
 
   <!-- Step 3: Store Setup -->
@@ -152,30 +151,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </div>
 
-<!-- Firebase SDK v12 modular -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyA-du36pezrcL6l_RWxoAxGnl3rQIrMPro",
-  authDomain: "vovosnap-f6c12.firebaseapp.com",
-  projectId: "vovosnap-f6c12",
-  storageBucket: "vovosnap-f6c12.firebasestorage.app",
-  messagingSenderId: "201485964855",
-  appId: "1:201485964855:web:c14b0ce08584ff01a0d1b2",
-  measurementId: "G-E3TD4YZSWY"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-auth.languageCode = "zh-TW";
-
 let currentStore = null;
-let confirmationResult = null;
 
-// Initialize Firebase (project ID injected from env at build or fetched from API)
-async function initFirebase() {
+// Initialize and check auth state
+async function initApp() {
   const configResp = await fetch("/auth/me", { credentials: "same-origin" });
   const configData = await configResp.json();
   if (!configData.ok) {
@@ -193,7 +173,7 @@ async function initFirebase() {
 }
 
 async function init() {
-  const data = await initFirebase();
+  const data = await initApp();
   if (!data) return;
 
   document.getElementById("loading").classList.add("hidden");
@@ -315,18 +295,7 @@ function startCooldown(seconds) {
   tick();
 }
 
-// Phone verification (Firebase v12 modular)
-function setupRecaptcha() {
-  try {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-      size: "invisible",
-      callback: () => { console.log("reCAPTCHA solved"); },
-    });
-  } catch (e) {
-    console.warn("RecaptchaVerifier init:", e);
-  }
-}
-
+// Phone verification via Every8D SMS
 function formatPhoneNumber(raw) {
   let num = raw.replace(/[\s\-()]/g, "");
   if (num.startsWith("0")) num = num.substring(1);
@@ -346,39 +315,43 @@ async function sendPhoneCode() {
   errEl.style.display = "none";
 
   try {
-    if (!window.recaptchaVerifier) setupRecaptcha();
-    confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
-    document.getElementById("verify-code-section").classList.remove("hidden");
-    btn.textContent = "已發送";
+    const resp = await fetch("/auth/send-phone-code", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ phoneNumber: phone }),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      document.getElementById("verify-code-section").classList.remove("hidden");
+      btn.textContent = "已發送";
+    } else {
+      errEl.textContent = data.error || "發送失敗";
+      errEl.style.display = "block";
+      btn.textContent = "發送驗證碼";
+      btn.disabled = false;
+    }
   } catch (e) {
     errEl.textContent = "發送失敗: " + (e.message || e);
     errEl.style.display = "block";
     btn.textContent = "發送驗證碼";
     btn.disabled = false;
-    // Reset reCAPTCHA on error
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
-    }
   }
 }
 
 async function verifyPhoneCode() {
   const code = document.getElementById("code-input").value.trim();
-  if (!code || !confirmationResult) return;
+  if (!code) return;
 
   const errEl = document.getElementById("phone-error");
   errEl.style.display = "none";
 
   try {
-    const result = await confirmationResult.confirm(code);
-    const idToken = await result.user.getIdToken();
-    const phone = formatPhoneNumber(document.getElementById("phone-input").value.trim());
-
     const resp = await fetch("/auth/verify-phone", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ idToken, phoneNumber: phone }),
+      credentials: "same-origin",
+      body: JSON.stringify({ code }),
     });
     const data = await resp.json();
     if (data.ok) {

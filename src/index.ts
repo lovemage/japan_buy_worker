@@ -13,6 +13,7 @@ import {
   handleSetEmail,
   handleVerifyEmail,
   handleResendVerificationEmail,
+  handleSendPhoneCode,
   handleVerifyPhone,
   handleCompleteOnboarding,
   handleGetCurrentStore,
@@ -38,7 +39,9 @@ type Env = {
   LINE_CHANNEL_ID: string;
   LINE_CHANNEL_SECRET: string;
   RESEND_API_KEY: string;
-  FIREBASE_PROJECT_ID: string;
+  EVERY8D_UID: string;
+  EVERY8D_PWD: string;
+  EVERY8D_SITE_URL: string;
   APP_URL: string;
   PLATFORM_ADMIN_PASSWORD?: string;
   // Multi-tenant domain
@@ -115,7 +118,9 @@ function getAuthEnv(env: Env) {
     LINE_CHANNEL_ID: env.LINE_CHANNEL_ID,
     LINE_CHANNEL_SECRET: env.LINE_CHANNEL_SECRET,
     RESEND_API_KEY: env.RESEND_API_KEY,
-    FIREBASE_PROJECT_ID: env.FIREBASE_PROJECT_ID,
+    EVERY8D_UID: env.EVERY8D_UID,
+    EVERY8D_PWD: env.EVERY8D_PWD,
+    EVERY8D_SITE_URL: env.EVERY8D_SITE_URL,
     APP_URL: env.APP_URL,
   };
 }
@@ -283,6 +288,9 @@ export default {
     }
     if (url.pathname === "/auth/resend-verification") {
       return handleResendVerificationEmail(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/send-phone-code") {
+      return handleSendPhoneCode(request, env.DB, getAuthEnv(env));
     }
     if (url.pathname === "/auth/verify-phone") {
       return handleVerifyPhone(request, env.DB, getAuthEnv(env));

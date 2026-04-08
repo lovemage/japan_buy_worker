@@ -124,7 +124,9 @@ type AuthEnv = {
   LINE_CHANNEL_ID: string;
   LINE_CHANNEL_SECRET: string;
   RESEND_API_KEY: string;
-  FIREBASE_PROJECT_ID: string;
+  EVERY8D_UID: string;
+  EVERY8D_PWD: string;
+  EVERY8D_SITE_URL: string;
   APP_URL: string; // e.g. "https://vovosnap.com"
 };
 
@@ -346,6 +348,13 @@ function decodeLineIdToken(idToken: string): LineIdTokenPayload {
   if (parts.length !== 3) throw new Error("Invalid LINE ID token");
   const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(parts[1])));
   return { sub: payload.sub, name: payload.name || "", email: payload.email };
+}
+
+// Helper for LINE ID token decoding
+function base64UrlDecode(str: string): Uint8Array {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
 }
 
 // ── LINE Login: initiate ──
@@ -679,8 +688,114 @@ export async function handleResendVerificationEmail(
   return json({ ok: true, message: "Verification email sent" });
 }
 
-// ── Firebase Phone Auth verification ──
+// ── Every8D SMS Phone verification ──
 
+import {
+  sendSMS,
+  generateVerificationCode,
+  createEvery8DConfig,
+} from "../../services/every8d.js";
+
+const SMS_CODE_EXPIRY_SECONDS = 600; // 10 minutes
+const SMS_MAX_ATTEMPTS = 5;
+
+/**
+ * Send phone verification code via Every8D SMS
+ */
+export async function handleSendPhoneCode(
+  request: Request,
+  db: D1DatabaseLike,
+  authEnv: AuthEnv
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+
+  // Get store from session
+  const cookies = parseCookieHeader(request.headers.get("cookie"));
+  const sessionToken = cookies[STORE_COOKIE_NAME];
+  if (!sessionToken) return json({ ok: false, error: "Unauthorized" }, 401);
+
+  const session = await db
+    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
+    .bind(sessionToken)
+    .first<{ store_id: number }>();
+  if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
+
+  let body: { phoneNumber?: string };
+  try {
+    body = (await request.json()) as { phoneNumber?: string };
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  const { phoneNumber } = body;
+  if (!phoneNumber) return json({ ok: false, error: "Missing phoneNumber" }, 400);
+
+  // Validate phone format (basic)
+  const cleanPhone = phoneNumber.replace(/[\s\-()]/g, "");
+  if (!/^[+]?[0-9]{8,15}$/.test(cleanPhone)) {
+    return json({ ok: false, error: "手機號碼格式不正確" }, 400);
+  }
+
+  // Check if phone number is already used by another store
+  const existing = await db
+    .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
+    .bind(cleanPhone, session.store_id)
+    .first<{ id: number }>();
+  if (existing) {
+    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+  }
+
+  // Rate limit: check if we sent a code recently (within 60 seconds)
+  const recentCode = await db
+    .prepare("SELECT id FROM phone_verification_codes WHERE store_id = ? AND created_at > datetime('now', '-60 seconds')")
+    .bind(session.store_id)
+    .first();
+  if (recentCode) {
+    return json({ ok: false, error: "請等待 60 秒後再重新發送" }, 429);
+  }
+
+  // Generate verification code
+  const code = generateVerificationCode();
+  const expiresAt = new Date(Date.now() + SMS_CODE_EXPIRY_SECONDS * 1000).toISOString();
+
+  // Delete old codes for this store
+  await db.prepare("DELETE FROM phone_verification_codes WHERE store_id = ?").bind(session.store_id).run();
+
+  // Insert new code
+  await db
+    .prepare("INSERT INTO phone_verification_codes (store_id, phone_number, code, expires_at) VALUES (?, ?, ?, ?)")
+    .bind(session.store_id, cleanPhone, code, expiresAt)
+    .run();
+
+  // Send SMS via Every8D
+  // Check credentials are configured
+  if (!authEnv.EVERY8D_UID || !authEnv.EVERY8D_PWD) {
+    console.error("Every8D credentials missing: EVERY8D_UID or EVERY8D_PWD not set");
+    return json({ ok: false, error: "簡訊服務未配置，請聯繫管理員" }, 500);
+  }
+
+  try {
+    const config = createEvery8DConfig({
+      EVERY8D_UID: authEnv.EVERY8D_UID,
+      EVERY8D_PWD: authEnv.EVERY8D_PWD,
+      EVERY8D_SITE_URL: authEnv.EVERY8D_SITE_URL,
+    });
+
+    const message = `您的 vovosnap 驗證碼為 ${code}，有效期 10 分鐘。如非本人操作請忽略此簡訊。`;
+    console.log("Sending SMS via Every8D to:", cleanPhone);
+    const result = await sendSMS(config, cleanPhone, message);
+    console.log("Every8D SMS result:", result);
+
+    return json({ ok: true, message: "驗證碼已發送" });
+  } catch (e) {
+    console.error("Every8D SMS error:", e);
+    return json({ ok: false, error: "發送簡訊失敗: " + (e instanceof Error ? e.message : String(e)) }, 500);
+  }
+}
+
+/**
+ * Verify phone code
+ */
 export async function handleVerifyPhone(
   request: Request,
   db: D1DatabaseLike,
@@ -699,32 +814,49 @@ export async function handleVerifyPhone(
     .first<{ store_id: number }>();
   if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
 
-  let body: { idToken?: string; phoneNumber?: string };
+  let body: { code?: string };
   try {
-    body = (await request.json()) as { idToken?: string; phoneNumber?: string };
+    body = (await request.json()) as { code?: string };
   } catch {
     return json({ ok: false, error: "Invalid JSON" }, 400);
   }
 
-  const { idToken, phoneNumber } = body;
-  if (!idToken || !phoneNumber) return json({ ok: false, error: "Missing idToken or phoneNumber" }, 400);
+  const { code } = body;
+  if (!code) return json({ ok: false, error: "Missing verification code" }, 400);
 
-  // Verify Firebase ID token
-  const firebaseValid = await verifyFirebaseIdToken(idToken, authEnv.FIREBASE_PROJECT_ID);
-  if (!firebaseValid) {
-    return json({ ok: false, error: "Invalid Firebase token" }, 400);
+  // Get stored verification code
+  const storedCode = await db
+    .prepare("SELECT id, phone_number, code, attempts, expires_at FROM phone_verification_codes WHERE store_id = ?")
+    .bind(session.store_id)
+    .first<{ id: number; phone_number: string; code: string; attempts: number; expires_at: string }>();
+
+  if (!storedCode) {
+    return json({ ok: false, error: "請先發送驗證碼" }, 400);
   }
 
-  // Check if phone number is already used by another store
-  const existing = await db
-    .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
-    .bind(phoneNumber, session.store_id)
-    .first<{ id: number }>();
-  if (existing) {
-    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+  // Check expiry
+  if (new Date(storedCode.expires_at) < new Date()) {
+    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
+    return json({ ok: false, error: "驗證碼已過期，請重新發送" }, 400);
   }
 
-  // Update store with verified phone
+  // Check attempts
+  if (storedCode.attempts >= SMS_MAX_ATTEMPTS) {
+    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
+    return json({ ok: false, error: "嘗試次數過多，請重新發送驗證碼" }, 429);
+  }
+
+  // Verify code
+  if (storedCode.code !== code) {
+    // Increment attempts
+    await db
+      .prepare("UPDATE phone_verification_codes SET attempts = attempts + 1 WHERE id = ?")
+      .bind(storedCode.id)
+      .run();
+    return json({ ok: false, error: "驗證碼錯誤" }, 400);
+  }
+
+  // Code is correct - update store with verified phone
   await db
     .prepare(
       `UPDATE stores SET phone_number = ?, phone_verified = 1,
@@ -732,67 +864,13 @@ export async function handleVerifyPhone(
        updated_at = datetime('now')
        WHERE id = ?`
     )
-    .bind(phoneNumber, session.store_id)
+    .bind(storedCode.phone_number, session.store_id)
     .run();
 
+  // Delete used verification code
+  await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
+
   return json({ ok: true });
-}
-
-// Verify Firebase ID token using Google's public keys
-function base64UrlDecode(str: string): Uint8Array {
-  const padded = str.replace(/-/g, "+").replace(/_/g, "/");
-  const binary = atob(padded);
-  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
-}
-
-async function verifyFirebaseIdToken(idToken: string, projectId: string): Promise<boolean> {
-  try {
-    const parts = idToken.split(".");
-    if (parts.length !== 3) return false;
-
-    const [headerB64, payloadB64, sigB64] = parts;
-
-    // Decode header to get kid and alg
-    const header = JSON.parse(new TextDecoder().decode(base64UrlDecode(headerB64)));
-    const kid = header.kid;
-    if (header.alg !== "RS256") return false;
-
-    // Fetch Google's JWK public keys (not x509)
-    const jwkResp = await fetch(
-      "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
-    );
-    if (!jwkResp.ok) return false;
-    const jwkData = (await jwkResp.json()) as { keys: Array<{ kid: string; kty: string; n: string; e: string; alg: string; use: string }> };
-    const jwk = jwkData.keys.find((k) => k.kid === kid);
-    if (!jwk) return false;
-
-    // Import the JWK public key
-    const key = await crypto.subtle.importKey(
-      "jwk",
-      { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: "RS256", ext: true },
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["verify"]
-    );
-
-    // Verify signature
-    const signInput = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-    const signature = base64UrlDecode(sigB64);
-
-    const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature.buffer as ArrayBuffer, signInput);
-    if (!valid) return false;
-
-    // Verify claims
-    const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)));
-    const now = Math.floor(Date.now() / 1000);
-    if (payload.aud !== projectId) return false;
-    if (payload.iss !== `https://securetoken.google.com/${projectId}`) return false;
-    if (payload.exp < now) return false;
-
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 // ── Store onboarding: set slug and finalize ──

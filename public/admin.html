@@ -1299,48 +1299,13 @@
   }, 600);
   </script>
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA-du36pezrcL6l_RWxoAxGnl3rQIrMPro",
-    authDomain: "vovosnap-f6c12.firebaseapp.com",
-    projectId: "vovosnap-f6c12",
-    storageBucket: "vovosnap-f6c12.firebasestorage.app",
-    messagingSenderId: "201485964855",
-    appId: "1:201485964855:web:c14b0ce08584ff01a0d1b2",
-    measurementId: "G-E3TD4YZSWY"
-  };
-
-  const firebaseApp = initializeApp(firebaseConfig);
-  const auth = getAuth(firebaseApp);
-  auth.languageCode = "zh-TW";
-
-  let phoneConfirmation = null;
-  let recaptchaVerifier = null;
+  // Phone verification via Every8D SMS (no Firebase)
 
   function formatPhoneNumber(raw) {
     let num = String(raw || "").replace(/[\s\-()]/g, "");
     if (num.startsWith("0")) num = num.substring(1);
     if (!num.startsWith("+")) num = "+886" + num;
     return num;
-  }
-
-  function setPhoneStatus(text, color) {
-    const el = document.getElementById("phone-verify-status");
-    if (!el) return;
-    el.textContent = text || "";
-    el.style.display = text ? "block" : "none";
-    if (color) el.style.color = color;
-  }
-
-  function ensureRecaptcha() {
-    if (recaptchaVerifier) return recaptchaVerifier;
-    recaptchaVerifier = new RecaptchaVerifier(auth, "admin-recaptcha-container", {
-      size: "invisible",
-      callback: () => {},
-    });
-    return recaptchaVerifier;
   }
 
   async function loadPhoneVerifyState() {
@@ -1355,11 +1320,11 @@
       const phone = data.store.phone_number || "";
 
       if (isVerified) {
-        if (currentEl) currentEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' + (phone ? phone : "已驗證") + '</span>';
+        if (currentEl) currentEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' + (phone ? phone : "Verified") + '</span>';
         if (formEl) formEl.classList.add("hidden");
         setPhoneStatus("", "");
       } else {
-        if (currentEl) currentEl.textContent = "尚未完成手機驗證（Free 方案未驗證最多上架 5 件，驗證後可上架 10 件）";
+        if (currentEl) currentEl.textContent = "Phone not verified (Free plan: max 5 products without verification, 10 with verification)";
         if (formEl) formEl.classList.remove("hidden");
         setPhoneStatus("", "");
       }
@@ -1374,62 +1339,72 @@
 
     const raw = input.value.trim();
     if (!raw) {
-      setPhoneStatus("請先輸入手機號碼", "var(--admin-danger)");
+      setPhoneStatus("Please enter phone number", "var(--admin-danger)");
       return;
     }
 
     const phone = formatPhoneNumber(raw);
     btn.disabled = true;
-    setPhoneStatus("發送中...", "var(--admin-text-muted)");
+    setPhoneStatus("Sending...", "var(--admin-text-muted)");
 
     try {
-      const appVerifier = ensureRecaptcha();
-      phoneConfirmation = await signInWithPhoneNumber(auth, phone, appVerifier);
-      wrap.classList.remove("hidden");
-      setPhoneStatus("驗證碼已發送", "var(--admin-success)");
-      btn.textContent = "重新發送";
-      btn.disabled = false;
-    } catch (err) {
-      setPhoneStatus("發送失敗，請稍後重試", "var(--admin-danger)");
-      btn.disabled = false;
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear();
-        recaptchaVerifier = null;
+      const resp = await fetch("/auth/send-phone-code", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ phoneNumber: phone }),
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        wrap.classList.remove("hidden");
+        setPhoneStatus("Verification code sent", "var(--admin-success)");
+        btn.textContent = "Resend";
+        btn.disabled = false;
+      } else {
+        setPhoneStatus(data.error || "Failed to send", "var(--admin-danger)");
+        btn.disabled = false;
       }
+    } catch (err) {
+      setPhoneStatus("Failed to send, please try again", "var(--admin-danger)");
+      btn.disabled = false;
     }
   }
 
   async function confirmPhoneCodeFromAdmin() {
     const codeEl = document.getElementById("admin-phone-code-input");
-    const phoneEl = document.getElementById("admin-phone-input");
-    if (!codeEl || !phoneEl || !phoneConfirmation) return;
+    if (!codeEl) return;
 
     const code = codeEl.value.trim();
     if (!code) {
-      setPhoneStatus("請輸入驗證碼", "var(--admin-danger)");
+      setPhoneStatus("Please enter verification code", "var(--admin-danger)");
       return;
     }
 
     try {
-      const result = await phoneConfirmation.confirm(code);
-      const idToken = await result.user.getIdToken();
-      const phone = formatPhoneNumber(phoneEl.value.trim());
       const resp = await fetch("/auth/verify-phone", {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ idToken, phoneNumber: phone }),
+        body: JSON.stringify({ code }),
       });
       const data = await resp.json();
       if (!data.ok) {
-        setPhoneStatus(data.error || "手機驗證失敗", "var(--admin-danger)");
+        setPhoneStatus(data.error || "Phone verification failed", "var(--admin-danger)");
         return;
       }
-      setPhoneStatus("手機驗證成功，重新載入中...", "var(--admin-success)");
+      setPhoneStatus("Phone verified, reloading...", "var(--admin-success)");
       setTimeout(() => location.reload(), 600);
     } catch {
-      setPhoneStatus("驗證碼錯誤或已過期，請重試", "var(--admin-danger)");
+      setPhoneStatus("Invalid or expired code, please try again", "var(--admin-danger)");
     }
+  }
+
+  function setPhoneStatus(text, color) {
+    const el = document.getElementById("phone-verify-status");
+    if (!el) return;
+    el.textContent = text || "";
+    el.style.display = text ? "block" : "none";
+    if (color) el.style.color = color;
   }
 
   document.getElementById("admin-send-phone-code")?.addEventListener("click", sendPhoneCodeFromAdmin);
