@@ -1466,8 +1466,8 @@
     </div>
   </div>
 
-  <!-- Interactive tutorial banner (top of screen) -->
-  <div id="tut-guide" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;width:92%;max-width:400px;">
+  <!-- Interactive tutorial banner (floating above bottom nav) -->
+  <div id="tut-guide" style="display:none;position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));top:auto;left:50%;transform:translateX(-50%);z-index:10000;width:92%;max-width:400px;">
     <div style="background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);border:1px solid #e5e5e5;display:flex;padding:16px;gap:12px;align-items:flex-start;">
       <div id="tut-guide-avatar" style="width:40px;height:40px;border-radius:50%;background:#e5e5e5;overflow:hidden;flex-shrink:0;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5" style="margin:10px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
