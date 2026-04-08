@@ -314,12 +314,15 @@ async function openEditModal(btn) {
 
   modal.classList.remove("hidden");
 
-  // Fetch product detail to get gallery
+  // Fetch product detail to get gallery and description
+  document.getElementById("edit-description").value = "";
   if (code) {
     const res = await apiFetch(`/api/product?code=${encodeURIComponent(code)}`);
     if (res.ok) {
       const data = await res.json();
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
+      const descEl = document.getElementById("edit-description");
+      if (descEl && data.product?.description) descEl.value = data.product.description;
     }
   }
   rebuildEditOrdered();
@@ -401,6 +404,7 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
+    description: document.getElementById("edit-description")?.value?.trim() || "",
     gallery: editOrderedItems.filter(i => i.type === "existing").map(i => i.url),
     newImages: editOrderedItems.filter(i => i.type === "new").map(i => i.img.base64),
     tags,

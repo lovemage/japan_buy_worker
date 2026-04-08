@@ -237,6 +237,7 @@ export async function handleAdminProductUpdate(
     brand?: string;
     category?: string;
     priceJpyTaxIn?: number | null;
+    description?: string;
     gallery?: string[];
     newImages?: string[];
     tags?: string[];
@@ -276,6 +277,18 @@ export async function handleAdminProductUpdate(
     sets.push("tags = ?"); params.push(JSON.stringify(filtered));
   }
 
+  // Build updated source_payload_json (description + gallery merged)
+  let payloadObj: Record<string, unknown> = {};
+  try {
+    payloadObj = current?.source_payload_json ? JSON.parse(current.source_payload_json) : {};
+  } catch { /* empty */ }
+  let payloadChanged = false;
+
+  if (body.description !== undefined) {
+    payloadObj.description = body.description;
+    payloadChanged = true;
+  }
+
   // Handle gallery updates (existing URLs kept + new images uploaded)
   let finalGallery: string[] | undefined;
   if (body.gallery !== undefined || (body.newImages && body.newImages.length > 0)) {
@@ -283,10 +296,7 @@ export async function handleAdminProductUpdate(
     if (body.gallery !== undefined) {
       existingGallery = body.gallery;
     } else {
-      try {
-        const parsed = current?.source_payload_json ? JSON.parse(current.source_payload_json) : {};
-        existingGallery = Array.isArray(parsed.gallery) ? parsed.gallery : [];
-      } catch { /* empty */ }
+      existingGallery = Array.isArray(payloadObj.gallery) ? payloadObj.gallery as string[] : [];
     }
 
     // Upload new images to R2
@@ -305,21 +315,17 @@ export async function handleAdminProductUpdate(
     }
 
     finalGallery = [...existingGallery, ...newUrls];
-
-    // Store all images regardless of plan — public API enforces display limit
-
-    // Update source_payload_json with new gallery
-    let payloadObj: Record<string, unknown> = {};
-    try {
-      payloadObj = current?.source_payload_json ? JSON.parse(current.source_payload_json) : {};
-    } catch { /* empty */ }
     payloadObj.gallery = finalGallery;
-    sets.push("source_payload_json = ?");
-    params.push(JSON.stringify(payloadObj));
+    payloadChanged = true;
 
     // Update image_url to first gallery image
     sets.push("image_url = ?");
     params.push(finalGallery[0] || null);
+  }
+
+  if (payloadChanged) {
+    sets.push("source_payload_json = ?");
+    params.push(JSON.stringify(payloadObj));
   }
 
   if (sets.length === 0) {
