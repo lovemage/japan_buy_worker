@@ -1449,6 +1449,9 @@
   </div>
   <style>
     @keyframes aiEditSpin { to { transform: rotate(360deg); } }
+    .tut-highlight { position: relative; z-index: 10002; }
+    .tut-highlight::after { content: ""; position: absolute; inset: -4px; border: 2px solid #333; border-radius: 10px; pointer-events: none; animation: tutPulse 1.5s ease-in-out infinite; }
+    @keyframes tutPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
 
   <!-- Tutorial Guide -->
@@ -1467,7 +1470,7 @@
   </div>
 
   <!-- Tutorial floating guide card -->
-  <div id="tut-guide" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10001;width:92%;max-width:380px;">
+  <div id="tut-guide" style="display:none;position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:10001;width:92%;max-width:380px;">
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);padding:16px 18px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
         <div id="tut-guide-avatar" style="width:36px;height:36px;border-radius:50%;background:#e5e5e5;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
@@ -1504,23 +1507,23 @@
     var TUT_STEPS = [
       {
         title: "確認定價與匯率設定",
-        desc: "這裡是定價設定頁面。請確認你的匯率、利潤百分比（或固定加價）和運輸費用。這些數值是商品價格計算的基礎，設定完成後記得按「儲存」。",
-        tab: "settings", subtab: "pricing"
+        desc: "點擊底部「設定」導航，再選「定價」分頁。在那裡確認匯率、利潤和運輸費用，這是商品價格計算的基礎。",
+        highlight: '[data-tab="settings"]'
       },
       {
         title: "填寫結帳訊息與賣場規則",
-        desc: "這裡是外觀設定頁面。請填寫「結帳感謝訊息」讓客人下單後看到你的訊息，以及「賣場規則」告知客人運費、付款方式等資訊。填好後按「儲存外觀設定」。",
-        tab: "settings", subtab: "display"
+        desc: "在「設定」中選「外觀」分頁，填寫結帳感謝訊息和賣場規則，讓客人了解你的付款方式和運費規定。",
+        highlight: '[data-tab="settings"]'
       },
       {
         title: "完成手機驗證",
-        desc: "這裡是帳號基本設定。完成手機驗證後，你的免費方案可以多上架 5 件商品（共 10 件）。輸入手機號碼，收到簡訊後填入驗證碼即可。",
-        tab: "settings", subtab: "account"
+        desc: "在「設定」中選「基本」分頁，找到手機驗證區塊。完成驗證後免費方案可多上架 5 件商品（共 10 件）。",
+        highlight: '[data-tab="settings"]'
       },
       {
         title: "拍照上架第一個商品",
-        desc: "這裡是拍照上架頁面。點擊拍照或選擇圖片，AI 會自動辨識商品名稱、翻譯和計算價格。拍攝時注意光線充足，效果會更好。上架後可以在商品管理中編輯修改。",
-        tab: "camera", subtab: null
+        desc: "點擊底部「拍照」導航，拍攝你的第一個商品。光線充足效果更好。上架後可在「商品」頁面編輯修改資料。",
+        highlight: '[data-tab="camera"]'
       }
     ];
 
@@ -1531,16 +1534,20 @@
       });
     }
 
+    function clearHighlights() {
+      document.querySelectorAll(".tut-highlight").forEach(function(el) {
+        el.classList.remove("tut-highlight");
+      });
+    }
+
     function showGuide() {
       var s = TUT_STEPS[tutStep];
       if (!s) return;
-      // Navigate to the correct tab/subtab
-      if (typeof switchTab === "function") switchTab(s.tab);
-      if (s.subtab) {
-        setTimeout(function() {
-          var btn = document.querySelector('[data-subtab="' + s.subtab + '"]');
-          if (btn) btn.click();
-        }, 200);
+      clearHighlights();
+      // Highlight the target nav element
+      if (s.highlight) {
+        var target = document.querySelector(s.highlight);
+        if (target) target.classList.add("tut-highlight");
       }
       // Update guide card
       document.getElementById("tut-guide-step").textContent = "步驟 " + (tutStep + 1) + " / " + TUT_STEPS.length;
@@ -1586,6 +1593,7 @@
 
     window.endTutorial = function() {
       document.getElementById("tut-guide").style.display = "none";
+      clearHighlights();
       apiFetch("/api/admin/tutorial", {
         method: "POST",
         headers: { "content-type": "application/json" },
