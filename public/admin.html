@@ -1449,10 +1449,6 @@
   </div>
   <style>
     @keyframes aiEditSpin { to { transform: rotate(360deg); } }
-    #tut-mask { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.55); pointer-events:none; }
-    .admin-bottom-nav.tut-nav-raised { z-index: 10002; position: relative; }
-    .admin-bottom-nav.tut-nav-raised .admin-nav-item { opacity: 0.3; pointer-events: none; transition: opacity 0.2s; }
-    .admin-bottom-nav.tut-nav-raised .tut-highlight { opacity: 1; pointer-events: auto; background: #fff; border-radius: 8px; box-shadow: 0 0 0 4px rgba(255,255,255,0.9); }
   </style>
 
   <!-- Tutorial Guide -->
@@ -1470,11 +1466,10 @@
     </div>
   </div>
 
-  <div id="tut-mask"></div>
-  <!-- Tutorial floating guide card -->
-  <div id="tut-guide" style="display:none;position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:10001;width:92%;max-width:380px;">
-    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);padding:16px 18px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+  <!-- Tutorial guide card (centered) -->
+  <div id="tut-guide" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.18);padding:22px;width:92%;max-width:360px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div id="tut-guide-avatar" style="width:36px;height:36px;border-radius:50%;background:#e5e5e5;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
@@ -1486,21 +1481,19 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div id="tut-guide-desc" style="font-size:13px;color:#666;line-height:1.7;margin-bottom:6px;"></div>
-      <div id="tut-guide-hint" style="font-size:12px;color:#333;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:4px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-        <span id="tut-guide-hint-text">點擊下方閃爍的按鈕</span>
-      </div>
+      <!-- Navigation path indicator -->
+      <div id="tut-guide-path" style="display:flex;align-items:center;gap:6px;background:#f5f5f5;border-radius:10px;padding:10px 12px;margin-bottom:12px;flex-wrap:wrap;"></div>
+      <div id="tut-guide-desc" style="font-size:13px;color:#666;line-height:1.7;margin-bottom:14px;"></div>
       <!-- Progress dots -->
-      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:12px;">
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;">
         <div class="tut-dot" data-dot="0" style="width:8px;height:8px;border-radius:50%;background:#ddd;"></div>
         <div class="tut-dot" data-dot="1" style="width:8px;height:8px;border-radius:50%;background:#ddd;"></div>
         <div class="tut-dot" data-dot="2" style="width:8px;height:8px;border-radius:50%;background:#ddd;"></div>
         <div class="tut-dot" data-dot="3" style="width:8px;height:8px;border-radius:50%;background:#ddd;"></div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button id="tut-prev-btn" onclick="tutPrev()" style="flex:1;padding:9px;background:#f3f3f3;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;color:#666;">上一步</button>
-        <button id="tut-next-btn" onclick="tutNext()" style="flex:1;padding:9px;background:#333;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;">下一步</button>
+        <button id="tut-prev-btn" onclick="tutPrev()" style="flex:1;padding:10px;background:#f3f3f3;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;color:#666;">上一步</button>
+        <button id="tut-next-btn" onclick="tutNext()" style="flex:1;padding:10px;background:#333;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;">下一步</button>
       </div>
     </div>
   </div>
@@ -1510,30 +1503,40 @@
     var state = window.__TUTORIAL_STATE;
     var avatarUrl = window.__TUTORIAL_AVATAR || "";
     var tutStep = 0;
+
+    // SVG icons (inline, small)
+    var ICON_SETTINGS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+    var ICON_CAMERA = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+    var ICON_ARROW = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+
+    function pathHtml(parts) {
+      return parts.map(function(p, i) {
+        var html = '<span style="display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;color:#333;">' + p + '</span>';
+        if (i < parts.length - 1) html += '<span style="display:inline-flex;">' + ICON_ARROW + '</span>';
+        return html;
+      }).join("");
+    }
+
     var TUT_STEPS = [
       {
         title: "確認定價與匯率設定",
         desc: "確認匯率、利潤百分比和運輸費用，這是所有商品價格計算的基礎。設定完成後記得按儲存。",
-        hint: "點擊「設定」 > 選「定價」分頁",
-        highlight: '[data-tab="settings"]'
+        path: [ICON_SETTINGS + ' 設定', '定價']
       },
       {
         title: "填寫結帳訊息與賣場規則",
         desc: "填寫結帳感謝訊息讓客人下單後看到你的回覆，賣場規則告知客人運費和付款方式。",
-        hint: "點擊「設定」 > 選「外觀」分頁",
-        highlight: '[data-tab="settings"]'
+        path: [ICON_SETTINGS + ' 設定', '外觀']
       },
       {
         title: "完成手機驗證",
         desc: "完成手機驗證後，免費方案可多上架 5 件商品（共 10 件）。輸入手機號碼，收到簡訊後填入驗證碼。",
-        hint: "點擊「設定」 > 選「基本」分頁",
-        highlight: '[data-tab="settings"]'
+        path: [ICON_SETTINGS + ' 設定', '基本']
       },
       {
         title: "拍照上架第一個商品",
         desc: "拍攝你的第一個商品，AI 會自動辨識名稱、翻譯和計算價格。光線充足效果更好，上架後可編輯修改。",
-        hint: "點擊「拍照」按鈕",
-        highlight: '[data-tab="camera"]'
+        path: [ICON_CAMERA + ' 拍照']
       }
     ];
 
@@ -1544,48 +1547,20 @@
       });
     }
 
-    function clearHighlights() {
-      document.querySelectorAll(".tut-highlight").forEach(function(el) {
-        el.classList.remove("tut-highlight");
-      });
-      var nav = document.getElementById("admin-bottom-nav");
-      if (nav) nav.classList.remove("tut-nav-raised");
-      var mask = document.getElementById("tut-mask");
-      if (mask) mask.style.display = "none";
-    }
-
     function showGuide() {
       var s = TUT_STEPS[tutStep];
       if (!s) return;
-      clearHighlights();
-      // Show mask and highlight the target nav element
-      var mask = document.getElementById("tut-mask");
-      if (mask) mask.style.display = "block";
-      var nav = document.getElementById("admin-bottom-nav");
-      if (nav) nav.classList.add("tut-nav-raised");
-      if (s.highlight) {
-        var target = document.querySelector(s.highlight);
-        if (target) target.classList.add("tut-highlight");
-      }
-      // Update guide card
       document.getElementById("tut-guide-step").textContent = "步驟 " + (tutStep + 1) + " / " + TUT_STEPS.length;
       document.getElementById("tut-guide-title").textContent = s.title;
+      document.getElementById("tut-guide-path").innerHTML = pathHtml(s.path);
       document.getElementById("tut-guide-desc").textContent = s.desc;
-      document.getElementById("tut-guide-hint-text").textContent = s.hint || "";
-      // Dots
       document.querySelectorAll(".tut-dot").forEach(function(d, i) {
         d.style.background = i === tutStep ? "#333" : "#ddd";
       });
-      // Button states
       document.getElementById("tut-prev-btn").style.display = tutStep === 0 ? "none" : "";
       var nextBtn = document.getElementById("tut-next-btn");
-      if (tutStep === TUT_STEPS.length - 1) {
-        nextBtn.textContent = "完成教學";
-      } else {
-        nextBtn.textContent = "下一步";
-      }
-      // Show
-      document.getElementById("tut-guide").style.display = "block";
+      nextBtn.textContent = tutStep === TUT_STEPS.length - 1 ? "完成教學" : "下一步";
+      document.getElementById("tut-guide").style.display = "flex";
       setAllAvatars();
     }
 
@@ -1596,10 +1571,7 @@
     };
 
     window.tutNext = function() {
-      if (tutStep >= TUT_STEPS.length - 1) {
-        endTutorial();
-        return;
-      }
+      if (tutStep >= TUT_STEPS.length - 1) { endTutorial(); return; }
       tutStep++;
       showGuide();
     };
@@ -1612,7 +1584,6 @@
 
     window.endTutorial = function() {
       document.getElementById("tut-guide").style.display = "none";
-      clearHighlights();
       apiFetch("/api/admin/tutorial", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -1640,7 +1611,6 @@
       });
     };
 
-    // Auto-show on first load if not completed/dismissed
     if (!state || (!state.completed && !state.dismissed)) {
       setTimeout(function() {
         setAllAvatars();
