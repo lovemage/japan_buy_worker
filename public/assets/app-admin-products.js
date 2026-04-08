@@ -181,22 +181,41 @@ function renderEditGallery() {
     container.innerHTML = countHtml;
     return;
   }
+  const svgLeft = '<svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+  const svgRight = '<svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+  const svgTrash = '<svg viewBox="0 0 24 24" fill="none" stroke="#c44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
   container.innerHTML = items.map((item, pos) => {
     const locked = pos >= maxImages;
     const isNew = item.type === "new";
     const src = isNew ? item.img.dataUrl : prefixImageUrl(item.url);
     return `
-    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}"${isNew ? ' style="border-color:var(--brand)"' : ""}>
-      <img src="${src}" alt="圖片 ${pos + 1}" />
-      ${locked ? '<div class="edit-gallery__lock">🔒</div>' : ""}
-      <button class="edit-gallery__remove" data-pos="${pos}" type="button">&times;</button>
-      <div class="photo-reorder">
-        ${pos > 0 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="-1" type="button">◀</button>` : ""}
-        ${pos < totalCount - 1 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="1" type="button">▶</button>` : ""}
+    <div class="edit-gallery__item${locked ? " edit-gallery__item--locked" : ""}">
+      <div class="edit-gallery__thumb"${isNew ? ' style="border-color:var(--brand)"' : ""} data-src="${src}">
+        <img src="${src}" alt="圖片 ${pos + 1}" />
+        ${locked ? '<div class="edit-gallery__lock">&#128274;</div>' : ""}
+      </div>
+      <div class="edit-gallery__actions">
+        ${pos > 0 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="-1" type="button" title="左移">${svgLeft}</button>` : ""}
+        <button class="edit-gallery__remove" data-pos="${pos}" type="button" title="刪除">${svgTrash}</button>
+        ${pos < totalCount - 1 ? `<button class="edit-gallery__move" data-pos="${pos}" data-dir="1" type="button" title="右移">${svgRight}</button>` : ""}
       </div>
     </div>`;
   }).join("") + countHtml +
     (totalCount > maxImages ? '<p class="meta" style="width:100%;margin:4px 0 0;color:var(--admin-warning,#D4960A);">升級方案享更多功能</p>' : "");
+
+  // Click to enlarge
+  container.querySelectorAll(".edit-gallery__thumb").forEach((thumb) => {
+    thumb.addEventListener("click", () => {
+      const src = thumb.getAttribute("data-src");
+      if (!src) return;
+      const lb = document.createElement("div");
+      lb.className = "edit-lightbox";
+      lb.innerHTML = '<img src="' + src + '" />';
+      lb.addEventListener("click", () => lb.remove());
+      document.body.appendChild(lb);
+    });
+  });
 
   container.querySelectorAll(".edit-gallery__remove").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -219,7 +238,6 @@ function renderEditGallery() {
         if (res.ok) {
           const data = await res.json();
           editOrderedItems.splice(pos, 1);
-          // Also update editGallery from server response
           editGallery = data.gallery || [];
           syncFromOrdered();
           renderEditGallery();
@@ -518,7 +536,10 @@ function initEditModal() {
   document.getElementById("edit-cancel")?.addEventListener("click", closeEditModal);
   document.getElementById("edit-save")?.addEventListener("click", saveEdit);
   document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
-  document.getElementById("btn-edit-ai-image")?.addEventListener("click", doEditAiImage);
+  document.getElementById("btn-edit-ai-image")?.addEventListener("click", function() {
+    if (!confirm("AI 圖片優化僅會處理第一張圖片，優化後的圖片會自動插入為首張。\n\n確定要進行 AI 圖片優化嗎？")) return;
+    doEditAiImage();
+  });
   document.querySelector(".edit-modal__backdrop")?.addEventListener("click", closeEditModal);
   document.getElementById("edit-category-pick")?.addEventListener("click", function(e) {
     e.stopPropagation();
