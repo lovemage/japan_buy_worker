@@ -32,7 +32,6 @@
             </button>
           </div>
         </div>
-        <div id="promo-switch" class="view-switch" aria-label="優惠篩選切換"></div>
       </div>
       <div id="deadline-countdown" class="deadline-countdown" style="display:none;"></div>
     </header>
@@ -55,6 +54,10 @@
         <div class="drawer-section">
           <h3 class="drawer-section-title">種類</h3>
           <div id="category-filters" class="drawer-filter-list"></div>
+        </div>
+        <div class="drawer-section" id="promo-drawer-section" style="display:none;">
+          <h3 class="drawer-section-title">價格篩選</h3>
+          <div id="promo-switch" class="view-switch" aria-label="價格篩選切換" style="flex-wrap:wrap;gap:6px;"></div>
         </div>
       </div>
     </aside>
@@ -153,11 +156,11 @@
       if (close) close.addEventListener("click", shut);
       if (overlay) overlay.addEventListener("click", shut);
     })();
-    // Render promo filter buttons from admin display settings
+    // Render promo filter buttons inside drawer
     var promos = ds.promoFilters || [];
-    // Render promo filters only if enabled
     var promoEl = document.getElementById("promo-switch");
-    if (promoEl && ds.promoEnabled !== false && promos.length > 0) {
+    var promoSection = document.getElementById("promo-drawer-section");
+    if (promoEl && ds.promoEnabled && promos.length > 0) {
       promoEl.innerHTML = promos
         .filter(function(p) { return typeof p === "string" ? true : p.enabled !== false; })
         .map(function(p) {
@@ -165,8 +168,10 @@
           var label = typeof p === "string" ? (p === "all" ? "一般" : "&lt;" + p) : (p.label || p.value);
           return '<button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="' + val + '">' + label + '</button>';
         }).join("");
-    } else if (promoEl) {
-      promoEl.style.display = "none";
+      if (promoSection) promoSection.style.display = "";
+    } else {
+      if (promoEl) promoEl.innerHTML = "";
+      if (promoSection) promoSection.style.display = "none";
     }
     </script>
     <!-- Popup ad carousel -->

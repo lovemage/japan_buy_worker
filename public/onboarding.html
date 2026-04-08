@@ -132,6 +132,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="error" id="slug-error"></div>
     </div>
     <div class="form-group">
+      <label>網站說明（選填）</label>
+      <input type="text" id="store-description" placeholder="日韓代購，品質保證" maxlength="200" />
+      <div class="hint">顯示在商店名稱下方，讓客人一眼了解你的服務（最多 200 字）</div>
+    </div>
+    <div class="form-group">
       <label>LINE ID（選填）</label>
       <input type="text" id="store-line" placeholder="@xiaomei_buy" />
     </div>
@@ -406,7 +411,7 @@ async function completeSetup() {
   const resp = await fetch("/auth/complete-onboarding", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ slug, name, lineId: lineId || undefined }),
+    body: JSON.stringify({ slug, name, lineId: lineId || undefined, description: document.getElementById("store-description").value.trim() || undefined }),
   });
   const data = await resp.json();
   if (data.ok) {

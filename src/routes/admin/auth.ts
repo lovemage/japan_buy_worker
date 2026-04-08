@@ -821,9 +821,9 @@ export async function handleCompleteOnboarding(
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
   if (!store.email_verified) return json({ ok: false, error: "Email not verified" }, 400);
 
-  let body: { slug?: string; name?: string; lineId?: string };
+  let body: { slug?: string; name?: string; lineId?: string; description?: string };
   try {
-    body = (await request.json()) as { slug?: string; name?: string; lineId?: string };
+    body = (await request.json()) as typeof body;
   } catch {
     return json({ ok: false, error: "Invalid JSON" }, 400);
   }
@@ -850,13 +850,14 @@ export async function handleCompleteOnboarding(
   }
 
   // Update store
+  const description = (body.description || "").trim().slice(0, 200);
   await db
     .prepare(
-      `UPDATE stores SET slug = ?, name = ?, line_id = ?, subdomain = ?,
+      `UPDATE stores SET slug = ?, name = ?, description = ?, line_id = ?, subdomain = ?,
        onboarding_step = 'complete', updated_at = datetime('now')
        WHERE id = ?`
     )
-    .bind(slug, name, body.lineId || null, slug, session.store_id)
+    .bind(slug, name, description, body.lineId || null, slug, session.store_id)
     .run();
 
   return json({ ok: true, slug, redirectUrl: `/s/${slug}/admin` });

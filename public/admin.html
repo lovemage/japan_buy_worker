@@ -530,7 +530,7 @@
             <h3 class="settings-group__title" style="margin:0;">價格篩選按鈕</h3>
             <label class="toggle-label">
               <span id="promo-toggle-label" style="color:var(--admin-text-muted);">開啟</span>
-              <input type="checkbox" id="promo-toggle" checked onchange="onPromoToggle()" />
+              <input type="checkbox" id="promo-toggle" onchange="onPromoToggle()" />
             </label>
           </div>
           <div id="promo-editor-wrap">
@@ -800,7 +800,7 @@
 
   // Display settings
   var promoItems = [];
-  var promoEnabled = true;
+  var promoEnabled = false;
 
   function loadDisplaySettings() {
     apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
