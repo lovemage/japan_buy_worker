@@ -82,6 +82,14 @@ export function formatPhoneNumberForEvery8D(raw: string): string {
   return num;
 }
 
+function formatPhoneNumberForEvery8DLegacy(raw: string): string {
+  const num = raw.replace(/[^0-9+]/g, "");
+  if (num.startsWith("+886")) return `0${num.slice(4)}`;
+  if (num.startsWith("886")) return `0${num.slice(3)}`;
+  if (num.startsWith("9") && num.length === 9) return `0${num}`;
+  return num;
+}
+
 /**
  * Send SMS via Every8D API
  * @returns batch ID for tracking
@@ -91,24 +99,19 @@ export async function sendSMS(
   phone: string,
   message: string
 ): Promise<{ batchId: string; credit: number }> {
-  const token = await getConnectionToken(config);
-
   const formattedPhone = formatPhoneNumberForEvery8D(phone);
+  const legacyPhone = formatPhoneNumberForEvery8DLegacy(formattedPhone);
 
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/sendSMS.ashx`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "authorization": `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      UID: config.uid,
-      PWD: config.pwd,
-      SB: "", // Subject (optional)
-      MSG: message,
-      DEST: formattedPhone,
-      ST: "", // Send time, empty = immediate
-    }),
+  const query = new URLSearchParams({
+    UID: config.uid,
+    PWD: config.pwd,
+    SB: "", // Subject (optional)
+    MSG: message,
+    DEST: legacyPhone,
+    ST: "", // Send time, empty = immediate
+  });
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`, {
+    method: "GET",
   });
 
   if (!resp.ok) {
@@ -116,19 +119,27 @@ export async function sendSMS(
     throw new Error(`Every8D SMS failed: ${resp.status} ${text}`);
   }
 
-  const data = (await resp.json()) as {
-    Result: boolean;
-    Msg?: string;
-    Status?: string;
-  };
+  const raw = await resp.text();
+  let msg = raw;
 
-  if (!data.Result) {
-    throw new Error(`Every8D SMS send failed: ${data.Status} ${data.Msg}`);
+  // API may return JSON (Result/Msg) or plain text (e.g. "-27,電話號碼不得為空")
+  if (raw.startsWith("{")) {
+    const data = JSON.parse(raw) as {
+      Result: boolean;
+      Msg?: string;
+      Status?: string;
+    };
+    if (!data.Result) {
+      throw new Error(`Every8D SMS send failed: ${data.Status || ""} ${data.Msg || ""}`.trim());
+    }
+    msg = data.Msg || "";
+  } else if (raw.startsWith("-")) {
+    const parts = raw.split(",");
+    throw new Error(`Every8D SMS send failed: ${parts.slice(1).join(",").trim() || raw}`);
   }
 
-  // Msg format: "credit,count,batchId"
-  // e.g., "999630.00,1,1,0,7eff1d50-8814-4f17-aa61-cb23b97987fa"
-  const parts = (data.Msg || "").split(",");
+  // Msg format: "credit,count,success,fail,batchId"
+  const parts = msg.split(",");
   const credit = parseFloat(parts[0]) || 0;
   const batchId = parts[4] || "";
 
@@ -139,18 +150,12 @@ export async function sendSMS(
  * Get remaining credit balance
  */
 export async function getCredit(config: Every8DConfig): Promise<number> {
-  const token = await getConnectionToken(config);
-
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      "authorization": `Bearer ${token}`,
-    },
-    body: new URLSearchParams({
-      UID: config.uid,
-      PWD: config.pwd,
-    }),
+  const query = new URLSearchParams({
+    UID: config.uid,
+    PWD: config.pwd,
+  });
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx?${query.toString()}`, {
+    method: "GET",
   });
 
   if (!resp.ok) {

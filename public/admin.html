@@ -1132,10 +1132,16 @@
   (function() {
     var plan = window.__STORE_PLAN || "free";
     if (plan === "pro") return;
-    apiFetch("/api/products?limit=1").then(function(r){return r.json()}).then(function(d) {
+    Promise.all([
+      apiFetch("/api/products?limit=1").then(function(r){return r.json()}),
+      apiFetch("/auth/me").then(function(r){return r.json()}).catch(function(){ return { ok: false }; })
+    ]).then(function(res) {
+      var d = res[0];
+      var me = res[1];
       if (!d.ok) return;
       var total = d.paging ? d.paging.total || 0 : 0;
-      var limit = plan === "starter" ? 50 : 10;
+      var phoneVerified = !!(me && me.ok && me.store && me.store.phone_verified);
+      var limit = plan === "starter" ? 50 : (phoneVerified ? 10 : 5);
       var pct = Math.min(100, Math.round(total / limit * 100));
       var color = pct >= 90 ? "var(--admin-danger)" : pct >= 70 ? "var(--admin-warning)" : "var(--admin-text)";
       var bar = document.createElement("div");

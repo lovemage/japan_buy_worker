@@ -321,6 +321,8 @@ export async function handlePlatformAdmin(
     await db.prepare("DELETE FROM requirement_forms WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM products WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM app_settings WHERE store_id = ?").bind(storeId).run();
+    await db.prepare("DELETE FROM phone_verification_codes WHERE store_id = ?").bind(storeId).run();
+    await db.prepare("DELETE FROM email_verifications WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM store_sessions WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM stores WHERE id = ?").bind(storeId).run();
     return json({ ok: true, deletedId: storeId });
