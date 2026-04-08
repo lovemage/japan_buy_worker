@@ -1450,8 +1450,10 @@
   <style>
     @keyframes aiEditSpin { to { transform: rotate(360deg); } }
     .tut-highlight { position: relative; z-index: 10002; }
-    .tut-highlight::after { content: ""; position: absolute; inset: -4px; border: 2px solid #333; border-radius: 10px; pointer-events: none; animation: tutPulse 1.5s ease-in-out infinite; }
-    @keyframes tutPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .tut-highlight::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 8px solid #333; animation: tutBounce 1s ease-in-out infinite; pointer-events: none; }
+    .tut-highlight::after { content: ""; position: absolute; inset: -4px; border: 2.5px solid #333; border-radius: 12px; pointer-events: none; animation: tutPulse 1.5s ease-in-out infinite; box-shadow: 0 0 12px rgba(0,0,0,0.15); }
+    @keyframes tutPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(0,0,0,0.15); } 50% { opacity: 0.5; box-shadow: 0 0 20px rgba(0,0,0,0.25); } }
+    @keyframes tutBounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-5px); } }
   </style>
 
   <!-- Tutorial Guide -->
@@ -1484,7 +1486,11 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div id="tut-guide-desc" style="font-size:13px;color:#666;line-height:1.7;margin-bottom:14px;"></div>
+      <div id="tut-guide-desc" style="font-size:13px;color:#666;line-height:1.7;margin-bottom:6px;"></div>
+      <div id="tut-guide-hint" style="font-size:12px;color:#333;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:4px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        <span id="tut-guide-hint-text">點擊下方閃爍的按鈕</span>
+      </div>
       <!-- Progress dots -->
       <div style="display:flex;gap:6px;justify-content:center;margin-bottom:12px;">
         <div class="tut-dot" data-dot="0" style="width:8px;height:8px;border-radius:50%;background:#ddd;"></div>
@@ -1507,22 +1513,26 @@
     var TUT_STEPS = [
       {
         title: "確認定價與匯率設定",
-        desc: "點擊底部「設定」導航，再選「定價」分頁。在那裡確認匯率、利潤和運輸費用，這是商品價格計算的基礎。",
+        desc: "確認匯率、利潤百分比和運輸費用，這是所有商品價格計算的基礎。設定完成後記得按儲存。",
+        hint: "點擊「設定」 > 選「定價」分頁",
         highlight: '[data-tab="settings"]'
       },
       {
         title: "填寫結帳訊息與賣場規則",
-        desc: "在「設定」中選「外觀」分頁，填寫結帳感謝訊息和賣場規則，讓客人了解你的付款方式和運費規定。",
+        desc: "填寫結帳感謝訊息讓客人下單後看到你的回覆，賣場規則告知客人運費和付款方式。",
+        hint: "點擊「設定」 > 選「外觀」分頁",
         highlight: '[data-tab="settings"]'
       },
       {
         title: "完成手機驗證",
-        desc: "在「設定」中選「基本」分頁，找到手機驗證區塊。完成驗證後免費方案可多上架 5 件商品（共 10 件）。",
+        desc: "完成手機驗證後，免費方案可多上架 5 件商品（共 10 件）。輸入手機號碼，收到簡訊後填入驗證碼。",
+        hint: "點擊「設定」 > 選「基本」分頁",
         highlight: '[data-tab="settings"]'
       },
       {
         title: "拍照上架第一個商品",
-        desc: "點擊底部「拍照」導航，拍攝你的第一個商品。光線充足效果更好。上架後可在「商品」頁面編輯修改資料。",
+        desc: "拍攝你的第一個商品，AI 會自動辨識名稱、翻譯和計算價格。光線充足效果更好，上架後可編輯修改。",
+        hint: "點擊「拍照」按鈕",
         highlight: '[data-tab="camera"]'
       }
     ];
@@ -1553,6 +1563,7 @@
       document.getElementById("tut-guide-step").textContent = "步驟 " + (tutStep + 1) + " / " + TUT_STEPS.length;
       document.getElementById("tut-guide-title").textContent = s.title;
       document.getElementById("tut-guide-desc").textContent = s.desc;
+      document.getElementById("tut-guide-hint-text").textContent = s.hint || "";
       // Dots
       document.querySelectorAll(".tut-dot").forEach(function(d, i) {
         d.style.background = i === tutStep ? "#333" : "#ddd";
