@@ -1449,8 +1449,10 @@
   </div>
   <style>
     @keyframes aiEditSpin { to { transform: rotate(360deg); } }
-    .tut-highlight { position: relative; z-index: 10002; background: #fff; border-radius: 10px; }
     #tut-mask { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.55); pointer-events:none; }
+    .admin-bottom-nav.tut-nav-raised { z-index: 10002; position: relative; }
+    .admin-bottom-nav.tut-nav-raised .admin-nav-item { opacity: 0.3; pointer-events: none; transition: opacity 0.2s; }
+    .admin-bottom-nav.tut-nav-raised .tut-highlight { opacity: 1; pointer-events: auto; background: #fff; border-radius: 8px; box-shadow: 0 0 0 4px rgba(255,255,255,0.9); }
   </style>
 
   <!-- Tutorial Guide -->
@@ -1546,6 +1548,8 @@
       document.querySelectorAll(".tut-highlight").forEach(function(el) {
         el.classList.remove("tut-highlight");
       });
+      var nav = document.getElementById("admin-bottom-nav");
+      if (nav) nav.classList.remove("tut-nav-raised");
       var mask = document.getElementById("tut-mask");
       if (mask) mask.style.display = "none";
     }
@@ -1557,6 +1561,8 @@
       // Show mask and highlight the target nav element
       var mask = document.getElementById("tut-mask");
       if (mask) mask.style.display = "block";
+      var nav = document.getElementById("admin-bottom-nav");
+      if (nav) nav.classList.add("tut-nav-raised");
       if (s.highlight) {
         var target = document.querySelector(s.highlight);
         if (target) target.classList.add("tut-highlight");
