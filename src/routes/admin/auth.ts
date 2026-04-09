@@ -736,13 +736,19 @@ export async function handleSendPhoneCode(
     return json({ ok: false, error: "手機號碼格式不正確" }, 400);
   }
 
+  // Test phone numbers — bypass duplicate check
+  const TEST_PHONES = ["+886912305910", "+886928901964", "+886979661678"];
+  const isTestPhone = TEST_PHONES.includes(cleanPhone);
+
   // Check if phone number is already used by another store
-  const existing = await db
-    .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
-    .bind(cleanPhone, session.store_id)
-    .first<{ id: number }>();
-  if (existing) {
-    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+  if (!isTestPhone) {
+    const existing = await db
+      .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
+      .bind(cleanPhone, session.store_id)
+      .first<{ id: number }>();
+    if (existing) {
+      return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+    }
   }
 
   // Rate limit: check if we sent a code recently (within 60 seconds)

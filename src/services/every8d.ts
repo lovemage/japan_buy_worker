@@ -32,7 +32,7 @@ async function getConnectionToken(config: Every8DConfig): Promise<string> {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "User-Agent": "vovosnap/1.0",
+      "User-Agent": "Mozilla/5.0 (compatible; vovosnap/1.0)",
       "Accept": "application/json",
     },
     body: JSON.stringify({
@@ -106,7 +106,7 @@ export async function sendSMS(
   const formattedPhone = formatPhoneNumberForEvery8D(phone);
   const legacyPhone = formatPhoneNumberForEvery8DLegacy(formattedPhone);
 
-  const formBody = new URLSearchParams({
+  const query = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
     SB: "",
@@ -114,19 +114,25 @@ export async function sendSMS(
     DEST: legacyPhone,
     ST: "",
   });
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/sendSMS.ashx`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "vovosnap/1.0",
-      "Accept": "text/plain, application/json",
-    },
-    body: formBody.toString(),
-  });
+  const url = `https://${config.siteUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`;
 
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Every8D SMS failed: ${resp.status} ${text}`);
+  // Retry up to 2 times on 403 (CloudFront intermittent blocks)
+  let resp: Response | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; vovosnap/1.0)",
+        "Accept": "text/plain, application/json",
+      },
+    });
+    if (resp.status !== 403) break;
+    if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+  }
+
+  if (!resp || !resp.ok) {
+    const text = resp ? await resp.text() : "No response";
+    throw new Error(`Every8D SMS failed: ${resp?.status} ${text}`);
   }
 
   const raw = await resp.text();
@@ -160,18 +166,16 @@ export async function sendSMS(
  * Get remaining credit balance
  */
 export async function getCredit(config: Every8DConfig): Promise<number> {
-  const formBody = new URLSearchParams({
+  const query = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
   });
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx`, {
-    method: "POST",
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx?${query.toString()}`, {
+    method: "GET",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "vovosnap/1.0",
+      "User-Agent": "Mozilla/5.0 (compatible; vovosnap/1.0)",
       "Accept": "text/plain, application/json",
     },
-    body: formBody.toString(),
   });
 
   if (!resp.ok) {
@@ -206,6 +210,6 @@ export function createEvery8DConfig(env: {
   return {
     uid: env.EVERY8D_UID,
     pwd: env.EVERY8D_PWD,
-    siteUrl: env.EVERY8D_SITE_URL || "oms.every8d.com",
+    siteUrl: env.EVERY8D_SITE_URL || "new.e8d.tw",
   };
 }
