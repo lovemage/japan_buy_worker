@@ -1,161 +1,76 @@
 /**
  * Every8D SMS API Service
- * API 2.1 Specification
+ * API 2.1 Specification — all endpoints use POST + application/x-www-form-urlencoded
+ * Auth: M2 mode (UID/PWD in body)
  */
 
 type Every8DConfig = {
   uid: string;
   pwd: string;
-  siteUrl: string; // e.g., "new.e8d.tw" for enterprise users
+  siteUrl: string; // e.g., "new.e8d.tw"
 };
-
-type TokenCache = {
-  token: string;
-  expiresAt: number; // Unix timestamp in ms
-};
-
-// Token cache (valid for 8 hours, refresh 7.5 hours to be safe)
-let tokenCache: TokenCache | null = null;
-const TOKEN_REFRESH_BEFORE_EXPIRY_MS = 30 * 60 * 1000; // Refresh 30 min before expiry
-
-/**
- * Get connection token from Every8D
- * Token is valid for 8 hours, recommended to refresh every 8 hours
- */
-async function getConnectionToken(config: Every8DConfig): Promise<string> {
-  // Return cached token if still valid
-  if (tokenCache && tokenCache.expiresAt > Date.now() + TOKEN_REFRESH_BEFORE_EXPIRY_MS) {
-    return tokenCache.token;
-  }
-
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/ConnectionHandler.ashx`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "User-Agent": "Mozilla/5.0 (compatible; vovosnap/1.0)",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify({
-      HandlerType: 3,
-      VerifyType: 1,
-      UID: config.uid,
-      PWD: config.pwd,
-    }),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Every8D token request failed: ${resp.status} ${text}`);
-  }
-
-  const data = (await resp.json()) as { Result: boolean; Msg?: string; Status?: string };
-  
-  if (!data.Result) {
-    throw new Error(`Every8D token failed: ${data.Status} ${data.Msg}`);
-  }
-
-  // Token valid for 8 hours
-  const token = data.Msg;
-  if (!token) {
-    throw new Error("Every8D returned empty token");
-  }
-
-  tokenCache = {
-    token,
-    expiresAt: Date.now() + 8 * 60 * 60 * 1000, // 8 hours
-  };
-
-  return token;
-}
 
 /**
  * Format phone number for Every8D
- * Input: 0912345678 or +886912345678
- * Output: +886912345678
+ * Input: 0912345678 or +886912345678 or 912345678
+ * Output: +886912345678 (international format as per API spec)
  */
 export function formatPhoneNumberForEvery8D(raw: string): string {
   let num = raw.replace(/[\s\-()]/g, "");
-  // Remove leading 0 if present
-  if (num.startsWith("0")) {
-    num = num.substring(1);
-  }
-  // Add +886 if not present
-  if (!num.startsWith("+")) {
-    num = "+886" + num;
-  }
-  return num;
-}
-
-function formatPhoneNumberForEvery8DLegacy(raw: string): string {
-  const num = raw.replace(/[^0-9+]/g, "");
-  if (num.startsWith("+886")) return `0${num.slice(4)}`;
-  if (num.startsWith("886")) return `0${num.slice(3)}`;
-  if (num.startsWith("9") && num.length === 9) return `0${num}`;
+  if (num.startsWith("0")) num = num.substring(1);
+  if (!num.startsWith("+")) num = "+886" + num;
   return num;
 }
 
 /**
- * Send SMS via Every8D API
- * @returns batch ID for tracking
+ * Send SMS via Every8D API 2.1 (Section 2.2)
+ * POST https://[SiteUrl]/API21/HTTP/SendSMS.ashx
+ * Content-Type: application/x-www-form-urlencoded
  */
 export async function sendSMS(
   config: Every8DConfig,
   phone: string,
   message: string
 ): Promise<{ batchId: string; credit: number }> {
-  const formattedPhone = formatPhoneNumberForEvery8D(phone);
-  const legacyPhone = formatPhoneNumberForEvery8DLegacy(formattedPhone);
+  const dest = formatPhoneNumberForEvery8D(phone);
 
-  const query = new URLSearchParams({
+  const body = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
     SB: "",
     MSG: message,
-    DEST: legacyPhone,
+    DEST: dest,
     ST: "",
   });
-  const url = `https://${config.siteUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`;
 
-  // Retry up to 2 times on 403 (CloudFront intermittent blocks)
-  let resp: Response | null = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    resp = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; vovosnap/1.0)",
-        "Accept": "text/plain, application/json",
-      },
-    });
-    if (resp.status !== 403) break;
-    if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-  }
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/SendSMS.ashx`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
 
-  if (!resp || !resp.ok) {
-    const text = resp ? await resp.text() : "No response";
-    throw new Error(`Every8D SMS failed: ${resp?.status} ${text}`);
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Every8D SMS failed: ${resp.status} ${text.slice(0, 200)}`);
   }
 
   const raw = await resp.text();
-  let msg = raw;
 
-  // API may return JSON (Result/Msg) or plain text (e.g. "-27,電話號碼不得為空")
+  // Error: JSON response with Result=false
   if (raw.startsWith("{")) {
-    const data = JSON.parse(raw) as {
-      Result: boolean;
-      Msg?: string;
-      Status?: string;
-    };
+    const data = JSON.parse(raw) as { Result: boolean; Status?: string; Msg?: string };
     if (!data.Result) {
-      throw new Error(`Every8D SMS send failed: ${data.Status || ""} ${data.Msg || ""}`.trim());
+      throw new Error(`Every8D SMS error: ${data.Status || ""} ${data.Msg || ""}`.trim());
     }
-    msg = data.Msg || "";
-  } else if (raw.startsWith("-")) {
-    const parts = raw.split(",");
-    throw new Error(`Every8D SMS send failed: ${parts.slice(1).join(",").trim() || raw}`);
   }
 
-  // Msg format: "credit,count,success,fail,batchId"
-  const parts = msg.split(",");
+  // Error: negative code (e.g. "-27,電話號碼不得為空")
+  if (raw.startsWith("-")) {
+    throw new Error(`Every8D SMS error: ${raw}`);
+  }
+
+  // Success: "CREDIT,SENDED,COST,UNSEND,BATCHID"
+  const parts = raw.split(",");
   const credit = parseFloat(parts[0]) || 0;
   const batchId = parts[4] || "";
 
@@ -163,28 +78,28 @@ export async function sendSMS(
 }
 
 /**
- * Get remaining credit balance
+ * Get remaining credit balance (Section 4.1)
+ * POST https://[SiteUrl]/API21/HTTP/GetCredit.ashx
+ * Content-Type: application/x-www-form-urlencoded
  */
 export async function getCredit(config: Every8DConfig): Promise<number> {
-  const query = new URLSearchParams({
+  const body = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
   });
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx?${query.toString()}`, {
-    method: "GET",
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; vovosnap/1.0)",
-      "Accept": "text/plain, application/json",
-    },
+
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/GetCredit.ashx`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
   });
 
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(`Every8D credit check failed: ${resp.status} ${text}`);
+    throw new Error(`Every8D credit check failed: ${resp.status} ${text.slice(0, 200)}`);
   }
 
   const text = await resp.text();
-  // Response format: "1000.00" or "-99,Error message"
   if (text.startsWith("-")) {
     throw new Error(`Every8D credit error: ${text}`);
   }
