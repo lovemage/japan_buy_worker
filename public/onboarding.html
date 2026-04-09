@@ -323,7 +323,7 @@ async function sendPhoneCode() {
     const data = await resp.json();
     if (data.ok) {
       document.getElementById("verify-code-section").classList.remove("hidden");
-      btn.textContent = "已發送";
+      startPhoneCooldown(btn);
     } else {
       errEl.textContent = data.error || "發送失敗";
       errEl.style.display = "block";
@@ -336,6 +336,22 @@ async function sendPhoneCode() {
     btn.textContent = "發送驗證碼";
     btn.disabled = false;
   }
+}
+
+function startPhoneCooldown(btn) {
+  let remaining = 60;
+  btn.disabled = true;
+  btn.textContent = "重新發送（" + remaining + "s）";
+  const timer = setInterval(function() {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timer);
+      btn.disabled = false;
+      btn.textContent = "重新發送驗證碼";
+    } else {
+      btn.textContent = "重新發送（" + remaining + "s）";
+    }
+  }, 1000);
 }
 
 async function verifyPhoneCode() {
