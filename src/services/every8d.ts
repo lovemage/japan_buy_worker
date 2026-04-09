@@ -33,32 +33,6 @@ function summarizeHttpFailure(resp: Response, text: string): string {
   return `${resp.status}${summary ? ` ${summary}` : ""} ${text.slice(0, 400)}`;
 }
 
-async function getConnectionToken(config: Every8DConfig): Promise<string> {
-  const baseUrl = `https://${config.siteUrl}`;
-  const resp = await fetch(`${baseUrl}/API21/HTTP/ConnectionHandler.ashx`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      HandlerType: 3,
-      VerifyType: 1,
-      UID: config.uid,
-      PWD: config.pwd,
-    }),
-  });
-
-  const raw = await resp.text();
-  if (!resp.ok) {
-    throw new Error(`Every8D token failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
-  }
-
-  const data = JSON.parse(raw) as { Result: boolean; Msg?: string; Status?: string };
-  if (!data.Result || !data.Msg) {
-    throw new Error(`Every8D token error: ${data.Status || ""} ${data.Msg || ""}`.trim());
-  }
-
-  return data.Msg;
-}
-
 function parseSendSMSRawResponse(raw: string): { batchId: string; credit: number } {
   // Error: JSON response with Result=false
   if (raw.startsWith("{")) {
@@ -92,6 +66,14 @@ export function formatPhoneNumberForEvery8D(raw: string): string {
   return num;
 }
 
+function formatPhoneNumberForEvery8DLegacy(raw: string): string {
+  const num = raw.replace(/[^0-9+]/g, "");
+  if (num.startsWith("+886")) return `0${num.slice(4)}`;
+  if (num.startsWith("886")) return `0${num.slice(3)}`;
+  if (num.startsWith("9") && num.length === 9) return `0${num}`;
+  return num;
+}
+
 /**
  * Send SMS via Every8D API 2.1 (Section 2.2)
  * POST https://[SiteUrl]/API21/HTTP/SendSMS.ashx
@@ -102,10 +84,10 @@ export async function sendSMS(
   phone: string,
   message: string
 ): Promise<{ batchId: string; credit: number }> {
-  const dest = formatPhoneNumberForEvery8D(phone);
+  const formattedPhone = formatPhoneNumberForEvery8D(phone);
+  const dest = formatPhoneNumberForEvery8DLegacy(formattedPhone);
   const baseUrl = `https://${config.siteUrl}`;
-
-  const m2Body = new URLSearchParams({
+  const query = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
     SB: "",
@@ -114,52 +96,11 @@ export async function sendSMS(
     ST: "",
   });
 
-  const resp = await fetch(`${baseUrl}/API21/HTTP/SendSMS.ashx`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: m2Body.toString(),
-  });
+  const resp = await fetch(`${baseUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`, { method: "GET" });
 
   const raw = await resp.text();
-
-  if (resp.ok) {
-    return parseSendSMSRawResponse(raw);
-  }
-
-  // Fallback: if M2 is rejected at gateway, try M1 token auth.
-  if (resp.status === 403) {
-    try {
-      const token = await getConnectionToken(config);
-      const m1Body = new URLSearchParams({
-        SB: "",
-        MSG: message,
-        DEST: dest,
-        ST: "",
-      });
-
-      const retryResp = await fetch(`${baseUrl}/API21/HTTP/SendSMS.ashx`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Bearer ${token}`,
-        },
-        body: m1Body.toString(),
-      });
-
-      const retryRaw = await retryResp.text();
-      if (!retryResp.ok) {
-        throw new Error(`Every8D SMS failed after token retry: ${summarizeHttpFailure(retryResp, retryRaw)}`);
-      }
-      return parseSendSMSRawResponse(retryRaw);
-    } catch (retryErr) {
-      const reason = retryErr instanceof Error ? retryErr.message : String(retryErr);
-      throw new Error(
-        `Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl}) | token retry failed: ${reason}`
-      );
-    }
-  }
-
-  throw new Error(`Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
+  if (!resp.ok) throw new Error(`Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
+  return parseSendSMSRawResponse(raw);
 }
 
 /**
