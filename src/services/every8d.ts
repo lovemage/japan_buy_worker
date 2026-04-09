@@ -23,6 +23,63 @@ function normalizeEvery8DSiteUrl(raw: string | undefined): string {
   }
 }
 
+function summarizeHttpFailure(resp: Response, text: string): string {
+  const server = resp.headers.get("server") || "";
+  const via = resp.headers.get("via") || "";
+  const cache = resp.headers.get("x-cache") || "";
+  const summary = [server && `server=${server}`, via && `via=${via}`, cache && `x-cache=${cache}`]
+    .filter(Boolean)
+    .join(" ");
+  return `${resp.status}${summary ? ` ${summary}` : ""} ${text.slice(0, 400)}`;
+}
+
+async function getConnectionToken(config: Every8DConfig): Promise<string> {
+  const baseUrl = `https://${config.siteUrl}`;
+  const resp = await fetch(`${baseUrl}/API21/HTTP/ConnectionHandler.ashx`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      HandlerType: 3,
+      VerifyType: 1,
+      UID: config.uid,
+      PWD: config.pwd,
+    }),
+  });
+
+  const raw = await resp.text();
+  if (!resp.ok) {
+    throw new Error(`Every8D token failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
+  }
+
+  const data = JSON.parse(raw) as { Result: boolean; Msg?: string; Status?: string };
+  if (!data.Result || !data.Msg) {
+    throw new Error(`Every8D token error: ${data.Status || ""} ${data.Msg || ""}`.trim());
+  }
+
+  return data.Msg;
+}
+
+function parseSendSMSRawResponse(raw: string): { batchId: string; credit: number } {
+  // Error: JSON response with Result=false
+  if (raw.startsWith("{")) {
+    const data = JSON.parse(raw) as { Result: boolean; Status?: string; Msg?: string };
+    if (!data.Result) {
+      throw new Error(`Every8D SMS error: ${data.Status || ""} ${data.Msg || ""}`.trim());
+    }
+  }
+
+  // Error: negative code (e.g. "-27,電話號碼不得為空")
+  if (raw.startsWith("-")) {
+    throw new Error(`Every8D SMS error: ${raw}`);
+  }
+
+  // Success: "CREDIT,SENDED,COST,UNSEND,BATCHID"
+  const parts = raw.split(",");
+  const credit = parseFloat(parts[0]) || 0;
+  const batchId = parts[4] || "";
+  return { batchId, credit };
+}
+
 /**
  * Format phone number for Every8D
  * Input: 0912345678 or +886912345678 or 912345678
@@ -48,7 +105,7 @@ export async function sendSMS(
   const dest = formatPhoneNumberForEvery8D(phone);
   const baseUrl = `https://${config.siteUrl}`;
 
-  const body = new URLSearchParams({
+  const m2Body = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
     SB: "",
@@ -60,37 +117,49 @@ export async function sendSMS(
   const resp = await fetch(`${baseUrl}/API21/HTTP/SendSMS.ashx`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
+    body: m2Body.toString(),
   });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(
-      `Every8D SMS failed: ${resp.status} (${baseUrl}) ${text.slice(0, 200)}`
-    );
-  }
 
   const raw = await resp.text();
 
-  // Error: JSON response with Result=false
-  if (raw.startsWith("{")) {
-    const data = JSON.parse(raw) as { Result: boolean; Status?: string; Msg?: string };
-    if (!data.Result) {
-      throw new Error(`Every8D SMS error: ${data.Status || ""} ${data.Msg || ""}`.trim());
+  if (resp.ok) {
+    return parseSendSMSRawResponse(raw);
+  }
+
+  // Fallback: if M2 is rejected at gateway, try M1 token auth.
+  if (resp.status === 403) {
+    try {
+      const token = await getConnectionToken(config);
+      const m1Body = new URLSearchParams({
+        SB: "",
+        MSG: message,
+        DEST: dest,
+        ST: "",
+      });
+
+      const retryResp = await fetch(`${baseUrl}/API21/HTTP/SendSMS.ashx`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${token}`,
+        },
+        body: m1Body.toString(),
+      });
+
+      const retryRaw = await retryResp.text();
+      if (!retryResp.ok) {
+        throw new Error(`Every8D SMS failed after token retry: ${summarizeHttpFailure(retryResp, retryRaw)}`);
+      }
+      return parseSendSMSRawResponse(retryRaw);
+    } catch (retryErr) {
+      const reason = retryErr instanceof Error ? retryErr.message : String(retryErr);
+      throw new Error(
+        `Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl}) | token retry failed: ${reason}`
+      );
     }
   }
 
-  // Error: negative code (e.g. "-27,電話號碼不得為空")
-  if (raw.startsWith("-")) {
-    throw new Error(`Every8D SMS error: ${raw}`);
-  }
-
-  // Success: "CREDIT,SENDED,COST,UNSEND,BATCHID"
-  const parts = raw.split(",");
-  const credit = parseFloat(parts[0]) || 0;
-  const batchId = parts[4] || "";
-
-  return { batchId, credit };
+  throw new Error(`Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
 }
 
 /**
@@ -113,9 +182,7 @@ export async function getCredit(config: Every8DConfig): Promise<number> {
 
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(
-      `Every8D credit check failed: ${resp.status} (${baseUrl}) ${text.slice(0, 200)}`
-    );
+    throw new Error(`Every8D credit check failed: ${summarizeHttpFailure(resp, text)} (${baseUrl})`);
   }
 
   const text = await resp.text();
