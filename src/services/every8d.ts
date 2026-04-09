@@ -66,14 +66,6 @@ export function formatPhoneNumberForEvery8D(raw: string): string {
   return num;
 }
 
-function formatPhoneNumberForEvery8DLegacy(raw: string): string {
-  const num = raw.replace(/[^0-9+]/g, "");
-  if (num.startsWith("+886")) return `0${num.slice(4)}`;
-  if (num.startsWith("886")) return `0${num.slice(3)}`;
-  if (num.startsWith("9") && num.length === 9) return `0${num}`;
-  return num;
-}
-
 /**
  * Send SMS via Every8D API 2.1 (Section 2.2)
  * POST https://[SiteUrl]/API21/HTTP/SendSMS.ashx
@@ -84,10 +76,9 @@ export async function sendSMS(
   phone: string,
   message: string
 ): Promise<{ batchId: string; credit: number }> {
-  const formattedPhone = formatPhoneNumberForEvery8D(phone);
-  const dest = formatPhoneNumberForEvery8DLegacy(formattedPhone);
+  const dest = formatPhoneNumberForEvery8D(phone);
   const baseUrl = `https://${config.siteUrl}`;
-  const query = new URLSearchParams({
+  const body = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
     SB: "",
@@ -96,7 +87,11 @@ export async function sendSMS(
     ST: "",
   });
 
-  const resp = await fetch(`${baseUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`, { method: "GET" });
+  const resp = await fetch(`${baseUrl}/API21/HTTP/SendSMS.ashx`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
 
   const raw = await resp.text();
   if (!resp.ok) throw new Error(`Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
