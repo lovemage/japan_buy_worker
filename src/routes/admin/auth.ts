@@ -788,7 +788,7 @@ export async function handleSendPhoneCode(
     });
 
     const message = `您的 vovosnap 驗證碼為 ${code}，有效期 10 分鐘。如非本人操作請忽略此簡訊。`;
-    console.log("Sending SMS via Every8D to:", cleanPhone);
+    console.log("Sending SMS via Every8D to:", cleanPhone, "site:", config.siteUrl);
     const result = await sendSMS(config, cleanPhone, message);
     console.log("Every8D SMS result:", result);
 

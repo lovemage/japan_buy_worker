@@ -10,6 +10,19 @@ type Every8DConfig = {
   siteUrl: string; // e.g., "new.e8d.tw"
 };
 
+function normalizeEvery8DSiteUrl(raw: string | undefined): string {
+  const value = (raw || "new.e8d.tw").trim();
+  if (!value) return "new.e8d.tw";
+
+  const withProtocol = value.includes("://") ? value : `https://${value}`;
+  try {
+    return new URL(withProtocol).host || "new.e8d.tw";
+  } catch {
+    // Fallback for unexpected malformed input.
+    return value.replace(/^https?:\/\//i, "").replace(/\/.*$/, "") || "new.e8d.tw";
+  }
+}
+
 /**
  * Format phone number for Every8D
  * Input: 0912345678 or +886912345678 or 912345678
@@ -33,6 +46,7 @@ export async function sendSMS(
   message: string
 ): Promise<{ batchId: string; credit: number }> {
   const dest = formatPhoneNumberForEvery8D(phone);
+  const baseUrl = `https://${config.siteUrl}`;
 
   const body = new URLSearchParams({
     UID: config.uid,
@@ -43,7 +57,7 @@ export async function sendSMS(
     ST: "",
   });
 
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/SendSMS.ashx`, {
+  const resp = await fetch(`${baseUrl}/API21/HTTP/SendSMS.ashx`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
@@ -51,7 +65,9 @@ export async function sendSMS(
 
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(`Every8D SMS failed: ${resp.status} ${text.slice(0, 200)}`);
+    throw new Error(
+      `Every8D SMS failed: ${resp.status} (${baseUrl}) ${text.slice(0, 200)}`
+    );
   }
 
   const raw = await resp.text();
@@ -83,12 +99,13 @@ export async function sendSMS(
  * Content-Type: application/x-www-form-urlencoded
  */
 export async function getCredit(config: Every8DConfig): Promise<number> {
+  const baseUrl = `https://${config.siteUrl}`;
   const body = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
   });
 
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/GetCredit.ashx`, {
+  const resp = await fetch(`${baseUrl}/API21/HTTP/GetCredit.ashx`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
@@ -96,7 +113,9 @@ export async function getCredit(config: Every8DConfig): Promise<number> {
 
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(`Every8D credit check failed: ${resp.status} ${text.slice(0, 200)}`);
+    throw new Error(
+      `Every8D credit check failed: ${resp.status} (${baseUrl}) ${text.slice(0, 200)}`
+    );
   }
 
   const text = await resp.text();
@@ -123,8 +142,8 @@ export function createEvery8DConfig(env: {
   EVERY8D_SITE_URL: string;
 }): Every8DConfig {
   return {
-    uid: env.EVERY8D_UID,
-    pwd: env.EVERY8D_PWD,
-    siteUrl: env.EVERY8D_SITE_URL || "new.e8d.tw",
+    uid: env.EVERY8D_UID.trim(),
+    pwd: env.EVERY8D_PWD.trim(),
+    siteUrl: normalizeEvery8DSiteUrl(env.EVERY8D_SITE_URL),
   };
 }
