@@ -527,7 +527,7 @@ export async function handleVerifyEmail(request: Request, db: D1DatabaseLike, au
   }
 
   await db
-    .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
+    .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'phone_pending', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
     .bind(row.store_id)
     .run();
 
@@ -981,14 +981,6 @@ export async function handleGetCurrentStore(
     .first<Record<string, any>>();
 
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
-  // Phone step is currently disabled. Auto-upgrade legacy phone_pending accounts.
-  if (store.onboarding_step === "phone_pending") {
-    await db
-      .prepare("UPDATE stores SET onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ?")
-      .bind(session.store_id)
-      .run();
-    store.onboarding_step = "store_setup";
-  }
   // Hide placeholder email from LINE Login users
   if (store.owner_email && store.owner_email.endsWith("@placeholder.local")) {
     store.owner_email = null;

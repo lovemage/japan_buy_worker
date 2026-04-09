@@ -1641,19 +1641,7 @@
         }
       },
       {
-        title: "步驟三：完成手機驗證",
-        desc: "驗證後可多上架 5 件商品。請至「設定 > 基本」輸入手機號碼並驗證。",
-        btnText: "前往驗證",
-        action: function() {
-          if(window.switchTab) window.switchTab('settings');
-          setTimeout(function() {
-            var btn = document.querySelector('.tab-sub-btn[data-subtab="account"]');
-            if(btn) btn.click();
-          }, 50);
-        }
-      },
-      {
-        title: "步驟四：上架第一個商品",
+        title: "步驟三：上架第一個商品",
         desc: "點擊相機圖示拍攝商品，AI 會自動辨識名稱、翻譯和計算價格。",
         btnText: "開啟相機",
         action: function() {

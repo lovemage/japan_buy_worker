@@ -66,6 +66,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="dot" id="dot-1"></div>
     <div class="dot" id="dot-2"></div>
     <div class="dot" id="dot-3"></div>
+    <div class="dot" id="dot-4"></div>
   </div>
 
   <div class="loading" id="loading">載入中...</div>
@@ -178,24 +179,22 @@ async function init() {
 
   document.getElementById("loading").classList.add("hidden");
 
-  const step = currentStore.onboarding_step === "phone_pending"
-    ? "store_setup"
-    : currentStore.onboarding_step;
+  const step = currentStore.onboarding_step;
   updateDots(step);
 
   if (step === "email_pending") {
     if (currentStore.owner_email) {
-      // Has email — show verification UI
       document.getElementById("user-email").textContent = currentStore.owner_email;
       document.getElementById("email-verify-section").classList.remove("hidden");
       document.getElementById("email-input-section").classList.add("hidden");
       pollEmailVerification();
     } else {
-      // No email (LINE Login) — show email input form
       document.getElementById("email-verify-section").classList.add("hidden");
       document.getElementById("email-input-section").classList.remove("hidden");
     }
     document.getElementById("step-email").classList.remove("hidden");
+  } else if (step === "phone_pending") {
+    document.getElementById("step-phone").classList.remove("hidden");
   } else if (step === "store_setup") {
     document.getElementById("step-store").classList.remove("hidden");
   } else if (step === "complete") {
@@ -205,9 +204,9 @@ async function init() {
 }
 
 function updateDots(step) {
-  const steps = ["email_pending", "store_setup", "complete"];
+  const steps = ["email_pending", "phone_pending", "store_setup", "complete"];
   const idx = steps.indexOf(step);
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     const dot = document.getElementById("dot-" + (i + 1));
     dot.className = "dot";
     if (i < idx) dot.classList.add("done");
