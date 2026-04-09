@@ -7,21 +7,10 @@
 type Every8DConfig = {
   uid: string;
   pwd: string;
-  siteUrl: string; // e.g., "new.e8d.tw"
+  siteUrl: string;
 };
 
-function normalizeEvery8DSiteUrl(raw: string | undefined): string {
-  const value = (raw || "new.e8d.tw").trim();
-  if (!value) return "new.e8d.tw";
-
-  const withProtocol = value.includes("://") ? value : `https://${value}`;
-  try {
-    return new URL(withProtocol).host || "new.e8d.tw";
-  } catch {
-    // Fallback for unexpected malformed input.
-    return value.replace(/^https?:\/\//i, "").replace(/\/.*$/, "") || "new.e8d.tw";
-  }
-}
+const EVERY8D_FIXED_SITE_URL = "api.e8d.tw";
 
 function summarizeHttpFailure(resp: Response, text: string): string {
   const server = resp.headers.get("server") || "";
@@ -142,11 +131,10 @@ export function generateVerificationCode(): string {
 export function createEvery8DConfig(env: {
   EVERY8D_UID: string;
   EVERY8D_PWD: string;
-  EVERY8D_SITE_URL: string;
 }): Every8DConfig {
   return {
     uid: env.EVERY8D_UID.trim(),
     pwd: env.EVERY8D_PWD.trim(),
-    siteUrl: normalizeEvery8DSiteUrl(env.EVERY8D_SITE_URL),
+    siteUrl: EVERY8D_FIXED_SITE_URL,
   };
 }

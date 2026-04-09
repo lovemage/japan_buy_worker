@@ -41,7 +41,6 @@ type Env = {
   RESEND_API_KEY: string;
   EVERY8D_UID: string;
   EVERY8D_PWD: string;
-  EVERY8D_SITE_URL: string;
   APP_URL: string;
   PLATFORM_ADMIN_PASSWORD?: string;
   // Multi-tenant domain
@@ -120,7 +119,6 @@ function getAuthEnv(env: Env) {
     RESEND_API_KEY: env.RESEND_API_KEY,
     EVERY8D_UID: env.EVERY8D_UID,
     EVERY8D_PWD: env.EVERY8D_PWD,
-    EVERY8D_SITE_URL: env.EVERY8D_SITE_URL,
     APP_URL: env.APP_URL,
   };
 }
