@@ -132,14 +132,21 @@ function renderProduct(item, pricing) {
 
   const specList = document.getElementById("detail-spec-list");
   if (specList) {
-    const specs = item.specifications || {};
-    const specRows = [
-      ["商品編號", specs.code || item.code || "-"],
-      ["品牌", specs.brand || item.brand || "-"],
-      ["分類", specs.category || item.category || "-"],
-      ["色數", specs.colorCount ?? item.colorCount ?? "-"],
-    ];
-    specList.innerHTML = specRows.map(([k, v]) => `<li>${k}：${v}</li>`).join("");
+    const specifications = item.specifications || {};
+    const baseRows = [
+      ["商品編號", specifications.code || item.code || ""],
+      ["品牌", specifications.brand || item.brand || ""],
+      ["分類", specifications.category || item.category || ""],
+      ["色數", specifications.colorCount ?? item.colorCount ?? ""],
+    ].filter(([, v]) => v && v !== "");
+    const extraSpecs = item.specs && typeof item.specs === "object" ? item.specs : {};
+    const extraRows = Object.entries(extraSpecs)
+      .filter(([, v]) => typeof v === "string" && v.trim())
+      .map(([k, v]) => [k, v]);
+    const allRows = [...baseRows, ...extraRows];
+    specList.innerHTML = allRows.length > 0
+      ? allRows.map(([k, v]) => `<li>${k}：${v}</li>`).join("")
+      : "<li>暫無規格資訊</li>";
   }
 
   // Quantity stepper

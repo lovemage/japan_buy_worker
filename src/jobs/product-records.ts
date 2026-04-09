@@ -4,11 +4,19 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
   gallery: string[];
   description: string;
   schema: Record<string, unknown> | null;
+  specs: Record<string, string>;
   sizeOptions: string[];
   colorOptions: string[];
 } {
   try {
     const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    const rawSpecs = parsed.specs && typeof parsed.specs === 'object' && !Array.isArray(parsed.specs)
+      ? (parsed.specs as Record<string, unknown>)
+      : {};
+    const specs: Record<string, string> = {};
+    for (const [k, v] of Object.entries(rawSpecs)) {
+      if (typeof v === 'string' && v.trim()) specs[k] = v;
+    }
     return {
       gallery: Array.isArray(parsed.gallery)
         ? parsed.gallery.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
@@ -18,6 +26,7 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
         parsed.schema && typeof parsed.schema === 'object'
           ? (parsed.schema as Record<string, unknown>)
           : null,
+      specs,
       sizeOptions: Array.isArray(parsed.sizeOptions)
         ? parsed.sizeOptions.filter((x): x is string => typeof x === 'string')
         : [],
@@ -30,6 +39,7 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
       gallery: [],
       description: '',
       schema: null,
+      specs: {},
       sizeOptions: [],
       colorOptions: [],
     };

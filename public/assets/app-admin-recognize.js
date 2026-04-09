@@ -192,7 +192,15 @@ function fillDraft(result) {
   set("draft-category", result.category);
   set("draft-price", result.priceJpy);
   set("draft-description", result.description);
-  set("draft-specs", JSON.stringify(result.specs || {}, null, 2));
+  const specsObj = result.specs || {};
+  set("draft-specs", JSON.stringify(specsObj));
+  const specsDisplay = document.getElementById("draft-specs-display");
+  if (specsDisplay) {
+    const entries = Object.entries(specsObj);
+    specsDisplay.innerHTML = entries.length > 0
+      ? entries.map(([k, v]) => `<span style="color:#888">${k}：</span>${v}`).join("<br>")
+      : '<span style="color:#aaa">無規格資訊</span>';
+  }
   set("draft-sizes", Array.isArray(result.sizeOptions) ? result.sizeOptions.join(", ") : "");
   set("draft-colors", Array.isArray(result.colorOptions) ? result.colorOptions.join(", ") : "");
 
@@ -222,8 +230,7 @@ async function confirmListing() {
     const raw = get("draft-specs");
     if (raw) specs = JSON.parse(raw);
   } catch {
-    showListingStatus("規格 JSON 格式錯誤");
-    return;
+    specs = {};
   }
 
   const priceRaw = get("draft-price");

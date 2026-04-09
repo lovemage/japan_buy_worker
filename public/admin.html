@@ -134,7 +134,91 @@
             產生行銷文案
           </button>
 
-          <div id="marketing-loading" class="sync-loading hidden" style="padding:20px;"></div>
+          <div id="marketing-loading" class="sync-loading hidden" style="padding:20px;">
+            <div class="octopus-anim" aria-label="AI 文案產生中">
+              <svg viewBox="0 0 200 180" width="140" height="126" style="display:block;margin:0 auto;image-rendering:pixelated;">
+                <defs><style>
+                  @keyframes mkBlink{0%,89%,93%,100%{opacity:0}90%,92%{opacity:1}}
+                  @keyframes mkPupil{0%,20%{transform:translate(0,0)}25%,40%{transform:translate(0,-3px)}45%,60%{transform:translate(3px,0)}65%,80%{transform:translate(-2px,2px)}85%,100%{transform:translate(0,0)}}
+                  @keyframes mkCheek{0%,100%{opacity:.45}50%{opacity:.75}}
+                  @keyframes mkSmile{0%,100%{d:path('M88 80 Q94 86 100 86 Q106 86 112 80')}50%{d:path('M88 80 Q94 88 100 88 Q106 88 112 80')}}
+                  @keyframes mkTentL1{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}
+                  @keyframes mkTentL2{0%,100%{transform:rotate(0)}50%{transform:rotate(-5deg)}}
+                  @keyframes mkTentL3{0%,100%{transform:rotate(0)}50%{transform:rotate(-9deg)}}
+                  @keyframes mkTentR1{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+                  @keyframes mkTentR2{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+                  @keyframes mkTentR3{0%,100%{transform:rotate(0)}50%{transform:rotate(9deg)}}
+                  @keyframes mkPenWrite{0%,100%{transform:translate(0,0) rotate(-5deg)}25%{transform:translate(4px,2px) rotate(0deg)}50%{transform:translate(8px,0) rotate(5deg)}75%{transform:translate(4px,-2px) rotate(0deg)}}
+                  @keyframes mkHatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+                </style></defs>
+                <!-- Beret hat (artist) -->
+                <g style="animation:mkHatBob 2.5s ease-in-out infinite">
+                  <rect x="48" y="10" width="104" height="5" fill="#E84393"/>
+                  <rect x="52" y="4" width="96" height="7" fill="#E84393"/>
+                  <rect x="60" y="0" width="80" height="5" fill="#E84393"/>
+                  <rect x="44" y="14" width="112" height="3" fill="#C2185B"/>
+                  <!-- Beret pom-pom -->
+                  <rect x="92" y="-4" width="12" height="5" fill="#E84393"/>
+                  <rect x="96" y="-7" width="4" height="4" fill="#E84393"/>
+                </g>
+                <!-- Head -->
+                <rect x="56" y="18" width="88" height="6" fill="#7B68EE"/>
+                <rect x="48" y="24" width="104" height="6" fill="#7B68EE"/>
+                <rect x="44" y="30" width="112" height="6" fill="#7B68EE"/>
+                <rect x="40" y="36" width="120" height="6" fill="#7B68EE"/>
+                <rect x="40" y="42" width="120" height="6" fill="#7B68EE"/>
+                <rect x="40" y="48" width="120" height="6" fill="#7B68EE"/>
+                <rect x="40" y="54" width="120" height="6" fill="#7B68EE"/>
+                <rect x="40" y="60" width="120" height="6" fill="#7B68EE"/>
+                <rect x="44" y="66" width="112" height="6" fill="#7B68EE"/>
+                <rect x="44" y="72" width="112" height="6" fill="#7B68EE"/>
+                <rect x="48" y="78" width="104" height="6" fill="#7B68EE"/>
+                <rect x="52" y="84" width="96" height="6" fill="#7B68EE"/>
+                <rect x="56" y="90" width="88" height="6" fill="#7B68EE"/>
+                <rect x="60" y="24" width="20" height="4" fill="#9B8AFE" opacity=".5"/>
+                <rect x="56" y="30" width="12" height="4" fill="#9B8AFE" opacity=".35"/>
+                <!-- Eyes -->
+                <rect x="62" y="44" width="16" height="18" fill="#fff"/>
+                <rect x="122" y="44" width="16" height="18" fill="#fff"/>
+                <g style="animation:mkPupil 5s ease-in-out infinite">
+                  <rect x="64" y="46" width="13" height="15" fill="#2a2a3a"/>
+                  <rect x="123" y="46" width="13" height="15" fill="#2a2a3a"/>
+                  <rect x="71" y="46" width="4" height="4" fill="#fff"/>
+                  <rect x="130" y="46" width="4" height="4" fill="#fff"/>
+                  <rect x="66" y="55" width="3" height="3" fill="rgba(255,255,255,.4)"/>
+                  <rect x="125" y="55" width="3" height="3" fill="rgba(255,255,255,.4)"/>
+                </g>
+                <rect x="62" y="44" width="16" height="18" fill="#7B68EE" style="animation:mkBlink 4.5s ease-in-out infinite"/>
+                <rect x="122" y="44" width="16" height="18" fill="#7B68EE" style="animation:mkBlink 4.5s ease-in-out infinite"/>
+                <!-- Cheeks + smile -->
+                <rect x="50" y="62" width="10" height="5" fill="#FF8FAB" style="animation:mkCheek 2.5s ease-in-out infinite"/>
+                <rect x="140" y="62" width="10" height="5" fill="#FF8FAB" style="animation:mkCheek 2.5s ease-in-out infinite"/>
+                <path d="M88 80 Q94 86 100 86 Q106 86 112 80" fill="none" stroke="#5a4abf" stroke-width="2.5" stroke-linecap="round" style="animation:mkSmile 2.5s ease-in-out infinite"/>
+                <!-- Front-left tentacle holding pen -->
+                <g style="transform-origin:62px 96px;animation:mkTentL1 1.2s ease-in-out infinite">
+                  <rect x="54" y="96" width="8" height="7" fill="#6A5ACD"/>
+                  <rect x="50" y="103" width="8" height="7" fill="#6A5ACD"/>
+                  <rect x="46" y="110" width="8" height="7" fill="#6A5ACD"/>
+                  <rect x="42" y="117" width="8" height="7" fill="#6A5ACD"/>
+                  <!-- Pen + writing motion -->
+                  <g style="animation:mkPenWrite 1.2s ease-in-out infinite">
+                    <rect x="30" y="120" width="14" height="4" fill="#FFA500"/>
+                    <rect x="26" y="121" width="5" height="2" fill="#333"/>
+                  </g>
+                </g>
+                <!-- Paper floating near pen -->
+                <rect x="14" y="132" width="28" height="18" fill="#f5f5f5" stroke="#ddd" stroke-width=".5"/>
+                <rect x="18" y="136" width="16" height="2" fill="#ccc"/><rect x="18" y="140" width="20" height="2" fill="#ccc"/><rect x="18" y="144" width="12" height="2" fill="#ccc"/>
+                <!-- Other tentacles -->
+                <g style="transform-origin:78px 96px;animation:mkTentL2 1.5s ease-in-out infinite"><rect x="70" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="68" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="64" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="60" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+                <g style="transform-origin:92px 96px;animation:mkTentL3 1.8s ease-in-out infinite"><rect x="86" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="84" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="82" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="80" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+                <g style="transform-origin:114px 96px;animation:mkTentR1 1.3s ease-in-out infinite"><rect x="106" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="108" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="110" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="112" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+                <g style="transform-origin:130px 96px;animation:mkTentR2 1.6s ease-in-out infinite"><rect x="122" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="124" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="128" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="132" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+                <g style="transform-origin:148px 96px;animation:mkTentR3 1.1s ease-in-out infinite"><rect x="140" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="144" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="148" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="152" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="154" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="154" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+                <text x="100" y="158" text-anchor="middle" font-family="'Press Start 2P','Courier New',monospace" font-size="11" fill="#7B68EE" letter-spacing="1">vovosnap</text>
+              </svg>
+            </div>
+          </div>
 
           <div id="marketing-output" class="hidden" style="margin-top:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -191,46 +275,33 @@
         <p id="recognize-hint" class="meta hidden" style="text-align:center;color:var(--admin-warning);margin-top:6px;font-size:12px;line-height:1.5;">請使用相同商品的照片進行辨識，不同商品的照片可能導致辨識失敗。</p>
         <div id="recognize-loading" class="sync-loading hidden">
           <div class="octopus-anim" aria-label="AI 辨識中">
-            <svg viewBox="0 0 200 228" width="140" height="160" style="display:block;margin:0 auto;image-rendering:pixelated;">
-              <defs>
-                <style>
-                  @keyframes pixelBlink { 0%,89%,93%,100%{opacity:0} 90%,92%{opacity:1} }
-                  @keyframes tentWaveL1 { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-8deg)} }
-                  @keyframes tentWaveL2 { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-6deg)} }
-                  @keyframes tentWaveL3 { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-10deg)} }
-                  @keyframes tentWaveR1 { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(8deg)} }
-                  @keyframes tentWaveR2 { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(6deg)} }
-                  @keyframes tentWaveR3 { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(10deg)} }
-                  @keyframes pupilLook {
-                    0%,18%{transform:translate(0,0)}
-                    22%,38%{transform:translate(-3px,0)}
-                    42%,58%{transform:translate(3px,0)}
-                    62%,78%{transform:translate(0,3px)}
-                    82%,100%{transform:translate(0,0)}
-                  }
-                  @keyframes cheekPulse { 0%,100%{opacity:0.45} 50%{opacity:0.75} }
-                  @keyframes smileAnim { 0%,100%{d:path('M88 80 Q94 86 100 86 Q106 86 112 80')} 50%{d:path('M88 80 Q94 88 100 88 Q106 88 112 80')} }
-                  @keyframes hatBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-1.5px)} }
-                </style>
-              </defs>
-
-              <!-- === Hat (pixel party hat) === -->
-              <g style="animation:hatBounce 2.5s ease-in-out infinite;">
-                <!-- Hat brim -->
-                <rect x="42" y="14" width="116" height="6" fill="#FF6B6B"/>
-                <rect x="46" y="12" width="108" height="4" fill="#FF8787"/>
-                <!-- Hat dome -->
-                <rect x="54" y="2" width="92" height="4" fill="#FF6B6B"/>
-                <rect x="50" y="6" width="100" height="4" fill="#FF6B6B"/>
-                <rect x="48" y="10" width="104" height="4" fill="#FF6B6B"/>
-                <!-- Hat band -->
-                <rect x="46" y="12" width="108" height="3" fill="#FFD93D"/>
-                <!-- Hat pom-pom -->
-                <rect x="92" y="-2" width="16" height="4" fill="#fff"/>
-                <rect x="96" y="-6" width="8" height="4" fill="#fff"/>
+            <svg viewBox="0 0 200 180" width="140" height="126" style="display:block;margin:0 auto;image-rendering:pixelated;">
+              <defs><style>
+                @keyframes rcBlink{0%,89%,93%,100%{opacity:0}90%,92%{opacity:1}}
+                @keyframes rcPupil{0%,20%{transform:translate(0,0)}25%,45%{transform:translate(3px,0)}50%,70%{transform:translate(0,3px)}75%,100%{transform:translate(0,0)}}
+                @keyframes rcCheek{0%,100%{opacity:.45}50%{opacity:.75}}
+                @keyframes rcSmile{0%,100%{d:path('M88 80 Q94 86 100 86 Q106 86 112 80')}50%{d:path('M88 80 Q94 88 100 88 Q106 88 112 80')}}
+                @keyframes rcTentL1{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
+                @keyframes rcTentL2{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
+                @keyframes rcTentL3{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+                @keyframes rcTentR1{0%,100%{transform:rotate(0)}50%{transform:rotate(8deg)}}
+                @keyframes rcTentR2{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
+                @keyframes rcTentR3{0%,100%{transform:rotate(0)}50%{transform:rotate(10deg)}}
+                @keyframes rcCamFlash{0%,85%,100%{opacity:0}88%,92%{opacity:.9}}
+                @keyframes rcHatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+              </style></defs>
+              <!-- Detective hat -->
+              <g style="animation:rcHatBob 2.5s ease-in-out infinite">
+                <rect x="44" y="12" width="112" height="5" fill="#8B6914"/>
+                <rect x="52" y="4" width="96" height="4" fill="#A0782A"/>
+                <rect x="56" y="0" width="88" height="5" fill="#A0782A"/>
+                <rect x="48" y="8" width="104" height="5" fill="#A0782A"/>
+                <rect x="44" y="12" width="112" height="3" fill="#C49B3A"/>
+                <!-- Hat front brim peak -->
+                <rect x="36" y="14" width="20" height="4" fill="#8B6914"/>
+                <rect x="32" y="16" width="16" height="3" fill="#7A5C10"/>
               </g>
-
-              <!-- === Head (large, round pixel block) === -->
+              <!-- Head -->
               <rect x="56" y="18" width="88" height="6" fill="#7B68EE"/>
               <rect x="48" y="24" width="104" height="6" fill="#7B68EE"/>
               <rect x="44" y="30" width="112" height="6" fill="#7B68EE"/>
@@ -244,96 +315,46 @@
               <rect x="48" y="78" width="104" height="6" fill="#7B68EE"/>
               <rect x="52" y="84" width="96" height="6" fill="#7B68EE"/>
               <rect x="56" y="90" width="88" height="6" fill="#7B68EE"/>
-
-              <!-- Head highlight -->
-              <rect x="60" y="24" width="20" height="4" fill="#9B8AFE" opacity="0.5"/>
-              <rect x="56" y="30" width="12" height="4" fill="#9B8AFE" opacity="0.35"/>
-
-              <!-- === Eyes (smaller eye-white, bigger pupil) === -->
-              <!-- Left eye white -->
-              <rect x="60" y="44" width="20" height="20" fill="#fff"/>
-              <!-- Right eye white -->
-              <rect x="120" y="44" width="20" height="20" fill="#fff"/>
-
-              <!-- Pupils (big, animated look + look-at-screen) -->
-              <g style="animation:pupilLook 4.5s ease-in-out infinite;">
-                <!-- Left pupil (big) -->
-                <rect x="64" y="47" width="14" height="16" fill="#2a2a3a"/>
-                <!-- Right pupil (big) -->
-                <rect x="122" y="47" width="14" height="16" fill="#2a2a3a"/>
-                <!-- Eye sparkle -->
-                <rect x="72" y="47" width="4" height="4" fill="#fff"/>
-                <rect x="130" y="47" width="4" height="4" fill="#fff"/>
-                <!-- Bottom sparkle -->
-                <rect x="66" y="57" width="3" height="3" fill="rgba(255,255,255,0.4)"/>
-                <rect x="124" y="57" width="3" height="3" fill="rgba(255,255,255,0.4)"/>
+              <rect x="60" y="24" width="20" height="4" fill="#9B8AFE" opacity=".5"/>
+              <rect x="56" y="30" width="12" height="4" fill="#9B8AFE" opacity=".35"/>
+              <!-- Eyes -->
+              <rect x="62" y="44" width="16" height="18" fill="#fff"/>
+              <rect x="122" y="44" width="16" height="18" fill="#fff"/>
+              <g style="animation:rcPupil 4s ease-in-out infinite">
+                <rect x="64" y="46" width="13" height="15" fill="#2a2a3a"/>
+                <rect x="123" y="46" width="13" height="15" fill="#2a2a3a"/>
+                <rect x="71" y="46" width="4" height="4" fill="#fff"/>
+                <rect x="130" y="46" width="4" height="4" fill="#fff"/>
+                <rect x="66" y="55" width="3" height="3" fill="rgba(255,255,255,.4)"/>
+                <rect x="125" y="55" width="3" height="3" fill="rgba(255,255,255,.4)"/>
               </g>
-
-              <!-- Blink overlay (covers eye whites) -->
-              <rect x="60" y="44" width="20" height="20" fill="#7B68EE" style="animation:pixelBlink 5s ease-in-out infinite;"/>
-              <rect x="120" y="44" width="20" height="20" fill="#7B68EE" style="animation:pixelBlink 5s ease-in-out infinite;"/>
-
-              <!-- Cheeks (pixel blush) -->
-              <rect x="48" y="64" width="10" height="5" fill="#FF8FAB" style="animation:cheekPulse 2.5s ease-in-out infinite;"/>
-              <rect x="142" y="64" width="10" height="5" fill="#FF8FAB" style="animation:cheekPulse 2.5s ease-in-out infinite;"/>
-
-              <!-- === Smile mouth (curved pixel smile) === -->
-              <path d="M88 80 Q94 86 100 86 Q106 86 112 80" fill="none" stroke="#5a4abf" stroke-width="2.5" stroke-linecap="round" style="animation:smileAnim 2.5s ease-in-out infinite;"/>
-
-              <!-- === Tentacles (6 pixel legs) === -->
-              <!-- Left tentacles -->
-              <g style="transform-origin:62px 96px;animation:tentWaveL1 1.2s ease-in-out infinite;">
-                <rect x="54" y="96" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="50" y="103" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="46" y="110" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="42" y="117" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="38" y="124" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="38" y="131" width="8" height="5" fill="#8B7BEE"/>
+              <rect x="62" y="44" width="16" height="18" fill="#7B68EE" style="animation:rcBlink 5s ease-in-out infinite"/>
+              <rect x="122" y="44" width="16" height="18" fill="#7B68EE" style="animation:rcBlink 5s ease-in-out infinite"/>
+              <!-- Cheeks + smile -->
+              <rect x="50" y="62" width="10" height="5" fill="#FF8FAB" style="animation:rcCheek 2.5s ease-in-out infinite"/>
+              <rect x="140" y="62" width="10" height="5" fill="#FF8FAB" style="animation:rcCheek 2.5s ease-in-out infinite"/>
+              <path d="M88 80 Q94 86 100 86 Q106 86 112 80" fill="none" stroke="#5a4abf" stroke-width="2.5" stroke-linecap="round" style="animation:rcSmile 2.5s ease-in-out infinite"/>
+              <!-- Camera held by front-right tentacle -->
+              <g style="transform-origin:148px 96px;animation:rcTentR3 1.1s ease-in-out infinite">
+                <rect x="140" y="96" width="8" height="7" fill="#6A5ACD"/>
+                <rect x="144" y="103" width="8" height="7" fill="#6A5ACD"/>
+                <rect x="148" y="110" width="8" height="7" fill="#6A5ACD"/>
+                <rect x="152" y="117" width="8" height="7" fill="#6A5ACD"/>
+                <!-- Camera body -->
+                <rect x="158" y="112" width="20" height="14" rx="0" fill="#333"/>
+                <rect x="160" y="110" width="8" height="4" fill="#444"/>
+                <rect x="163" y="116" width="12" height="8" rx="0" fill="#555"/>
+                <rect x="166" y="118" width="6" height="4" fill="#88ccff"/>
+                <!-- Flash -->
+                <rect x="174" y="112" width="4" height="4" fill="#FFD93D" style="animation:rcCamFlash 3s ease-in-out infinite"/>
               </g>
-              <g style="transform-origin:78px 96px;animation:tentWaveL2 1.5s ease-in-out infinite;">
-                <rect x="70" y="96" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="68" y="103" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="64" y="110" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="60" y="117" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="58" y="124" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="58" y="131" width="8" height="5" fill="#8B7BEE"/>
-              </g>
-              <g style="transform-origin:92px 96px;animation:tentWaveL3 1.8s ease-in-out infinite;">
-                <rect x="86" y="96" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="84" y="103" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="82" y="110" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="80" y="117" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="78" y="124" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="78" y="131" width="8" height="5" fill="#8B7BEE"/>
-              </g>
-              <!-- Right tentacles -->
-              <g style="transform-origin:114px 96px;animation:tentWaveR1 1.3s ease-in-out infinite;">
-                <rect x="106" y="96" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="108" y="103" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="110" y="110" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="112" y="117" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="114" y="124" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="114" y="131" width="8" height="5" fill="#8B7BEE"/>
-              </g>
-              <g style="transform-origin:130px 96px;animation:tentWaveR2 1.6s ease-in-out infinite;">
-                <rect x="122" y="96" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="124" y="103" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="128" y="110" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="132" y="117" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="134" y="124" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="134" y="131" width="8" height="5" fill="#8B7BEE"/>
-              </g>
-              <g style="transform-origin:146px 96px;animation:tentWaveR3 1.1s ease-in-out infinite;">
-                <rect x="138" y="96" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="142" y="103" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="146" y="110" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="150" y="117" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="154" y="124" width="8" height="7" fill="#6A5ACD"/>
-                <rect x="154" y="131" width="8" height="5" fill="#8B7BEE"/>
-              </g>
-
-              <!-- vovosnap pixel text -->
-              <text x="100" y="162" text-anchor="middle" font-family="'Press Start 2P','Courier New',monospace" font-size="11" fill="#7B68EE" letter-spacing="1">vovosnap</text>
+              <!-- Tentacles -->
+              <g style="transform-origin:62px 96px;animation:rcTentL1 1.2s ease-in-out infinite"><rect x="54" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="50" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="46" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="42" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="38" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="38" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+              <g style="transform-origin:78px 96px;animation:rcTentL2 1.5s ease-in-out infinite"><rect x="70" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="68" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="64" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="60" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+              <g style="transform-origin:92px 96px;animation:rcTentL3 1.8s ease-in-out infinite"><rect x="86" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="84" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="82" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="80" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+              <g style="transform-origin:114px 96px;animation:rcTentR1 1.3s ease-in-out infinite"><rect x="106" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="108" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="110" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="112" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+              <g style="transform-origin:130px 96px;animation:rcTentR2 1.6s ease-in-out infinite"><rect x="122" y="96" width="8" height="7" fill="#6A5ACD"/><rect x="124" y="103" width="8" height="7" fill="#6A5ACD"/><rect x="128" y="110" width="8" height="7" fill="#6A5ACD"/><rect x="132" y="117" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="124" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="131" width="8" height="5" fill="#8B7BEE"/></g>
+              <text x="100" y="158" text-anchor="middle" font-family="'Press Start 2P','Courier New',monospace" font-size="11" fill="#7B68EE" letter-spacing="1">vovosnap</text>
             </svg>
           </div>
           <div class="sync-loading-bar" style="margin-top:8px;">
@@ -351,7 +372,9 @@
           <label>分類<input id="draft-category" type="text" class="input-cute" /></label>
           <label>價格（<span class="src-currency">JPY</span>）<input id="draft-price" type="number" min="0" class="input-cute" /></label>
           <label>商品描述<textarea id="draft-description" rows="3" class="input-cute"></textarea></label>
-          <label>規格（JSON）<textarea id="draft-specs" rows="3" class="input-cute"></textarea></label>
+          <label>規格</label>
+          <div id="draft-specs-display" style="font-size:13px;line-height:1.7;color:#444;padding:8px 0;"></div>
+          <input type="hidden" id="draft-specs" />
           <label>尺寸選項（逗號分隔）<input id="draft-sizes" type="text" class="input-cute" placeholder="S, M, L" /></label>
           <label>顏色選項（逗號分隔）<input id="draft-colors" type="text" class="input-cute" placeholder="紅色, 藍色" /></label>
           <div id="draft-sources" class="meta hidden"></div>
@@ -1172,8 +1195,7 @@
       var me = res[1];
       if (!d.ok) return;
       var total = d.paging ? d.paging.total || 0 : 0;
-      var phoneVerified = !!(me && me.ok && me.store && me.store.phone_verified);
-      var limit = plan === "starter" ? 50 : (phoneVerified ? 10 : 5);
+      var limit = plan === "starter" ? 50 : 10;
       var pct = Math.min(100, Math.round(total / limit * 100));
       var color = pct >= 90 ? "var(--admin-danger)" : pct >= 70 ? "var(--admin-warning)" : "var(--admin-text)";
       var bar = document.createElement("div");
@@ -1453,16 +1475,101 @@
 
   <!-- AI 圖片編輯 Loading Popup -->
   <div id="ai-image-edit-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:14px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">vovoimageAI 修改中</div>
-      <div style="font-size:13px;color:#888;margin-bottom:20px;">請勿關閉視窗</div>
-      <div style="width:48px;height:48px;border:4px solid #f0f0f0;border-top-color:#6366f1;border-radius:50%;animation:aiEditSpin 0.8s linear infinite;margin:0 auto 16px;"></div>
-      <div id="ai-image-edit-popup-msg" style="font-size:13px;color:#444;min-height:20px;"></div>
+    <div style="background:#fff;border-radius:14px;padding:28px 24px 20px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">vovoimageAI 修改���</div>
+      <div style="font-size:13px;color:#888;margin-bottom:12px;">請���關閉視窗</div>
+      <div class="octopus-anim" aria-label="圖片優化中">
+        <svg viewBox="0 0 200 180" width="130" height="117" style="display:block;margin:0 auto;image-rendering:pixelated;">
+          <defs><style>
+            @keyframes imBlink{0%,89%,93%,100%{opacity:0}90%,92%{opacity:1}}
+            @keyframes imPupil{0%,25%{transform:translate(0,3px)}30%,55%{transform:translate(-2px,2px)}60%,80%{transform:translate(2px,3px)}85%,100%{transform:translate(0,3px)}}
+            @keyframes imCheek{0%,100%{opacity:.45}50%{opacity:.75}}
+            @keyframes imSmile{0%,100%{d:path('M88 80 Q94 86 100 86 Q106 86 112 80')}50%{d:path('M88 80 Q94 88 100 88 Q106 88 112 80')}}
+            @keyframes imTentL1{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
+            @keyframes imTentL2{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
+            @keyframes imTentL3{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+            @keyframes imTentR1{0%,100%{transform:rotate(0)}50%{transform:rotate(8deg)}}
+            @keyframes imTentR2{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
+            @keyframes imTentR3{0%,100%{transform:rotate(0)}50%{transform:rotate(10deg)}}
+            @keyframes imWand{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(15deg)}}
+            @keyframes imSparkle{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1.2)}}
+            @keyframes imHatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+          </style></defs>
+          <!-- Wizard hat -->
+          <g style="animation:imHatBob 2.5s ease-in-out infinite">
+            <rect x="48" y="14" width="104" height="4" fill="#4834D4"/>
+            <rect x="52" y="10" width="96" height="5" fill="#5B45E0"/>
+            <rect x="60" y="5" width="80" height="6" fill="#5B45E0"/>
+            <rect x="68" y="0" width="64" height="6" fill="#5B45E0"/>
+            <rect x="80" y="-5" width="40" height="6" fill="#5B45E0"/>
+            <rect x="90" y="-9" width="20" height="5" fill="#5B45E0"/>
+            <!-- Star on hat -->
+            <rect x="82" y="2" width="6" height="6" fill="#FFD93D"/>
+            <rect x="80" y="4" width="10" height="2" fill="#FFD93D"/>
+            <!-- Hat brim -->
+            <rect x="38" y="17" width="124" height="4" fill="#4834D4"/>
+            <rect x="34" y="19" width="132" height="3" fill="#3C2CB8"/>
+          </g>
+          <!-- Head -->
+          <rect x="56" y="20" width="88" height="6" fill="#7B68EE"/>
+          <rect x="48" y="26" width="104" height="6" fill="#7B68EE"/>
+          <rect x="44" y="32" width="112" height="6" fill="#7B68EE"/>
+          <rect x="40" y="38" width="120" height="6" fill="#7B68EE"/>
+          <rect x="40" y="44" width="120" height="6" fill="#7B68EE"/>
+          <rect x="40" y="50" width="120" height="6" fill="#7B68EE"/>
+          <rect x="40" y="56" width="120" height="6" fill="#7B68EE"/>
+          <rect x="40" y="62" width="120" height="6" fill="#7B68EE"/>
+          <rect x="44" y="68" width="112" height="6" fill="#7B68EE"/>
+          <rect x="44" y="74" width="112" height="6" fill="#7B68EE"/>
+          <rect x="48" y="80" width="104" height="6" fill="#7B68EE"/>
+          <rect x="52" y="86" width="96" height="6" fill="#7B68EE"/>
+          <rect x="56" y="92" width="88" height="6" fill="#7B68EE"/>
+          <rect x="60" y="26" width="20" height="4" fill="#9B8AFE" opacity=".5"/>
+          <rect x="56" y="32" width="12" height="4" fill="#9B8AFE" opacity=".35"/>
+          <!-- Eyes (looking down at artwork) -->
+          <rect x="62" y="46" width="16" height="18" fill="#fff"/>
+          <rect x="122" y="46" width="16" height="18" fill="#fff"/>
+          <g style="animation:imPupil 5s ease-in-out infinite">
+            <rect x="64" y="48" width="13" height="15" fill="#2a2a3a"/>
+            <rect x="123" y="48" width="13" height="15" fill="#2a2a3a"/>
+            <rect x="71" y="48" width="4" height="4" fill="#fff"/>
+            <rect x="130" y="48" width="4" height="4" fill="#fff"/>
+            <rect x="66" y="57" width="3" height="3" fill="rgba(255,255,255,.4)"/>
+            <rect x="125" y="57" width="3" height="3" fill="rgba(255,255,255,.4)"/>
+          </g>
+          <rect x="62" y="46" width="16" height="18" fill="#7B68EE" style="animation:imBlink 5.5s ease-in-out infinite"/>
+          <rect x="122" y="46" width="16" height="18" fill="#7B68EE" style="animation:imBlink 5.5s ease-in-out infinite"/>
+          <!-- Cheeks + smile -->
+          <rect x="50" y="64" width="10" height="5" fill="#FF8FAB" style="animation:imCheek 2.5s ease-in-out infinite"/>
+          <rect x="140" y="64" width="10" height="5" fill="#FF8FAB" style="animation:imCheek 2.5s ease-in-out infinite"/>
+          <path d="M88 82 Q94 88 100 88 Q106 88 112 82" fill="none" stroke="#5a4abf" stroke-width="2.5" stroke-linecap="round" style="animation:imSmile 2.5s ease-in-out infinite"/>
+          <!-- Front-right tentacle with magic wand -->
+          <g style="transform-origin:148px 98px;animation:imTentR3 1.1s ease-in-out infinite">
+            <rect x="140" y="98" width="8" height="7" fill="#6A5ACD"/>
+            <rect x="144" y="105" width="8" height="7" fill="#6A5ACD"/>
+            <rect x="148" y="112" width="8" height="7" fill="#6A5ACD"/>
+            <!-- Wand -->
+            <g style="transform-origin:160px 108px;animation:imWand 1.5s ease-in-out infinite">
+              <rect x="156" y="106" width="3" height="18" fill="#222" transform="rotate(-30 157 115)"/>
+              <rect x="153" y="100" width="8" height="6" fill="#FFD93D" transform="rotate(-30 157 103)"/>
+              <!-- Sparkles -->
+              <rect x="162" y="92" width="5" height="5" fill="#FFD93D" style="animation:imSparkle 1s ease-in-out infinite"/>
+              <rect x="170" y="98" width="4" height="4" fill="#FF6B6B" style="animation:imSparkle 1s .3s ease-in-out infinite"/>
+              <rect x="158" y="85" width="4" height="4" fill="#48DBFB" style="animation:imSparkle 1s .6s ease-in-out infinite"/>
+            </g>
+          </g>
+          <!-- Other tentacles -->
+          <g style="transform-origin:62px 98px;animation:imTentL1 1.2s ease-in-out infinite"><rect x="54" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="50" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="46" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="42" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="38" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="38" y="133" width="8" height="5" fill="#8B7BEE"/></g>
+          <g style="transform-origin:78px 98px;animation:imTentL2 1.5s ease-in-out infinite"><rect x="70" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="68" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="64" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="60" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="133" width="8" height="5" fill="#8B7BEE"/></g>
+          <g style="transform-origin:92px 98px;animation:imTentL3 1.8s ease-in-out infinite"><rect x="86" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="84" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="82" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="80" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="133" width="8" height="5" fill="#8B7BEE"/></g>
+          <g style="transform-origin:114px 98px;animation:imTentR1 1.3s ease-in-out infinite"><rect x="106" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="108" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="110" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="112" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="133" width="8" height="5" fill="#8B7BEE"/></g>
+          <g style="transform-origin:130px 98px;animation:imTentR2 1.6s ease-in-out infinite"><rect x="122" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="124" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="128" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="132" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="133" width="8" height="5" fill="#8B7BEE"/></g>
+          <text x="100" y="160" text-anchor="middle" font-family="'Press Start 2P','Courier New',monospace" font-size="11" fill="#7B68EE" letter-spacing="1">vovosnap</text>
+        </svg>
+      </div>
+      <div id="ai-image-edit-popup-msg" style="font-size:13px;color:#444;min-height:20px;margin-top:8px;"></div>
     </div>
   </div>
-  <style>
-    @keyframes aiEditSpin { to { transform: rotate(360deg); } }
-  </style>
 
   <!-- Tutorial Guide -->
   <div id="tutorial-ask" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;backdrop-filter:blur(4px);">
