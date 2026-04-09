@@ -698,6 +698,13 @@ import {
 const SMS_CODE_EXPIRY_SECONDS = 600; // 10 minutes
 const SMS_MAX_ATTEMPTS = 5;
 
+function normalizeSmsVerificationCode(raw: string): string {
+  // Convert full-width digits to half-width, then keep digits only.
+  return String(raw || "")
+    .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(/\D/g, "");
+}
+
 /**
  * Send phone verification code via Every8D SMS
  */
@@ -826,7 +833,8 @@ export async function handleVerifyPhone(
   }
 
   const { code } = body;
-  if (!code) return json({ ok: false, error: "Missing verification code" }, 400);
+  const inputCode = normalizeSmsVerificationCode(code || "");
+  if (!inputCode) return json({ ok: false, error: "Missing verification code" }, 400);
 
   // Get stored verification code
   const storedCode = await db
@@ -851,7 +859,8 @@ export async function handleVerifyPhone(
   }
 
   // Verify code
-  if (storedCode.code !== code) {
+  const expectedCode = normalizeSmsVerificationCode(storedCode.code);
+  if (expectedCode !== inputCode) {
     // Increment attempts
     await db
       .prepare("UPDATE phone_verification_codes SET attempts = attempts + 1 WHERE id = ?")
