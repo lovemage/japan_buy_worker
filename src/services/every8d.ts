@@ -8,6 +8,8 @@ type Every8DConfig = {
   uid: string;
   pwd: string;
   siteUrl: string; // e.g., "new.e8d.tw"
+  relayUrl?: string; // e.g., "https://sms-relay.example.com/send"
+  relayToken?: string;
 };
 
 function normalizeEvery8DSiteUrl(raw: string | undefined): string {
@@ -31,6 +33,64 @@ function summarizeHttpFailure(resp: Response, text: string): string {
     .filter(Boolean)
     .join(" ");
   return `${resp.status}${summary ? ` ${summary}` : ""} ${text.slice(0, 400)}`;
+}
+
+function normalizeRelayUrl(raw: string | undefined): string | undefined {
+  const value = (raw || "").trim();
+  if (!value) return undefined;
+  try {
+    return new URL(value).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+async function sendSMSViaRelay(
+  config: Every8DConfig,
+  phone: string,
+  message: string
+): Promise<{ batchId: string; credit: number }> {
+  if (!config.relayUrl) throw new Error("SMS relay URL is missing");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (config.relayToken) headers.Authorization = `Bearer ${config.relayToken}`;
+
+  const resp = await fetch(config.relayUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      phone,
+      message,
+      provider: "every8d",
+      siteUrl: config.siteUrl,
+    }),
+  });
+
+  const raw = await resp.text();
+  if (!resp.ok) {
+    throw new Error(`SMS relay failed: ${summarizeHttpFailure(resp, raw)} (${config.relayUrl})`);
+  }
+
+  try {
+    const data = JSON.parse(raw) as {
+      ok?: boolean;
+      error?: string;
+      batchId?: string;
+      credit?: number;
+    };
+    if (data.ok === false) {
+      throw new Error(data.error || "Relay returned ok=false");
+    }
+    return {
+      batchId: data.batchId || "",
+      credit: Number(data.credit || 0),
+    };
+  } catch {
+    // Allow plain response from relay; return minimal success payload.
+    return { batchId: "", credit: 0 };
+  }
 }
 
 function parseSendSMSRawResponse(raw: string): { batchId: string; credit: number } {
@@ -84,6 +144,10 @@ export async function sendSMS(
   phone: string,
   message: string
 ): Promise<{ batchId: string; credit: number }> {
+  if (config.relayUrl) {
+    return sendSMSViaRelay(config, phone, message);
+  }
+
   const formattedPhone = formatPhoneNumberForEvery8D(phone);
   const dest = formatPhoneNumberForEvery8DLegacy(formattedPhone);
   const baseUrl = `https://${config.siteUrl}`;
@@ -148,10 +212,14 @@ export function createEvery8DConfig(env: {
   EVERY8D_UID: string;
   EVERY8D_PWD: string;
   EVERY8D_SITE_URL: string;
+  SMS_RELAY_URL?: string;
+  SMS_RELAY_TOKEN?: string;
 }): Every8DConfig {
   return {
     uid: env.EVERY8D_UID.trim(),
     pwd: env.EVERY8D_PWD.trim(),
     siteUrl: normalizeEvery8DSiteUrl(env.EVERY8D_SITE_URL),
+    relayUrl: normalizeRelayUrl(env.SMS_RELAY_URL),
+    relayToken: (env.SMS_RELAY_TOKEN || "").trim() || undefined,
   };
 }
