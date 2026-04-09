@@ -106,20 +106,22 @@ export async function sendSMS(
   const formattedPhone = formatPhoneNumberForEvery8D(phone);
   const legacyPhone = formatPhoneNumberForEvery8DLegacy(formattedPhone);
 
-  const query = new URLSearchParams({
+  const formBody = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
-    SB: "", // Subject (optional)
+    SB: "",
     MSG: message,
     DEST: legacyPhone,
-    ST: "", // Send time, empty = immediate
+    ST: "",
   });
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`, {
-    method: "GET",
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/sendSMS.ashx`, {
+    method: "POST",
     headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent": "vovosnap/1.0",
       "Accept": "text/plain, application/json",
     },
+    body: formBody.toString(),
   });
 
   if (!resp.ok) {
@@ -158,16 +160,18 @@ export async function sendSMS(
  * Get remaining credit balance
  */
 export async function getCredit(config: Every8DConfig): Promise<number> {
-  const query = new URLSearchParams({
+  const formBody = new URLSearchParams({
     UID: config.uid,
     PWD: config.pwd,
   });
-  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx?${query.toString()}`, {
-    method: "GET",
+  const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx`, {
+    method: "POST",
     headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent": "vovosnap/1.0",
       "Accept": "text/plain, application/json",
     },
+    body: formBody.toString(),
   });
 
   if (!resp.ok) {
