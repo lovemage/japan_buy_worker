@@ -127,8 +127,6 @@ type AuthEnv = {
   EVERY8D_UID: string;
   EVERY8D_PWD: string;
   EVERY8D_SITE_URL: string;
-  SMS_RELAY_URL?: string;
-  SMS_RELAY_TOKEN?: string;
   APP_URL: string; // e.g. "https://vovosnap.com"
 };
 
@@ -787,8 +785,6 @@ export async function handleSendPhoneCode(
       EVERY8D_UID: authEnv.EVERY8D_UID,
       EVERY8D_PWD: authEnv.EVERY8D_PWD,
       EVERY8D_SITE_URL: authEnv.EVERY8D_SITE_URL,
-      SMS_RELAY_URL: authEnv.SMS_RELAY_URL,
-      SMS_RELAY_TOKEN: authEnv.SMS_RELAY_TOKEN,
     });
 
     const message = `您的 vovosnap 驗證碼為 ${code}，有效期 10 分鐘。如非本人操作請忽略此簡訊。`;
