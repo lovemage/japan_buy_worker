@@ -14,7 +14,7 @@ CRAWL_MAX_PAGES = "100"
 CRAWL_TIMEOUT_MS = "120000"
 APP_URL = "https://vovosnap.com"
 MAIN_DOMAIN = "vovosnap.com"
-EVERY8D_SITE_URL = "new.e8d.tw"
+EVERY8D_SITE_URL = "oms.every8d.com"
 
 # Secrets (set via: wrangler secret put <KEY>):
 # GOOGLE_CLIENT_ID

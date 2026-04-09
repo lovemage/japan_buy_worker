@@ -206,6 +206,6 @@ export function createEvery8DConfig(env: {
   return {
     uid: env.EVERY8D_UID,
     pwd: env.EVERY8D_PWD,
-    siteUrl: env.EVERY8D_SITE_URL || "new.e8d.tw",
+    siteUrl: env.EVERY8D_SITE_URL || "oms.every8d.com",
   };
 }
