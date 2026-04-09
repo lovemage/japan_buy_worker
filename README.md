@@ -29,6 +29,10 @@
 2. `npm run d1:migrate:local`
 3. `npm run dev`
 
+## Documentation
+
+- [Pixel Octopus Loading Animations](docs/animate.md) — AI 功能 loading 動畫角色設計說明
+
 ## Manual Check
 
 1. Call `POST /admin/crawl` once to populate products.

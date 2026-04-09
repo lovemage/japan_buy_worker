@@ -5,14 +5,6 @@ function ensureMarketingLoadingUi() {
   const loading = document.getElementById("marketing-loading");
   if (!loading) return;
 
-  // Reuse the same octopus animation markup as AI recognize.
-  if (!loading.querySelector(".octopus-anim")) {
-    const source = document.querySelector("#recognize-loading .octopus-anim");
-    if (source) {
-      loading.appendChild(source.cloneNode(true));
-    }
-  }
-
   if (!loading.querySelector(".sync-loading-bar")) {
     const bar = document.createElement("div");
     bar.className = "sync-loading-bar";
