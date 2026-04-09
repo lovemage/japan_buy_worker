@@ -30,7 +30,11 @@ async function getConnectionToken(config: Every8DConfig): Promise<string> {
 
   const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/ConnectionHandler.ashx`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "User-Agent": "vovosnap/1.0",
+      "Accept": "application/json",
+    },
     body: JSON.stringify({
       HandlerType: 3,
       VerifyType: 1,
@@ -112,6 +116,10 @@ export async function sendSMS(
   });
   const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/sendSMS.ashx?${query.toString()}`, {
     method: "GET",
+    headers: {
+      "User-Agent": "vovosnap/1.0",
+      "Accept": "text/plain, application/json",
+    },
   });
 
   if (!resp.ok) {
@@ -156,6 +164,10 @@ export async function getCredit(config: Every8DConfig): Promise<number> {
   });
   const resp = await fetch(`https://${config.siteUrl}/API21/HTTP/getCredit.ashx?${query.toString()}`, {
     method: "GET",
+    headers: {
+      "User-Agent": "vovosnap/1.0",
+      "Accept": "text/plain, application/json",
+    },
   });
 
   if (!resp.ok) {
