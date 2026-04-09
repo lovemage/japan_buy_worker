@@ -15,6 +15,7 @@ CRAWL_TIMEOUT_MS = "120000"
 APP_URL = "https://vovosnap.com"
 MAIN_DOMAIN = "vovosnap.com"
 EVERY8D_SITE_URL = "new.e8d.tw"
+SMS_RELAY_URL = "https://relay-sms-production.up.railway.app/send"
 
 # Secrets (set via: wrangler secret put <KEY>):
 # GOOGLE_CLIENT_ID
