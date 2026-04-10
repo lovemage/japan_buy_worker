@@ -18,14 +18,20 @@ type BuildWhereInput = {
   category: string;
   maxBaseJpy: number | null;
   brands: string[];
+  search?: string;
+  includeInactive?: boolean;
 };
 
 export function buildProductWhereClause(input: BuildWhereInput): {
   whereSql: string;
   params: Array<string | number>;
 } {
-  const clauses = ['p.store_id = ?', 'p.is_active = 1'];
+  const clauses = ['p.store_id = ?'];
   const params: Array<string | number> = [input.storeId];
+
+  if (!input.includeInactive) {
+    clauses.push('p.is_active = 1');
+  }
 
   if (input.category.trim()) {
     clauses.push('p.category = ?');
@@ -41,6 +47,12 @@ export function buildProductWhereClause(input: BuildWhereInput): {
   if (Array.isArray(input.brands) && input.brands.length > 0) {
     clauses.push(`p.brand IN (${input.brands.map(() => '?').join(', ')})`);
     params.push(...input.brands);
+  }
+
+  if (input.search && input.search.trim()) {
+    clauses.push('(p.title_ja LIKE ? OR p.title_zh_tw LIKE ? OR p.brand LIKE ?)');
+    const term = `%${input.search.trim()}%`;
+    params.push(term, term, term);
   }
 
   return {

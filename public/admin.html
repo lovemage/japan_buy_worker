@@ -29,11 +29,22 @@
       <div class="tab-sub-nav">
         <button class="tab-sub-btn is-active" data-subtab="manage">產品管理</button>
         <button class="tab-sub-btn" data-subtab="categories">分類管理</button>
-        <button class="tab-sub-btn" data-subtab="ai-marketing">AI行銷 <span style="font-size:9px;background:#888;color:#fff;padding:0 4px;border-radius:3px;vertical-align:middle;">Beta</span></button>
+        <button class="tab-sub-btn" data-subtab="ai-marketing">AI行銷</button>
       </div>
       <div class="admin-sub-panel" data-subtab-panel="manage">
-        <div class="admin-manage-header">
-          <input id="manage-search" type="text" class="input-cute" placeholder="搜尋商品名稱..." />
+        <div class="admin-manage-header" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <input id="manage-search" type="text" class="input-cute" placeholder="搜尋商品名稱..." style="flex:1;min-width:120px;" />
+          <select id="manage-category-filter" class="input-cute" style="flex:0 0 auto;width:auto;min-width:80px;padding:8px 10px;font-size:13px;">
+            <option value="">全部分類</option>
+          </select>
+          <button id="manage-multi-select-btn" class="button secondary" type="button" style="flex:0 0 auto;white-space:nowrap;font-size:12px;padding:8px 12px;">多選</button>
+        </div>
+        <div id="manage-multi-bar" style="display:none;padding:8px 0;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span id="manage-selected-count" style="font-size:13px;font-weight:600;color:#555;">已選 0 件</span>
+          <button class="button" id="manage-bulk-activate" type="button" style="font-size:12px;padding:6px 12px;background:#22c55e;border-color:#22c55e;color:#fff;">上架</button>
+          <button class="button" id="manage-bulk-deactivate" type="button" style="font-size:12px;padding:6px 12px;background:#ef4444;border-color:#ef4444;color:#fff;">下架</button>
+          <button class="button secondary" id="manage-bulk-delete" type="button" style="font-size:12px;padding:6px 12px;color:#ef4444;">刪除</button>
+          <button class="button secondary" id="manage-multi-cancel" type="button" style="font-size:12px;padding:6px 12px;">取消</button>
         </div>
         <div id="manage-product-grid" class="manage-product-grid"></div>
         <div id="manage-paging" class="manage-paging"></div>
@@ -79,7 +90,9 @@
             </div>
             <div class="edit-modal__actions">
               <button id="edit-save" class="button" type="button">儲存</button>
-              <button id="edit-toggle" class="button secondary" type="button">下架</button>
+              <button id="edit-deactivate" class="button secondary" type="button" style="color:#ef4444;">下架</button>
+              <button id="edit-activate" class="button secondary" type="button" style="color:#22c55e;">上架</button>
+              <button id="edit-delete" class="button secondary" type="button" style="color:#ef4444;">刪除</button>
               <button id="edit-cancel" class="button secondary" type="button">取消</button>
             </div>
             <p id="edit-status" class="meta"></p>
@@ -98,7 +111,7 @@
       <div class="admin-sub-panel hidden" data-subtab-panel="ai-marketing">
         <div class="admin-form-card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <h3 style="margin:0;font-size:15px;font-weight:700;">AI 行銷文案產生器 <span style="font-size:11px;font-weight:600;color:#fff;background:#888;padding:1px 6px;border-radius:4px;vertical-align:middle;">Beta</span></h3>
+            <h3 style="margin:0;font-size:15px;font-weight:700;">AI 行銷文案產生器</h3>
           </div>
           <div style="margin-bottom:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">

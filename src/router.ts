@@ -19,6 +19,7 @@ import {
   handleAdminProducts,
   handleAdminProductToggle,
   handleAdminProductUpdate,
+  handleAdminProductDelete,
   handleAdminProductImageDelete,
 } from "./routes/admin/products";
 import { handleAdminChangePassword } from "./routes/admin/password";
@@ -284,6 +285,10 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/products/update") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleAdminProductUpdate(request, ctx);
+  }
+  if (subPath === "/api/admin/products/delete") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleAdminProductDelete(request, ctx);
   }
   if (subPath === "/api/admin/products/image-delete") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

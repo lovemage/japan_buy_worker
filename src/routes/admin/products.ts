@@ -348,6 +348,73 @@ export async function handleAdminProductUpdate(
   );
 }
 
+export async function handleAdminProductDelete(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
+      status: 405, headers: { "content-type": "application/json" },
+    });
+  }
+
+  let body: { id?: number };
+  try {
+    body = (await request.json()) as { id?: number };
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  const id = Number(body.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  const product = await ctx.db
+    .prepare("SELECT is_active, source_product_code, source_payload_json FROM products WHERE id = ? AND store_id = ?")
+    .bind(id, ctx.storeId)
+    .first<{ is_active: number; source_product_code: string; source_payload_json: string | null }>();
+
+  if (!product) {
+    return new Response(JSON.stringify({ ok: false, error: "商品不存在" }), {
+      status: 404, headers: { "content-type": "application/json" },
+    });
+  }
+
+  if (product.is_active === 1) {
+    return new Response(JSON.stringify({ ok: false, error: "請先下架商品再刪除" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    });
+  }
+
+  // Clean up R2 images
+  if (ctx.r2) {
+    let payloadObj: Record<string, unknown> = {};
+    try { payloadObj = product.source_payload_json ? JSON.parse(product.source_payload_json) : {}; } catch { /* */ }
+    const gallery: string[] = Array.isArray(payloadObj.gallery) ? payloadObj.gallery : [];
+    for (const url of gallery) {
+      if (typeof url === "string" && url.startsWith("/api/images/")) {
+        const key = url.slice("/api/images/".length);
+        await ctx.r2.delete(key).catch(() => {});
+      }
+    }
+  }
+
+  await ctx.db
+    .prepare("DELETE FROM products WHERE id = ? AND store_id = ?")
+    .bind(id, ctx.storeId)
+    .run();
+
+  return new Response(
+    JSON.stringify({ ok: true, id }),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
+}
+
 export async function handleAdminProductImageDelete(
   request: Request,
   ctx: RequestContext

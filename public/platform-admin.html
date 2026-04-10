@@ -502,16 +502,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
 
     <div class="card">
+      <button class="btn btn-dark" onclick="logout()">登出</button>
+    </div>
+  </div>
+
+  <!-- Tab: 問與答 -->
+  <div class="page-content hidden" id="page-faq">
+    <div class="card">
       <h3>首頁問與答</h3>
       <p class="desc">管理首頁 FAQ。每題包含問題和回答。問題開頭建議加「我|我拍」。</p>
       <div id="faq-editor"></div>
       <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="addFaqItem()">+ 新增問題</button>
       <button class="btn btn-dark" style="margin-top:8px;" onclick="saveFaq()">儲存</button>
       <span class="toast" id="faq-toast">已儲存</span>
-    </div>
-
-    <div class="card">
-      <button class="btn btn-dark" onclick="logout()">登出</button>
     </div>
   </div>
 
@@ -532,6 +535,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <button class="nav-item" data-page="usage" onclick="switchPage('usage', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
       <span>用量</span>
+    </button>
+    <button class="nav-item" data-page="faq" onclick="switchPage('faq', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>問與答</span>
     </button>
     <button class="nav-item" data-page="settings" onclick="switchPage('settings', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -562,6 +569,7 @@ var PAGE_TITLES = {
   members: "會員管理",
   keys: "API 金鑰",
   usage: "API 用量",
+  faq: "問與答",
   settings: "系統設定",
 };
 

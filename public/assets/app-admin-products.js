@@ -12,7 +12,10 @@ function prefixImageUrl(url) {
 // === Product Management ===
 let managePage = 1;
 let manageSearch = "";
+let manageCategory = "";
 let manageDebounce = null;
+let multiSelectMode = false;
+let selectedIds = new Set();
 
 const _adminCC = window.__COUNTRY_CONFIG || {};
 
@@ -54,10 +57,17 @@ async function loadAdminPricing() {
   return adminPricing || {};
 }
 
+// Track product active status for bulk operations
+let productActiveMap = {};
+
 function renderProductGrid(products, paging) {
   const grid = document.getElementById("manage-product-grid");
   const pagingEl = document.getElementById("manage-paging");
   if (!grid) return;
+
+  // Build active map
+  productActiveMap = {};
+  (products || []).forEach(p => { productActiveMap[p.id] = p.isActive; });
 
   if (!products || products.length === 0) {
     grid.innerHTML = '<div class="manage-empty"><p>沒有商品</p></div>';
@@ -68,11 +78,14 @@ function renderProductGrid(products, paging) {
   grid.innerHTML = products.map((p) => {
     const imgSrc = withProductImageFallback(p.displayImageUrl || p.imageUrl || "");
     const name = p.nameZhTw || p.nameJa || "未命名";
+    const inactive = p.isActive === 0;
+    const checked = selectedIds.has(p.id) ? "checked" : "";
     return `
-    <div class="manage-card">
-      <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
+    <div class="manage-card${inactive ? " manage-card--inactive" : ""}">
+      ${multiSelectMode ? `<label class="manage-card__check"><input type="checkbox" class="js-product-check" data-id="${p.id}" ${checked} /></label>` : ""}
+      <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product"${inactive ? ' style="opacity:0.45;"' : ""} />
       <div class="manage-card__body">
-        <p class="manage-card__title">${name}</p>
+        <p class="manage-card__title">${name}${inactive ? ' <span style="font-size:11px;color:#ef4444;font-weight:600;">已下架</span>' : ""}</p>
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
@@ -108,22 +121,13 @@ function renderProductGrid(products, paging) {
     });
   });
 
-  grid.querySelectorAll(".js-product-toggle-REMOVED").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-id");
-      const isCurrentlyActive = btn.textContent === "下架";
-      btn.disabled = true;
-      try {
-        const res = await apiFetch("/api/admin/products/toggle", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ id: Number(id), isActive: isCurrentlyActive ? 0 : 1 }),
-        });
-        if (res.ok) await loadManagedProducts();
-        else showError("操作失敗");
-      } finally {
-        btn.disabled = false;
-      }
+  // Multi-select checkboxes
+  grid.querySelectorAll(".js-product-check").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const id = Number(cb.getAttribute("data-id"));
+      if (cb.checked) selectedIds.add(id);
+      else selectedIds.delete(id);
+      updateSelectedCount();
     });
   });
 
@@ -141,14 +145,95 @@ function renderProductGrid(products, paging) {
   }
 }
 
+function updateSelectedCount() {
+  const el = document.getElementById("manage-selected-count");
+  if (el) el.textContent = `已選 ${selectedIds.size} 件`;
+}
+
 export async function loadManagedProducts() {
   await loadAdminPricing();
-  const params = new URLSearchParams({ limit: "20", offset: String((managePage - 1) * 20) });
+  const params = new URLSearchParams({ limit: "20", offset: String((managePage - 1) * 20), includeInactive: "1" });
   if (manageSearch) params.set("search", manageSearch);
+  if (manageCategory) params.set("category", manageCategory);
   const res = await apiFetch(`/api/products?${params}`);
   if (!res.ok) { showError("載入商品失敗"); return; }
   const body = await res.json();
   renderProductGrid(body.products || [], body.paging || {});
+}
+
+// === Multi-select ===
+
+function enterMultiSelect() {
+  multiSelectMode = true;
+  selectedIds.clear();
+  const bar = document.getElementById("manage-multi-bar");
+  if (bar) bar.style.display = "flex";
+  const btn = document.getElementById("manage-multi-select-btn");
+  if (btn) btn.style.display = "none";
+  updateSelectedCount();
+  loadManagedProducts();
+}
+
+function exitMultiSelect() {
+  multiSelectMode = false;
+  selectedIds.clear();
+  const bar = document.getElementById("manage-multi-bar");
+  if (bar) bar.style.display = "none";
+  const btn = document.getElementById("manage-multi-select-btn");
+  if (btn) btn.style.display = "";
+  loadManagedProducts();
+}
+
+async function bulkToggle(isActive) {
+  if (selectedIds.size === 0) return;
+  const ids = Array.from(selectedIds);
+  for (const id of ids) {
+    await apiFetch("/api/admin/products/toggle", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id, isActive }),
+    });
+  }
+  selectedIds.clear();
+  updateSelectedCount();
+  await loadManagedProducts();
+}
+
+async function bulkDelete() {
+  if (selectedIds.size === 0) return;
+  const ids = Array.from(selectedIds);
+  // Check all selected are inactive
+  const activeOnes = ids.filter(id => productActiveMap[id] === 1);
+  if (activeOnes.length > 0) {
+    showError("只能刪除已下架的商品，請先下架再刪除");
+    return;
+  }
+  if (!confirm(`確定要永久刪除 ${ids.length} 件商品？此操作不可復原！`)) return;
+  for (const id of ids) {
+    await apiFetch("/api/admin/products/delete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+  }
+  selectedIds.clear();
+  updateSelectedCount();
+  await loadManagedProducts();
+}
+
+// === Category filter ===
+
+async function loadCategoryFilter() {
+  try {
+    const res = await apiFetch("/api/admin/categories");
+    if (!res.ok) return;
+    const body = await res.json();
+    const select = document.getElementById("manage-category-filter");
+    if (!select) return;
+    const cats = body.categories || [];
+    select.innerHTML = '<option value="">全部分類</option>' +
+      cats.map(c => `<option value="${c.name}">${c.name}（${c.total}）</option>`).join("");
+  } catch {}
 }
 
 // === Edit Modal ===
@@ -275,25 +360,81 @@ async function openEditModal(btn) {
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
   document.getElementById("edit-status").textContent = "";
 
-  // Set toggle button state
+  // Set button visibility based on active state
   const isActive = btn.getAttribute("data-active") !== "0";
-  const toggleBtn = document.getElementById("edit-toggle");
-  if (toggleBtn) {
-    toggleBtn.textContent = isActive ? "下架" : "上架";
-    toggleBtn.style.color = isActive ? "#ef4444" : "#22c55e";
-    toggleBtn.onclick = async function() {
-      toggleBtn.disabled = true;
+  const deactivateBtn = document.getElementById("edit-deactivate");
+  const activateBtn = document.getElementById("edit-activate");
+  const deleteBtn = document.getElementById("edit-delete");
+
+  if (isActive) {
+    // Active product: show deactivate, hide activate + delete
+    if (deactivateBtn) { deactivateBtn.style.display = ""; deactivateBtn.disabled = false; }
+    if (activateBtn) activateBtn.style.display = "none";
+    if (deleteBtn) deleteBtn.style.display = "none";
+  } else {
+    // Inactive product: show activate + delete, hide deactivate
+    if (deactivateBtn) deactivateBtn.style.display = "none";
+    if (activateBtn) { activateBtn.style.display = ""; activateBtn.disabled = false; }
+    if (deleteBtn) { deleteBtn.style.display = ""; deleteBtn.disabled = false; }
+  }
+
+  // Wire up deactivate
+  if (deactivateBtn) {
+    deactivateBtn.onclick = async function() {
+      deactivateBtn.disabled = true;
       const res = await apiFetch("/api/admin/products/toggle", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: Number(id), isActive: isActive ? 0 : 1 }),
+        body: JSON.stringify({ id: Number(id), isActive: 0 }),
       });
       if (res.ok) {
         modal.classList.add("hidden");
         await loadManagedProducts();
       } else {
-        toggleBtn.disabled = false;
-        showError("操作失敗");
+        deactivateBtn.disabled = false;
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || "下架失敗");
+      }
+    };
+  }
+
+  // Wire up activate
+  if (activateBtn) {
+    activateBtn.onclick = async function() {
+      activateBtn.disabled = true;
+      const res = await apiFetch("/api/admin/products/toggle", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: Number(id), isActive: 1 }),
+      });
+      if (res.ok) {
+        modal.classList.add("hidden");
+        await loadManagedProducts();
+      } else {
+        activateBtn.disabled = false;
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || "上架失敗");
+      }
+    };
+  }
+
+  // Wire up delete
+  if (deleteBtn) {
+    deleteBtn.onclick = async function() {
+      if (!confirm("確定要永久刪除此商品？此操作不可復原！")) return;
+      deleteBtn.disabled = true;
+      const res = await apiFetch("/api/admin/products/delete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: Number(id) }),
+      });
+      if (res.ok) {
+        modal.classList.add("hidden");
+        await loadManagedProducts();
+      } else {
+        deleteBtn.disabled = false;
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || "刪除失敗");
       }
     };
   }
@@ -572,6 +713,25 @@ function initManageSearch() {
   });
 }
 
+function initCategoryFilter() {
+  const select = document.getElementById("manage-category-filter");
+  if (!select) return;
+  select.addEventListener("change", () => {
+    manageCategory = select.value;
+    managePage = 1;
+    loadManagedProducts();
+  });
+  loadCategoryFilter();
+}
+
+function initMultiSelect() {
+  document.getElementById("manage-multi-select-btn")?.addEventListener("click", enterMultiSelect);
+  document.getElementById("manage-multi-cancel")?.addEventListener("click", exitMultiSelect);
+  document.getElementById("manage-bulk-activate")?.addEventListener("click", () => bulkToggle(1));
+  document.getElementById("manage-bulk-deactivate")?.addEventListener("click", () => bulkToggle(0));
+  document.getElementById("manage-bulk-delete")?.addEventListener("click", bulkDelete);
+}
+
 const MAX_IMAGE_SIZE = 800;
 const WEBP_QUALITY = 0.8;
 
@@ -722,6 +882,7 @@ async function loadCategories() {
         body: JSON.stringify({ oldName, newName: newName.trim() }),
       });
       await loadCategories();
+      await loadCategoryFilter();
     });
   });
 
@@ -731,6 +892,7 @@ async function loadCategories() {
       if (!confirm(`確定刪除分類「${name}」？該分類下的商品將歸為未分類。`)) return;
       await apiFetch(`/api/admin/categories?name=${encodeURIComponent(name)}`, { method: "DELETE" });
       await loadCategories();
+      await loadCategoryFilter();
     });
   });
 }
@@ -746,11 +908,14 @@ async function addCategory() {
   });
   input.value = "";
   await loadCategories();
+  await loadCategoryFilter();
 }
 
 export function initProducts() {
   // Product management
   initManageSearch();
+  initCategoryFilter();
+  initMultiSelect();
   initEditModal();
   loadManagedProducts();
 

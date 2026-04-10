@@ -231,5 +231,6 @@ function bootstrap() {
 }
 
 window.__buildStoreDomainChangeMessage = buildStoreDomainChangeMessage;
+window.switchTab = switchTab;
 
 bootstrap();

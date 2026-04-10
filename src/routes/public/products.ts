@@ -13,6 +13,7 @@ type ProductRow = {
   price_jpy_tax_in: number | null;
   color_count: number | null;
   image_url: string | null;
+  is_active: number;
   last_crawled_at: string | null;
   source_payload_json: string | null;
   tags: string | null;
@@ -48,6 +49,7 @@ function mapProduct(item: ProductRow) {
     priceJpyTaxIn: item.price_jpy_tax_in,
     colorCount: item.color_count,
     imageUrl: item.image_url,
+    isActive: item.is_active ?? 1,
     displayImageUrl: toDisplayImageUrl(item.image_url),
     lastCrawledAt: item.last_crawled_at,
     gallery: payload.gallery,
@@ -71,6 +73,8 @@ export async function handlePublicProducts(
   const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
   const category = (url.searchParams.get("category") || "").trim();
   const brands = parseBrandFilters(url.searchParams.get("brands"));
+  const search = (url.searchParams.get("search") || "").trim();
+  const includeInactive = url.searchParams.get("includeInactive") === "1";
   const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
   const hasCategory = category.length > 0;
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
@@ -98,6 +102,8 @@ export async function handlePublicProducts(
     category,
     maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
     brands,
+    search,
+    includeInactive,
   });
 
   const listSql = `
@@ -111,6 +117,7 @@ SELECT
   p.price_jpy_tax_in,
   p.color_count,
   p.image_url,
+  p.is_active,
   p.last_crawled_at,
   p.source_payload_json,
   p.tags
