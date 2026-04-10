@@ -17,6 +17,11 @@ function calcAdjustedPrices(basePrice, pricing) {
   if (!Number.isFinite(base)) {
     return { src: null, twd: null };
   }
+
+  if (pricing?.pricingMode === "manual") {
+    return { src: null, twd: Math.round(base) };
+  }
+
   const mode = pricing?.markupMode || DEFAULT_PRICING.markupMode;
   const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
 
@@ -102,9 +107,11 @@ function renderProduct(item, pricing) {
   const priceBlock = document.getElementById("detail-price");
   if (priceBlock) {
     if (adjusted.twd !== null) {
+      const subLine = adjusted.src !== null
+        ? `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`
+        : "";
       priceBlock.innerHTML =
-        `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` +
-        `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`;
+        `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` + subLine;
     } else {
       priceBlock.innerHTML = `<p class="detail-price-twd">價格未提供</p>`;
     }

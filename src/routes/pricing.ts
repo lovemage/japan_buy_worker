@@ -16,6 +16,7 @@ const DEFAULT_DOMESTIC_SHIPPING_TWD = 60;
 const DEFAULT_PROMO_TAG_MAX_TWD = 500;
 const DEFAULT_LIMITED_PROXY_SHIPPING_TWD = 80;
 const DEFAULT_SHIPPING_OPTIONS_ENABLED = 1;
+const DEFAULT_PRICING_MODE = "auto"; // "auto" | "manual"
 
 async function ensureSettingsTable(db: D1DatabaseLike): Promise<void> {
   await db
@@ -41,6 +42,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   promoTagMaxTwd: number;
   limitedProxyShippingTwd: number;
   shippingOptionsEnabled: boolean;
+  pricingMode: string;
 }> {
   await ensureSettingsTable(db);
   await db
@@ -97,10 +99,16 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
     )
     .bind(storeId, String(DEFAULT_MARKUP_PERCENT))
     .run();
+  await db
+    .prepare(
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'pricing_mode', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
+    )
+    .bind(storeId, DEFAULT_PRICING_MODE)
+    .run();
 
   const rows = await db
     .prepare(
-      "SELECT key, value FROM app_settings WHERE store_id = ? AND key IN ('markup_jpy','markup_mode','markup_percent','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled')"
+      "SELECT key, value FROM app_settings WHERE store_id = ? AND key IN ('markup_jpy','markup_mode','markup_percent','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled','pricing_mode')"
     )
     .bind(storeId)
     .all<SettingRow>();
@@ -120,6 +128,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   const shippingOptionsEnabledRaw = result.find(
     (x) => x.key === "shipping_options_enabled"
   )?.value;
+  const pricingModeRaw = result.find((x) => x.key === "pricing_mode")?.value;
 
   const markup = Number(markupRaw);
   const markupMode = markupModeRaw === "percent" ? "percent" : "flat";
@@ -130,6 +139,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   const promoTagMaxTwd = Number(promoTagMaxRaw);
   const limitedProxyShippingTwd = Number(limitedProxyShippingRaw);
   const shippingOptionsEnabled = Number(shippingOptionsEnabledRaw);
+  const pricingMode = pricingModeRaw === "manual" ? "manual" : "auto";
   return {
     markupJpy: Number.isFinite(markup) ? markup : DEFAULT_MARKUP_JPY,
     markupMode,
@@ -147,6 +157,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
       : DEFAULT_LIMITED_PROXY_SHIPPING_TWD,
     shippingOptionsEnabled:
       Number.isFinite(shippingOptionsEnabled) && shippingOptionsEnabled === 0 ? false : true,
+    pricingMode,
   };
 }
 
@@ -191,6 +202,7 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
     promoTagMaxTwd?: number;
     limitedProxyShippingTwd?: number;
     shippingOptionsEnabled?: boolean;
+    pricingMode?: string;
   };
   try {
     body = (await request.json()) as typeof body;
@@ -212,6 +224,7 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
   const promoTagMaxTwd = Number(body.promoTagMaxTwd);
   const limitedProxyShippingTwd = Number(body.limitedProxyShippingTwd);
   const shippingOptionsEnabled = body.shippingOptionsEnabled === false ? 0 : 1;
+  const pricingMode = body.pricingMode === "manual" ? "manual" : "auto";
   if (!Number.isFinite(markupJpy) || markupJpy < 0) {
     return new Response(JSON.stringify({ ok: false, error: "markupJpy must be >= 0" }), {
       status: 400,
@@ -322,6 +335,12 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
     )
     .bind(ctx.storeId, String(shippingOptionsEnabled))
     .run();
+  await ctx.db
+    .prepare(
+      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'pricing_mode', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(ctx.storeId, pricingMode)
+    .run();
 
   return new Response(
     JSON.stringify({
@@ -336,6 +355,7 @@ export async function handleAdminPricing(request: Request, ctx: RequestContext):
         promoTagMaxTwd,
         limitedProxyShippingTwd,
         shippingOptionsEnabled: shippingOptionsEnabled === 1,
+        pricingMode,
       },
     }),
     {

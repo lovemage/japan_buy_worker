@@ -97,6 +97,11 @@ function calcAdjustedPrices(basePrice, pricing) {
   if (!Number.isFinite(base)) {
     return { src: null, twd: null };
   }
+
+  if (pricing?.pricingMode === "manual") {
+    return { src: null, twd: Math.round(base) };
+  }
+
   const mode = pricing?.markupMode || DEFAULT_PRICING.markupMode;
   const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
 

@@ -29,6 +29,11 @@ function formatSellingPrice(basePrice, pricing) {
   if (!basePrice && basePrice !== 0) return "";
   const base = Number(basePrice);
   if (!Number.isFinite(base)) return "";
+
+  if (pricing?.pricingMode === "manual") {
+    return `NT$${Math.round(base).toLocaleString("en-US")}`;
+  }
+
   const mode = pricing?.markupMode || "flat";
   const rate = Number(pricing?.jpyToTwd ?? 1);
 
@@ -91,7 +96,7 @@ function renderProductGrid(products, paging) {
       <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
         <p class="manage-card__title">${name}</p>
-        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
+        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)}${adminPricing?.pricingMode !== "manual" ? ` <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span>` : ""}</p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
           <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
@@ -373,6 +378,12 @@ async function openEditModal(btn) {
   document.getElementById("edit-brand").value = btn.getAttribute("data-brand") || "";
   document.getElementById("edit-category").value = btn.getAttribute("data-category") || "";
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
+  const priceLabel = document.getElementById("edit-price-label");
+  if (priceLabel) {
+    priceLabel.innerHTML = adminPricing?.pricingMode === "manual"
+      ? "售價（TWD）"
+      : `價格（<span class="src-currency">${(_adminCC.currencyCode || "JPY")}</span>）`;
+  }
   document.getElementById("edit-status").textContent = "";
 
   // Set button visibility based on active state

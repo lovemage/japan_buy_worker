@@ -86,7 +86,14 @@ export async function handlePublicProducts(
   const rate = Number(pricing.jpyToTwd);
   const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
   const maxBaseJpy = (() => {
-    if (!Number.isFinite(rate) || rate <= 0 || !Number.isFinite(promoThreshold) || promoThreshold < 0) {
+    if (!Number.isFinite(promoThreshold) || promoThreshold < 0) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    // manual mode: price IS the TWD selling price directly
+    if (pricing.pricingMode === "manual") {
+      return promoThreshold;
+    }
+    if (!Number.isFinite(rate) || rate <= 0) {
       return Number.MAX_SAFE_INTEGER;
     }
     if (markupMode === "percent" && Number.isFinite(markupPercent)) {

@@ -1,6 +1,32 @@
 import { showError } from "./app-admin.js";
 
 let currentMarkupMode = "flat";
+let currentPricingMode = "auto";
+
+function setPricingMode(mode) {
+  currentPricingMode = mode;
+  const toggle = document.getElementById("pricing-mode-toggle");
+  const label = document.getElementById("pricing-mode-label");
+  const autoFields = document.getElementById("auto-pricing-fields");
+  const manualFields = document.getElementById("manual-pricing-fields");
+  if (toggle) toggle.checked = mode === "manual";
+  if (label) label.textContent = mode === "manual" ? "手動定價" : "自動定價";
+  if (autoFields) autoFields.classList.toggle("hidden", mode === "manual");
+  if (manualFields) manualFields.classList.toggle("hidden", mode !== "manual");
+  // Update dynamic price labels across forms
+  const cc = window.__COUNTRY_CONFIG || {};
+  const currencyCode = cc.currencyCode || "JPY";
+  document.querySelectorAll(".price-label-dynamic").forEach((el) => {
+    el.innerHTML = mode === "manual"
+      ? "售價（TWD）"
+      : `價格（<span class="src-currency">${currencyCode}</span>）`;
+  });
+}
+
+window.onPricingModeToggle = function() {
+  const toggle = document.getElementById("pricing-mode-toggle");
+  setPricingMode(toggle?.checked ? "manual" : "auto");
+};
 
 function setMarkupMode(mode) {
   currentMarkupMode = mode;
@@ -40,6 +66,7 @@ async function loadPricing() {
   const opt = document.getElementById("shipping-options-enabled");
   if (opt) opt.checked = p.shippingOptionsEnabled !== false;
   setMarkupMode(p.markupMode || "flat");
+  setPricingMode(p.pricingMode || "auto");
 }
 
 async function savePricing() {
@@ -48,6 +75,7 @@ async function savePricing() {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
+      pricingMode: currentPricingMode,
       markupJpy: get("markup-jpy"),
       markupMode: currentMarkupMode,
       markupPercent: get("markup-percent"),
