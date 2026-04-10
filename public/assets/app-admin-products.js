@@ -397,6 +397,7 @@ async function openEditModal(btn) {
   if (deactivateBtn) {
     deactivateBtn.onclick = async function() {
       deactivateBtn.disabled = true;
+      setGridLoading(true);
       const res = await apiFetch("/api/admin/products/toggle", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -406,6 +407,7 @@ async function openEditModal(btn) {
         modal.classList.add("hidden");
         await loadManagedProducts();
       } else {
+        setGridLoading(false);
         deactivateBtn.disabled = false;
         const data = await res.json().catch(() => ({}));
         showError(data.error || "下架失敗");
@@ -417,6 +419,7 @@ async function openEditModal(btn) {
   if (activateBtn) {
     activateBtn.onclick = async function() {
       activateBtn.disabled = true;
+      setGridLoading(true);
       const res = await apiFetch("/api/admin/products/toggle", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -426,6 +429,7 @@ async function openEditModal(btn) {
         modal.classList.add("hidden");
         await loadManagedProducts();
       } else {
+        setGridLoading(false);
         activateBtn.disabled = false;
         const data = await res.json().catch(() => ({}));
         showError(data.error || "上架失敗");
@@ -438,6 +442,7 @@ async function openEditModal(btn) {
     deleteBtn.onclick = async function() {
       if (!confirm("確定要永久刪除此商品？此操作不可復原！")) return;
       deleteBtn.disabled = true;
+      setGridLoading(true);
       const res = await apiFetch("/api/admin/products/delete", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -447,6 +452,7 @@ async function openEditModal(btn) {
         modal.classList.add("hidden");
         await loadManagedProducts();
       } else {
+        setGridLoading(false);
         deleteBtn.disabled = false;
         const data = await res.json().catch(() => ({}));
         showError(data.error || "刪除失敗");
