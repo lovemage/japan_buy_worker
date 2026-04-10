@@ -157,17 +157,27 @@ function updateSelectedCount() {
   if (bar) bar.classList.toggle("is-visible", selectedIds.size > 0);
 }
 
+function setGridLoading(on) {
+  const grid = document.getElementById("manage-product-grid");
+  if (grid) grid.classList.toggle("is-loading", on);
+}
+
 export async function loadManagedProducts() {
   await loadAdminPricing();
+  setGridLoading(true);
   const params = new URLSearchParams({ limit: "20", offset: String((managePage - 1) * 20), includeInactive: "1" });
   if (manageSearch) params.set("search", manageSearch);
   if (manageCategory) params.set("category", manageCategory);
   if (manageStatus === "active") params.delete("includeInactive");
   if (manageStatus === "inactive") { params.set("includeInactive", "1"); params.set("onlyInactive", "1"); }
-  const res = await apiFetch(`/api/products?${params}`);
-  if (!res.ok) { showError("載入商品失敗"); return; }
-  const body = await res.json();
-  renderProductGrid(body.products || [], body.paging || {});
+  try {
+    const res = await apiFetch(`/api/products?${params}`);
+    if (!res.ok) { showError("載入商品失敗"); return; }
+    const body = await res.json();
+    renderProductGrid(body.products || [], body.paging || {});
+  } finally {
+    setGridLoading(false);
+  }
 }
 
 // === Multi-select ===
@@ -179,17 +189,20 @@ function exitMultiSelect() {
   document.querySelectorAll(".js-product-check").forEach(cb => { cb.checked = false; });
 }
 
+function showBulkHint(msg) {
+  const el = document.getElementById("manage-bulk-hint");
+  if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ""; }, 3000); }
+}
+
 async function bulkToggle(isActive) {
   if (selectedIds.size === 0) return;
   const ids = Array.from(selectedIds);
-  // Validate: activate requires all inactive, deactivate requires all active
   if (isActive === 1) {
-    const alreadyActive = ids.filter(id => productActiveMap[id] === 1);
-    if (alreadyActive.length > 0) { showError("請檢查選擇商品"); return; }
+    if (ids.some(id => productActiveMap[id] === 1)) { showBulkHint("請檢查選擇商品"); return; }
   } else {
-    const alreadyInactive = ids.filter(id => productActiveMap[id] === 0);
-    if (alreadyInactive.length > 0) { showError("請檢查選擇商品"); return; }
+    if (ids.some(id => productActiveMap[id] === 0)) { showBulkHint("請檢查選擇商品"); return; }
   }
+  setGridLoading(true);
   for (const id of ids) {
     await apiFetch("/api/admin/products/toggle", {
       method: "POST",
@@ -205,12 +218,12 @@ async function bulkToggle(isActive) {
 async function bulkDelete() {
   if (selectedIds.size === 0) return;
   const ids = Array.from(selectedIds);
-  const activeOnes = ids.filter(id => productActiveMap[id] === 1);
-  if (activeOnes.length > 0) {
-    showError("請檢查選擇商品");
+  if (ids.some(id => productActiveMap[id] === 1)) {
+    showBulkHint("請檢查選擇商品");
     return;
   }
   if (!confirm(`確定要永久刪除 ${ids.length} 件商品？此操作不可復原！`)) return;
+  setGridLoading(true);
   for (const id of ids) {
     await apiFetch("/api/admin/products/delete", {
       method: "POST",

@@ -46,7 +46,10 @@
         <div id="manage-product-grid" class="manage-product-grid"></div>
         <div id="manage-paging" class="manage-paging"></div>
         <div id="manage-multi-bar" class="manage-multi-bar">
-          <span id="manage-selected-count" style="font-size:13px;font-weight:600;color:var(--admin-text-secondary);">已選 0 件</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="manage-selected-count" style="font-size:13px;font-weight:600;color:var(--admin-text-secondary);">已選 0 件</span>
+            <span id="manage-bulk-hint" class="manage-multi-bar__hint"></span>
+          </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;">
             <button class="button" id="manage-bulk-activate" type="button" style="font-size:12px;padding:8px 0;">上架</button>
             <button class="button secondary" id="manage-bulk-deactivate" type="button" style="font-size:12px;padding:8px 0;">下架</button>

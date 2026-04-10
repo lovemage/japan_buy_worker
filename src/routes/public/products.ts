@@ -125,7 +125,7 @@ SELECT
   p.tags
 FROM products p
 ${where.whereSql}
-ORDER BY updated_at DESC
+ORDER BY p.is_active DESC, updated_at DESC
 LIMIT ? OFFSET ?
 `;
   const rows = await ctx.db
