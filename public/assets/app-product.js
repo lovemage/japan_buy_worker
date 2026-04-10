@@ -19,7 +19,9 @@ function calcAdjustedPrices(basePrice, pricing) {
   }
 
   if (pricing?.pricingMode === "manual") {
-    return { src: null, twd: Math.round(base) };
+    const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
+    const src = (Number.isFinite(rate) && rate > 0) ? Math.round(base / rate) : null;
+    return { src, twd: Math.round(base) };
   }
 
   const mode = pricing?.markupMode || DEFAULT_PRICING.markupMode;
@@ -107,9 +109,12 @@ function renderProduct(item, pricing) {
   const priceBlock = document.getElementById("detail-price");
   if (priceBlock) {
     if (adjusted.twd !== null) {
-      const subLine = adjusted.src !== null
-        ? `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`
-        : "";
+      let subLine = "";
+      if (adjusted.src !== null) {
+        subLine = pricing?.pricingMode === "manual"
+          ? `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}</p>`
+          : `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`;
+      }
       priceBlock.innerHTML =
         `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` + subLine;
     } else {

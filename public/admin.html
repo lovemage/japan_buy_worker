@@ -495,35 +495,6 @@
           <p id="phone-verify-status" class="admin-status" style="display:block;"></p>
         </div>
 
-        <div class="settings-group">
-          <h3 class="settings-group__title">代購來源國家</h3>
-          <p class="admin-section-desc">切換國家將更改價格顯示，請參考<a href="#" onclick="event.preventDefault();document.getElementById('country-info-modal').style.display='flex';" style="color:var(--admin-accent);text-decoration:underline;font-size:12px;margin-left:4px;">注意事項</a></p>
-          <div id="country-info-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
-            <div style="background:#fff;border-radius:12px;padding:24px;max-width:400px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,0.15);">
-              <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">切換來源國家注意事項</h3>
-              <p style="font-size:14px;line-height:1.8;color:#555;margin-bottom:12px;">更改來源國家後，商品價格會以該國幣制作為計算基準。請務必確認：</p>
-              <ul style="font-size:14px;line-height:1.8;color:#555;padding-left:20px;margin-bottom:12px;">
-                <li>您的<strong>匯率設定</strong>是否已調整為新國家的匯率</li>
-                <li>現有商品的<strong>價格</strong>是否仍然正確</li>
-              </ul>
-              <div style="background:#fef3c7;border-radius:8px;padding:12px;margin-bottom:12px;">
-                <p style="font-size:13px;line-height:1.7;color:#92400e;margin:0;"><strong>建議：</strong>如果您之前在 A 國上架了商品，這次要到 B 國上架，建議先將 A 國的商品全部下架後再切換國家使用，避免價格混亂。</p>
-              </div>
-              <div style="background:#eef1e6;border-radius:8px;padding:12px;margin-bottom:16px;">
-                <p style="font-size:13px;line-height:1.7;color:#5f7135;margin:0;"><strong>長期穩定貨源：</strong>如果您的商品來源為長期穩定的貨源（例如固定供應商、批發商），建議統一使用「台灣」作為來源國家，這樣您只需要直接輸入台幣金額即可，不需要每次換算匯率。</p>
-              </div>
-              <button onclick="this.closest('[id=country-info-modal]').style.display='none'" style="width:100%;padding:10px;background:var(--admin-accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">我知道了</button>
-            </div>
-          </div>
-          <div class="country-toggle-group" id="country-selector">
-            <button class="country-toggle-btn" data-country="jp" type="button">日本<span class="sub">JPY</span></button>
-            <button class="country-toggle-btn" data-country="kr" type="button">韓國<span class="sub">KRW</span></button>
-            <button class="country-toggle-btn" data-country="th" type="button">泰國<span class="sub">THB</span></button>
-            <button class="country-toggle-btn" data-country="tw" type="button">台灣<span class="sub">TWD</span></button>
-          </div>
-          <p id="country-status" class="admin-status">已儲存</p>
-        </div>
-
         <div class="settings-group" id="ai-model-section" style="display:none;">
           <h3 class="settings-group__title">AI 辨識模型</h3>
           <div class="country-toggle-group" id="ai-model-selector">
@@ -664,6 +635,35 @@
       <!-- 定價與運輸 -->
       <div class="admin-sub-panel hidden" data-subtab-panel="pricing">
         <div class="settings-group">
+          <h3 class="settings-group__title">代購來源國家</h3>
+          <p class="admin-section-desc">切換國家將更改價格顯示，請參考<a href="#" onclick="event.preventDefault();document.getElementById('country-info-modal').style.display='flex';" style="color:var(--admin-accent);text-decoration:underline;font-size:12px;margin-left:4px;">注意事項</a></p>
+          <div id="country-info-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+            <div style="background:#fff;border-radius:12px;padding:24px;max-width:400px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,0.15);">
+              <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">切換來源國家注意事項</h3>
+              <p style="font-size:14px;line-height:1.8;color:#555;margin-bottom:12px;">更改來源國家後，商品價格會以該國幣制作為計算基準。請務必確認：</p>
+              <ul style="font-size:14px;line-height:1.8;color:#555;padding-left:20px;margin-bottom:12px;">
+                <li>您的<strong>匯率設定</strong>是否已調整為新國家的匯率</li>
+                <li>現有商品的<strong>價格</strong>是否仍然正確</li>
+              </ul>
+              <div style="background:#fef3c7;border-radius:8px;padding:12px;margin-bottom:12px;">
+                <p style="font-size:13px;line-height:1.7;color:#92400e;margin:0;"><strong>建議：</strong>如果您之前在 A 國上架了商品，這次要到 B 國上架，建議先將 A 國的商品全部下架後再切換國家使用，避免價格混亂。</p>
+              </div>
+              <div style="background:#eef1e6;border-radius:8px;padding:12px;margin-bottom:16px;">
+                <p style="font-size:13px;line-height:1.7;color:#5f7135;margin:0;"><strong>長期穩定貨源：</strong>如果您的商品來源為長期穩定的貨源（例如固定供應商、批發商），建議統一使用「台灣」作為來源國家，這樣您只需要直接輸入台幣金額即可，不需要每次換算匯率。</p>
+              </div>
+              <button onclick="this.closest('[id=country-info-modal]').style.display='none'" style="width:100%;padding:10px;background:var(--admin-accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">我知道了</button>
+            </div>
+          </div>
+          <div class="country-toggle-group" id="country-selector">
+            <button class="country-toggle-btn" data-country="jp" type="button">日本<span class="sub">JPY</span></button>
+            <button class="country-toggle-btn" data-country="kr" type="button">韓國<span class="sub">KRW</span></button>
+            <button class="country-toggle-btn" data-country="th" type="button">泰國<span class="sub">THB</span></button>
+            <button class="country-toggle-btn" data-country="tw" type="button">台灣<span class="sub">TWD</span></button>
+          </div>
+          <p id="country-status" class="admin-status">已儲存</p>
+        </div>
+
+        <div class="settings-group">
           <h3 class="settings-group__title">匯率設定</h3>
           <label style="margin-top:8px;"><span class="src-currency">JPY</span> → TWD 匯率<input id="jpy-to-twd" type="number" min="0.01" step="0.001" class="input-cute" /></label>
         </div>
@@ -800,7 +800,7 @@
         var code = btn.getAttribute("data-country");
         if (btn.classList.contains("selected")) return;
         var name = COUNTRY_NAMES[code] || code;
-        if (!confirm("確定要切換至「" + name + "」嗎？\n\n切換後所有商品價格將顯示為該國幣別，請確認此操作。")) return;
+        if (!confirm("確定要切換至「" + name + "」嗎？\n\n切換後請注意匯率的轉換是否正確，並確認現有商品價格無誤。")) return;
         apiFetch("/api/admin/store-info", {
           method: "POST",
           headers: { "content-type": "application/json" },

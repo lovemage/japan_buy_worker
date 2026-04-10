@@ -31,7 +31,12 @@ function formatSellingPrice(basePrice, pricing) {
   if (!Number.isFinite(base)) return "";
 
   if (pricing?.pricingMode === "manual") {
-    return `NT$${Math.round(base).toLocaleString("en-US")}`;
+    const rate = Number(pricing?.jpyToTwd ?? 1);
+    const twd = Math.round(base);
+    const srcVal = (Number.isFinite(rate) && rate > 0) ? Math.round(base / rate) : null;
+    const sym = _adminCC.currencySymbol || "¥";
+    const srcPart = srcVal !== null ? ` <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(${sym}${srcVal.toLocaleString("en-US")})</span>` : "";
+    return `NT$${twd.toLocaleString("en-US")}${srcPart}`;
   }
 
   const mode = pricing?.markupMode || "flat";

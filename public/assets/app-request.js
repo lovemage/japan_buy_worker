@@ -56,7 +56,9 @@ function calcAdjustedPrices(baseJpy, pricing) {
   }
 
   if (pricing?.pricingMode === "manual") {
-    return { jpy: 0, twd: Math.round(base) };
+    const rate = Number(pricing?.jpyToTwd ?? DEFAULT_PRICING.jpyToTwd);
+    const jpy = (Number.isFinite(rate) && rate > 0) ? Math.round(base / rate) : 0;
+    return { jpy, twd: Math.round(base) };
   }
 
   const mode = pricing?.markupMode || DEFAULT_PRICING.markupMode;
@@ -118,7 +120,7 @@ function renderDraftItems() {
         <img src="${withProductImageFallback(item.selectedImageUrl || item.imageUrl || "")}" alt="${escapeHtml(item.productNameSnapshot)}" data-fallback="product" class="request-item__thumb" />
         <div class="request-item__body">
           <p class="request-item__name">${escapeHtml(item.productNameSnapshot)}</p>
-          <p class="request-item__price">${pricingConfig?.pricingMode === "manual" ? `NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}` : `${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}`}</p>
+          <p class="request-item__price">${pricingConfig?.pricingMode === "manual" ? `NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")} (${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")})` : `${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}`}</p>
           <div class="request-item__fields">
             <label class="request-item__field-label">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" class="request-item__field-input request-item__field-input--qty" aria-label="${escapeHtml(item.productNameSnapshot)} 數量" /></label>
             <label class="request-item__field-label">尺寸${
