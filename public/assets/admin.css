@@ -28,10 +28,10 @@
   --tag-lavender: #D7BDE2;     /* 薰衣草紫 */
   --tag-lavender-text: #6C3483;
 
-  /* 功能色 */
-  --admin-success: #2D9D5A;
-  --admin-danger: #D44638;
-  --admin-warning: #D4960A;
+  /* 功能色（黑白灰主題） */
+  --admin-success: #1a1a1a;
+  --admin-danger: #555555;
+  --admin-warning: #888888;
 
   --admin-radius: 10px;
   --admin-radius-sm: 6px;
@@ -1080,6 +1080,34 @@
 .manage-card--inactive .manage-card__img {
   filter: grayscale(1);
   opacity: 0.6;
+}
+
+/* ── Product card badges (top-right) ── */
+.manage-card__badges {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+.manage-card__badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.manage-card__badge--inactive {
+  background: var(--admin-text);
+  color: var(--admin-surface);
+}
+.manage-card__badge--no-price {
+  background: var(--admin-warning);
+  color: var(--admin-surface);
 }
 
 /* ── Edit Modal ── */

@@ -79,13 +79,18 @@ function renderProductGrid(products, paging) {
     const imgSrc = withProductImageFallback(p.displayImageUrl || p.imageUrl || "");
     const name = p.nameZhTw || p.nameJa || "未命名";
     const inactive = p.isActive === 0;
+    const noPrice = p.isActive === 1 && (p.priceJpyTaxIn === null || p.priceJpyTaxIn === undefined);
     const checked = selectedIds.has(p.id) ? "checked" : "";
+    const badges = [];
+    if (inactive) badges.push('<span class="manage-card__badge manage-card__badge--inactive">已下架</span>');
+    if (noPrice) badges.push('<span class="manage-card__badge manage-card__badge--no-price">無價格</span>');
     return `
     <div class="manage-card${inactive ? " manage-card--inactive" : ""}">
       <label class="manage-card__check"><input type="checkbox" class="js-product-check" data-id="${p.id}" ${checked} /></label>
+      ${badges.length ? `<div class="manage-card__badges">${badges.join("")}</div>` : ""}
       <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
-        <p class="manage-card__title">${name}${inactive ? ' <span style="font-size:11px;color:var(--admin-danger);font-weight:600;">已下架</span>' : ""}</p>
+        <p class="manage-card__title">${name}</p>
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
@@ -177,6 +182,14 @@ function exitMultiSelect() {
 async function bulkToggle(isActive) {
   if (selectedIds.size === 0) return;
   const ids = Array.from(selectedIds);
+  // Validate: activate requires all inactive, deactivate requires all active
+  if (isActive === 1) {
+    const alreadyActive = ids.filter(id => productActiveMap[id] === 1);
+    if (alreadyActive.length > 0) { showError("請檢查選擇商品"); return; }
+  } else {
+    const alreadyInactive = ids.filter(id => productActiveMap[id] === 0);
+    if (alreadyInactive.length > 0) { showError("請檢查選擇商品"); return; }
+  }
   for (const id of ids) {
     await apiFetch("/api/admin/products/toggle", {
       method: "POST",
@@ -192,10 +205,9 @@ async function bulkToggle(isActive) {
 async function bulkDelete() {
   if (selectedIds.size === 0) return;
   const ids = Array.from(selectedIds);
-  // Check all selected are inactive
   const activeOnes = ids.filter(id => productActiveMap[id] === 1);
   if (activeOnes.length > 0) {
-    showError("只能刪除已下架的商品，請先下架再刪除");
+    showError("請檢查選擇商品");
     return;
   }
   if (!confirm(`確定要永久刪除 ${ids.length} 件商品？此操作不可復原！`)) return;
