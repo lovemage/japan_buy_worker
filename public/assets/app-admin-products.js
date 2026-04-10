@@ -13,8 +13,8 @@ function prefixImageUrl(url) {
 let managePage = 1;
 let manageSearch = "";
 let manageCategory = "";
+let manageStatus = "";
 let manageDebounce = null;
-let multiSelectMode = false;
 let selectedIds = new Set();
 
 const _adminCC = window.__COUNTRY_CONFIG || {};
@@ -82,11 +82,11 @@ function renderProductGrid(products, paging) {
     const checked = selectedIds.has(p.id) ? "checked" : "";
     return `
     <div class="manage-card${inactive ? " manage-card--inactive" : ""}">
-      ${multiSelectMode ? `<label class="manage-card__check"><input type="checkbox" class="js-product-check" data-id="${p.id}" ${checked} /></label>` : ""}
-      <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product"${inactive ? ' style="opacity:0.45;"' : ""} />
+      <label class="manage-card__check"><input type="checkbox" class="js-product-check" data-id="${p.id}" ${checked} /></label>
+      <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
-        <p class="manage-card__title">${name}${inactive ? ' <span style="font-size:11px;color:#ef4444;font-weight:600;">已下架</span>' : ""}</p>
-        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:#999;font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
+        <p class="manage-card__title">${name}${inactive ? ' <span style="font-size:11px;color:var(--admin-danger);font-weight:600;">已下架</span>' : ""}</p>
+        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)} <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span></p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
           <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
@@ -148,6 +148,8 @@ function renderProductGrid(products, paging) {
 function updateSelectedCount() {
   const el = document.getElementById("manage-selected-count");
   if (el) el.textContent = `已選 ${selectedIds.size} 件`;
+  const bar = document.getElementById("manage-multi-bar");
+  if (bar) bar.classList.toggle("is-visible", selectedIds.size > 0);
 }
 
 export async function loadManagedProducts() {
@@ -155,6 +157,8 @@ export async function loadManagedProducts() {
   const params = new URLSearchParams({ limit: "20", offset: String((managePage - 1) * 20), includeInactive: "1" });
   if (manageSearch) params.set("search", manageSearch);
   if (manageCategory) params.set("category", manageCategory);
+  if (manageStatus === "active") params.delete("includeInactive");
+  if (manageStatus === "inactive") { params.set("includeInactive", "1"); params.set("onlyInactive", "1"); }
   const res = await apiFetch(`/api/products?${params}`);
   if (!res.ok) { showError("載入商品失敗"); return; }
   const body = await res.json();
@@ -163,25 +167,11 @@ export async function loadManagedProducts() {
 
 // === Multi-select ===
 
-function enterMultiSelect() {
-  multiSelectMode = true;
-  selectedIds.clear();
-  const bar = document.getElementById("manage-multi-bar");
-  if (bar) bar.style.display = "flex";
-  const btn = document.getElementById("manage-multi-select-btn");
-  if (btn) btn.style.display = "none";
-  updateSelectedCount();
-  loadManagedProducts();
-}
-
 function exitMultiSelect() {
-  multiSelectMode = false;
   selectedIds.clear();
-  const bar = document.getElementById("manage-multi-bar");
-  if (bar) bar.style.display = "none";
-  const btn = document.getElementById("manage-multi-select-btn");
-  if (btn) btn.style.display = "";
-  loadManagedProducts();
+  updateSelectedCount();
+  // Uncheck all visible checkboxes
+  document.querySelectorAll(".js-product-check").forEach(cb => { cb.checked = false; });
 }
 
 async function bulkToggle(isActive) {
@@ -713,6 +703,16 @@ function initManageSearch() {
   });
 }
 
+function initStatusFilter() {
+  const select = document.getElementById("manage-status-filter");
+  if (!select) return;
+  select.addEventListener("change", () => {
+    manageStatus = select.value;
+    managePage = 1;
+    loadManagedProducts();
+  });
+}
+
 function initCategoryFilter() {
   const select = document.getElementById("manage-category-filter");
   if (!select) return;
@@ -725,7 +725,6 @@ function initCategoryFilter() {
 }
 
 function initMultiSelect() {
-  document.getElementById("manage-multi-select-btn")?.addEventListener("click", enterMultiSelect);
   document.getElementById("manage-multi-cancel")?.addEventListener("click", exitMultiSelect);
   document.getElementById("manage-bulk-activate")?.addEventListener("click", () => bulkToggle(1));
   document.getElementById("manage-bulk-deactivate")?.addEventListener("click", () => bulkToggle(0));
@@ -914,6 +913,7 @@ async function addCategory() {
 export function initProducts() {
   // Product management
   initManageSearch();
+  initStatusFilter();
   initCategoryFilter();
   initMultiSelect();
   initEditModal();

@@ -20,6 +20,7 @@ type BuildWhereInput = {
   brands: string[];
   search?: string;
   includeInactive?: boolean;
+  onlyInactive?: boolean;
 };
 
 export function buildProductWhereClause(input: BuildWhereInput): {
@@ -29,7 +30,9 @@ export function buildProductWhereClause(input: BuildWhereInput): {
   const clauses = ['p.store_id = ?'];
   const params: Array<string | number> = [input.storeId];
 
-  if (!input.includeInactive) {
+  if (input.onlyInactive) {
+    clauses.push('p.is_active = 0');
+  } else if (!input.includeInactive) {
     clauses.push('p.is_active = 1');
   }
 

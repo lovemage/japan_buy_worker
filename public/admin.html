@@ -34,20 +34,26 @@
       <div class="admin-sub-panel" data-subtab-panel="manage">
         <div class="admin-manage-header" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
           <input id="manage-search" type="text" class="input-cute" placeholder="搜尋商品名稱..." style="flex:1;min-width:120px;" />
+          <select id="manage-status-filter" class="input-cute" style="flex:0 0 auto;width:auto;min-width:80px;padding:8px 10px;font-size:13px;">
+            <option value="">全部狀態</option>
+            <option value="active">上架中</option>
+            <option value="inactive">已下架</option>
+          </select>
           <select id="manage-category-filter" class="input-cute" style="flex:0 0 auto;width:auto;min-width:80px;padding:8px 10px;font-size:13px;">
             <option value="">全部分類</option>
           </select>
-          <button id="manage-multi-select-btn" class="button secondary" type="button" style="flex:0 0 auto;white-space:nowrap;font-size:12px;padding:8px 12px;">多選</button>
-        </div>
-        <div id="manage-multi-bar" style="display:none;padding:8px 0;gap:8px;align-items:center;flex-wrap:wrap;">
-          <span id="manage-selected-count" style="font-size:13px;font-weight:600;color:#555;">已選 0 件</span>
-          <button class="button" id="manage-bulk-activate" type="button" style="font-size:12px;padding:6px 12px;background:#22c55e;border-color:#22c55e;color:#fff;">上架</button>
-          <button class="button" id="manage-bulk-deactivate" type="button" style="font-size:12px;padding:6px 12px;background:#ef4444;border-color:#ef4444;color:#fff;">下架</button>
-          <button class="button secondary" id="manage-bulk-delete" type="button" style="font-size:12px;padding:6px 12px;color:#ef4444;">刪除</button>
-          <button class="button secondary" id="manage-multi-cancel" type="button" style="font-size:12px;padding:6px 12px;">取消</button>
         </div>
         <div id="manage-product-grid" class="manage-product-grid"></div>
         <div id="manage-paging" class="manage-paging"></div>
+        <div id="manage-multi-bar" class="manage-multi-bar">
+          <span id="manage-selected-count" style="font-size:13px;font-weight:600;color:var(--admin-text-secondary);">已選 0 件</span>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;">
+            <button class="button" id="manage-bulk-activate" type="button" style="font-size:12px;padding:8px 0;background:var(--admin-success);border-color:var(--admin-success);color:#fff;">上架</button>
+            <button class="button" id="manage-bulk-deactivate" type="button" style="font-size:12px;padding:8px 0;background:var(--admin-danger);border-color:var(--admin-danger);color:#fff;">下架</button>
+            <button class="button secondary" id="manage-bulk-delete" type="button" style="font-size:12px;padding:8px 0;color:var(--admin-danger);">刪除</button>
+            <button class="button secondary" id="manage-multi-cancel" type="button" style="font-size:12px;padding:8px 0;">取消</button>
+          </div>
+        </div>
         <div id="edit-modal" class="edit-modal hidden">
           <div class="edit-modal__backdrop"></div>
           <div class="edit-modal__content">
@@ -90,9 +96,9 @@
             </div>
             <div class="edit-modal__actions">
               <button id="edit-save" class="button" type="button">儲存</button>
-              <button id="edit-deactivate" class="button secondary" type="button" style="color:#ef4444;">下架</button>
-              <button id="edit-activate" class="button secondary" type="button" style="color:#22c55e;">上架</button>
-              <button id="edit-delete" class="button secondary" type="button" style="color:#ef4444;">刪除</button>
+              <button id="edit-deactivate" class="button secondary" type="button" style="color:var(--admin-danger);">下架</button>
+              <button id="edit-activate" class="button secondary" type="button" style="color:var(--admin-success);">上架</button>
+              <button id="edit-delete" class="button secondary" type="button" style="color:var(--admin-danger);">刪除</button>
               <button id="edit-cancel" class="button secondary" type="button">取消</button>
             </div>
             <p id="edit-status" class="meta"></p>

@@ -75,6 +75,7 @@ export async function handlePublicProducts(
   const brands = parseBrandFilters(url.searchParams.get("brands"));
   const search = (url.searchParams.get("search") || "").trim();
   const includeInactive = url.searchParams.get("includeInactive") === "1";
+  const onlyInactive = url.searchParams.get("onlyInactive") === "1";
   const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
   const hasCategory = category.length > 0;
   const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
@@ -104,6 +105,7 @@ export async function handlePublicProducts(
     brands,
     search,
     includeInactive,
+    onlyInactive,
   });
 
   const listSql = `

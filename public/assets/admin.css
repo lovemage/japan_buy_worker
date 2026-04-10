@@ -1033,6 +1033,55 @@
   color: var(--admin-text-muted);
 }
 
+/* ── Multi-select bar (fixed bottom) ── */
+.manage-multi-bar {
+  display: none;
+  position: fixed;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  left: 0; right: 0;
+  z-index: 55;
+  background: var(--admin-surface);
+  border-top: 1px solid var(--admin-border);
+  padding: 10px 16px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+.manage-multi-bar.is-visible { display: flex; }
+
+/* ── Product card checkbox ── */
+.manage-card { position: relative; }
+.manage-card__check {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-surface);
+  border: 1.5px solid var(--admin-border);
+  border-radius: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity var(--admin-transition), border-color var(--admin-transition);
+}
+.manage-card__check:hover { opacity: 1; }
+.manage-card__check input { margin: 0; cursor: pointer; }
+.manage-card__check:has(input:checked) {
+  border-color: var(--admin-active);
+  opacity: 1;
+}
+
+/* ── Inactive product grayscale ── */
+.manage-card--inactive .manage-card__img {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
 /* ── Edit Modal ── */
 .edit-modal {
   position: fixed;
