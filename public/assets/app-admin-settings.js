@@ -1,7 +1,7 @@
 import { showError } from "./app-admin.js";
 
 let currentMarkupMode = "flat";
-let currentPricingMode = "auto";
+let currentPricingMode = "manual";
 
 function setPricingMode(mode) {
   currentPricingMode = mode;
@@ -66,7 +66,7 @@ async function loadPricing() {
   const opt = document.getElementById("shipping-options-enabled");
   if (opt) opt.checked = p.shippingOptionsEnabled !== false;
   setMarkupMode(p.markupMode || "flat");
-  setPricingMode(p.pricingMode || "auto");
+  setPricingMode(p.pricingMode || "manual");
 }
 
 async function savePricing() {

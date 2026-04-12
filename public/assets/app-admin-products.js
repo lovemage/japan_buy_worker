@@ -54,6 +54,47 @@ function formatSellingPrice(basePrice, pricing) {
   return `NT$${twd.toLocaleString("en-US")}`;
 }
 
+function updateEditPriceInfo() {
+  const infoEl = document.getElementById("edit-price-info");
+  if (!infoEl) return;
+  const raw = document.getElementById("edit-price")?.value;
+  if (!raw && raw !== "0") { infoEl.style.display = "none"; return; }
+  const base = Number(raw);
+  if (!Number.isFinite(base) || base < 0) { infoEl.style.display = "none"; return; }
+
+  const p = adminPricing || {};
+  const rate = Number(p.jpyToTwd ?? 1);
+  const sym = _adminCC.currencySymbol || "¥";
+  const currLabel = _adminCC.currencyLabel || "日圓";
+  const lines = [];
+
+  if (p.pricingMode === "manual") {
+    // Manual: input is TWD, reverse-calc source currency
+    const twd = Math.round(base);
+    const srcVal = (Number.isFinite(rate) && rate > 0) ? Math.round(base / rate) : null;
+    lines.push(`<b>來源幣值：</b>${srcVal !== null ? `${sym}${srcVal.toLocaleString("en-US")}（${currLabel}）` : "—"}`);
+    lines.push(`<b>台幣價格：</b>NT$${twd.toLocaleString("en-US")}（匯率 ${rate}）`);
+    lines.push(`<b>商店顯示價格：</b>NT$${twd.toLocaleString("en-US")}`);
+  } else {
+    // Auto: input is source currency, calc TWD with markup
+    const mode = p.markupMode || "flat";
+    let twd;
+    if (mode === "percent") {
+      const pct = Number(p.markupPercent ?? 15);
+      twd = Math.round(base * rate * (1 + pct / 100));
+    } else {
+      const markup = Number(p.markupJpy ?? 0);
+      twd = Math.round((base + markup) * rate);
+    }
+    lines.push(`<b>來源幣值：</b>${sym}${base.toLocaleString("en-US")}（${currLabel}）`);
+    lines.push(`<b>台幣價格：</b>NT$${twd.toLocaleString("en-US")}（匯率 ${rate}）`);
+    lines.push(`<b>商店顯示價格：</b>NT$${twd.toLocaleString("en-US")}`);
+  }
+
+  infoEl.innerHTML = lines.join("<br>");
+  infoEl.style.display = "";
+}
+
 let adminPricing = null;
 async function loadAdminPricing() {
   if (adminPricing) return adminPricing;
@@ -101,7 +142,7 @@ function renderProductGrid(products, paging) {
       <img class="manage-card__img" src="${imgSrc}" alt="${name}" data-fallback="product" />
       <div class="manage-card__body">
         <p class="manage-card__title">${name}</p>
-        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)}${adminPricing?.pricingMode !== "manual" ? ` <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(成本 ${formatPrice(p.priceJpyTaxIn)})</span>` : ""}</p>
+        <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)}${adminPricing?.pricingMode !== "manual" ? ` <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(${formatPrice(p.priceJpyTaxIn)})</span>` : ""}</p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
           <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
@@ -388,6 +429,11 @@ async function openEditModal(btn) {
     priceLabel.innerHTML = adminPricing?.pricingMode === "manual"
       ? "售價（TWD）"
       : `價格（<span class="src-currency">${(_adminCC.currencyCode || "JPY")}</span>）`;
+  }
+  updateEditPriceInfo();
+  const priceInput = document.getElementById("edit-price");
+  if (priceInput) {
+    priceInput.oninput = updateEditPriceInfo;
   }
   document.getElementById("edit-status").textContent = "";
 

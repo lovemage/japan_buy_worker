@@ -16,7 +16,7 @@ const DEFAULT_DOMESTIC_SHIPPING_TWD = 60;
 const DEFAULT_PROMO_TAG_MAX_TWD = 500;
 const DEFAULT_LIMITED_PROXY_SHIPPING_TWD = 80;
 const DEFAULT_SHIPPING_OPTIONS_ENABLED = 1;
-const DEFAULT_PRICING_MODE = "auto"; // "auto" | "manual"
+const DEFAULT_PRICING_MODE = "manual"; // "auto" | "manual"
 
 async function ensureSettingsTable(db: D1DatabaseLike): Promise<void> {
   await db
