@@ -825,10 +825,12 @@
           body: JSON.stringify({ destinationCountry: code }),
         }).then(function(r) { return r.json(); }).then(function(data) {
           if (data.ok) {
+            btns.forEach(function(b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
             var st = document.getElementById("country-status");
             st.style.display = "block";
-            st.textContent = "已儲存，重新載入中...";
-            setTimeout(function() { location.reload(); }, 800);
+            st.textContent = "已切換，請確認定價設定後按儲存";
+            setTimeout(function() { st.style.display = "none"; }, 3000);
           }
         });
       });
@@ -1321,6 +1323,8 @@
 
   function savePricingAll() {
     document.getElementById("admin-save-pricing")?.setAttribute("disabled", "");
+    var statusEl = document.getElementById("shipping-methods-status");
+    if (statusEl) { statusEl.style.display = "block"; statusEl.textContent = "儲存中..."; }
     savePricing();
     saveShippingMethods();
     // Save deadline to display-settings
@@ -1330,8 +1334,10 @@
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ deadlineEnabled: deadlineOn, deadlineTime: deadlineVal }),
+    }).then(function() {
+      if (statusEl) statusEl.textContent = "已儲存，重新載入中...";
+      setTimeout(function() { location.reload(); }, 800);
     });
-    setTimeout(function() { document.getElementById("admin-save-pricing")?.removeAttribute("disabled"); }, 1000);
   }
 
   function uploadStoreLogo(file) {
