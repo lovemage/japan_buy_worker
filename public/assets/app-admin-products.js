@@ -769,6 +769,13 @@ function initEditModal() {
     doEditAiImage();
   });
   document.querySelector(".edit-modal__backdrop")?.addEventListener("click", closeEditModal);
+  const pricingHelpLink = document.getElementById("edit-pricing-help-link");
+  const pricingHelpPopup = document.getElementById("edit-pricing-help-popup");
+  if (pricingHelpLink && pricingHelpPopup) {
+    pricingHelpLink.addEventListener("click", (e) => { e.preventDefault(); pricingHelpPopup.classList.remove("hidden"); });
+    document.getElementById("edit-pricing-help-close")?.addEventListener("click", () => pricingHelpPopup.classList.add("hidden"));
+    document.getElementById("edit-pricing-help-backdrop")?.addEventListener("click", () => pricingHelpPopup.classList.add("hidden"));
+  }
   document.getElementById("edit-category-pick")?.addEventListener("click", function(e) {
     e.stopPropagation();
     var dd = document.getElementById("edit-category-dropdown");
