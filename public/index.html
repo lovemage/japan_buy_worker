@@ -9,11 +9,11 @@
 <meta property="og:description" content="AI 辨識商品，一拍即上架。30 秒擁有你的代購店面，客人自助下單，訂單自動彙整。" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://vovosnap.com/" />
-<meta property="og:image" content="https://vovosnap.com/assets/images/hero-image.jpg" />
+<meta property="og:image" content="https://vovosnap.com/assets/images/hero.webp" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="vovosnap — 拍照就開店" />
 <meta name="twitter:description" content="代購者的一站式快閃開店平台。AI 辨識商品，一拍即上架，客人自助下單。" />
-<meta name="twitter:image" content="https://vovosnap.com/assets/images/hero-image.jpg" />
+<meta name="twitter:image" content="https://vovosnap.com/assets/images/hero.webp" />
 <link rel="canonical" href="https://vovosnap.com/" />
 <link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
 <script type="application/ld+json">
@@ -355,6 +355,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:62px;height:35px;" /></a>
     <div class="nav-actions">
       <a href="/blog/" class="nav-link">代購教學</a>
+      <a href="#" class="btn-sm btn-fill" id="nav-store-btn" style="display:none;">進入商店</a>
       <a href="/login.html" class="btn-sm btn-fill" id="nav-auth-btn">登入</a>
     </div>
   </div>
@@ -362,7 +363,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <!-- Hero -->
 <section class="hero">
-  <img src="/assets/images/hero-image.jpg" alt="VOVOSnap — 拍照上架 隨拍隨賣" class="hero-img" />
+  <img src="/assets/images/hero.webp" alt="VOVOSnap — 拍照上架 隨拍隨賣" class="hero-img" />
   <div class="hero-decoration hero-deco-circle"></div>
   <div class="hero-decoration hero-deco-circle-2"></div>
   <div class="hero-overlay">
@@ -424,9 +425,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       </div>
     </div>
     <p style="text-align:center;margin-top:20px;">
-      <a href="https://vovosnap.com/s/default/" target="_blank" rel="noopener" style="color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;border-bottom:1.5px solid rgba(212,98,43,0.3);padding-bottom:1px;">查看範例商店 →</a>
+      <a href="https://vovosnap.com/s/japan/admin" target="_blank" rel="noopener" style="color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;border-bottom:1.5px solid rgba(212,98,43,0.3);padding-bottom:1px;">查看範例商店 →</a>
     </p>
   </div>
+</section>
+
+<!-- Time-saving banner -->
+<section class="section fade-in" style="padding:0;">
+  <img src="/assets/images/give_customer_time_travel.webp" alt="把時間留給客戶，以及熱愛旅遊的你 — VOVOSnap 減少 90% 上架時間" loading="lazy" style="width:100%;display:block;border-radius:var(--radius);" />
 </section>
 
 <!-- Feature: video + rotating text -->
@@ -1004,7 +1010,7 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   }, { passive: true });
 })();
 
-// Auth status check — toggle login/logout button
+// Auth status check — toggle login/logout button + show store link
 (function() {
   fetch("/auth/me").then(function(r) { return r.json(); }).then(function(d) {
     if (!d.ok || !d.store) return;
@@ -1018,6 +1024,11 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           location.reload();
         });
       });
+    }
+    var storeBtn = document.getElementById("nav-store-btn");
+    if (storeBtn && d.store.slug) {
+      storeBtn.href = "/s/" + d.store.slug + "/admin";
+      storeBtn.style.display = "";
     }
   }).catch(function(){});
 })();
