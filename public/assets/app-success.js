@@ -1,4 +1,5 @@
 const OFFICIAL_LINE_URL = "https://lin.ee/CnwC6Nt";
+const _srcCurrency = (window.__COUNTRY_CONFIG || {}).currency || "JPY";
 
 function showError(message) {
   const node = document.getElementById("success-error");
@@ -33,7 +34,7 @@ function buildCopyText(requirement) {
       return `${idx + 1}. ${item.productNameSnapshot} (${item.code || "無代碼"}) x${item.quantity}
    規格: 尺寸=${item.desiredSize || "未選"}, 顏色=${item.desiredColor || "未選"}
    選擇圖片: ${item.selectedImageUrl || "-"}
-   金額: JPY ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}
+   金額: ${_srcCurrency} ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}
    商品頁: ${item.productUrl || "-"}`;
     })
     .join("\n");
@@ -48,7 +49,7 @@ Line ID: ${requirement.lineId}
 收件地址: ${requirement.recipientCity} ${requirement.recipientAddress}
 配送方式: ${shippingText}
 運費: 國際 TWD ${formatNumber(requirement.shippingInternationalTwd)} / 國內 TWD ${formatNumber(requirement.shippingDomesticTwd)} / 合計運費 TWD ${formatNumber(requirement.shippingTotalTwd)}
-商品合計: JPY ${formatNumber(requirement.itemsTotalJpy)} / TWD ${formatNumber(requirement.itemsTotalTwd)}
+商品合計: ${_srcCurrency} ${formatNumber(requirement.itemsTotalJpy)} / TWD ${formatNumber(requirement.itemsTotalTwd)}
 總計: TWD ${formatNumber(requirement.grandTotalTwd)}
 備註: ${requirement.notes || "無"}
 ---
@@ -66,7 +67,7 @@ function renderDetail(requirement) {
       return `<li>${item.productNameSnapshot}（${item.code || "無代碼"}）x ${item.quantity}，
       尺寸：${item.desiredSize || "未選"}，顏色：${item.desiredColor || "未選"}，
       選圖：${item.selectedImageUrl ? `<a href="${item.selectedImageUrl}" target="_blank" rel="noopener noreferrer">查看</a>` : "無"}，
-      小計 JPY ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}</li>`;
+      小計 ${_srcCurrency} ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}</li>`;
     })
     .join("");
   node.innerHTML = `
@@ -76,7 +77,7 @@ function renderDetail(requirement) {
     <p class="meta">收件：${requirement.recipientCity} ${requirement.recipientAddress}</p>
     <p class="meta">配送：${shippingText}</p>
     <p class="meta">運費：國際 TWD ${formatNumber(requirement.shippingInternationalTwd)} / 國內 TWD ${formatNumber(requirement.shippingDomesticTwd)} / 合計運費 TWD ${formatNumber(requirement.shippingTotalTwd)}</p>
-    <p class="meta">商品合計：JPY ${formatNumber(requirement.itemsTotalJpy)} / TWD ${formatNumber(requirement.itemsTotalTwd)}</p>
+    <p class="meta">商品合計：${_srcCurrency} ${formatNumber(requirement.itemsTotalJpy)} / TWD ${formatNumber(requirement.itemsTotalTwd)}</p>
     <p class="meta">總計：TWD ${formatNumber(requirement.grandTotalTwd)}</p>
     <p class="meta">備註：${requirement.notes || "無"}</p>
     <ul>${itemsHtml}</ul>

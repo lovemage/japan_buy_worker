@@ -15,7 +15,7 @@ function setPricingMode(mode) {
   if (manualFields) manualFields.classList.toggle("hidden", mode !== "manual");
   // Update dynamic price labels across forms
   const cc = window.__COUNTRY_CONFIG || {};
-  const currencyCode = cc.currencyCode || "JPY";
+  const currencyCode = cc.currency || "JPY";
   document.querySelectorAll(".price-label-dynamic").forEach((el) => {
     el.innerHTML = mode === "manual"
       ? "售價（TWD）"

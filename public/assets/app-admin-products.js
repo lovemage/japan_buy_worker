@@ -428,7 +428,7 @@ async function openEditModal(btn) {
   if (priceLabel) {
     priceLabel.innerHTML = adminPricing?.pricingMode === "manual"
       ? "售價（TWD）"
-      : `價格（<span class="src-currency">${(_adminCC.currencyCode || "JPY")}</span>）`;
+      : `價格（<span class="src-currency">${(_adminCC.currency || "JPY")}</span>）`;
   }
   updateEditPriceInfo();
   const priceInput = document.getElementById("edit-price");
