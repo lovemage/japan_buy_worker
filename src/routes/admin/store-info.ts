@@ -6,6 +6,10 @@ export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: 
   jp: { currency: "JPY", currencySymbol: "¥", currencyLabel: "日圓", defaultRate: 0.21, defaultMarkup: 1000 },
   kr: { currency: "KRW", currencySymbol: "₩", currencyLabel: "韓元", defaultRate: 0.024, defaultMarkup: 5000 },
   th: { currency: "THB", currencySymbol: "฿", currencyLabel: "泰銖", defaultRate: 1.01, defaultMarkup: 50 },
+  us: { currency: "USD", currencySymbol: "$", currencyLabel: "美元", defaultRate: 32.5, defaultMarkup: 5 },
+  vn: { currency: "VND", currencySymbol: "₫", currencyLabel: "越南盾", defaultRate: 0.0013, defaultMarkup: 50000 },
+  eu: { currency: "EUR", currencySymbol: "€", currencyLabel: "歐元", defaultRate: 35, defaultMarkup: 5 },
+  au: { currency: "AUD", currencySymbol: "A$", currencyLabel: "澳幣", defaultRate: 21, defaultMarkup: 10 },
   tw: { currency: "TWD", currencySymbol: "NT$", currencyLabel: "台幣", defaultRate: 1, defaultMarkup: 100 },
 };
 
@@ -45,7 +49,7 @@ export async function handleStoreInfo(
       countries: Object.entries(COUNTRY_CONFIG).map(([code, conf]) => ({
         code,
         currency: conf.currency,
-        label: code === "jp" ? "🇯🇵 日本" : code === "kr" ? "🇰🇷 韓國" : code === "th" ? "🇹🇭 泰國" : "🇹🇼 台灣",
+        label: { jp: "🇯🇵 日本", kr: "🇰🇷 韓國", th: "🇹🇭 泰國", us: "🇺🇸 美國", vn: "🇻🇳 越南", eu: "🇪🇺 歐洲", au: "🇦🇺 澳洲", tw: "🇹🇼 台灣" }[code] || code,
       })),
     });
   }
@@ -61,7 +65,7 @@ export async function handleStoreInfo(
 
     const country = body.destinationCountry;
     if (!country || !COUNTRY_CONFIG[country]) {
-      return json({ ok: false, error: "Invalid country. Must be: jp, kr, th, tw" }, 400);
+      return json({ ok: false, error: "Invalid country" }, 400);
     }
 
     const conf = COUNTRY_CONFIG[country];

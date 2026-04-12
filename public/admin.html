@@ -676,6 +676,10 @@
             <button class="country-toggle-btn" data-country="jp" type="button">日本<span class="sub">JPY</span></button>
             <button class="country-toggle-btn" data-country="kr" type="button">韓國<span class="sub">KRW</span></button>
             <button class="country-toggle-btn" data-country="th" type="button">泰國<span class="sub">THB</span></button>
+            <button class="country-toggle-btn" data-country="us" type="button">美國<span class="sub">USD</span></button>
+            <button class="country-toggle-btn" data-country="vn" type="button">越南<span class="sub">VND</span></button>
+            <button class="country-toggle-btn" data-country="eu" type="button">歐洲<span class="sub">EUR</span></button>
+            <button class="country-toggle-btn" data-country="au" type="button">澳洲<span class="sub">AUD</span></button>
             <button class="country-toggle-btn" data-country="tw" type="button">台灣<span class="sub">TWD</span></button>
           </div>
           <p id="country-status" class="admin-status">已儲存</p>
@@ -782,7 +786,7 @@
     document.querySelectorAll(".src-currency").forEach(function(el) { el.textContent = conf.currency; });
 
     // Origin language label
-    var langLabels = { jp: "日文品名", kr: "韓文品名", th: "泰文品名", tw: "中文品名" };
+    var langLabels = { jp: "日文品名", kr: "韓文品名", th: "泰文品名", us: "英文品名", vn: "越文品名", eu: "英文品名", au: "英文品名", tw: "中文品名" };
     document.querySelectorAll(".origin-lang-label").forEach(function(el) {
       el.textContent = langLabels[country] || "原文品名";
     });
@@ -809,7 +813,7 @@
     });
   });
 
-  var COUNTRY_NAMES = { jp: "日本 (JPY)", kr: "韓國 (KRW)", th: "泰國 (THB)", tw: "台灣 (TWD)" };
+  var COUNTRY_NAMES = { jp: "日本 (JPY)", kr: "韓國 (KRW)", th: "泰國 (THB)", us: "美國 (USD)", vn: "越南 (VND)", eu: "歐洲 (EUR)", au: "澳洲 (AUD)", tw: "台灣 (TWD)" };
 
   function initCountryToggle() {
     var btns = document.querySelectorAll("#country-selector .country-toggle-btn");
@@ -817,8 +821,6 @@
       btn.addEventListener("click", function() {
         var code = btn.getAttribute("data-country");
         if (btn.classList.contains("selected")) return;
-        var name = COUNTRY_NAMES[code] || code;
-        if (!confirm("確定要切換至「" + name + "」嗎？\n\n切換後請注意匯率的轉換是否正確，並確認現有商品價格無誤。")) return;
         apiFetch("/api/admin/store-info", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -827,10 +829,35 @@
           if (data.ok) {
             btns.forEach(function(b) { b.classList.remove("selected"); });
             btn.classList.add("selected");
+            // Update global country config
+            window.__STORE_COUNTRY = code;
+            window.__COUNTRY_CONFIG = data.countryConfig;
+            // Update all currency labels on the page
+            var conf = data.countryConfig;
+            document.querySelectorAll(".src-currency").forEach(function(el) { el.textContent = conf.currency; });
+            var langLabels = { jp: "日文品名", kr: "韓文品名", th: "泰文品名", us: "英文品名", vn: "越文品名", eu: "英文品名", au: "英文品名", tw: "中文品名" };
+            document.querySelectorAll(".origin-lang-label").forEach(function(el) {
+              el.textContent = langLabels[code] || "原文品名";
+            });
+            // Reload pricing to reflect new exchange rate defaults
+            if (typeof window.savePricing === "function") {
+              // loadPricing is not exported, but we can re-fetch
+            }
+            apiFetch("/api/admin/pricing").then(function(r2) { return r2.json(); }).then(function(body) {
+              var p = body?.pricing || {};
+              var set = function(id, val) { var el = document.getElementById(id); if (el) el.value = String(val ?? ""); };
+              set("markup-jpy", p.markupJpy ?? 1000);
+              set("markup-percent", p.markupPercent ?? 15);
+              set("jpy-to-twd", p.jpyToTwd ?? 1);
+              set("international-shipping-twd", p.internationalShippingTwd ?? 350);
+              set("domestic-shipping-twd", p.domesticShippingTwd ?? 60);
+              set("promo-tag-max-twd", p.promoTagMaxTwd ?? 500);
+              set("limited-proxy-shipping-twd", p.limitedProxyShippingTwd ?? 80);
+            });
             var st = document.getElementById("country-status");
             st.style.display = "block";
-            st.textContent = "已切換，請確認定價設定後按儲存";
-            setTimeout(function() { st.style.display = "none"; }, 3000);
+            st.textContent = "已切換至「" + (COUNTRY_NAMES[code] || code) + "」";
+            setTimeout(function() { st.style.display = "none"; }, 2000);
           }
         });
       });
