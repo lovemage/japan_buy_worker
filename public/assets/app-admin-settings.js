@@ -57,7 +57,7 @@ async function loadPricing() {
   const p = body?.pricing || {};
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = String(val ?? ""); };
   set("markup-jpy", p.markupJpy ?? 1000);
-  set("markup-percent", p.markupPercent ?? 15);
+  set("markup-percent", p.markupPercent ?? 25);
   set("jpy-to-twd", p.jpyToTwd ?? 1);
   set("international-shipping-twd", p.internationalShippingTwd ?? 350);
   set("domestic-shipping-twd", p.domesticShippingTwd ?? 60);

@@ -708,7 +708,7 @@
               <label><span class="currency-label">每筆加價金額</span> <span class="src-currency">JPY</span><input id="markup-jpy" type="number" min="0" step="1" class="input-cute" /></label>
             </div>
             <div id="markup-percent-fields" class="hidden">
-              <label><span class="currency-label">利潤百分比</span> <span style="font-size:12px;color:var(--admin-text-muted);">%</span><input id="markup-percent" type="number" min="0" max="100" step="1" value="15" class="input-cute" /></label>
+              <label><span class="currency-label">利潤百分比</span> <span style="font-size:12px;color:var(--admin-text-muted);">%</span><input id="markup-percent" type="number" min="0" max="100" step="1" value="25" class="input-cute" /></label>
               <p class="meta" style="margin-top:4px;">商品日幣價格 × 匯率 ×（1 + 利潤%）= 台幣售價</p>
             </div>
           </div>
@@ -821,6 +821,7 @@
       btn.addEventListener("click", function() {
         var code = btn.getAttribute("data-country");
         if (btn.classList.contains("selected")) return;
+        if (!confirm("確定更換國家嗎？如果更換國家，請注意匯率會轉換。")) return;
         apiFetch("/api/admin/store-info", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -847,17 +848,13 @@
               var p = body?.pricing || {};
               var set = function(id, val) { var el = document.getElementById(id); if (el) el.value = String(val ?? ""); };
               set("markup-jpy", p.markupJpy ?? 1000);
-              set("markup-percent", p.markupPercent ?? 15);
+              set("markup-percent", p.markupPercent ?? 25);
               set("jpy-to-twd", p.jpyToTwd ?? 1);
               set("international-shipping-twd", p.internationalShippingTwd ?? 350);
               set("domestic-shipping-twd", p.domesticShippingTwd ?? 60);
               set("promo-tag-max-twd", p.promoTagMaxTwd ?? 500);
               set("limited-proxy-shipping-twd", p.limitedProxyShippingTwd ?? 80);
             });
-            var st = document.getElementById("country-status");
-            st.style.display = "block";
-            st.textContent = "已切換至「" + (COUNTRY_NAMES[code] || code) + "」";
-            setTimeout(function() { st.style.display = "none"; }, 2000);
           }
         });
       });
@@ -1206,9 +1203,8 @@
     apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
       if (!d.ok) return;
       shippingMethods = d.shippingMethods || [
-        { name: "集運回台灣", desc: "國際運費 + 國內 7-11 店到店", price: 410, enabled: true },
-        { name: "國際直送", desc: "僅國際運費", price: 350, enabled: true },
-        { name: "限時連線代購", desc: "固定運費", price: 80, enabled: true }
+        { name: "便利商店7-11店到店", desc: "7-11 店到店取貨", price: 65, enabled: true },
+        { name: "台北火車站面交", desc: "台北車站面交取貨", price: 0, enabled: true }
       ];
       renderShippingEditor();
     });

@@ -9,7 +9,7 @@ type SettingRow = {
 
 const DEFAULT_MARKUP_JPY = 1000;
 const DEFAULT_MARKUP_MODE = "flat"; // "flat" | "percent"
-const DEFAULT_MARKUP_PERCENT = 15;
+const DEFAULT_MARKUP_PERCENT = 25;
 const DEFAULT_JPY_TO_TWD = 1;
 const DEFAULT_INTL_SHIPPING_TWD = 350;
 const DEFAULT_DOMESTIC_SHIPPING_TWD = 60;
