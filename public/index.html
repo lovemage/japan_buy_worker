@@ -3,24 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>vovosnap — 拍照就開店｜代購者的一站式快閃開店平台</title>
-<meta name="description" content="AI 辨識商品，一拍即上架。30 秒擁有你的代購店面，客人自助瀏覽下單，訂單自動彙整。專為導遊、代購者打造的行動開店工具。" />
-<meta property="og:title" content="vovosnap — 拍照就開店" />
-<meta property="og:description" content="AI 辨識商品，一拍即上架。30 秒擁有你的代購店面，客人自助下單，訂單自動彙整。" />
+<title>vovosnap — 出國旅遊順便賺｜拍照就能開始代購</title>
+<meta name="description" content="幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動上架、翻譯、算好售價，朋友用手機下單，你只管逛街。免費開始，不用學電商。" />
+<meta property="og:title" content="vovosnap — 出國旅遊，順便賺回機票錢" />
+<meta property="og:description" content="幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動幫你開店，朋友用手機下單，你只管逛街。" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://vovosnap.com/" />
 <meta property="og:image" content="https://vovosnap.com/assets/images/hero.webp" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="vovosnap — 拍照就開店" />
-<meta name="twitter:description" content="代購者的一站式快閃開店平台。AI 辨識商品，一拍即上架，客人自助下單。" />
+<meta name="twitter:title" content="vovosnap — 出國旅遊，順便賺回機票錢" />
+<meta name="twitter:description" content="幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動幫你開店，免費開始。" />
 <meta name="twitter:image" content="https://vovosnap.com/assets/images/hero.webp" />
 <link rel="canonical" href="https://vovosnap.com/" />
 <link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E3TD4YZSWY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-E3TD4YZSWY');
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "我沒做過代購，可以用 vovosnap 嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "當然可以！vovosnap 就是為新手設計的。只要會拍照就能開始。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "代購需要什麼資格嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不需要。你只是幫朋友帶東西，加一點跑腿費。個人年營收超過 8 萬需向國稅局登記營業。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "開始代購需要先準備什麼？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "一支手機就夠了。註冊後設定好國家和利潤，出國時拍照就能上架。"
+      }
+    },
     {
       "@type": "Question",
       "name": "我|我拍 有沒有交易抽成？",
@@ -84,6 +116,7 @@
   --success: #6B8C3E;
   --radius: 14px;
 }
+html { scroll-behavior: smooth; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; max-width: 960px; margin: 0 auto; }
 
@@ -317,9 +350,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .hero-sub { font-size: 14px; }
   .hero-cta { width: min(360px, 100%); flex-direction: column; }
   .btn-hero { padding: 14px 24px; font-size: 14px; min-height: 46px; width: 100%; justify-content: center; }
-  .flow { flex-direction: column; gap: 8px; }
-  .flow-step { width: 100%; max-width: 360px; padding: 10px 8px; }
-  .flow-arrow { padding: 0; transform: rotate(90deg); }
+  .flow { flex-direction: row; gap: 0; }
+  .flow-step { flex: 1; max-width: none; padding: 10px 4px; }
+  .flow-arrow { display: none; }
   .flow-step p { font-size: 11px; }
   .flow-icon { font-size: 28px; }
   .feat-header h2 { font-size: 18px; }
@@ -354,7 +387,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <div class="nav-inner">
     <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:62px;height:35px;" /></a>
     <div class="nav-actions">
-      <a href="/blog/" class="nav-link">代購教學</a>
+      <a href="/blog/first-time-daigou-guide.html" class="nav-link">新手入門</a>
       <a href="#" class="btn-sm btn-fill" id="nav-store-btn" style="display:none;">進入商店</a>
       <a href="/login.html" class="btn-sm btn-fill" id="nav-auth-btn">登入</a>
     </div>
@@ -363,19 +396,62 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <!-- Hero -->
 <section class="hero">
-  <img src="/assets/images/hero.webp" alt="VOVOSnap — 拍照上架 隨拍隨賣" class="hero-img" />
+  <img src="/assets/images/hero.webp" alt="VOVOSnap — 出國旅遊，順便賺回機票錢" class="hero-img" />
   <div class="hero-decoration hero-deco-circle"></div>
   <div class="hero-decoration hero-deco-circle-2"></div>
   <div class="hero-overlay">
-    <div class="hero-badge">🇯🇵 🇰🇷 🇹🇭 拍照開店平台</div>
-    <h1>拍照就開店<em>代購從此不一樣</em></h1>
-    <p class="hero-sub">AI 辨識商品，一拍即上架。30 秒擁有你的代購店面，客人自助下單，訂單自動彙整。</p>
+    <div class="hero-badge">🇯🇵 🇰🇷 🇹🇭 出國就能賺</div>
+    <h1>出國旅遊<em>順便賺回機票錢</em></h1>
+    <p class="hero-sub">幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動幫你開店，朋友用手機下單，你只管逛街。</p>
     <div class="hero-cta">
-      <a href="/login.html" class="btn-hero btn-hero-primary">
+      <a href="/login.html" class="btn-hero btn-hero-primary" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'hero'})">
         <svg viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Google 免費開始
+        免費開始
       </a>
-      <a href="#pricing" class="btn-hero btn-hero-outline">查看方案</a>
+      <a href="#edu" class="btn-hero btn-hero-outline">看看怎麼做 ↓</a>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: 痛點教育 -->
+<style>
+.edu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; }
+.edu-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.edu-card-icon { width: 88px; height: 88px; margin-bottom: 4px; flex-shrink: 0; }
+.edu-card-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.edu-bubble { position: relative; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px 10px; }
+.edu-bubble::before { content: ""; position: absolute; top: -7px; left: 50%; width: 12px; height: 12px; background: var(--bg-alt); border-left: 1.5px solid var(--border); border-top: 1.5px solid var(--border); transform: translateX(-50%) rotate(45deg); }
+.edu-bubble h4 { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.edu-bubble p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+@media (max-width: 768px) { .edu-grid { grid-template-columns: 1fr; gap: 18px; } }
+</style>
+<section class="section fade-in" id="edu" style="background:var(--bg-alt);">
+  <div class="section-inner">
+    <h2 class="section-title">代購，比你想的<em>簡單</em></h2>
+    <p class="section-sub">不用開店、不用囤貨、不用學電商</p>
+    <p style="text-align:center;font-size:15px;color:var(--text-secondary);line-height:1.8;max-width:540px;margin:0 auto 0;">代購就是幫朋友從國外帶東西，加點跑腿費。一趟日本帶 10 件藥妝，每件加 150 元，多 1,500 元，夠吃一頓好料~</p>
+    <div class="edu-grid">
+      <div class="edu-card">
+        <div class="edu-card-icon"><img src="/assets/images/c1.webp" alt="零囤貨風險的代購新手" loading="lazy" /></div>
+        <div class="edu-bubble">
+          <h4>零囤貨風險</h4>
+          <p>朋友先下單，你再買</p>
+        </div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-card-icon"><img src="/assets/images/c2.webp" alt="零成本開店的代購者" loading="lazy" /></div>
+        <div class="edu-bubble">
+          <h4>零開店成本</h4>
+          <p>免費方案直接開始</p>
+        </div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-card-icon"><img src="/assets/images/c3.webp" alt="朋友自己下單的情境" loading="lazy" /></div>
+        <div class="edu-bubble">
+          <h4>朋友自己下單</h4>
+          <p>分享連結到 LINE 群，不用一個一個問</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -383,50 +459,33 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <!-- How it works -->
 <section class="section fade-in">
   <div class="section-inner">
-    <h2 class="section-title">三步驟<em>開店</em></h2>
-    <p class="section-sub">從註冊到接單，不到五分鐘</p>
+    <h2 class="section-title">三步驟<em>開始代購</em></h2>
+    <p class="section-sub">出國前 5 分鐘搞定，剩下的交給 AI</p>
+    <p style="text-align:center;font-size:11px;color:var(--text-muted);margin-bottom:24px;">先完成一次性設定（選國家、設利潤，1 分鐘），之後每趟出國直接拍照</p>
     <div class="flow">
       <div class="flow-step fs-1">
-        <div class="flow-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/>
-            <circle cx="17" cy="7" r="3" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.2"/>
-            <path d="M17 5.5v1.5h1.2" stroke="#fff" stroke-width="1"/>
-          </svg>
-        </div>
-        <h3>設定國家</h3><p>選擇代購來源國家，系統自動設定幣別和匯率</p>
-      </div>
-      <div class="flow-arrow fa-1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;margin-bottom:12px;">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <h3>拍照</h3><p>AI 搞定品名、規格、匯率，一拍就上架</p>
       </div>
       <div class="flow-step fs-2">
-        <div class="flow-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            <path d="M8.5 2.5l1 1.5M15.5 2.5l-1 1.5M8.5 21.5l1-1.5M15.5 21.5l-1-1.5" stroke="var(--accent)" stroke-width="1.2" opacity="0.6"/>
-          </svg>
-        </div>
-        <h3>設定利潤</h3><p>設定加價金額，系統自動計算台幣售價</p>
-      </div>
-      <div class="flow-arrow fa-2">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;margin-bottom:12px;">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        <h3>分享連結</h3><p>貼到 LINE 群或 IG，朋友自己逛、自己下單</p>
       </div>
       <div class="flow-step fs-3">
-        <div class="flow-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-            <path d="M20 3l1.5-1M20 3l-1.5-1M20 3v-2" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <h3>拍照上架</h3><p>AI 辨識品名、規格、價格，一鍵上架</p>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;margin-bottom:12px;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <h3>看訂單出貨</h3><p>回國後一目瞭然，打包出貨不手忙腳亂</p>
       </div>
     </div>
-    <p style="text-align:center;margin-top:20px;">
-      <a href="https://japan.vovosnap.com/" target="_blank" rel="noopener" style="color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;border-bottom:1.5px solid rgba(212,98,43,0.3);padding-bottom:1px;">查看範例商店 →</a>
-    </p>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="https://japan.vovosnap.com/" target="_blank" rel="noopener" style="display:inline-block;padding:12px 28px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:12px;color:var(--accent);font-size:14px;font-weight:700;text-decoration:none;transition:all 0.2s;">看看真實商店長什麼樣 →</a>
+    </div>
   </div>
 </section>
 
@@ -435,11 +494,122 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <img src="/assets/images/give_customer_time_travel.webp" alt="VOVOSnap 前後對比：從手忙腳亂的代購作業到一鍵上架，把時間留給經營客戶以及愛旅遊的你" loading="lazy" style="width:100%;display:block;border-radius:var(--radius);" />
 </section>
 
+<!-- AI handles everything hook -->
+<style>
+.ai-hook { padding: 72px 20px; }
+.ai-hook-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.ai-hook-inner h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; color: var(--text); }
+.ai-hook-inner h2 em { font-style: normal; color: var(--accent); }
+.ai-hook-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
+.ai-hook-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 40px; max-width: 540px; margin-left: auto; margin-right: auto; }
+.ai-hook-desc strong { color: var(--text); font-weight: 700; }
+.ai-hook-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+.ai-hook-card { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px 14px 16px; text-align: center; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
+.ai-hook-card:hover { border-color: var(--brand); box-shadow: 0 4px 20px rgba(107,140,62,0.12); transform: translateY(-3px); }
+.ai-hook-card-icon { width: 48px; height: 48px; margin: 0 auto 12px; background: var(--brand-light); border-radius: 14px; display: grid; place-items: center; }
+.ai-hook-card-icon svg { width: 24px; height: 24px; stroke: var(--brand); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ai-hook-card:nth-child(5) .ai-hook-card-icon,
+.ai-hook-card:nth-child(6) .ai-hook-card-icon { background: var(--amber-light); }
+.ai-hook-card:nth-child(5) .ai-hook-card-icon svg,
+.ai-hook-card:nth-child(6) .ai-hook-card-icon svg { stroke: var(--amber); }
+.ai-hook-card:nth-child(7) .ai-hook-card-icon,
+.ai-hook-card:nth-child(8) .ai-hook-card-icon { background: var(--accent-light); }
+.ai-hook-card:nth-child(7) .ai-hook-card-icon svg,
+.ai-hook-card:nth-child(8) .ai-hook-card-icon svg { stroke: var(--accent); }
+.ai-hook-card h4 { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.ai-hook-card p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.ai-hook-closing { font-size: 17px; font-weight: 700; color: var(--text); }
+.ai-hook-closing em { font-style: normal; color: var(--accent); }
+@media (max-width: 768px) {
+  .ai-hook-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .ai-hook-inner h2 { font-size: 24px; }
+  .ai-hook-desc { font-size: 14px; }
+}
+@media (max-width: 400px) {
+  .ai-hook-grid { gap: 8px; }
+  .ai-hook-card { padding: 14px 10px 12px; }
+}
+</style>
+<section class="ai-hook fade-in">
+  <div class="ai-hook-inner">
+    <h2>拍照，然後去<em>逛街</em></h2>
+    <p class="ai-hook-sub">那些讓你遲遲不敢開始的事，AI 全包了</p>
+    <p class="ai-hook-desc">商品文案、規格翻譯、產地標註、匯率換算...<br>這些以前讓人打退堂鼓的事，現在只需要一個動作 — <strong>拍照</strong>。</p>
+    <div class="ai-hook-grid">
+      <!-- 1. 商品文案 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <h4>商品文案</h4>
+        <p>自動撰寫商品描述</p>
+      </div>
+      <!-- 2. 商品規格 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h4>商品規格</h4>
+        <p>辨識包裝擷取規格</p>
+      </div>
+      <!-- 3. 產地證明 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+        </div>
+        <h4>產地證明</h4>
+        <p>自動標註產地來源</p>
+      </div>
+      <!-- 4. 製造日期 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h4>製造日期</h4>
+        <p>辨識製造／有效日期</p>
+      </div>
+      <!-- 5. 多語翻譯 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+        </div>
+        <h4>多語翻譯</h4>
+        <p>自動翻譯成買家語言</p>
+      </div>
+      <!-- 6. 匯率定價 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h4>匯率定價</h4>
+        <p>即時匯率換算含利潤</p>
+      </div>
+      <!-- 7. 圖片編輯 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <h4>圖片編輯</h4>
+        <p>自動裁切、去背、美化</p>
+      </div>
+      <!-- 8. 社群文案 -->
+      <div class="ai-hook-card">
+        <div class="ai-hook-card-icon">
+          <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h4>社群文案</h4>
+        <p>一鍵產生貼文丟社群</p>
+      </div>
+    </div>
+    <p class="ai-hook-closing">你只要專心享受旅程，剩下的<em>我們搞定</em>。</p>
+  </div>
+</section>
+
 <!-- Feature: video + rotating text -->
 <section class="feat-section fade-in" id="features">
   <div class="feat-header">
-    <h2>代購的<span style="color:var(--accent)">最佳拍檔</span></h2>
-    <p>讓你的代購效率翻倍</p>
+    <h2>你不需要學的<span style="color:var(--accent)">事</span></h2>
+    <p>AI 全部幫你處理</p>
   </div>
   <div class="feat-wrap">
     <!-- Text carousel -->
@@ -491,7 +661,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .wf-section { background: var(--bg); overflow: hidden; }
 .wf-flow { display: flex; align-items: flex-start; justify-content: center; gap: 0; margin-top: 28px; position: relative; }
 .wf-node { display: flex; flex-direction: column; align-items: center; text-align: center; width: 110px; position: relative; z-index: 1; }
-.wf-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--card-bg, #fff); border: 1.5px solid #ddd; display: grid; place-items: center; margin-bottom: 10px; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
+.wf-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--card-bg, #fff); border: 1.5px solid var(--border); display: grid; place-items: center; margin-bottom: 10px; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
 .wf-node:hover .wf-icon { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(107,140,62,0.12), 0 4px 16px rgba(107,140,62,0.15); transform: translateY(-3px); }
 .wf-icon svg { width: 26px; height: 26px; }
 .wf-label { font-size: 13px; font-weight: 800; color: var(--text); line-height: 1.3; }
@@ -600,7 +770,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="plan-track" id="plan-track">
         <div class="plan" data-plan="free">
           <div class="plan-name">Free</div>
-          <div class="plan-desc">先試試水溫</div>
+          <div class="plan-desc">零成本開始你的第一次代購</div>
           <div class="plan-price" id="price-free"><span class="cur">NT$</span>0</div>
           <div class="plan-period-note" id="note-free"></div>
           <div class="plan-line"></div>
@@ -704,47 +874,59 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <p class="section-sub">關於 我|我拍 的疑問</p>
     <div class="faq-list">
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 有沒有交易抽成？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我沒做過代購，可以用嗎？</button>
+        <div class="faq-a"><p>當然可以！vovosnap 就是為新手設計的。只要會拍照就能開始，AI 會幫你處理文案、規格、匯率等所有繁瑣的事。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">代購需要什麼資格嗎？</button>
+        <div class="faq-a"><p>不需要。你只是幫朋友帶東西，加一點跑腿費。個人年營收超過 8 萬需向國稅局登記營業，但大多數人一開始不需要擔心這個。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">開始代購需要先準備什麼？</button>
+        <div class="faq-a"><p>一支手機就夠了。註冊後設定好國家和利潤（1 分鐘），出國時拍照就能上架。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 有沒有交易抽成？</button>
         <div class="faq-a"><p>沒有！我|我拍 不抽取任何交易手續費。你賺的利潤 100% 是你的，我們只收取月費方案費用。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 運輸方式可以自己定嗎？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 運輸方式可以自己定嗎？</button>
         <div class="faq-a"><p>可以！你可以在後台自訂運輸方式和運費，不管是郵寄、面交、超商取貨都能自己設定。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 有提供第三方支付嗎？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 有提供第三方支付嗎？</button>
         <div class="faq-a"><p>沒有喔！代購代買一般為個人經營，我們沒有提供第三方支付。付款方式由你和客人自行約定（例如轉帳、LINE Pay 等）。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 有代購時間回國時間倒數功能嗎？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 有代購時間回國時間倒數功能嗎？</button>
         <div class="faq-a"><p>有！你可以在後台設定代購結束時間，開啟後商店首頁及商品詳情頁會自動顯示倒數計時，讓客人清楚知道下單截止時間。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 模板顏色有幾種？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 模板顏色有幾種？</button>
         <div class="faq-a"><p>模板延伸目前每個方案數量不一樣，可以參考方案表格。另外團隊會不斷開發新的模板放入功能表裡面。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 方案裡面說到的 AI 文案撰寫是什麼？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 方案裡面說到的 AI 文案撰寫是什麼？</button>
         <div class="faq-a"><p>我們內建的 AI 文案，可以針對社群媒體 IG、Instagram、Reels、Threads 等，為你的商店以及商品或是商品網址、商店網址，一鍵快速的文案撰寫，讓你可以快速分享，不需要再另外花時間去思考文案。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 我是新手，可以學怎麼代購嗎？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 我是新手，可以學怎麼代購嗎？</button>
         <div class="faq-a"><p>當然可以！建議到我們的代購教學文章裡點選觀看，有詳細的圖文教學，手把手帶你從零開始。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 如果不從事代購，而是賣自己的二手商品，能否使用？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 如果不從事代購，而是賣自己的二手商品，能否使用？</button>
         <div class="faq-a"><p>沒有問題！我們的系統非常適合銷售二手商品或家裡不要的東西，因為東西多上架很麻煩。使用免費方案就能上架十個商品，你可以在自己的社群媒體分享商品網址。如果有人看到你的商品喜歡，就會下訂單，你再使用賣貨便或好賣家處理即可。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 一般使用時，要如何收錢？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 一般使用時，要如何收錢？</button>
         <div class="faq-a"><p>付款方式由你和客人自行約定，例如銀行轉帳、LINE Pay 等。客人下單後你會收到訂單通知，確認後告知客人付款方式即可。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 回國了不想用怎麼辦？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 回國了不想用怎麼辦？</button>
         <div class="faq-a"><p>目前是以月為單位計價，不續約就不會再扣款。Free 方案則完全免費，隨時可以使用。請選擇適合您的方案就好！</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">我|我拍 vovociAI v1 和 v2 差別在哪？</button>
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我|我拍 vovociAI v1 和 v2 差別在哪？</button>
         <div class="faq-a"><p>v1 和 v2 都能辨識商品並自動擷取品名、規格、價格等資訊。v2 在辨識精準度和反應速度上都有明顯提升，能更準確地識別複雜包裝和多語言標示，回傳結果也更快。v2 為 Pro 方案專屬功能，可在後台自由切換。</p></div>
       </div>
     </div>
@@ -753,13 +935,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <!-- CTA -->
 <section class="section cta fade-in">
-  <h2>準備好 <span style="color:var(--accent)">我|我拍</span> 了嗎？</h2>
-  <p>免費註冊，30 秒開店，不需要信用卡。</p>
-  <a href="/login.html" class="btn-hero btn-hero-primary" style="background:var(--brand);color:#fff;">
+  <h2>免費開始你的<span style="color:var(--accent)">第一次代購</span></h2>
+  <p>不需要信用卡，30 秒就能開始。</p>
+  <a href="/login.html" class="btn-hero btn-hero-primary" style="background:var(--brand);color:#fff;" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'footer'})">
     <svg viewBox="0 0 24 24" style="width:18px;height:18px;"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-    Google 免費開始
+    免費開始
   </a>
-  <a href="/blog/" class="btn-hero" style="margin-top:8px;background:#fff;color:var(--text);border:2px solid var(--border);">參考代購教學</a>
+  <a href="/blog/first-time-daigou-guide.html" class="btn-hero" style="margin-top:8px;background:#fff;color:var(--text);border:2px solid var(--border);">新手入門教學</a>
 </section>
 
 <!-- Footer -->
@@ -815,11 +997,13 @@ function toggleFaq(btn) {
   // Close all
   document.querySelectorAll(".faq-item.open").forEach(function(el) {
     el.classList.remove("open");
+    el.querySelector(".faq-q").setAttribute("aria-expanded", "false");
     el.querySelector(".faq-a").style.maxHeight = null;
   });
   // Open clicked (if wasn't open)
   if (!wasOpen) {
     item.classList.add("open");
+    btn.setAttribute("aria-expanded", "true");
     var answer = item.querySelector(".faq-a");
     answer.style.maxHeight = answer.scrollHeight + "px";
   }
@@ -832,7 +1016,7 @@ fetch("/api/faq").then(function(r){return r.json()}).then(function(d) {
   if (!list) return;
   list.innerHTML = d.items.map(function(item) {
     return '<div class="faq-item">' +
-      '<button class="faq-q" onclick="toggleFaq(this)">' + item.q.replace(/</g,"&lt;") + '</button>' +
+      '<button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">' + item.q.replace(/</g,"&lt;") + '</button>' +
       '<div class="faq-a"><p>' + item.a.replace(/</g,"&lt;") + '</p></div>' +
     '</div>';
   }).join("");
