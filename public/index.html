@@ -237,6 +237,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .compare-table td:nth-child(3) { background: rgba(253,240,232,0.5); color: var(--text); font-weight: 500; }
 .plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 16px; padding: 28px 20px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
 .plan:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+.plan.plan-unavailable { opacity: 0.35; pointer-events: none; filter: grayscale(0.6); transform: scale(0.96); }
+.plan.plan-unavailable:hover { transform: scale(0.96); box-shadow: none; }
 .plan.pop { border-color: var(--accent); border-width: 2px; position: relative; box-shadow: 0 8px 36px rgba(212,98,43,0.15); }
 .plan.pop:hover { box-shadow: 0 12px 44px rgba(212,98,43,0.22); }
 .plan.pop::before { content: "推薦"; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 4px 18px; border-radius: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
@@ -814,6 +816,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
             <li>自訂運輸方式</li>
             <li class="off">商品標籤</li>
             <li>單一商品 8 張圖</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
           </ul>
           <a href="/login.html" class="plan-btn">免費註冊</a>
         </div>
@@ -832,6 +836,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
             <li>自訂運輸方式</li>
             <li>商品標籤</li>
             <li>單一商品 8 張圖</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
           </ul>
           <a href="https://lin.ee/TYFUtMb" target="_blank" rel="noopener noreferrer" class="plan-btn">聯繫客服開啟方案</a>
         </div>
@@ -851,6 +857,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
             <li>商品標籤</li>
             <li>單一商品 8 張圖</li>
             <li>2 款商店模板</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
           </ul>
           <a href="https://lin.ee/TYFUtMb" target="_blank" rel="noopener noreferrer" class="plan-btn">聯繫客服開啟方案</a>
         </div>
@@ -872,6 +880,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
             <li>單一商品 8 張圖</li>
             <li>7 款商店模板 + Logo</li>
             <li>自訂子網域</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
           </ul>
           <a href="https://lin.ee/TYFUtMb" target="_blank" rel="noopener noreferrer" class="plan-btn">聯繫客服開啟方案</a>
         </div>
@@ -901,6 +911,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
           <tr><td>商店模板</td><td>1 款</td><td>1 款</td><td>2 款</td><td>7 款</td></tr>
           <tr><td>商店 Logo</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
           <tr><td>子網域</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>商店 SSL 證書</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>訂單統計小助手</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -1159,6 +1171,11 @@ function switchBilling(months) {
     btn.classList.toggle("active", Number(btn.getAttribute("data-period")) === months);
   });
   var offers = PLAN_OFFERS || fallbackOffers();
+  // Plus is monthly-only: hide when 6 or 12 months selected
+  var plusCard = document.querySelector('.plan[data-plan="plus"]');
+  if (plusCard) {
+    plusCard.classList.toggle("plan-unavailable", months !== 1);
+  }
   // Update Plus price (only monthly)
   updatePlanPrice("plus", months, offers);
   // Update Pro price
