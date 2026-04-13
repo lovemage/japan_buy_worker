@@ -506,14 +506,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .ai-hook-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
 .ai-hook-card { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px 14px 16px; text-align: center; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
 .ai-hook-card:hover { border-color: var(--brand); box-shadow: 0 4px 20px rgba(107,140,62,0.12); transform: translateY(-3px); }
-.ai-hook-card-icon { width: 48px; height: 48px; margin: 0 auto 12px; background: var(--brand-light); border-radius: 14px; display: grid; place-items: center; }
+.ai-hook-card-icon { width: 32px; height: 32px; margin: 0 auto 12px; display: grid; place-items: center; }
 .ai-hook-card-icon svg { width: 24px; height: 24px; stroke: var(--brand); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.ai-hook-card:nth-child(5) .ai-hook-card-icon,
-.ai-hook-card:nth-child(6) .ai-hook-card-icon { background: var(--amber-light); }
 .ai-hook-card:nth-child(5) .ai-hook-card-icon svg,
 .ai-hook-card:nth-child(6) .ai-hook-card-icon svg { stroke: var(--amber); }
-.ai-hook-card:nth-child(7) .ai-hook-card-icon,
-.ai-hook-card:nth-child(8) .ai-hook-card-icon { background: var(--accent-light); }
 .ai-hook-card:nth-child(7) .ai-hook-card-icon svg,
 .ai-hook-card:nth-child(8) .ai-hook-card-icon svg { stroke: var(--accent); }
 .ai-hook-card h4 { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
@@ -665,7 +661,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 @keyframes country-scroll { to { transform: translateX(-50%); } }
 .country-item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
 .country-flag { width: 56px; height: 40px; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.country-flag svg { width: 100%; height: 100%; display: block; }
+.country-flag svg, .country-flag img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .country-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; }
 .country-cur { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 @media (max-width: 768px) {
@@ -684,83 +680,83 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="country-track">
         <!-- Set 1 -->
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#fff" width="900" height="600"/><circle cx="450" cy="300" r="180" fill="#BC002D"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/jp.svg" alt="日本"></div>
           <div class="country-name">日本</div>
           <div class="country-cur">JPY ¥</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#fff" width="900" height="600"/><rect fill="#C60C30" y="0" width="900" height="200"/><rect fill="#003478" y="200" width="900" height="200"/><rect fill="#C60C30" y="400" width="900" height="200"/><circle cx="450" cy="300" r="120" fill="#fff"/><path d="M450 180a120 120 0 0 1 0 240 60 60 0 0 0 0-120 60 60 0 0 1 0-120z" fill="#C60C30"/><path d="M450 180a120 120 0 0 0 0 240 60 60 0 0 1 0-120 60 60 0 0 0 0-120z" fill="#003478"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/kr.svg" alt="韓國"></div>
           <div class="country-name">韓國</div>
           <div class="country-cur">KRW ₩</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#A51931" width="900" height="600"/><rect fill="#F4F5F8" y="100" width="900" height="400"/><rect fill="#2D2A4A" y="200" width="900" height="200"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/th.svg" alt="泰國"></div>
           <div class="country-name">泰國</div>
           <div class="country-cur">THB ฿</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#B22234" width="900" height="600"/><rect fill="#fff" y="46" width="900" height="46"/><rect fill="#fff" y="138" width="900" height="46"/><rect fill="#fff" y="230" width="900" height="46"/><rect fill="#fff" y="322" width="900" height="46"/><rect fill="#fff" y="414" width="900" height="46"/><rect fill="#fff" y="506" width="900" height="46"/><rect fill="#3C3B6E" width="360" height="322"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/us.svg" alt="美國"></div>
           <div class="country-name">美國</div>
           <div class="country-cur">USD $</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#DA251D" width="900" height="600"/><polygon points="450,120 487,244 616,244 510,326 543,450 450,372 357,450 390,326 284,244 413,244" fill="#FFFF00"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/vn.svg" alt="越南"></div>
           <div class="country-name">越南</div>
           <div class="country-cur">VND ₫</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#003399" width="900" height="600"/><circle cx="450" cy="300" r="150" fill="#FFCC00"/><polygon points="450,170 468,230 532,230 480,268 498,328 450,292 402,328 420,268 368,230 432,230" fill="#003399"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/eu.svg" alt="歐洲"></div>
           <div class="country-name">歐洲</div>
           <div class="country-cur">EUR €</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#00008B" width="900" height="600"/><path d="M0 0L375 250M375 0L0 250" stroke="#fff" stroke-width="50"/><path d="M0 0L375 250M375 0L0 250" stroke="#C8102E" stroke-width="30"/><rect fill="#fff" x="156" width="63" height="250"/><rect fill="#fff" y="100" width="375" height="50"/><rect fill="#C8102E" x="168" width="38" height="250"/><rect fill="#C8102E" y="112" width="375" height="25"/><g transform="translate(450,0) scale(2.4,2.4)"><polygon points="94,60 104,90 136,90 110,110 120,140 94,120 68,140 78,110 52,90 84,90" fill="#fff"/><polygon points="94,340 102,360 126,360 106,374 114,396 94,382 74,396 82,374 62,360 86,360" fill="#fff"/><polygon points="188,155 196,175 220,175 200,189 208,211 188,197 168,211 176,189 156,175 180,175" fill="#fff"/><polygon points="188,295 196,315 220,315 200,329 208,351 188,337 168,351 176,329 156,315 180,315" fill="#fff"/><polygon points="225,225 231,243 250,243 235,254 241,272 225,261 209,272 215,254 200,243 219,243" fill="#fff"/></g></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/au.svg" alt="澳洲"></div>
           <div class="country-name">澳洲</div>
           <div class="country-cur">AUD A$</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#FE0000" width="900" height="300"/><rect fill="#00F" y="300" width="900" height="300"/><rect fill="#fff" x="225" y="150" width="450" height="300"/><circle cx="375" cy="300" r="75" fill="#FE0000"/><circle cx="525" cy="300" r="75" fill="#00F"/><path d="M375 225a75 75 0 0 1 0 150 75 75 0 0 0 0-150" fill="#fff"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/tw.svg" alt="台灣"></div>
           <div class="country-name">台灣</div>
           <div class="country-cur">TWD NT$</div>
         </div>
         <!-- Set 2 (duplicate for seamless loop) -->
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#fff" width="900" height="600"/><circle cx="450" cy="300" r="180" fill="#BC002D"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/jp.svg" alt="日本"></div>
           <div class="country-name">日本</div>
           <div class="country-cur">JPY ¥</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#fff" width="900" height="600"/><rect fill="#C60C30" y="0" width="900" height="200"/><rect fill="#003478" y="200" width="900" height="200"/><rect fill="#C60C30" y="400" width="900" height="200"/><circle cx="450" cy="300" r="120" fill="#fff"/><path d="M450 180a120 120 0 0 1 0 240 60 60 0 0 0 0-120 60 60 0 0 1 0-120z" fill="#C60C30"/><path d="M450 180a120 120 0 0 0 0 240 60 60 0 0 1 0-120 60 60 0 0 0 0-120z" fill="#003478"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/kr.svg" alt="韓國"></div>
           <div class="country-name">韓國</div>
           <div class="country-cur">KRW ₩</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#A51931" width="900" height="600"/><rect fill="#F4F5F8" y="100" width="900" height="400"/><rect fill="#2D2A4A" y="200" width="900" height="200"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/th.svg" alt="泰國"></div>
           <div class="country-name">泰國</div>
           <div class="country-cur">THB ฿</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#B22234" width="900" height="600"/><rect fill="#fff" y="46" width="900" height="46"/><rect fill="#fff" y="138" width="900" height="46"/><rect fill="#fff" y="230" width="900" height="46"/><rect fill="#fff" y="322" width="900" height="46"/><rect fill="#fff" y="414" width="900" height="46"/><rect fill="#fff" y="506" width="900" height="46"/><rect fill="#3C3B6E" width="360" height="322"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/us.svg" alt="美國"></div>
           <div class="country-name">美國</div>
           <div class="country-cur">USD $</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#DA251D" width="900" height="600"/><polygon points="450,120 487,244 616,244 510,326 543,450 450,372 357,450 390,326 284,244 413,244" fill="#FFFF00"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/vn.svg" alt="越南"></div>
           <div class="country-name">越南</div>
           <div class="country-cur">VND ₫</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#003399" width="900" height="600"/><circle cx="450" cy="300" r="150" fill="#FFCC00"/><polygon points="450,170 468,230 532,230 480,268 498,328 450,292 402,328 420,268 368,230 432,230" fill="#003399"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/eu.svg" alt="歐洲"></div>
           <div class="country-name">歐洲</div>
           <div class="country-cur">EUR €</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#00008B" width="900" height="600"/><path d="M0 0L375 250M375 0L0 250" stroke="#fff" stroke-width="50"/><path d="M0 0L375 250M375 0L0 250" stroke="#C8102E" stroke-width="30"/><rect fill="#fff" x="156" width="63" height="250"/><rect fill="#fff" y="100" width="375" height="50"/><rect fill="#C8102E" x="168" width="38" height="250"/><rect fill="#C8102E" y="112" width="375" height="25"/><g transform="translate(450,0) scale(2.4,2.4)"><polygon points="94,60 104,90 136,90 110,110 120,140 94,120 68,140 78,110 52,90 84,90" fill="#fff"/><polygon points="94,340 102,360 126,360 106,374 114,396 94,382 74,396 82,374 62,360 86,360" fill="#fff"/><polygon points="188,155 196,175 220,175 200,189 208,211 188,197 168,211 176,189 156,175 180,175" fill="#fff"/><polygon points="188,295 196,315 220,315 200,329 208,351 188,337 168,351 176,329 156,315 180,315" fill="#fff"/><polygon points="225,225 231,243 250,243 235,254 241,272 225,261 209,272 215,254 200,243 219,243" fill="#fff"/></g></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/au.svg" alt="澳洲"></div>
           <div class="country-name">澳洲</div>
           <div class="country-cur">AUD A$</div>
         </div>
         <div class="country-item">
-          <div class="country-flag"><svg viewBox="0 0 900 600"><rect fill="#FE0000" width="900" height="300"/><rect fill="#00F" y="300" width="900" height="300"/><rect fill="#fff" x="225" y="150" width="450" height="300"/><circle cx="375" cy="300" r="75" fill="#FE0000"/><circle cx="525" cy="300" r="75" fill="#00F"/><path d="M375 225a75 75 0 0 1 0 150 75 75 0 0 0 0-150" fill="#fff"/></svg></div>
+          <div class="country-flag"><img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/tw.svg" alt="台灣"></div>
           <div class="country-name">台灣</div>
           <div class="country-cur">TWD NT$</div>
         </div>

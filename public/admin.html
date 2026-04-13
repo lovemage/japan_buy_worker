@@ -411,7 +411,16 @@
           <label>品牌<input id="draft-brand" type="text" class="input-cute" /></label>
           <label>分類<input id="draft-category" type="text" class="input-cute" /></label>
           <label><span class="price-label-dynamic">價格（<span class="src-currency">JPY</span>）</span><input id="draft-price" type="number" min="0" class="input-cute" /></label>
-          <label>商品描述<textarea id="draft-description" rows="3" class="input-cute"></textarea></label>
+          <div class="description-field">
+            <div class="description-field__head">
+              <label for="draft-description">商品描述</label>
+              <button id="btn-edit-draft-description" class="description-edit-btn" type="button" aria-label="編輯商品描述" title="編輯商品描述">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </button>
+            </div>
+            <div id="draft-description-preview" class="description-preview" aria-live="polite"></div>
+            <textarea id="draft-description" rows="4" class="input-cute hidden"></textarea>
+          </div>
           <label>規格</label>
           <div id="draft-specs-display" style="font-size:13px;line-height:1.7;color:#444;padding:8px 0;"></div>
           <input type="hidden" id="draft-specs" />

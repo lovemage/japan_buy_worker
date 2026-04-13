@@ -5,6 +5,43 @@ const WEBP_QUALITY = 0.8;
 
 let selectedImages = [];
 
+function getDraftDescriptionElements() {
+  return {
+    textarea: document.getElementById("draft-description"),
+    preview: document.getElementById("draft-description-preview"),
+  };
+}
+
+function syncDraftDescriptionPreview() {
+  const { textarea, preview } = getDraftDescriptionElements();
+  if (!textarea || !preview) return;
+  const text = (textarea.value || "").trim();
+  if (text) {
+    preview.textContent = textarea.value;
+    preview.classList.remove("is-empty");
+  } else {
+    preview.textContent = "尚未產生商品描述";
+    preview.classList.add("is-empty");
+  }
+}
+
+function setDraftDescriptionEditing(editing) {
+  const { textarea, preview } = getDraftDescriptionElements();
+  const editBtn = document.getElementById("btn-edit-draft-description");
+  if (!textarea || !preview || !editBtn) return;
+  textarea.classList.toggle("hidden", !editing);
+  preview.classList.toggle("hidden", editing);
+  editBtn.setAttribute("aria-label", editing ? "完成商品描述編輯" : "編輯商品描述");
+  editBtn.setAttribute("title", editing ? "完成" : "編輯商品描述");
+  if (editing) {
+    textarea.focus();
+    textarea.selectionStart = textarea.value.length;
+    textarea.selectionEnd = textarea.value.length;
+  } else {
+    syncDraftDescriptionPreview();
+  }
+}
+
 function showRecognizeStatus(text) {
   const node = document.getElementById("recognize-status");
   if (node) node.textContent = text;
@@ -192,6 +229,8 @@ function fillDraft(result) {
   set("draft-category", result.category);
   set("draft-price", result.priceJpy);
   set("draft-description", result.description);
+  syncDraftDescriptionPreview();
+  setDraftDescriptionEditing(false);
   const specsObj = result.specs || {};
   set("draft-specs", JSON.stringify(specsObj));
   const specsDisplay = document.getElementById("draft-specs-display");
@@ -211,6 +250,7 @@ function fillDraft(result) {
 function cancelDraft() {
   const draft = document.getElementById("recognize-draft");
   if (draft) draft.classList.add("hidden");
+  setDraftDescriptionEditing(false);
   showRecognizeStatus("");
   showListingStatus("");
 }
@@ -518,6 +558,21 @@ function initPhotoRecognize() {
   const aiEditBtn = document.getElementById("btn-ai-image-edit");
   if (aiEditBtn) aiEditBtn.addEventListener("click", doAiImageEdit);
 
+  const editDraftDescBtn = document.getElementById("btn-edit-draft-description");
+  if (editDraftDescBtn) {
+    editDraftDescBtn.addEventListener("click", () => {
+      const { textarea } = getDraftDescriptionElements();
+      if (!textarea) return;
+      const isEditing = !textarea.classList.contains("hidden");
+      setDraftDescriptionEditing(!isEditing);
+    });
+  }
+
+  const draftDescriptionInput = document.getElementById("draft-description");
+  if (draftDescriptionInput) {
+    draftDescriptionInput.addEventListener("input", syncDraftDescriptionPreview);
+  }
+
   const manualEntryBtn = document.getElementById("btn-manual-entry");
   if (manualEntryBtn) manualEntryBtn.addEventListener("click", showManualEntryForm);
 
@@ -528,6 +583,8 @@ function initPhotoRecognize() {
   if (manualCancelBtn) manualCancelBtn.addEventListener("click", cancelManualEntry);
 
   initCameraModeToggle();
+  syncDraftDescriptionPreview();
+  setDraftDescriptionEditing(false);
   updateButtons();
 }
 

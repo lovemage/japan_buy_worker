@@ -1350,6 +1350,37 @@
 .admin-body .recognize-draft { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--admin-border); }
 .admin-body .recognize-draft label { display: block; margin-bottom: 0.5rem; font-size: 14px; font-weight: 500; }
 .admin-body .recognize-draft .input-cute { width: 100%; }
+.admin-body .description-field { margin-bottom: 0.5rem; }
+.admin-body .description-field__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.admin-body .description-field__head label { margin: 0; }
+.admin-body .description-edit-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+  color: var(--admin-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color var(--admin-transition), color var(--admin-transition), background var(--admin-transition);
+}
+.admin-body .description-edit-btn:hover { border-color: #c8c8c8; color: var(--admin-text); background: var(--admin-hover); }
+.admin-body .description-edit-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+.admin-body .description-edit-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.admin-body .description-preview {
+  min-height: 96px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-hover);
+  color: var(--admin-text-secondary);
+}
+.admin-body .description-preview.is-empty { color: var(--admin-text-muted); }
 
 /* ── Settings group card ── */
 .settings-group {
