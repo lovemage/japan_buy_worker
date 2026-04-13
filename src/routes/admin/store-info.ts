@@ -317,13 +317,13 @@ export async function handlePopupAdDelete(
 
 // ── Template selection ──
 const TEMPLATES: Record<string, { name: string; plans: string[] }> = {
-  default:      { name: "抹茶暖色", plans: ["free", "starter", "pro"] },
-  "ink-blue":   { name: "墨藍",     plans: ["starter", "pro"] },
-  sand:         { name: "暖沙灰",   plans: ["pro"] },
-  moss:         { name: "苔蘚灰綠", plans: ["pro"] },
-  slate:        { name: "石板灰藍", plans: ["pro"] },
-  "bold-gold":  { name: "白黃黑",   plans: ["pro"] },
-  "bold-ocean": { name: "白藍黑",   plans: ["pro"] },
+  default:      { name: "抹茶暖色", plans: ["free", "plus", "pro", "proplus"] },
+  "ink-blue":   { name: "墨藍",     plans: ["pro", "proplus"] },
+  sand:         { name: "暖沙灰",   plans: ["proplus"] },
+  moss:         { name: "苔蘚灰綠", plans: ["proplus"] },
+  slate:        { name: "石板灰藍", plans: ["proplus"] },
+  "bold-gold":  { name: "白黃黑",   plans: ["proplus"] },
+  "bold-ocean": { name: "白藍黑",   plans: ["proplus"] },
 };
 
 export { TEMPLATES };

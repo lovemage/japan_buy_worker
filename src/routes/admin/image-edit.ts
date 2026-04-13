@@ -28,8 +28,9 @@ DO NOT:
 
 const IMAGE_EDIT_LIMITS: Record<string, number> = {
   free: 10,
-  starter: 50,
-  pro: -1,
+  plus: 25,
+  pro: 60,
+  proplus: -1,
 };
 
 async function getImageGenApiKey(db: RequestContext["db"], storeId: number, storePlan: string): Promise<string> {

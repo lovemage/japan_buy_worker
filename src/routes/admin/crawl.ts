@@ -21,12 +21,10 @@ export async function handleAdminCrawl(request: Request, ctx: RequestContext, cr
 
   try {
     let maxProducts: number | null = null;
-    if (ctx.storePlan === "free") {
-      const store = await ctx.db
-        .prepare("SELECT phone_verified FROM stores WHERE id = ?")
-        .bind(ctx.storeId)
-        .first<{ phone_verified: number }>();
-      maxProducts = store?.phone_verified ? 10 : 5;
+    const crawlLimits: Record<string, number> = { free: 10, plus: 25, pro: 60, proplus: -1 };
+    const crawlLimit = crawlLimits[ctx.storePlan] ?? 10;
+    if (crawlLimit > 0) {
+      maxProducts = crawlLimit;
     }
 
     const crawled = await crawlProducts({

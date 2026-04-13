@@ -9,9 +9,9 @@ import {
   buildStoreDomainChangeMessage,
 } from "../public/assets/store-url.js";
 
-test("buildStorePublicBaseUrl uses subdomain for pro plan", () => {
+test("buildStorePublicBaseUrl uses subdomain for proplus plan", () => {
   const url = buildStorePublicBaseUrl({
-    plan: "pro",
+    plan: "proplus",
     slug: "xiaomei",
     mainDomain: "vovosnap.com",
     protocol: "https:",
@@ -49,7 +49,7 @@ test("buildStorePublicBaseUrl falls back to current origin and apiBase", () => {
 });
 
 test("buildStoreReturnToPath matches plan routing", () => {
-  assert.equal(buildStoreReturnToPath({ plan: "pro", slug: "xiaomei", apiBase: "" }), "/");
+  assert.equal(buildStoreReturnToPath({ plan: "proplus", slug: "xiaomei", apiBase: "" }), "/");
   assert.equal(buildStoreReturnToPath({ plan: "free", slug: "xiaomei", apiBase: "/s/xiaomei" }), "/s/xiaomei/");
 });
 
@@ -71,7 +71,7 @@ test("buildProductShareUrl builds canonical product URL", () => {
 
 test("buildStorePublicDisplayText strips protocol for admin display", () => {
   const text = buildStorePublicDisplayText({
-    plan: "pro",
+    plan: "proplus",
     slug: "xiaomei",
     mainDomain: "vovosnap.com",
     protocol: "https:",
@@ -82,9 +82,9 @@ test("buildStorePublicDisplayText strips protocol for admin display", () => {
   assert.equal(text, "xiaomei.vovosnap.com/");
 });
 
-test("buildStoreDomainChangeMessage tells pro users to wait for subdomain updates", () => {
+test("buildStoreDomainChangeMessage tells proplus users to wait for subdomain updates", () => {
   const message = buildStoreDomainChangeMessage({
-    plan: "pro",
+    plan: "proplus",
     slug: "xiaomei",
     mainDomain: "vovosnap.com",
     protocol: "https:",

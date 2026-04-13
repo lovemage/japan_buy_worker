@@ -216,7 +216,7 @@ export default {
         const slug = (store.slug || "").trim().toLowerCase();
         if (!slug) continue;
 
-        const baseUrl = store.plan === "pro"
+        const baseUrl = store.plan === "proplus"
           ? `https://${slug}.${mainDomain}`
           : `https://${mainDomain}/s/${slug}`;
         const storeLastmod = toIsoDate(store.updated_at);
@@ -252,7 +252,7 @@ export default {
       const row = await env.DB
         .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
         .first<{ value: string }>();
-      const limits = row?.value ? JSON.parse(row.value) : { free: 10, starter: 50, pro: -1 };
+      const limits = row?.value ? JSON.parse(row.value) : { free: 10, plus: 25, pro: 60, proplus: -1 };
       return json({ ok: true, limits });
     }
     if (url.pathname === "/api/faq") {
@@ -315,7 +315,7 @@ export default {
       if (!store || !store.is_active) {
         return json({ ok: false, error: "Store not found" }, 404);
       }
-      if (getEffectivePlan(store) !== "pro") {
+      if (getEffectivePlan(store) !== "proplus") {
         const redirectUrl = new URL(request.url);
         redirectUrl.hostname = mainDomain;
         redirectUrl.pathname = url.pathname === "/" ? `/s/${store.slug}/` : `/s/${store.slug}${url.pathname}`;

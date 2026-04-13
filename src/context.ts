@@ -3,7 +3,7 @@ import type { D1DatabaseLike } from "./types/d1";
 export type RequestContext = {
   storeId: number;
   storeSlug: string;
-  storePlan: string; // "free" | "pro"
+  storePlan: string; // "free" | "plus" | "pro" | "proplus"
   mainDomain: string;
   db: D1DatabaseLike;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,6 +23,8 @@ export type StoreRow = {
   line_id: string | null;
   plan: string;
   plan_expires_at: string | null;
+  plan_paid_amount: number | null;
+  plan_started_at: string | null;
   subdomain: string | null;
   slug_change_used?: number;
   is_active: number;
@@ -51,8 +53,9 @@ export async function resolveStoreBySubdomain(
 }
 
 export function getEffectivePlan(store: StoreRow): string {
-  // Paid plans (starter, pro) downgrade to free when expired
-  if ((store.plan === "pro" || store.plan === "starter") && store.plan_expires_at) {
+  // Paid plans (plus, pro, proplus) downgrade to free when expired
+  const paidPlans = ["plus", "pro", "proplus"];
+  if (paidPlans.includes(store.plan) && store.plan_expires_at) {
     const expires = new Date(store.plan_expires_at);
     if (expires < new Date()) return "free";
   }

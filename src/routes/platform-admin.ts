@@ -186,12 +186,63 @@ export async function handlePlatformAdmin(
       const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
       ids.push(storeId);
       await db
-        .prepare("UPDATE stores SET plan = 'pro', plan_expires_at = ?, updated_at = datetime('now') WHERE id = ?")
+        .prepare("UPDATE stores SET plan = 'proplus', plan_expires_at = ?, updated_at = datetime('now') WHERE id = ?")
         .bind(expiresAt, storeId)
         .run();
     }
     await setTestStoreIds(db, ids);
     return json({ ok: true, isTest: idx < 0 });
+  }
+
+  // Calculate upgrade proration for a store
+  const upgradeCalcMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/upgrade-calc$/);
+  if (upgradeCalcMatch && request.method === "POST") {
+    const storeId = parseInt(upgradeCalcMatch[1], 10);
+    let body: { newPlan: string; newMonths: number };
+    try {
+      body = (await request.json()) as { newPlan: string; newMonths: number };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+
+    const store = await db
+      .prepare("SELECT plan, plan_expires_at, plan_paid_amount, plan_started_at FROM stores WHERE id = ?")
+      .bind(storeId)
+      .first<{ plan: string; plan_expires_at: string | null; plan_paid_amount: number | null; plan_started_at: string | null }>();
+    if (!store) return json({ ok: false, error: "Store not found" }, 404);
+
+    const newOffer = getPlanOfferByMonths(body.newPlan, body.newMonths, DEFAULT_PLAN_OFFERS);
+    if (!newOffer) return json({ ok: false, error: "Invalid new plan/months" }, 400);
+
+    // Calculate remaining value from current plan
+    let remainingValue = 0;
+    if (store.plan_paid_amount && store.plan_paid_amount > 0 && store.plan_started_at && store.plan_expires_at) {
+      const started = new Date(store.plan_started_at).getTime();
+      const expires = new Date(store.plan_expires_at).getTime();
+      const now = Date.now();
+      const totalDays = (expires - started) / 86400_000;
+      const remainingDays = Math.max(0, (expires - now) / 86400_000);
+      if (totalDays > 0 && remainingDays > 0) {
+        const dailyRate = store.plan_paid_amount / totalDays;
+        remainingValue = Math.round(dailyRate * remainingDays);
+      }
+    }
+
+    const newAmount = newOffer.amount;
+    const difference = Math.max(0, newAmount - remainingValue);
+
+    return json({
+      ok: true,
+      currentPlan: store.plan,
+      currentPaidAmount: store.plan_paid_amount || 0,
+      currentExpiresAt: store.plan_expires_at,
+      remainingValue,
+      newPlan: body.newPlan,
+      newMonths: body.newMonths,
+      newAmount,
+      newDays: newOffer.days,
+      difference,
+    });
   }
 
   // Update a store
@@ -210,11 +261,12 @@ export async function handlePlatformAdmin(
 
     switch (action) {
       case "free":
-      case "starter":
-      case "pro": {
+      case "plus":
+      case "pro":
+      case "proplus": {
         let days = typeof body.days === "number" ? body.days : 30;
         let amount = typeof body.amount === "number" ? body.amount : 0;
-        if (action === "starter" || action === "pro") {
+        if (action !== "free") {
           const offer = getPlanOfferByMonths(action, body.months || 1, DEFAULT_PLAN_OFFERS);
           if (!offer) return json({ ok: false, error: "Invalid plan offer option" }, 400);
           days = offer.days;
@@ -223,9 +275,10 @@ export async function handlePlatformAdmin(
         const expiresAt = action === "free"
           ? null
           : (body.plan_expires_at || new Date(Date.now() + days * 86400_000).toISOString());
+        const startedAt = action === "free" ? null : new Date().toISOString();
         await db
-          .prepare("UPDATE stores SET plan = ?, plan_expires_at = ?, updated_at = datetime('now') WHERE id = ?")
-          .bind(action, expiresAt, storeId)
+          .prepare("UPDATE stores SET plan = ?, plan_expires_at = ?, plan_paid_amount = ?, plan_started_at = ?, updated_at = datetime('now') WHERE id = ?")
+          .bind(action, expiresAt, action === "free" ? null : amount, startedAt, storeId)
           .run();
 
         // Auto-log revenue (skip test members and free plan)
@@ -569,7 +622,7 @@ export async function handlePlatformAdmin(
     const row = await db
       .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
       .first<{ value: string }>();
-    const defaults = { free: 10, starter: 50, pro: -1 };
+    const defaults = { free: 10, plus: 25, pro: 60, proplus: -1 };
     try {
       return json({ ok: true, limits: row?.value ? JSON.parse(row.value) : defaults });
     } catch {
@@ -578,16 +631,17 @@ export async function handlePlatformAdmin(
   }
 
   if (url.pathname === "/api/platform-admin/plan-limits" && request.method === "POST") {
-    let body: { free?: number; starter?: number; pro?: number };
+    let body: { free?: number; plus?: number; pro?: number; proplus?: number };
     try {
-      body = (await request.json()) as { free?: number; starter?: number; pro?: number };
+      body = (await request.json()) as { free?: number; plus?: number; pro?: number; proplus?: number };
     } catch {
       return json({ ok: false, error: "Invalid JSON" }, 400);
     }
     const limits = {
       free: body.free ?? 10,
-      starter: body.starter ?? 50,
-      pro: body.pro ?? -1,
+      plus: body.plus ?? 25,
+      pro: body.pro ?? 60,
+      proplus: body.proplus ?? -1,
     };
     await db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (0, 'plan_limits', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")

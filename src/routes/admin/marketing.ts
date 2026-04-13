@@ -58,9 +58,10 @@ const PLATFORM_PROMPTS: Record<string, string> = {
 };
 
 const MONTHLY_LIMITS: Record<string, number> = {
-  free: 5,
-  starter: 10,
-  pro: 20,
+  free: 2,
+  plus: 5,
+  pro: 10,
+  proplus: 20,
 };
 
 function getMonthKey(): string {
@@ -154,7 +155,7 @@ export async function handleMarketing(
   // Build store URL
   const mainDomain = "vovosnap.com";
   let storeUrl: string;
-  if (slug && storePlan === "pro") {
+  if (slug && storePlan === "proplus") {
     storeUrl = `https://${slug}.${mainDomain}`;
   } else if (slug) {
     storeUrl = `https://${mainDomain}/s/${slug}`;
@@ -168,7 +169,7 @@ export async function handleMarketing(
     .bind(ctx.storeId)
     .all<{ code: string; title_ja: string; title_zh_tw: string; brand: string; category: string; price_jpy_tax_in: number }>();
 
-  const returnTo = storePlan === "pro" ? "/" : `/s/${slug}/`;
+  const returnTo = storePlan === "proplus" ? "/" : `/s/${slug}/`;
   const productList = (products.results || []).map((p, i) => {
     const name = p.title_zh_tw || p.title_ja;
     const link = `${storeUrl}/product?code=${encodeURIComponent(p.code || "")}&returnTo=${encodeURIComponent(returnTo)}`;

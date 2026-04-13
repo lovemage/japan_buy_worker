@@ -1290,7 +1290,9 @@
       var me = res[1];
       if (!d.ok) return;
       var total = d.paging ? d.paging.total || 0 : 0;
-      var limit = plan === "starter" ? 50 : 10;
+      var limitMap = { free: 10, plus: 25, pro: 60, proplus: -1 };
+      var limit = limitMap[plan] || 10;
+      if (limit === -1) limit = 9999;
       var pct = Math.min(100, Math.round(total / limit * 100));
       var color = pct >= 90 ? "var(--admin-danger)" : pct >= 70 ? "var(--admin-warning)" : "var(--admin-text)";
       var bar = document.createElement("div");
@@ -1314,14 +1316,14 @@
   (function() {
     var plan = window.__STORE_PLAN || "free";
 
-    // Show tags in edit modal for Starter+Pro
-    if (plan === "starter" || plan === "pro") {
+    // Show tags in edit modal for Plus+Pro+Pro+
+    if (plan === "plus" || plan === "pro" || plan === "proplus") {
       var tagSec = document.getElementById("edit-tags-section");
       if (tagSec) tagSec.style.display = "";
     }
 
-    // Pro: show logo section, editable tag names
-    if (plan === "pro") {
+    // Pro+: show logo section, editable tag names
+    if (plan === "proplus") {
       var logoSec = document.getElementById("logo-section");
       if (logoSec) logoSec.style.display = "";
     }

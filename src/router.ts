@@ -140,7 +140,7 @@ async function serveTenantHtml(
 window.__API_BASE="${ctx.basePath}";
 window.__STORE_SLUG="${ctx.storeSlug}";
 window.__STORE_PLAN="${ctx.storePlan}";
-window.__MAX_IMAGES=${{ free: 4, starter: 6, pro: 8 }[ctx.storePlan] || 3};
+window.__MAX_IMAGES=${{ free: 4, plus: 6, pro: 8, proplus: 8 }[ctx.storePlan] || 3};
 window.__STORE_NAME="${storeName.replace(/"/g, '\\"')}";
 window.__STORE_DESC="${storeDesc.replace(/"/g, '\\"')}";
 window.__STORE_COUNTRY="${country}";

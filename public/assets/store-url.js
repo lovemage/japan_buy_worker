@@ -7,7 +7,7 @@ export function buildStorePublicBaseUrl(options) {
   const apiBase = options?.apiBase || "";
 
   if (slug && mainDomain) {
-    if (plan === "pro") return `${protocol}//${slug}.${mainDomain}`;
+    if (plan === "proplus") return `${protocol}//${slug}.${mainDomain}`;
     return `${protocol}//${mainDomain}/s/${slug}`;
   }
 
@@ -19,7 +19,7 @@ export function buildStoreReturnToPath(options) {
   const slug = options?.slug || "";
   const apiBase = options?.apiBase || "";
 
-  if (plan === "pro") return "/";
+  if (plan === "proplus") return "/";
   if (slug) return `/s/${slug}/`;
   return `${apiBase || ""}/`;
 }

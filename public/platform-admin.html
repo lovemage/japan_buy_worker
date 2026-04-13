@@ -126,8 +126,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 /* ── Badges ── */
 .badge { display: inline-block; padding: 2px 8px; border-radius: var(--pa-radius-pill); font-size: 11px; font-weight: 600; }
 .badge-free { background: #f3f4f6; color: #6b7280; }
-.badge-starter { background: #eef1e6; color: #5f7135; }
-.badge-pro { background: #f3e9e1; color: #9e5f38; }
+.badge-plus { background: #e8f0fe; color: #1a73e8; }
+.badge-pro { background: #eef1e6; color: #5f7135; }
+.badge-proplus { background: #f3e9e1; color: #9e5f38; }
 .badge-active { background: var(--pa-green-bg); color: var(--pa-green); }
 .badge-onboarding { background: var(--pa-amber-bg); color: var(--pa-amber); }
 .badge-inactive { background: var(--pa-red-bg); color: var(--pa-red); }
@@ -312,8 +313,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="stats">
       <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總會員</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-free">0</div><div class="stat-label">Free</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-starter">0</div><div class="stat-label">Starter</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-plus">0</div><div class="stat-label">Plus</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-pro">0</div><div class="stat-label">Pro</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-proplus">0</div><div class="stat-label">Pro+</div></div>
       <div class="stat-card stat-card--revenue"><div class="stat-num" id="stat-revenue">NT$0</div><div class="stat-label" id="stat-revenue-label">本月總收入</div></div>
     </div>
     <div class="revenue-header">
@@ -334,8 +336,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="pill-filters" id="member-filters">
       <button class="pill-btn active" onclick="filterStores('all', this)">全部</button>
       <button class="pill-btn" onclick="filterStores('free', this)">Free</button>
-      <button class="pill-btn" onclick="filterStores('starter', this)">Starter</button>
+      <button class="pill-btn" onclick="filterStores('plus', this)">Plus</button>
       <button class="pill-btn" onclick="filterStores('pro', this)">Pro</button>
+      <button class="pill-btn" onclick="filterStores('proplus', this)">Pro+</button>
       <button class="pill-btn" onclick="filterStores('test', this)">測試</button>
       <button class="pill-btn" onclick="filterStores('onboarding', this)">Onboarding</button>
     </div>
@@ -348,8 +351,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <h3>Gemini API Key</h3>
       <div class="row">
         <div>
-          <label>Starter 方案 (Gemini)</label>
-          <input type="password" id="api-key-starter" placeholder="Starter Gemini API Key">
+          <label>Free / Plus / Pro 方案 (Gemini)</label>
+          <input type="password" id="api-key-starter" placeholder="Free/Plus/Pro Gemini API Key">
           <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="fetchGeminiModels('starter')">載入模型列表</button>
         </div>
         <div>
@@ -457,20 +460,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <div class="page-content hidden" id="page-settings">
     <div class="card">
       <h3>方案商品上限</h3>
-      <p class="desc">設定各方案最多可上架的商品數量。此設定也會同步顯示在首頁方案介紹。Pro 設為 -1 代表無限制。</p>
+      <p class="desc">設定各方案最多可上架的商品數量。此設定也會同步顯示在首頁方案介紹。Pro+ 設為 -1 代表無限制。</p>
       <div class="row">
         <div>
           <label>Free 上限</label>
           <input type="number" id="limit-free" min="1" value="10">
         </div>
         <div>
-          <label>Starter 上限</label>
-          <input type="number" id="limit-starter" min="1" value="50">
+          <label>Plus 上限</label>
+          <input type="number" id="limit-plus" min="1" value="25">
         </div>
       </div>
-      <div style="margin-top:8px;">
-        <label>Pro 上限 <span style="font-size:11px;color:var(--pa-muted);">(-1 = 無限制)</span></label>
-        <input type="number" id="limit-pro" value="-1" style="width:120px;">
+      <div class="row" style="margin-top:8px;">
+        <div>
+          <label>Pro 上限</label>
+          <input type="number" id="limit-pro" min="1" value="60">
+        </div>
+        <div>
+          <label>Pro+ 上限 <span style="font-size:11px;color:var(--pa-muted);">(-1 = 無限制)</span></label>
+          <input type="number" id="limit-proplus" value="-1" style="width:120px;">
       </div>
       <button class="btn btn-dark" style="margin-top:10px;" onclick="savePlanLimits()">儲存</button>
       <span class="toast" id="plan-limits-toast">已儲存</span>
@@ -741,8 +749,9 @@ async function loadStores() {
   var nonTest = allStores.filter(s => testStoreIds.indexOf(s.id) < 0);
   document.getElementById("stat-total").textContent = allStores.length;
   document.getElementById("stat-free").textContent = nonTest.filter(s => s.plan === "free").length;
-  document.getElementById("stat-starter").textContent = nonTest.filter(s => s.plan === "starter").length;
+  document.getElementById("stat-plus").textContent = nonTest.filter(s => s.plan === "plus").length;
   document.getElementById("stat-pro").textContent = nonTest.filter(s => s.plan === "pro").length;
+  document.getElementById("stat-proplus").textContent = nonTest.filter(s => s.plan === "proplus").length;
   // Re-apply current filter
   applyCurrentFilter();
 }
@@ -792,13 +801,15 @@ function renderStores(stores) {
     if (isTest) {
       planBtns =
         '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
-        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'starter\')">Starter</button>' +
-        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'pro\')">Pro</button>';
+        '<button class="' + (s.plan === "plus" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'plus\')">Plus</button>' +
+        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'pro\')">Pro</button>' +
+        '<button class="' + (s.plan === "proplus" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'proplus\')">Pro+</button>';
     } else {
       planBtns =
         '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
-        '<button class="' + (s.plan === "starter" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'starter\')">Starter</button>' +
-        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>';
+        '<button class="' + (s.plan === "plus" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'plus\')">Plus</button>' +
+        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
+        '<button class="' + (s.plan === "proplus" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'proplus\')">Pro+</button>';
     }
 
     return '<div class="member-card">' +
@@ -832,15 +843,18 @@ function copyUrl(url, btn) {
 }
 
 var PLAN_OFFERS = {
-  starter: [
-    { months: 1, days: 30, amount: 980, monthlyPrice: 980, bonusDays: 0 },
-    { months: 6, days: 180, amount: 5280, monthlyPrice: 880, bonusDays: 0 },
-    { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+  plus: [
+    { months: 1, days: 30, amount: 490, monthlyPrice: 490, bonusDays: 0 }
   ],
   pro: [
-    { months: 1, days: 30, amount: 1580, monthlyPrice: 1580, bonusDays: 0 },
-    { months: 6, days: 180, amount: 8880, monthlyPrice: 1480, bonusDays: 0 },
-    { months: 12, days: 390, amount: 15360, monthlyPrice: 1280, bonusDays: 30 }
+    { months: 1, days: 30, amount: 880, monthlyPrice: 880, bonusDays: 0 },
+    { months: 6, days: 180, amount: 4680, monthlyPrice: 780, bonusDays: 0 },
+    { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+  ],
+  proplus: [
+    { months: 1, days: 30, amount: 1280, monthlyPrice: 1280, bonusDays: 0 },
+    { months: 6, days: 210, amount: 7680, monthlyPrice: 1280, bonusDays: 30 },
+    { months: 12, days: 420, amount: 15360, monthlyPrice: 1280, bonusDays: 60 }
   ]
 };
 
@@ -855,7 +869,8 @@ async function loadPlanOffers() {
 function showPlanModal(storeId, plan) {
   var store = allStores.find(function(s) { return s.id === storeId; });
   var name = store ? store.name || store.owner_email : "會員";
-  var label = plan === "starter" ? "Starter" : "Pro";
+  var planLabels = { plus: "Plus", pro: "Pro", proplus: "Pro+" };
+  var label = planLabels[plan] || plan;
 
   var options = Array.isArray(PLAN_OFFERS[plan]) ? PLAN_OFFERS[plan] : [];
   if (options.length === 0) {
@@ -1372,8 +1387,9 @@ async function loadPlanLimits() {
   var data = await res.json();
   if (data.ok && data.limits) {
     document.getElementById("limit-free").value = data.limits.free || 10;
-    document.getElementById("limit-starter").value = data.limits.starter || 50;
-    document.getElementById("limit-pro").value = data.limits.pro ?? -1;
+    document.getElementById("limit-plus").value = data.limits.plus || 25;
+    document.getElementById("limit-pro").value = data.limits.pro || 60;
+    document.getElementById("limit-proplus").value = data.limits.proplus ?? -1;
   }
 }
 async function savePlanLimits() {
@@ -1382,8 +1398,9 @@ async function savePlanLimits() {
     headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
     body: JSON.stringify({
       free: Number(document.getElementById("limit-free").value),
-      starter: Number(document.getElementById("limit-starter").value),
+      plus: Number(document.getElementById("limit-plus").value),
       pro: Number(document.getElementById("limit-pro").value),
+      proplus: Number(document.getElementById("limit-proplus").value),
     }),
   });
   if ((await res.json()).ok) { var t = document.getElementById("plan-limits-toast"); t.style.display = "inline"; setTimeout(function(){ t.style.display = "none"; }, 2000); }
@@ -1506,7 +1523,8 @@ function renderLogs() {
   list.innerHTML = filtered.map(function(l) {
     var amountClass = l.status !== "normal" ? " zero" : "";
     var dateStr = new Date(l.created_at).toLocaleDateString("zh-TW");
-    var planLabel = l.plan === "starter" ? "Starter" : "Pro";
+    var planLabelMap = { plus: "Plus", pro: "Pro", proplus: "Pro+" };
+    var planLabel = planLabelMap[l.plan] || l.plan;
     var statusOpts = ["normal", "pending", "cancelled"].map(function(s) {
       return '<option value="' + s + '"' + (l.status === s ? " selected" : "") + '>' + STATUS_LABELS[s] + '</option>';
     }).join("");

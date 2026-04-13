@@ -15,8 +15,9 @@ test("getSlugValidationError accepts valid slug", () => {
   assert.equal(getSlugValidationError("my-shop-2"), "");
 });
 
-test("canChangeSlugOnceForPro allows only first change on pro", () => {
-  assert.equal(canChangeSlugOnceForPro({ effectivePlan: "pro", slugChangeUsed: 0 }), true);
-  assert.equal(canChangeSlugOnceForPro({ effectivePlan: "pro", slugChangeUsed: 1 }), false);
+test("canChangeSlugOnceForPro allows only first change on proplus", () => {
+  assert.equal(canChangeSlugOnceForPro({ effectivePlan: "proplus", slugChangeUsed: 0 }), true);
+  assert.equal(canChangeSlugOnceForPro({ effectivePlan: "proplus", slugChangeUsed: 1 }), false);
+  assert.equal(canChangeSlugOnceForPro({ effectivePlan: "pro", slugChangeUsed: 0 }), false);
   assert.equal(canChangeSlugOnceForPro({ effectivePlan: "free", slugChangeUsed: 0 }), false);
 });

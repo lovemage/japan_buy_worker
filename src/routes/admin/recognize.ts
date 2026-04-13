@@ -79,8 +79,10 @@ export async function handleAdminRecognize(
     });
   }
 
-  // Free plan: 5 AI recognize uses per month
-  if (ctx.storePlan === "free") {
+  // Per-plan AI recognize monthly limits (free: 10, plus: 25, pro/proplus: unlimited)
+  const recognizeLimits: Record<string, number> = { free: 10, plus: 25, pro: -1, proplus: -1 };
+  const recognizeLimit = recognizeLimits[ctx.storePlan] ?? 10;
+  if (recognizeLimit !== -1) {
     const now = new Date();
     const monthKey = `ai_recognize_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
     const usage = await ctx.db
@@ -88,16 +90,16 @@ export async function handleAdminRecognize(
       .bind(ctx.storeId, monthKey)
       .first<{ cnt: string }>();
     const count = parseInt(usage?.cnt || "0", 10);
-    if (count >= 5) {
+    if (count >= recognizeLimit) {
       return new Response(
-        JSON.stringify({ ok: false, error: "本月 AI 辨識次數已用完（5 次/月）。下個月將自動恢復額度，或升級方案解鎖無限使用。" }),
+        JSON.stringify({ ok: false, error: `本月 AI 辨識次數已用完（${recognizeLimit} 次/月）。下個月將自動恢復額度，或升級方案解鎖更多次數。` }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
     }
   }
 
   const aiModel = await getAiModel(ctx.db, ctx.storeId, ctx.storePlan);
-  const useOpenRouter = aiModel === "v2" && ctx.storePlan === "pro";
+  const useOpenRouter = aiModel === "v2" && ctx.storePlan === "proplus";
 
   let apiKey: string;
   if (useOpenRouter) {

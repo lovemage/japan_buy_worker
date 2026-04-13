@@ -812,12 +812,17 @@
   color: var(--admin-text-muted);
 }
 
-.plan-badge--starter {
+.plan-badge--plus {
+  background: #e8f0fe;
+  color: #1a73e8;
+}
+
+.plan-badge--pro {
   background: #eee;
   color: var(--admin-text-secondary);
 }
 
-.plan-badge--pro {
+.plan-badge--proplus {
   background: var(--admin-text);
   color: #fff;
 }

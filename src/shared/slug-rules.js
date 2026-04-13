@@ -32,5 +32,5 @@ export function getSlugValidationError(value) {
 export function canChangeSlugOnceForPro(options) {
   const effectivePlan = options?.effectivePlan || "free";
   const slugChangeUsed = Number(options?.slugChangeUsed || 0);
-  return effectivePlan === "pro" && slugChangeUsed === 0;
+  return effectivePlan === "proplus" && slugChangeUsed === 0;
 }

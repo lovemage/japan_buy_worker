@@ -2,8 +2,8 @@ import type { RequestContext } from "../../context";
 import type { D1DatabaseLike } from "../../types/d1";
 
 // Gemini API key is now managed by platform admin, stored as:
-//   store_id=0, key='gemini_api_key_starter' (for Starter plan)
-//   store_id=0, key='gemini_api_key_pro' (for Pro plan)
+//   store_id=0, key='gemini_api_key_starter' (for Free/Plus/Pro plans)
+//   store_id=0, key='gemini_api_key_pro' (for Pro+ plan)
 // store_id=0 is used as a "platform" scope
 
 export async function getGeminiApiKey(db: D1DatabaseLike, storeId: number, storePlan?: string): Promise<string> {
@@ -16,7 +16,7 @@ export async function getGeminiApiKey(db: D1DatabaseLike, storeId: number, store
 
   // Otherwise use platform-level key based on plan
   const plan = storePlan || "free";
-  const keyName = plan === "pro" ? "gemini_api_key_pro" : "gemini_api_key_starter";
+  const keyName = plan === "proplus" ? "gemini_api_key_pro" : "gemini_api_key_starter";
   const platformKey = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = ?")
     .bind(keyName)
@@ -42,8 +42,8 @@ export async function getAiModel(db: D1DatabaseLike, storeId: number, storePlan?
     .bind(storeId)
     .first<{ value: string }>();
   const model = row?.value || "v1";
-  // v2 is Pro-only; force v1 if downgraded
-  if (model === "v2" && storePlan !== "pro") return "v1";
+  // v2 is Pro+-only; force v1 if downgraded
+  if (model === "v2" && storePlan !== "proplus") return "v1";
   return model;
 }
 
@@ -105,8 +105,8 @@ export async function handleAdminAiModel(
   }
 
   if (request.method === "POST") {
-    if (ctx.storePlan !== "pro") {
-      return json({ ok: false, error: "僅 Pro 方案可切換模型" }, 403);
+    if (ctx.storePlan !== "proplus") {
+      return json({ ok: false, error: "僅 Pro+ 方案可切換模型" }, 403);
     }
     let body: { model?: string };
     try {

@@ -792,8 +792,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div class="billing-toggle">
       <div class="billing-toggle-inner">
         <button class="billing-toggle-btn" data-period="1" onclick="switchBilling(1)">月繳</button>
-        <button class="billing-toggle-btn has-save" data-period="6" onclick="switchBilling(6)">半年<span class="toggle-save">省10%</span></button>
-        <button class="billing-toggle-btn has-save active" data-period="12" onclick="switchBilling(12)">一年<span class="toggle-save">省30%</span></button>
+        <button class="billing-toggle-btn has-save" data-period="6" onclick="switchBilling(6)">半年<span class="toggle-save">省11%</span></button>
+        <button class="billing-toggle-btn has-save active" data-period="12" onclick="switchBilling(12)">一年<span class="toggle-save">省23%</span></button>
       </div>
     </div>
     <!-- Swipeable plans -->
@@ -806,81 +806,101 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
           <div class="plan-period-note" id="note-free"></div>
           <div class="plan-line"></div>
           <ul class="plan-list">
-            <li id="limit-free-display">最多 10 件商品</li>
-            <li>AI 辨識自動上架</li>
+            <li id="limit-free-display">最多 10 件商品/月</li>
+            <li>AI 辨識 10 次/月</li>
             <li>AI 圖片優化 10 次/月</li>
+            <li>AI 行銷文案 2 次/月</li>
             <li>訂單管理</li>
             <li>自訂運輸方式</li>
             <li class="off">商品標籤</li>
             <li>單一商品 8 張圖</li>
-            <li>AI 行銷文案 5 次/月</li>
           </ul>
           <a href="/login.html" class="plan-btn">免費註冊</a>
         </div>
-        <div class="plan pop" data-plan="starter">
-          <div class="plan-name">Starter</div>
-          <div class="plan-desc">認真經營代購</div>
-          <div class="plan-price" id="price-starter"><span class="cur">NT$</span>980<span class="per">/月</span></div>
-          <div class="plan-period-note" id="note-starter"></div>
+        <div class="plan" data-plan="plus">
+          <div class="plan-name">Plus</div>
+          <div class="plan-desc">輕量付費入門</div>
+          <div class="plan-price" id="price-plus"><span class="cur">NT$</span>490<span class="per">/月</span></div>
+          <div class="plan-period-note" id="note-plus"></div>
           <div class="plan-line"></div>
           <ul class="plan-list">
-            <li id="limit-starter-display">最多 50 件商品</li>
-            <li>AI 辨識自動上架</li>
-            <li>AI 圖片優化 50 次/月</li>
+            <li id="limit-plus-display">最多 25 件商品</li>
+            <li>AI 辨識 25 次/月</li>
+            <li>AI 圖片優化 25 次/月</li>
+            <li>AI 行銷文案 5 次/月</li>
+            <li>訂單管理</li>
+            <li>自訂運輸方式</li>
+            <li>商品標籤</li>
+            <li>單一商品 8 張圖</li>
+          </ul>
+          <a href="https://lin.ee/TYFUtMb" target="_blank" rel="noopener noreferrer" class="plan-btn">聯繫客服開啟方案</a>
+        </div>
+        <div class="plan pop" data-plan="pro">
+          <div class="plan-name">Pro</div>
+          <div class="plan-desc">認真經營代購</div>
+          <div class="plan-price" id="price-pro"><span class="cur">NT$</span>880<span class="per">/月</span></div>
+          <div class="plan-period-note" id="note-pro"></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-pro-display">最多 60 件商品</li>
+            <li>AI 辨識無限次</li>
+            <li>AI 圖片優化 60 次/月</li>
+            <li>AI 行銷文案 10 次/月</li>
             <li>訂單管理</li>
             <li>自訂運輸方式</li>
             <li>商品標籤</li>
             <li>單一商品 8 張圖</li>
             <li>2 款商店模板</li>
-            <li>AI 行銷文案 10 次/月</li>
           </ul>
           <a href="https://lin.ee/TYFUtMb" target="_blank" rel="noopener noreferrer" class="plan-btn">聯繫客服開啟方案</a>
         </div>
-        <div class="plan" data-plan="pro">
-          <div class="plan-name">Pro</div>
+        <div class="plan" data-plan="proplus">
+          <div class="plan-name">Pro+</div>
           <div class="plan-desc">全職代購</div>
-          <div class="plan-price" id="price-pro"><span class="cur">NT$</span>1,580<span class="per">/月</span></div>
-          <div class="plan-period-note" id="note-pro"></div>
+          <div class="plan-price" id="price-proplus"><span class="cur">NT$</span>1,280<span class="per">/月</span></div>
+          <div class="plan-period-note" id="note-proplus"></div>
           <div class="plan-line"></div>
           <ul class="plan-list">
-            <li id="limit-pro-display">不限商品數量</li>
-            <li>AI 辨識自動上架</li>
+            <li id="limit-proplus-display">不限商品數量</li>
+            <li>AI 辨識無限次</li>
             <li>AI 圖片優化無限次</li>
+            <li>AI 行銷文案 20 次/月</li>
             <li>可選 vovociAI v2 模型</li>
             <li>訂單管理</li>
             <li>自訂運輸方式</li>
             <li>自訂標籤名稱</li>
             <li>單一商品 8 張圖</li>
             <li>7 款商店模板 + Logo</li>
-            <li>AI 行銷文案 20 次/月</li>
+            <li>自訂子網域</li>
           </ul>
           <a href="https://lin.ee/TYFUtMb" target="_blank" rel="noopener noreferrer" class="plan-btn">聯繫客服開啟方案</a>
         </div>
       </div>
       <div class="plan-dots">
         <button class="plan-dot" onclick="scrollPlan(0)"></button>
-        <button class="plan-dot active" onclick="scrollPlan(1)"></button>
-        <button class="plan-dot" onclick="scrollPlan(2)"></button>
+        <button class="plan-dot" onclick="scrollPlan(1)"></button>
+        <button class="plan-dot active" onclick="scrollPlan(2)"></button>
+        <button class="plan-dot" onclick="scrollPlan(3)"></button>
       </div>
     </div>
 
     <!-- Comparison table -->
     <div class="compare-table">
       <table>
-        <thead><tr><th>功能</th><th>Free</th><th>Starter</th><th>Pro</th></tr></thead>
+        <thead><tr><th>功能</th><th>Free</th><th>Plus</th><th>Pro</th><th>Pro+</th></tr></thead>
         <tbody>
-          <tr><td>商品數量</td><td>10</td><td>50</td><td>無限</td></tr>
-          <tr><td>AI 辨識上架</td><td>5 次/月</td><td>無限</td><td>無限</td></tr>
-          <tr><td>AI 圖片優化</td><td>10 次/月</td><td>50 次/月</td><td>無限</td></tr>
-          <tr><td>AI 辨識模型</td><td>v1</td><td>v1</td><td>v1 / v2 可切換</td></tr>
-          <tr><td>AI 行銷文案</td><td>5 次/月</td><td>10 次/月</td><td>20 次/月</td></tr>
-          <tr><td>訂單管理</td><td>✓</td><td>✓</td><td>✓</td></tr>
-          <tr><td>自訂運輸</td><td>✓</td><td>✓</td><td>✓</td></tr>
-          <tr><td>商品標籤</td><td>—</td><td>預設</td><td>自訂</td></tr>
-          <tr><td>商品圖片</td><td>8 張</td><td>8 張</td><td>8 張</td></tr>
-          <tr><td>商店模板</td><td>1 款</td><td>2 款</td><td>7 款</td></tr>
-          <tr><td>商店 Logo</td><td>—</td><td>—</td><td>✓</td></tr>
-          <tr><td>子網域</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>商品數量</td><td>10 件/月</td><td>25</td><td>60</td><td>無限</td></tr>
+          <tr><td>AI 辨識上架</td><td>10 次/月</td><td>25 次/月</td><td>無限</td><td>無限</td></tr>
+          <tr><td>AI 圖片優化</td><td>10 次/月</td><td>25 次/月</td><td>60 次/月</td><td>無限</td></tr>
+          <tr><td>AI 辨識模型</td><td>v1</td><td>v1</td><td>v1</td><td>v1 / v2 可切換</td></tr>
+          <tr><td>AI 行銷文案</td><td>2 次/月</td><td>5 次/月</td><td>10 次/月</td><td>20 次/月</td></tr>
+          <tr><td>訂單管理</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>自訂運輸</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>商品標籤</td><td>—</td><td>預設</td><td>預設</td><td>自訂</td></tr>
+          <tr><td>商品圖片</td><td>8 張</td><td>8 張</td><td>8 張</td><td>8 張</td></tr>
+          <tr><td>商店模板</td><td>1 款</td><td>1 款</td><td>2 款</td><td>7 款</td></tr>
+          <tr><td>商店 Logo</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>子網域</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -894,7 +914,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <button class="offer-close" type="button" onclick="closePlanOfferPopup()">關閉</button>
     </div>
     <div id="offer-content"></div>
-    <p class="offer-note">12 個月方案包含贈送天數：Starter 與 Pro 均為 +30 天。</p>
+    <p class="offer-note">Pro 12 個月方案贈送 +30 天。Pro+ 6 個月贈送 +30 天，12 個月贈送 +60 天。</p>
   </div>
 </div>
 
@@ -1058,25 +1078,30 @@ fetch("/api/plan-limits").then(function(r){return r.json()}).then(function(d) {
   if (!d.ok) return;
   var l = d.limits;
   var f = document.getElementById("limit-free-display");
-  var s = document.getElementById("limit-starter-display");
+  var pl = document.getElementById("limit-plus-display");
   var p = document.getElementById("limit-pro-display");
-  if (f && l.free > 0) f.textContent = "最多 " + l.free + " 件商品";
-  if (s && l.starter > 0) s.textContent = "最多 " + l.starter + " 件商品";
-  if (p) p.textContent = (l.pro && l.pro > 0) ? "最多 " + l.pro + " 件商品" : "不限商品數量";
+  var pp = document.getElementById("limit-proplus-display");
+  if (f && l.free > 0) f.textContent = "最多 " + l.free + " 件商品/月";
+  if (pl && l.plus > 0) pl.textContent = "最多 " + l.plus + " 件商品";
+  if (p && l.pro > 0) p.textContent = "最多 " + l.pro + " 件商品";
+  if (pp) pp.textContent = (l.proplus && l.proplus > 0) ? "最多 " + l.proplus + " 件商品" : "不限商品數量";
 }).catch(function(){});
 
 var PLAN_OFFERS = null;
 function fallbackOffers() {
   return {
-    starter: [
-      { months: 1, days: 30, amount: 980, monthlyPrice: 980, bonusDays: 0 },
-      { months: 6, days: 180, amount: 5280, monthlyPrice: 880, bonusDays: 0 },
-      { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+    plus: [
+      { months: 1, days: 30, amount: 490, monthlyPrice: 490, bonusDays: 0 }
     ],
     pro: [
-      { months: 1, days: 30, amount: 1580, monthlyPrice: 1580, bonusDays: 0 },
-      { months: 6, days: 180, amount: 8880, monthlyPrice: 1480, bonusDays: 0 },
-      { months: 12, days: 390, amount: 15360, monthlyPrice: 1280, bonusDays: 30 }
+      { months: 1, days: 30, amount: 880, monthlyPrice: 880, bonusDays: 0 },
+      { months: 6, days: 180, amount: 4680, monthlyPrice: 780, bonusDays: 0 },
+      { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+    ],
+    proplus: [
+      { months: 1, days: 30, amount: 1280, monthlyPrice: 1280, bonusDays: 0 },
+      { months: 6, days: 210, amount: 7680, monthlyPrice: 1280, bonusDays: 30 },
+      { months: 12, days: 420, amount: 15360, monthlyPrice: 1280, bonusDays: 60 }
     ]
   };
 }
@@ -1091,12 +1116,15 @@ function openPlanOfferPopup(focusPlan) {
   var offers = PLAN_OFFERS || fallbackOffers();
   var content = document.getElementById("offer-content");
   if (!content) return;
-  var plans = ["starter", "pro"];
-  content.innerHTML = plans.map(function(plan) {
-    var rows = Array.isArray(offers[plan]) ? offers[plan] : [];
-    var title = plan === "starter" ? "Starter" : "Pro";
-    return '<div class="offer-plan" id="offer-' + plan + '">' +
-      '<h4>' + title + '</h4>' +
+  var plans = [
+    { key: "plus", title: "Plus" },
+    { key: "pro", title: "Pro" },
+    { key: "proplus", title: "Pro+" }
+  ];
+  content.innerHTML = plans.map(function(p) {
+    var rows = Array.isArray(offers[p.key]) ? offers[p.key] : [];
+    return '<div class="offer-plan" id="offer-' + p.key + '">' +
+      '<h4>' + p.title + '</h4>' +
       '<table class="offer-table"><thead><tr><th>方案</th><th>月費</th><th>總價</th></tr></thead><tbody>' +
       rows.map(function(o) {
         var extra = o.bonusDays > 0 ? '＋' + o.bonusDays + ' 天' : '';
@@ -1131,10 +1159,12 @@ function switchBilling(months) {
     btn.classList.toggle("active", Number(btn.getAttribute("data-period")) === months);
   });
   var offers = PLAN_OFFERS || fallbackOffers();
-  // Update Starter price
-  updatePlanPrice("starter", months, offers);
+  // Update Plus price (only monthly)
+  updatePlanPrice("plus", months, offers);
   // Update Pro price
   updatePlanPrice("pro", months, offers);
+  // Update Pro+ price
+  updatePlanPrice("proplus", months, offers);
   // Free is always 0
   var freePrice = document.getElementById("price-free");
   var freeNote = document.getElementById("note-free");

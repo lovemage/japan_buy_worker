@@ -28,19 +28,10 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 async function getProductLimitState(ctx: RequestContext): Promise<ProductLimitState> {
-  if (ctx.storePlan === "free") {
-    const store = await ctx.db
-      .prepare("SELECT phone_verified FROM stores WHERE id = ?")
-      .bind(ctx.storeId)
-      .first<{ phone_verified: number }>();
-    const phoneVerified = !!store?.phone_verified;
-    return { limit: phoneVerified ? 10 : 5, phoneVerified };
-  }
-
   const limitsRow = await ctx.db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
     .first<{ value: string }>();
-  const planLimits = limitsRow?.value ? JSON.parse(limitsRow.value) : { free: 10, starter: 50, pro: -1 };
+  const planLimits = limitsRow?.value ? JSON.parse(limitsRow.value) : { free: 10, plus: 25, pro: 60, proplus: -1 };
   const limit = Number(planLimits[ctx.storePlan]);
   if (!Number.isFinite(limit) || limit < 0) return { limit: null, phoneVerified: true };
   return { limit, phoneVerified: true };
@@ -77,9 +68,7 @@ export async function handleAdminProducts(
   if (limitState.limit && limitState.limit > 0) {
     const activeCount = await getActiveProductCount(ctx);
     if (activeCount >= limitState.limit) {
-      const msg = ctx.storePlan === "free" && !limitState.phoneVerified
-        ? "Free 方案未完成手機驗證最多上架 5 件商品；完成手機驗證後可上架 10 件。"
-        : `${ctx.storePlan.toUpperCase()} 方案最多 ${limitState.limit} 件商品。`;
+      const msg = `${ctx.storePlan.toUpperCase()} 方案最多 ${limitState.limit} 件商品，升級方案可解鎖更多額度。`;
       return new Response(
         JSON.stringify({ ok: false, error: msg }),
         { status: 403, headers: { "content-type": "application/json" } }
