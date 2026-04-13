@@ -225,6 +225,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: all 0.2s; }
 .plan-dot.active { background: var(--accent); width: 20px; border-radius: 4px; }
 .plan-period-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; min-height: 16px; }
+.bonus-highlight { color: var(--accent); font-weight: 700; background: linear-gradient(to right, transparent 0%, rgba(212,98,43,0.12) 10%, rgba(212,98,43,0.12) 90%, transparent 100%); padding: 1px 4px; border-radius: 3px; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-style: wavy; text-underline-offset: 3px; }
 
 /* Compare table */
 .compare-table { margin-top: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1137,7 +1138,7 @@ function openPlanOfferPopup(focusPlan) {
       '<h4>' + p.title + '</h4>' +
       '<table class="offer-table"><thead><tr><th>方案</th><th>月費</th><th>總價</th></tr></thead><tbody>' +
       rows.map(function(o) {
-        var extra = o.bonusDays > 0 ? '＋' + o.bonusDays + ' 天' : '';
+        var extra = o.bonusDays > 0 ? '<span class="bonus-highlight">＋' + o.bonusDays + ' 天</span>' : '';
         var hot = o.months === 12 ? ' <span class="offer-hot">最熱門</span>' : '';
         var period = o.months + ' 個月・' + o.days + ' 天' + (extra ? '（' + extra + '）' : '') + hot;
         return '<tr><td>' + period + '</td><td>$' + Number(o.monthlyPrice).toLocaleString() + '/月</td><td>$' + Number(o.amount).toLocaleString() + '</td></tr>';
@@ -1204,8 +1205,8 @@ function updatePlanPrice(plan, months, offers) {
       noteEl.textContent = "";
     } else {
       var total = Number(match.amount);
-      var bonus = match.bonusDays > 0 ? "（含贈送 " + match.bonusDays + " 天）" : "";
-      noteEl.textContent = months + " 個月共 NT$" + total.toLocaleString() + bonus;
+      var bonus = match.bonusDays > 0 ? ' <span class="bonus-highlight">含贈送 ' + match.bonusDays + ' 天</span>' : "";
+      noteEl.innerHTML = months + " 個月共 NT$" + total.toLocaleString() + bonus;
     }
   }
 }
