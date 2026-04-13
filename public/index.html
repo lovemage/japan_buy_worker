@@ -227,15 +227,42 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-period-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; min-height: 16px; }
 .bonus-highlight { color: var(--accent); font-weight: 700; background: linear-gradient(to right, transparent 0%, rgba(212,98,43,0.12) 10%, rgba(212,98,43,0.12) 90%, transparent 100%); padding: 1px 4px; border-radius: 3px; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-style: wavy; text-underline-offset: 3px; }
 
+/* Drag scroll for PC */
+.plan-track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+.plan-track.is-dragging .plan { pointer-events: none; }
+.plan-track { cursor: grab; }
+
+/* Upgrade section */
+.upgrade-section { margin-top: 36px; }
+.upgrade-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.upgrade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.upgrade-table th { background: var(--bg-alt); padding: 8px 12px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+.upgrade-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.upgrade-table tr { cursor: pointer; transition: background 0.15s; }
+.upgrade-table tbody tr:hover { background: var(--accent-light); }
+.upgrade-table .upgrade-arrow { color: var(--accent); font-weight: 700; }
+.upgrade-table .upgrade-link { color: var(--accent); font-size: 12px; text-decoration: underline wavy; text-underline-offset: 3px; cursor: pointer; }
+
+/* Upgrade popup */
+.upgrade-backdrop { position: fixed; inset: 0; z-index: 1001; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; }
+.upgrade-backdrop.is-open { display: flex; }
+.upgrade-modal { background: var(--bg-card); border-radius: 16px; padding: 28px 24px; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 16px 48px rgba(0,0,0,0.15); }
+.upgrade-modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.upgrade-modal .upgrade-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.upgrade-modal .calc-step { background: var(--bg-alt); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; line-height: 1.8; }
+.upgrade-modal .calc-step strong { color: var(--text); }
+.upgrade-modal .calc-result { background: var(--accent-light); border: 1.5px solid var(--accent); border-radius: 8px; padding: 14px 16px; font-size: 14px; font-weight: 600; color: var(--accent-dark); text-align: center; margin-top: 12px; }
+.upgrade-modal .close-btn { display: block; margin: 16px auto 0; background: var(--text); color: #fff; border: none; padding: 8px 28px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
 /* Compare table */
 .compare-table { margin-top: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .compare-table table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 320px; }
 .compare-table th { background: var(--bg-alt); padding: 8px 10px; text-align: center; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
 .compare-table th:first-child { text-align: left; }
-.compare-table th:nth-child(3) { color: var(--accent); background: var(--accent-light); }
+.compare-table th:nth-child(4) { color: var(--accent); background: var(--accent-light); }
 .compare-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
 .compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text); }
-.compare-table td:nth-child(3) { background: rgba(253,240,232,0.5); color: var(--text); font-weight: 500; }
+.compare-table td:nth-child(4) { background: rgba(253,240,232,0.5); color: var(--text); font-weight: 500; }
 .plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 16px; padding: 28px 20px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
 .plan:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
 .plan.plan-unavailable { opacity: 0.35; pointer-events: none; filter: grayscale(0.6); transform: scale(0.96); }
@@ -857,7 +884,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
             <li>自訂運輸方式</li>
             <li>商品標籤</li>
 
-            <li>2 款商店模板</li>
+            <li>2 款商店模板 + Logo</li>
             <li>商店 SSL 證書</li>
             <li>訂單統計小助手</li>
           </ul>
@@ -908,15 +935,39 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
           <tr><td>自訂運輸</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
           <tr><td>商品標籤</td><td>—</td><td>預設</td><td>預設</td><td>自訂</td></tr>
           <tr><td>商店模板</td><td>1 款</td><td>1 款</td><td>2 款</td><td>7 款</td></tr>
-          <tr><td>商店 Logo</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>商店 Logo</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
           <tr><td>子網域</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
           <tr><td>商店 SSL 證書</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
           <tr><td>訂單統計小助手</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Upgrade explanation -->
+    <div class="upgrade-section">
+      <h3>方案升級說明</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">付費期間可隨時升級，已付費用按剩餘天數折抵。點擊查看計算範例。</p>
+      <table class="upgrade-table">
+        <thead><tr><th>升級路徑</th><th>說明</th><th></th></tr></thead>
+        <tbody>
+          <tr onclick="showUpgradeCalc('plus','pro')"><td><span class="upgrade-arrow">Plus → Pro</span></td><td>解鎖 60 件商品、AI 辨識無限次</td><td><span class="upgrade-link">查看計算</span></td></tr>
+          <tr onclick="showUpgradeCalc('plus','proplus')"><td><span class="upgrade-arrow">Plus → Pro+</span></td><td>跳級至無限商品、子網域、全功能</td><td><span class="upgrade-link">查看計算</span></td></tr>
+          <tr onclick="showUpgradeCalc('pro','proplus')"><td><span class="upgrade-arrow">Pro → Pro+</span></td><td>升級至無限商品、v2 模型、子網域</td><td><span class="upgrade-link">查看計算</span></td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
+
+<!-- Upgrade calc popup -->
+<div class="upgrade-backdrop" id="upgrade-backdrop" onclick="if(event.target===this)closeUpgradeCalc()">
+  <div class="upgrade-modal">
+    <h3 id="upgrade-calc-title"></h3>
+    <p class="upgrade-sub" id="upgrade-calc-sub"></p>
+    <div id="upgrade-calc-body"></div>
+    <button class="close-btn" onclick="closeUpgradeCalc()">關閉</button>
+  </div>
+</div>
 
 <div class="offer-backdrop" id="offer-backdrop" onclick="if(event.target===this)closePlanOfferPopup()">
   <div class="offer-modal">
@@ -1231,6 +1282,79 @@ if (planTrack) {
     });
     document.querySelectorAll(".plan-dot").forEach(function(d, i) { d.classList.toggle("active", i === closest); });
   });
+}
+
+// PC drag scroll for plan carousel
+(function() {
+  var track = document.getElementById("plan-track");
+  if (!track) return;
+  var isDown = false, startX = 0, scrollStart = 0;
+  track.addEventListener("mousedown", function(e) {
+    isDown = true; startX = e.pageX; scrollStart = track.scrollLeft;
+    track.classList.add("is-dragging");
+  });
+  track.addEventListener("mouseleave", function() { isDown = false; track.classList.remove("is-dragging"); });
+  track.addEventListener("mouseup", function() { isDown = false; track.classList.remove("is-dragging"); });
+  track.addEventListener("mousemove", function(e) {
+    if (!isDown) return;
+    e.preventDefault();
+    track.scrollLeft = scrollStart - (e.pageX - startX);
+  });
+})();
+
+// Upgrade calc popup
+var UPGRADE_SCENARIOS = {
+  "plus_pro": {
+    title: "Plus → Pro 升級計算範例",
+    sub: "假設您使用 Plus 月付（$490/30天），已使用 10 天後升級至 Pro 月付（$880/30天）",
+    steps: [
+      { label: "原方案日均價", calc: "$490 ÷ 30 天 = $16.3/天" },
+      { label: "剩餘天數", calc: "30 - 10 = 20 天" },
+      { label: "剩餘價值", calc: "$16.3 × 20 天 = <strong>$327</strong>" },
+      { label: "新方案費用", calc: "Pro 月付 = $880" },
+    ],
+    result: "需補繳 $880 - $327 = $553"
+  },
+  "plus_proplus": {
+    title: "Plus → Pro+ 升級計算範例",
+    sub: "假設您使用 Plus 月付（$490/30天），已使用 10 天後升級至 Pro+ 月付（$1,280/30天）",
+    steps: [
+      { label: "原方案日均價", calc: "$490 ÷ 30 天 = $16.3/天" },
+      { label: "剩餘天數", calc: "30 - 10 = 20 天" },
+      { label: "剩餘價值", calc: "$16.3 × 20 天 = <strong>$327</strong>" },
+      { label: "新方案費用", calc: "Pro+ 月付 = $1,280" },
+    ],
+    result: "需補繳 $1,280 - $327 = $953"
+  },
+  "pro_proplus": {
+    title: "Pro → Pro+ 升級計算範例",
+    sub: "假設您使用 Pro 年付（$8,160/390天），已使用 100 天後升級至 Pro+ 月付（$1,280/30天）",
+    steps: [
+      { label: "原方案日均價", calc: "$8,160 ÷ 390 天 = $20.9/天" },
+      { label: "剩餘天數", calc: "390 - 100 = 290 天" },
+      { label: "剩餘價值", calc: "$20.9 × 290 天 = <strong>$6,068</strong>" },
+      { label: "新方案費用", calc: "Pro+ 年付 = $15,360" },
+    ],
+    result: "需補繳 $15,360 - $6,068 = $9,292"
+  }
+};
+
+function showUpgradeCalc(from, to) {
+  var key = from + "_" + to;
+  var s = UPGRADE_SCENARIOS[key];
+  if (!s) return;
+  document.getElementById("upgrade-calc-title").textContent = s.title;
+  document.getElementById("upgrade-calc-sub").textContent = s.sub;
+  var html = s.steps.map(function(step) {
+    return '<div class="calc-step"><strong>' + step.label + '：</strong>' + step.calc + '</div>';
+  }).join("");
+  html += '<div class="calc-result">' + s.result + '</div>';
+  document.getElementById("upgrade-calc-body").innerHTML = html;
+  document.getElementById("upgrade-backdrop").classList.add("is-open");
+}
+
+function closeUpgradeCalc() {
+  document.getElementById("upgrade-backdrop").classList.remove("is-open");
 }
 
 // Scroll reveal
