@@ -5,6 +5,14 @@ const WEBP_QUALITY = 0.8;
 
 let selectedImages = [];
 
+function setDescriptionEditButtonState(button, editing) {
+  if (!button) return;
+  button.classList.toggle("is-editing", editing);
+  button.innerHTML = editing
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>';
+}
+
 function getDraftDescriptionElements() {
   return {
     textarea: document.getElementById("draft-description"),
@@ -31,6 +39,7 @@ function setDraftDescriptionEditing(editing) {
   if (!textarea || !preview || !editBtn) return;
   textarea.classList.toggle("hidden", !editing);
   preview.classList.toggle("hidden", editing);
+  setDescriptionEditButtonState(editBtn, editing);
   editBtn.setAttribute("aria-label", editing ? "完成商品描述編輯" : "編輯商品描述");
   editBtn.setAttribute("title", editing ? "完成" : "編輯商品描述");
   if (editing) {

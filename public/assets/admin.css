@@ -1367,6 +1367,11 @@
   transition: border-color var(--admin-transition), color var(--admin-transition), background var(--admin-transition);
 }
 .admin-body .description-edit-btn:hover { border-color: #c8c8c8; color: var(--admin-text); background: var(--admin-hover); }
+.admin-body .description-edit-btn.is-editing {
+  border-color: var(--admin-text);
+  background: var(--admin-text);
+  color: #fff;
+}
 .admin-body .description-edit-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
 .admin-body .description-edit-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .admin-body .description-preview {

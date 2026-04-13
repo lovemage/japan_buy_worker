@@ -309,6 +309,52 @@ let editNewImages = [];
 // Unified ordered list: { type: "existing", url } or { type: "new", img }
 let editOrderedItems = [];
 
+function setDescriptionEditButtonState(button, editing) {
+  if (!button) return;
+  button.classList.toggle("is-editing", editing);
+  button.innerHTML = editing
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>';
+}
+
+function getEditDescriptionElements() {
+  return {
+    textarea: document.getElementById("edit-description"),
+    preview: document.getElementById("edit-description-preview"),
+    editBtn: document.getElementById("btn-edit-product-description"),
+  };
+}
+
+function syncEditDescriptionPreview() {
+  const { textarea, preview } = getEditDescriptionElements();
+  if (!textarea || !preview) return;
+  const text = (textarea.value || "").trim();
+  if (text) {
+    preview.textContent = textarea.value;
+    preview.classList.remove("is-empty");
+  } else {
+    preview.textContent = "尚未填寫商品描述";
+    preview.classList.add("is-empty");
+  }
+}
+
+function setEditDescriptionEditing(editing) {
+  const { textarea, preview, editBtn } = getEditDescriptionElements();
+  if (!textarea || !preview || !editBtn) return;
+  textarea.classList.toggle("hidden", !editing);
+  preview.classList.toggle("hidden", editing);
+  setDescriptionEditButtonState(editBtn, editing);
+  editBtn.setAttribute("aria-label", editing ? "完成商品描述編輯" : "編輯商品描述");
+  editBtn.setAttribute("title", editing ? "完成" : "編輯商品描述");
+  if (editing) {
+    textarea.focus();
+    textarea.selectionStart = textarea.value.length;
+    textarea.selectionEnd = textarea.value.length;
+  } else {
+    syncEditDescriptionPreview();
+  }
+}
+
 function rebuildEditOrdered() {
   editOrderedItems = [
     ...editGallery.map(url => ({ type: "existing", url })),
@@ -540,6 +586,8 @@ async function openEditModal(btn) {
 
   // Fetch product detail to get gallery and description
   document.getElementById("edit-description").value = "";
+  syncEditDescriptionPreview();
+  setEditDescriptionEditing(false);
   if (code) {
     const res = await apiFetch(`/api/product?code=${encodeURIComponent(code)}`);
     if (res.ok) {
@@ -547,6 +595,8 @@ async function openEditModal(btn) {
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
       const descEl = document.getElementById("edit-description");
       if (descEl && data.product?.description) descEl.value = data.product.description;
+      syncEditDescriptionPreview();
+      setEditDescriptionEditing(false);
     }
   }
   rebuildEditOrdered();
@@ -569,6 +619,7 @@ async function onEditPhotos(event) {
 function closeEditModal() {
   const modal = document.getElementById("edit-modal");
   if (modal) modal.classList.add("hidden");
+  setEditDescriptionEditing(false);
   editNewImages = [];
   editGallery = [];
   editOrderedItems = [];
@@ -764,6 +815,13 @@ function initEditModal() {
   document.getElementById("edit-cancel")?.addEventListener("click", closeEditModal);
   document.getElementById("edit-save")?.addEventListener("click", saveEdit);
   document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
+  document.getElementById("btn-edit-product-description")?.addEventListener("click", function() {
+    const { textarea } = getEditDescriptionElements();
+    if (!textarea) return;
+    const isEditing = !textarea.classList.contains("hidden");
+    setEditDescriptionEditing(!isEditing);
+  });
+  document.getElementById("edit-description")?.addEventListener("input", syncEditDescriptionPreview);
   document.getElementById("btn-edit-ai-image")?.addEventListener("click", function() {
     if (!confirm("AI 圖片優化僅會處理第一張圖片，優化後的圖片會自動插入為首張。\n\n確定要進行 AI 圖片優化嗎？")) return;
     doEditAiImage();
@@ -788,6 +846,9 @@ function initEditModal() {
       hideEditCategoryDropdown();
     }
   });
+
+  syncEditDescriptionPreview();
+  setEditDescriptionEditing(false);
 }
 
 function initManageSearch() {
