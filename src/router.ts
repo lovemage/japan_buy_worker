@@ -170,6 +170,37 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     html = html.replace("<body>", `<body data-template="${template}">`);
   }
 
+  // Inject OG meta tags for storefront pages
+  if (filename === "store.html") {
+    // Parse banner and display settings for OG tags
+    let bannerData: { enabled?: boolean; images?: string[] } = {};
+    try { bannerData = JSON.parse(bannerSettings); } catch {}
+    let displayData: { storeRules?: string } = {};
+    try { displayData = JSON.parse(displaySettings); } catch {}
+
+    // OG description: store description > store rules > default
+    const ogDesc = escapeHtmlAttr(storeDesc || displayData.storeRules || `${storeName} — vovosnap 商店`);
+
+    // OG image: first banner image if enabled, else default logo
+    const requestUrl = new URL(request.url);
+    const origin = requestUrl.origin;
+    let ogImage = `${origin}/assets/images/logo-3.png`;
+    if (bannerData.enabled && bannerData.images && bannerData.images.length > 0) {
+      ogImage = `${origin}${ctx.basePath}/api/images/${bannerData.images[0]}`;
+    }
+
+    const ogTags = `<meta name="description" content="${ogDesc}" />
+<meta property="og:title" content="${escapeHtmlAttr(storeName)}" />
+<meta property="og:description" content="${ogDesc}" />
+<meta property="og:image" content="${escapeHtmlAttr(ogImage)}" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${escapeHtmlAttr(storeName)}" />
+<meta name="twitter:description" content="${ogDesc}" />
+<meta name="twitter:image" content="${escapeHtmlAttr(ogImage)}" />`;
+    html = html.replace("</head>", ogTags + "\n</head>");
+  }
+
   if (!/<link\s+rel=["']canonical["']/i.test(html)) {
     html = html.replace("</head>", `${canonicalTag}\n${robotsTag}\n</head>`);
   } else if (!/<meta\s+name=["']robots["']/i.test(html)) {
