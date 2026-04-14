@@ -622,7 +622,7 @@ ${eventMessage ? `- The message "${eventMessage}" should appear as supporting te
     }
     if (!geminiRes.ok) {
       const errText = await geminiRes.text().catch(() => "");
-      return json({ ok: false, error: `Gemini API 錯誤 (${geminiRes.status})：${errText.slice(0, 300)}` }, 502);
+      return json({ ok: false, error: `Gemini API 錯誤 (${geminiRes.status})：${errText.slice(0, 300)}`, model: modelId, provider }, 502);
     }
 
     const geminiRaw = await geminiRes.json() as Record<string, any>;
@@ -636,7 +636,7 @@ ${eventMessage ? `- The message "${eventMessage}" should appear as supporting te
 
     if (!imageData) {
       const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(" ");
-      return json({ ok: false, error: "AI 無法生成招牌圖片，請稍後再試", debug: textParts.slice(0, 200) }, 502);
+      return json({ ok: false, error: `AI 無法生成招牌圖片（模型：${modelId}）。請確認模型支援圖片生成。`, debug: textParts.slice(0, 200), model: modelId }, 502);
     }
   }
 

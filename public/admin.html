@@ -1522,7 +1522,7 @@
     if (plan === "pro") return;
     Promise.all([
       apiFetch("/api/products?limit=1").then(function(r){return r.json()}),
-      apiFetch("/auth/me").then(function(r){return r.json()}).catch(function(){ return { ok: false }; })
+      fetch("/auth/me").then(function(r){return r.json()}).catch(function(){ return { ok: false }; })
     ]).then(function(res) {
       var d = res[0];
       var me = res[1];
