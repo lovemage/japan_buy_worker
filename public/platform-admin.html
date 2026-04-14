@@ -398,14 +398,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <input type="password" id="api-key-image-gen" placeholder="Gemini Image Gen API Key">
         <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="fetchImageGenModels()">載入模型列表</button>
       </div>
-      <div style="margin-top:12px;padding:10px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:#666;">目前模型：</span>
-        <strong style="font-size:13px;" id="image-gen-selected-model">未選擇</strong>
+      <div style="margin-top:12px;">
+        <label style="font-size:12px;color:#666;">模型名稱（可手動輸入或從列表選擇）</label>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <input type="text" id="image-gen-model-input" placeholder="例：gemini-2.5-flash-preview-image-generation" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedImageGenModel=this.value.trim();document.getElementById('image-gen-selected-model').textContent=this.value.trim()||'未選擇'">
+          <button class="btn" style="font-size:12px;padding:6px 10px;white-space:nowrap;" onclick="applyImageGenModelInput()">套用</button>
+        </div>
+        <div style="margin-top:6px;padding:8px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#666;">目前：</span>
+          <strong style="font-size:13px;" id="image-gen-selected-model">未選擇</strong>
+        </div>
       </div>
       <div id="image-gen-models-section" style="display:none;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <p style="font-size:11px;color:#999;margin:0;" id="image-gen-model-count"></p>
+          <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="document.getElementById('image-gen-models-section').style.display='none'">收合列表</button>
+        </div>
         <input type="text" id="image-gen-model-search" placeholder="搜尋模型名稱..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;">
         <div id="image-gen-model-list" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;"></div>
-        <p style="font-size:11px;color:#999;margin-top:4px;" id="image-gen-model-count"></p>
       </div>
     </div>
     <div class="card" style="margin-top:12px;">
@@ -423,14 +433,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <input type="password" id="marketing-api-key" placeholder="API Key">
         <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="fetchMarketingModels()">載入模型列表</button>
       </div>
-      <div style="margin-top:12px;padding:10px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:#666;">目前模型：</span>
-        <strong style="font-size:13px;" id="marketing-selected-model">未選擇</strong>
+      <div style="margin-top:12px;">
+        <label style="font-size:12px;color:#666;">模型名稱（可手動輸入或從列表選擇）</label>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <input type="text" id="marketing-model-input" placeholder="例：gemini-2.5-flash 或 openrouter model id" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedMarketingModel=this.value.trim();document.getElementById('marketing-selected-model').textContent=this.value.trim()||'未選擇'">
+          <button class="btn" style="font-size:12px;padding:6px 10px;white-space:nowrap;" onclick="applyMarketingModelInput()">套用</button>
+        </div>
+        <div style="margin-top:6px;padding:8px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#666;">目前：</span>
+          <strong style="font-size:13px;" id="marketing-selected-model">未選擇</strong>
+        </div>
       </div>
       <div id="marketing-models-section" style="display:none;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <p style="font-size:11px;color:#999;margin:0;" id="marketing-model-count"></p>
+          <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="document.getElementById('marketing-models-section').style.display='none'">收合列表</button>
+        </div>
         <input type="text" id="marketing-model-search" placeholder="搜尋模型名稱..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;">
         <div id="marketing-model-list" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;"></div>
-        <p style="font-size:11px;color:#999;margin-top:4px;" id="marketing-model-count"></p>
       </div>
     </div>
     <div class="card" style="margin-top:12px;">
@@ -448,14 +468,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <input type="password" id="banner-api-key" placeholder="API Key（留空則使用圖片編輯 API Key）">
         <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="fetchBannerModels()">載入模型列表</button>
       </div>
-      <div style="margin-top:12px;padding:10px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:#666;">目前模型：</span>
-        <strong style="font-size:13px;" id="banner-selected-model">未選擇</strong>
+      <div style="margin-top:12px;">
+        <label style="font-size:12px;color:#666;">模型名稱（可手動輸入或從列表選擇）</label>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <input type="text" id="banner-model-input" placeholder="例：gemini-2.5-flash-preview-image-generation" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedBannerModel=this.value.trim();document.getElementById('banner-selected-model').textContent=this.value.trim()||'未選擇'">
+          <button class="btn" style="font-size:12px;padding:6px 10px;white-space:nowrap;" onclick="applyBannerModelInput()">套用</button>
+        </div>
+        <div style="margin-top:6px;padding:8px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#666;">目前：</span>
+          <strong style="font-size:13px;" id="banner-selected-model">未選擇</strong>
+        </div>
       </div>
       <div id="banner-models-section" style="display:none;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <p style="font-size:11px;color:#999;margin:0;" id="banner-model-count"></p>
+          <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="document.getElementById('banner-models-section').style.display='none'">收合列表</button>
+        </div>
         <input type="text" id="banner-model-search" placeholder="搜尋模型名稱..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:8px;">
         <div id="banner-model-list" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;"></div>
-        <p style="font-size:11px;color:#999;margin-top:4px;" id="banner-model-count"></p>
       </div>
     </div>
     <button class="btn btn-dark" onclick="saveApiKeys()" style="margin-top:12px;">儲存</button>
@@ -1000,6 +1030,7 @@ async function loadApiKeys() {
     if (data.imageGenModel) {
       selectedImageGenModel = data.imageGenModel;
       document.getElementById("image-gen-selected-model").textContent = data.imageGenModel;
+      document.getElementById("image-gen-model-input").value = data.imageGenModel;
     }
     if (data.marketingProvider) {
       selectedMarketingProvider = data.marketingProvider;
@@ -1011,6 +1042,7 @@ async function loadApiKeys() {
     if (data.marketingModel) {
       selectedMarketingModel = data.marketingModel;
       document.getElementById("marketing-selected-model").textContent = data.marketingModel;
+      document.getElementById("marketing-model-input").value = data.marketingModel;
     }
     if (data.bannerProvider) {
       selectedBannerProvider = data.bannerProvider;
@@ -1022,6 +1054,7 @@ async function loadApiKeys() {
     if (data.bannerModel) {
       selectedBannerModel = data.bannerModel;
       document.getElementById("banner-selected-model").textContent = data.bannerModel;
+      document.getElementById("banner-model-input").value = data.bannerModel;
     }
   }
 }
@@ -1329,8 +1362,16 @@ async function fetchImageGenModels() {
 function selectImageGenModel(modelName) {
   selectedImageGenModel = modelName;
   document.getElementById("image-gen-selected-model").textContent = modelName;
+  document.getElementById("image-gen-model-input").value = modelName;
   var searchVal = (document.getElementById("image-gen-model-search") || {}).value || "";
   renderImageGenModels(searchVal.toLowerCase());
+}
+
+function applyImageGenModelInput() {
+  var val = document.getElementById("image-gen-model-input").value.trim();
+  if (!val) return;
+  selectedImageGenModel = val;
+  document.getElementById("image-gen-selected-model").textContent = val;
 }
 
 function renderImageGenModels(query) {
@@ -1401,8 +1442,16 @@ async function fetchMarketingModels() {
 function selectMarketingModel(modelId) {
   selectedMarketingModel = modelId;
   document.getElementById("marketing-selected-model").textContent = modelId;
+  document.getElementById("marketing-model-input").value = modelId;
   var searchVal = (document.getElementById("marketing-model-search") || {}).value || "";
   renderMarketingModels(searchVal.toLowerCase());
+}
+
+function applyMarketingModelInput() {
+  var val = document.getElementById("marketing-model-input").value.trim();
+  if (!val) return;
+  selectedMarketingModel = val;
+  document.getElementById("marketing-selected-model").textContent = val;
 }
 
 function renderMarketingModels(query) {
@@ -1466,8 +1515,16 @@ async function fetchBannerModels() {
 function selectBannerModel(modelId) {
   selectedBannerModel = modelId;
   document.getElementById("banner-selected-model").textContent = modelId;
+  document.getElementById("banner-model-input").value = modelId;
   var searchVal = (document.getElementById("banner-model-search") || {}).value || "";
   renderBannerModels(searchVal.toLowerCase());
+}
+
+function applyBannerModelInput() {
+  var val = document.getElementById("banner-model-input").value.trim();
+  if (!val) return;
+  selectedBannerModel = val;
+  document.getElementById("banner-selected-model").textContent = val;
 }
 
 function renderBannerModels(query) {
