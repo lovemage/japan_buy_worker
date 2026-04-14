@@ -953,32 +953,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </section>
 
-<!-- Upgrade info popup -->
+<!-- Upgrade info popup (single modal, scrollable) -->
 <div id="upgrade-info-popup" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
-  <div style="background:#fff;border-radius:14px;padding:24px 20px 20px;max-width:420px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,0.18);max-height:80vh;overflow-y:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+  <div style="background:#fff;border-radius:14px;padding:24px 20px 20px;max-width:440px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,0.18);max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
       <h3 style="margin:0;font-size:16px;font-weight:700;">方案升級說明</h3>
       <button onclick="document.getElementById('upgrade-info-popup').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1;">×</button>
     </div>
-    <p style="font-size:13px;color:#666;margin-bottom:14px;">付費期間可隨時升級，已付費用按剩餘天數折抵。點擊查看計算範例。</p>
+    <p style="font-size:13px;color:#666;margin-bottom:14px;">隨時升級，已付費用按剩餘天數折抵。</p>
     <table class="upgrade-table">
-      <thead><tr><th>升級路徑</th><th>說明</th><th></th></tr></thead>
+      <thead><tr><th>路徑</th><th>解鎖</th><th></th></tr></thead>
       <tbody>
-        <tr onclick="showUpgradeCalc('plus','pro')"><td><span class="upgrade-arrow">Plus → Pro</span></td><td>解鎖 60 件商品、AI 辨識無限次</td><td><span class="upgrade-link">查看計算</span></td></tr>
-        <tr onclick="showUpgradeCalc('plus','proplus')"><td><span class="upgrade-arrow">Plus → Pro+</span></td><td>跳級至無限商品、子網域、全功能</td><td><span class="upgrade-link">查看計算</span></td></tr>
-        <tr onclick="showUpgradeCalc('pro','proplus')"><td><span class="upgrade-arrow">Pro → Pro+</span></td><td>升級至無限商品、v2 模型、子網域</td><td><span class="upgrade-link">查看計算</span></td></tr>
+        <tr onclick="toggleUpgradeDetail('plus_pro')"><td><span class="upgrade-arrow">Plus → Pro</span></td><td style="font-size:12px;">60 件商品、AI 無限</td><td><span class="upgrade-link">範例</span></td></tr>
+        <tr id="upgrade-detail-plus_pro" style="display:none;"><td colspan="3" style="padding:10px 12px;background:#f9f9f9;font-size:12px;line-height:1.8;" id="upgrade-detail-body-plus_pro"></td></tr>
+        <tr onclick="toggleUpgradeDetail('plus_proplus')"><td><span class="upgrade-arrow">Plus → Pro+</span></td><td style="font-size:12px;">無限商品、子網域</td><td><span class="upgrade-link">範例</span></td></tr>
+        <tr id="upgrade-detail-plus_proplus" style="display:none;"><td colspan="3" style="padding:10px 12px;background:#f9f9f9;font-size:12px;line-height:1.8;" id="upgrade-detail-body-plus_proplus"></td></tr>
+        <tr onclick="toggleUpgradeDetail('pro_proplus')"><td><span class="upgrade-arrow">Pro → Pro+</span></td><td style="font-size:12px;">無限、v2、子網域</td><td><span class="upgrade-link">範例</span></td></tr>
+        <tr id="upgrade-detail-pro_proplus" style="display:none;"><td colspan="3" style="padding:10px 12px;background:#f9f9f9;font-size:12px;line-height:1.8;" id="upgrade-detail-body-pro_proplus"></td></tr>
       </tbody>
     </table>
-  </div>
-</div>
-
-<!-- Upgrade calc popup -->
-<div class="upgrade-backdrop" id="upgrade-backdrop" onclick="if(event.target===this)closeUpgradeCalc()">
-  <div class="upgrade-modal">
-    <h3 id="upgrade-calc-title"></h3>
-    <p class="upgrade-sub" id="upgrade-calc-sub"></p>
-    <div id="upgrade-calc-body"></div>
-    <button class="close-btn" onclick="closeUpgradeCalc()">關閉</button>
   </div>
 </div>
 
@@ -1352,22 +1345,20 @@ var UPGRADE_SCENARIOS = {
   }
 };
 
-function showUpgradeCalc(from, to) {
-  var key = from + "_" + to;
+function toggleUpgradeDetail(key) {
+  var row = document.getElementById("upgrade-detail-" + key);
+  var body = document.getElementById("upgrade-detail-body-" + key);
+  if (!row || !body) return;
+  if (row.style.display !== "none") { row.style.display = "none"; return; }
   var s = UPGRADE_SCENARIOS[key];
   if (!s) return;
-  document.getElementById("upgrade-calc-title").textContent = s.title;
-  document.getElementById("upgrade-calc-sub").textContent = s.sub;
-  var html = s.steps.map(function(step) {
-    return '<div class="calc-step"><strong>' + step.label + '：</strong>' + step.calc + '</div>';
+  var html = '<div style="color:#888;margin-bottom:4px;">' + s.sub + '</div>';
+  html += s.steps.map(function(step) {
+    return '<div>' + step.label + '：' + step.calc + '</div>';
   }).join("");
-  html += '<div class="calc-result">' + s.result + '</div>';
-  document.getElementById("upgrade-calc-body").innerHTML = html;
-  document.getElementById("upgrade-backdrop").classList.add("is-open");
-}
-
-function closeUpgradeCalc() {
-  document.getElementById("upgrade-backdrop").classList.remove("is-open");
+  html += '<div style="margin-top:6px;font-weight:700;color:var(--accent);">' + s.result + '</div>';
+  body.innerHTML = html;
+  row.style.display = "";
 }
 
 // Scroll reveal
