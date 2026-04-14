@@ -443,6 +443,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div class="usage-stat"><div class="us-num" id="usage-recognize-total">0</div><div class="us-label">AI 辨識</div></div>
       <div class="usage-stat"><div class="us-num" id="usage-marketing-total">0</div><div class="us-label">AI 行銷文案</div></div>
       <div class="usage-stat"><div class="us-num" id="usage-image-total">0</div><div class="us-label">AI 圖片編輯</div></div>
+      <div class="usage-stat"><div class="us-num" id="usage-banner-total">0</div><div class="us-label">AI 商店招牌</div></div>
     </div>
     <div class="revenue-header" style="margin-bottom:12px;">
       <strong>API 使用紀錄</strong>
@@ -450,8 +451,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
     <div class="card" style="overflow-x:auto;padding:0;">
       <table class="usage-table">
-        <thead><tr><th>會員</th><th>AI 辨識</th><th>AI 行銷文案</th><th>AI 圖片編輯</th></tr></thead>
-        <tbody id="usage-table-body"><tr><td colspan="4" class="muted" style="text-align:center;padding:24px;">載入中...</td></tr></tbody>
+        <thead><tr><th>會員</th><th>AI 辨識</th><th>AI 行銷文案</th><th>AI 圖片編輯</th><th>AI 商店招牌</th></tr></thead>
+        <tbody id="usage-table-body"><tr><td colspan="5" class="muted" style="text-align:center;padding:24px;">載入中...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1435,7 +1436,7 @@ function initUsageMonthSelector() {
   }
 }
 
-var API_TYPE_LABELS = { recognize: "AI 辨識", marketing: "AI 行銷文案", image_edit: "AI 圖片編輯" };
+var API_TYPE_LABELS = { recognize: "AI 辨識", marketing: "AI 行銷文案", image_edit: "AI 圖片編輯", banner_gen: "AI 商店招牌" };
 
 async function loadApiUsage() {
   var month = document.getElementById("usage-month")?.value || "";
@@ -1450,23 +1451,24 @@ async function loadApiUsage() {
 
 function renderApiUsage(rows, month) {
   // Totals
-  var totals = { recognize: 0, marketing: 0, image_edit: 0 };
+  var totals = { recognize: 0, marketing: 0, image_edit: 0, banner_gen: 0 };
   rows.forEach(function(r) { if (totals[r.api_type] !== undefined) totals[r.api_type] += r.call_count; });
   document.getElementById("usage-recognize-total").textContent = totals.recognize.toLocaleString();
   document.getElementById("usage-marketing-total").textContent = totals.marketing.toLocaleString();
   document.getElementById("usage-image-total").textContent = totals.image_edit.toLocaleString();
+  document.getElementById("usage-banner-total").textContent = totals.banner_gen.toLocaleString();
 
   // Group by store
   var storeMap = {};
   rows.forEach(function(r) {
-    if (!storeMap[r.store_id]) storeMap[r.store_id] = { recognize: null, marketing: null, image_edit: null };
+    if (!storeMap[r.store_id]) storeMap[r.store_id] = { recognize: null, marketing: null, image_edit: null, banner_gen: null };
     storeMap[r.store_id][r.api_type] = r;
   });
 
   var tbody = document.getElementById("usage-table-body");
   var storeIds = Object.keys(storeMap);
   if (storeIds.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;padding:24px;">本月無 API 使用紀錄</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;padding:24px;">本月無 API 使用紀錄</td></tr>';
     return;
   }
 
@@ -1481,7 +1483,7 @@ function renderApiUsage(rows, month) {
       return '<td class="num">' + r.call_count + '<div class="muted">' + time + '</div></td>';
     }
     return '<tr><td><div style="font-weight:600;">' + name + '</div><div class="muted">' + email + '</div></td>' +
-      cell(d.recognize) + cell(d.marketing) + cell(d.image_edit) + '</tr>';
+      cell(d.recognize) + cell(d.marketing) + cell(d.image_edit) + cell(d.banner_gen) + '</tr>';
   }).join("");
 }
 

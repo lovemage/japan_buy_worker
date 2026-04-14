@@ -1,5 +1,6 @@
 import type { RequestContext } from "../../context";
 import { normalizeSlug, getSlugValidationError, canChangeSlugOnceForPro } from "../../shared/slug-rules.js";
+import { getGeminiApiKey } from "./settings";
 
 // Country → currency mapping
 export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number; defaultMarkup: number }> = {
@@ -368,4 +369,277 @@ export async function handleTemplate(
   }
 
   return json({ ok: false, error: "Method not allowed" }, 405);
+}
+
+// ── Banner (店招) management ── Pro / ProPlus only ──
+
+export async function handleBannerSettings(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method === "GET") {
+    const row = await ctx.db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'banner_settings'")
+      .bind(ctx.storeId)
+      .first<{ value: string }>();
+
+    if (!row?.value) return json({ ok: true, enabled: false, images: [] });
+
+    try {
+      const data = JSON.parse(row.value);
+      return json({ ok: true, enabled: !!data.enabled, images: data.images || [] });
+    } catch {
+      return json({ ok: true, enabled: false, images: [] });
+    }
+  }
+
+  if (request.method === "POST") {
+    if (ctx.storePlan !== "pro" && ctx.storePlan !== "proplus") {
+      return json({ ok: false, error: "此功能需要 Pro 或 Pro+ 方案" }, 403);
+    }
+
+    let body: { enabled?: boolean; images?: string[] };
+    try {
+      body = (await request.json()) as { enabled?: boolean; images?: string[] };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+
+    const images = (body.images || []).slice(0, 3);
+    const enabled = !!body.enabled;
+
+    await ctx.db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'banner_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(ctx.storeId, JSON.stringify({ enabled, images }))
+      .run();
+
+    return json({ ok: true });
+  }
+
+  return json({ ok: false, error: "Method Not Allowed" }, 405);
+}
+
+// Upload banner image (client converts to WebP, base64 → R2)
+export async function handleBannerUpload(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+  if (!ctx.r2) return json({ ok: false, error: "R2 not configured" }, 500);
+  if (ctx.storePlan !== "pro" && ctx.storePlan !== "proplus") {
+    return json({ ok: false, error: "此功能需要 Pro 或 Pro+ 方案" }, 403);
+  }
+
+  let body: { image?: string };
+  try {
+    body = (await request.json()) as { image?: string };
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  if (!body.image) return json({ ok: false, error: "Missing image" }, 400);
+
+  const binaryString = atob(body.image);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const key = `${ctx.storeId}/banners/${Date.now()}.webp`;
+  await ctx.r2.put(key, bytes.buffer, {
+    httpMetadata: { contentType: "image/webp" },
+  });
+
+  return json({ ok: true, key });
+}
+
+// Delete banner image from R2
+export async function handleBannerDelete(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+  if (!ctx.r2) return json({ ok: false, error: "R2 not configured" }, 500);
+
+  let body: { key?: string };
+  try {
+    body = (await request.json()) as { key?: string };
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  if (!body.key) return json({ ok: false, error: "Missing key" }, 400);
+  if (!body.key.startsWith(`${ctx.storeId}/`)) {
+    return json({ ok: false, error: "Unauthorized" }, 403);
+  }
+
+  await ctx.r2.delete(body.key);
+  return json({ ok: true });
+}
+
+// AI Banner generation
+const BANNER_STYLE_PROMPTS: Record<string, string> = {
+  japanese: "日式和風設計：使用柔和的配色（如櫻花粉、抹茶綠、靛藍），融入和風紋樣、書法字體風格、簡約禪意留白，整體氛圍溫暖優雅",
+  american: "美式現代設計：大膽鮮明的配色、現代無襯線字體、幾何形狀元素，風格簡潔有力、充滿活力與商業感",
+  taiwanese: "台灣在地風格設計：融入台灣意象（如夜市霓虹、復古招牌、繽紛色彩），親切熱鬧、充滿人情味的視覺風格",
+  minimalist: "簡約設計風格：極簡主義配色（黑白灰為主搭配一個強調色），大量留白、清晰的排版層次、現代優雅感",
+  luxury: "奢華精品設計風格：深色背景搭配金色或香檳色點綴、精緻的裝飾元素、優雅的襯線字體，營造高級尊貴感",
+};
+
+const BANNER_GEN_LIMITS: Record<string, number> = {
+  free: 0,
+  plus: 0,
+  pro: 5,
+  proplus: -1,
+};
+
+export async function handleBannerGenerate(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+  if (ctx.storePlan !== "pro" && ctx.storePlan !== "proplus") {
+    return json({ ok: false, error: "此功能需要 Pro 或 Pro+ 方案" }, 403);
+  }
+
+  // Rate limit
+  const limit = BANNER_GEN_LIMITS[ctx.storePlan] ?? 0;
+  if (limit !== -1) {
+    const now = new Date();
+    const monthKey = `ai_banner_gen_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const usage = await ctx.db
+      .prepare("SELECT COALESCE((SELECT value FROM app_settings WHERE store_id = ? AND key = ?), '0') as cnt")
+      .bind(ctx.storeId, monthKey)
+      .first<{ cnt: string }>();
+    const count = parseInt(usage?.cnt || "0", 10);
+    if (count >= limit) {
+      return json({ ok: false, error: `本月 AI 招牌生成次數已用完（${limit} 次/月）。升級方案可獲得更多次數。` }, 403);
+    }
+  }
+
+  let body: { storeName?: string; eventName?: string; eventMessage?: string; style?: string; description?: string };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  const storeName = (body.storeName || "").trim();
+  const eventName = (body.eventName || "").trim();
+  const eventMessage = (body.eventMessage || "").trim();
+  const style = body.style || "japanese";
+  const description = (body.description || "").trim();
+
+  if (!storeName) return json({ ok: false, error: "請輸入商店名稱" }, 400);
+
+  const stylePrompt = BANNER_STYLE_PROMPTS[style] || BANNER_STYLE_PROMPTS.japanese;
+
+  // Get image gen API key and model
+  const imageGenKeyRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'image_gen_api_key'")
+    .first<{ value: string }>();
+  let apiKey = imageGenKeyRow?.value || "";
+  if (!apiKey) apiKey = await getGeminiApiKey(ctx.db, ctx.storeId, ctx.storePlan);
+  if (!apiKey) {
+    return json({ ok: false, error: "AI 圖片生成功能尚未啟用，請聯繫 vovosnap 管理員處理" }, 400);
+  }
+
+  const modelRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'image_gen_model'")
+    .first<{ value: string }>();
+  const modelId = modelRow?.value || "gemini-2.5-flash-preview-image-generation";
+
+  const prompt = `Generate a professional e-commerce store banner image with 16:9 aspect ratio.
+
+## Banner requirements
+- Store name: "${storeName}"
+- ${eventName ? `Event/campaign name: "${eventName}"` : "No specific event"}
+- ${eventMessage ? `Promotional message: "${eventMessage}"` : "No promotional message"}
+- Visual style: ${stylePrompt}
+${description ? `- Additional description: ${description}` : ""}
+
+## Design rules
+- Output aspect ratio MUST be 16:9 (wide banner format, e.g. 1920x1080 or 1280x720)
+- The store name "${storeName}" must be prominently displayed and clearly readable
+${eventName ? `- The event name "${eventName}" should be visible as a secondary heading` : ""}
+${eventMessage ? `- The message "${eventMessage}" should appear as supporting text` : ""}
+- Use high-quality, professional design suitable for an online store homepage
+- Text must be crisp and clearly legible
+- DO NOT add any watermarks
+- Create a visually appealing composition with proper hierarchy of information
+- Ensure the overall design feels cohesive and polished`;
+
+  const geminiBody = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+  };
+
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1alpha/models/${modelId}:generateContent?key=${apiKey}`;
+
+  let geminiRes: Response;
+  try {
+    geminiRes = await fetch(geminiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(geminiBody),
+    });
+  } catch (err) {
+    return json({ ok: false, error: `Gemini API 連線失敗：${String(err)}` }, 502);
+  }
+
+  if (!geminiRes.ok) {
+    const errText = await geminiRes.text().catch(() => "");
+    return json({ ok: false, error: `Gemini API 錯誤 (${geminiRes.status})：${errText.slice(0, 300)}` }, 502);
+  }
+
+  const geminiRaw = await geminiRes.json() as Record<string, any>;
+  const candidates = geminiRaw?.candidates || [];
+  const parts = candidates[0]?.content?.parts || [];
+  const imagePart = parts.find((p: any) => (p.inline_data?.data) || (p.inlineData?.data));
+  const imageData = imagePart?.inline_data?.data || imagePart?.inlineData?.data;
+
+  if (!imageData) {
+    const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(" ");
+    return json({ ok: false, error: "AI 無法生成招牌圖片，請稍後再試", debug: textParts.slice(0, 200) }, 502);
+  }
+
+  // Upload to R2
+  if (!ctx.r2) return json({ ok: false, error: "R2 儲存空間未設定" }, 500);
+
+  const outputMime = imagePart?.inline_data?.mime_type || imagePart?.inlineData?.mimeType || "image/png";
+  const ext = outputMime.includes("webp") ? "webp" : "png";
+  const r2Key = `${ctx.storeId}/banners/${Date.now()}.${ext}`;
+  const binaryString = atob(imageData);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  await ctx.r2.put(r2Key, bytes.buffer, {
+    httpMetadata: { contentType: outputMime },
+  });
+
+  // Increment usage counter
+  const now = new Date();
+  const monthKey = `ai_banner_gen_count_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const monthKeyShort = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+  await Promise.all([
+    ctx.db
+      .prepare(
+        `INSERT INTO app_settings (store_id, key, value, updated_at)
+         VALUES (?, ?, '1', datetime('now'))
+         ON CONFLICT(store_id, key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT), updated_at = datetime('now')`
+      )
+      .bind(ctx.storeId, monthKey)
+      .run(),
+    ctx.db
+      .prepare(
+        `INSERT INTO api_usage_logs (store_id, api_type, month_key, call_count, last_called_at)
+         VALUES (?, 'banner_gen', ?, 1, datetime('now'))
+         ON CONFLICT(store_id, api_type, month_key) DO UPDATE SET call_count = call_count + 1, last_called_at = datetime('now')`
+      )
+      .bind(ctx.storeId, monthKeyShort)
+      .run(),
+  ]).catch(() => {});
+
+  return json({ ok: true, imageUrl: `/api/images/${r2Key}`, key: r2Key });
 }

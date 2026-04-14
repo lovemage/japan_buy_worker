@@ -606,6 +606,79 @@
 
         <button class="button" type="button" style="margin-top:4px;" onclick="saveDisplaySettings()">儲存外觀設定</button>
         <p id="display-status" class="admin-status">已儲存</p>
+
+        <!-- 商店招牌橫幅 (Pro / Pro+ only) -->
+        <div class="settings-group" id="banner-section" style="display:none;">
+          <h3 class="settings-group__title" style="cursor:pointer;user-select:none;" onclick="toggleBannerCollapse()">
+            商店招牌橫幅 <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span>
+            <span id="banner-collapse-icon" style="float:right;font-size:14px;">&#9660;</span>
+          </h3>
+          <div id="banner-collapse-body" style="display:none;">
+            <p class="meta" style="margin-bottom:8px;">在商店首頁顯示招牌橫幅（16:9），最多 3 張圖片，顧客可左右滑動瀏覽。</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <label style="font-size:13px;font-weight:500;">啟用橫幅</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="banner-enabled" onchange="saveBannerSettings()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Banner preview -->
+            <div id="banner-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+
+            <!-- Upload -->
+            <label class="upload-btn" style="margin-bottom:8px;">
+              + 上傳圖片（16:9）
+              <input type="file" id="banner-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadBannerImages(this.files)" />
+            </label>
+
+            <!-- AI Generate -->
+            <details style="margin-top:12px;border:1px solid var(--admin-border);border-radius:8px;padding:0;">
+              <summary style="padding:10px 14px;cursor:pointer;font-size:13px;font-weight:500;">AI 生成招牌圖片</summary>
+              <div style="padding:12px 14px;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div>
+                    <label style="font-size:12px;display:block;margin-bottom:2px;">商店名稱 <span style="color:red;">*</span></label>
+                    <input id="banner-gen-store-name" type="text" class="input-cute" placeholder="我的代購小舖" />
+                  </div>
+                  <div>
+                    <label style="font-size:12px;display:block;margin-bottom:2px;">活動名稱</label>
+                    <input id="banner-gen-event-name" type="text" class="input-cute" placeholder="例：春季特賣會" />
+                  </div>
+                  <div>
+                    <label style="font-size:12px;display:block;margin-bottom:2px;">活動訊息</label>
+                    <input id="banner-gen-event-msg" type="text" class="input-cute" placeholder="例：全館 85 折，限時三天" />
+                  </div>
+                  <div>
+                    <label style="font-size:12px;display:block;margin-bottom:2px;">風格</label>
+                    <select id="banner-gen-style" class="input-cute">
+                      <option value="japanese">日式和風</option>
+                      <option value="american">美式現代</option>
+                      <option value="taiwanese">台灣在地</option>
+                      <option value="minimalist">簡約設計</option>
+                      <option value="luxury">奢華精品</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size:12px;display:block;margin-bottom:2px;">額外描述</label>
+                    <textarea id="banner-gen-desc" class="input-cute" rows="3" placeholder="描述你想要的畫面或氛圍..."></textarea>
+                  </div>
+                  <button class="button" type="button" id="banner-gen-btn" onclick="generateBannerAI()">生成招牌圖片</button>
+                  <p id="banner-gen-status" class="meta" style="display:none;"></p>
+                  <div id="banner-gen-preview" style="display:none;margin-top:8px;">
+                    <img id="banner-gen-preview-img" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;border:1px solid var(--admin-border);" />
+                    <button class="button secondary" type="button" style="margin-top:6px;" onclick="useBannerGenResult()">使用這張圖片</button>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <div style="margin-top:10px;">
+              <button class="button" type="button" onclick="saveBannerSettings()">儲存橫幅設定</button>
+            </div>
+            <p id="banner-status" class="admin-status">已儲存</p>
+          </div>
+        </div>
       </div>
 
       <!-- 標籤設定（原 branding tab 整合進來） -->
@@ -1098,6 +1171,7 @@
           expiresEl.textContent = "（免費方案）";
         }
         loadPopupAds(d.store);
+        loadBannerSettings();
       }
     });
   })();
@@ -1212,6 +1286,146 @@
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("popup-ad-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
     });
+  }
+
+  // ── Banner management ──
+  var bannerImages = [];
+  var bannerEnabled = false;
+  var bannerGenResultKey = null;
+
+  function loadBannerSettings() {
+    var plan = window.__STORE_PLAN || "free";
+    var section = document.getElementById("banner-section");
+    if (plan !== "pro" && plan !== "proplus") { if (section) section.style.display = "none"; return; }
+    if (section) section.style.display = "";
+    apiFetch("/api/admin/banner").then(function(r){return r.json()}).then(function(d) {
+      if (d.ok) {
+        bannerImages = d.images || [];
+        bannerEnabled = !!d.enabled;
+        var toggle = document.getElementById("banner-enabled");
+        if (toggle) toggle.checked = bannerEnabled;
+        renderBannerPreview();
+      }
+    });
+    // Pre-fill store name for AI gen
+    var nameInput = document.getElementById("banner-gen-store-name");
+    if (nameInput && window.__STORE_NAME) nameInput.value = window.__STORE_NAME;
+  }
+
+  function toggleBannerCollapse() {
+    var body = document.getElementById("banner-collapse-body");
+    var icon = document.getElementById("banner-collapse-icon");
+    if (!body) return;
+    var isHidden = body.style.display === "none";
+    body.style.display = isHidden ? "" : "none";
+    if (icon) icon.innerHTML = isHidden ? "&#9650;" : "&#9660;";
+  }
+
+  function renderBannerPreview() {
+    var container = document.getElementById("banner-preview");
+    if (!container) return;
+    container.innerHTML = bannerImages.map(function(img, i) {
+      return '<div style="position:relative;width:calc(33% - 6px);aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:1px solid var(--admin-border);">' +
+        '<img src="' + (window.__API_BASE||"") + '/api/images/' + img + '" style="width:100%;height:100%;object-fit:cover;" />' +
+        '<button style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid #ddd;font-size:14px;cursor:pointer;line-height:20px;text-align:center;" onclick="deleteBannerImage(' + i + ')">×</button>' +
+      '</div>';
+    }).join("");
+  }
+
+  function uploadBannerImages(files) {
+    if (!files || !files.length) return;
+    if (bannerImages.length + files.length > 3) { alert("最多 3 張橫幅圖片"); return; }
+    var promises = [];
+    for (var i = 0; i < files.length; i++) promises.push(uploadOneBanner(files[i]));
+    Promise.all(promises).then(function() { renderBannerPreview(); saveBannerSettings(); });
+  }
+
+  function uploadOneBanner(file) {
+    return new Promise(function(resolve) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        var dataUrl = canvas.toDataURL("image/webp", 0.85);
+        var base64 = dataUrl.split(",")[1];
+        apiFetch("/api/admin/banner/upload", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ image: base64 }),
+        }).then(function(r){return r.json()}).then(function(d) {
+          if (d.ok) bannerImages.push(d.key);
+          resolve();
+        });
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function deleteBannerImage(index) {
+    var key = bannerImages[index];
+    bannerImages.splice(index, 1);
+    renderBannerPreview();
+    apiFetch("/api/admin/banner/delete", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: key }) });
+    saveBannerSettings();
+  }
+
+  function saveBannerSettings() {
+    bannerEnabled = !!document.getElementById("banner-enabled")?.checked;
+    apiFetch("/api/admin/banner", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ enabled: bannerEnabled, images: bannerImages }),
+    }).then(function(r){return r.json()}).then(function(d) {
+      if (d.ok) { var st = document.getElementById("banner-status"); if (st) { st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); } }
+    });
+  }
+
+  function generateBannerAI() {
+    var btn = document.getElementById("banner-gen-btn");
+    var statusEl = document.getElementById("banner-gen-status");
+    var previewEl = document.getElementById("banner-gen-preview");
+    if (btn) btn.disabled = true;
+    if (statusEl) { statusEl.textContent = "AI 正在生成招牌圖片，請稍候..."; statusEl.style.display = ""; }
+    if (previewEl) previewEl.style.display = "none";
+    bannerGenResultKey = null;
+
+    var payload = {
+      storeName: document.getElementById("banner-gen-store-name")?.value || "",
+      eventName: document.getElementById("banner-gen-event-name")?.value || "",
+      eventMessage: document.getElementById("banner-gen-event-msg")?.value || "",
+      style: document.getElementById("banner-gen-style")?.value || "japanese",
+      description: document.getElementById("banner-gen-desc")?.value || "",
+    };
+
+    apiFetch("/api/admin/banner/generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    }).then(function(r){return r.json()}).then(function(d) {
+      if (btn) btn.disabled = false;
+      if (!d.ok) { if (statusEl) statusEl.textContent = d.error || "生成失敗"; return; }
+      if (statusEl) { statusEl.textContent = "生成完成！"; setTimeout(function(){ statusEl.style.display = "none"; }, 3000); }
+      bannerGenResultKey = d.key;
+      var img = document.getElementById("banner-gen-preview-img");
+      if (img) img.src = (window.__API_BASE||"") + d.imageUrl;
+      if (previewEl) previewEl.style.display = "";
+    }).catch(function(err) {
+      if (btn) btn.disabled = false;
+      if (statusEl) statusEl.textContent = "生成失敗：" + err;
+    });
+  }
+
+  function useBannerGenResult() {
+    if (!bannerGenResultKey) return;
+    if (bannerImages.length >= 3) { alert("已有 3 張圖片，請先刪除再新增"); return; }
+    bannerImages.push(bannerGenResultKey);
+    renderBannerPreview();
+    saveBannerSettings();
+    bannerGenResultKey = null;
+    var previewEl = document.getElementById("banner-gen-preview");
+    if (previewEl) previewEl.style.display = "none";
   }
 
   // Shipping methods

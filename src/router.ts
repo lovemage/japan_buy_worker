@@ -41,6 +41,10 @@ import {
   handlePopupAdUpload,
   handlePopupAdDelete,
   handleTemplate,
+  handleBannerSettings,
+  handleBannerUpload,
+  handleBannerDelete,
+  handleBannerGenerate,
   COUNTRY_CONFIG,
 } from "./routes/admin/store-info";
 import type { RequestContext } from "./context";
@@ -135,6 +139,13 @@ async function serveTenantHtml(
     .first<{ value: string }>();
   const tutorialAvatar = tutorialAvatarRow?.value || "";
 
+  // Banner settings
+  const bannerRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'banner_settings'")
+    .bind(ctx.storeId)
+    .first<{ value: string }>();
+  const bannerSettings = bannerRow?.value || '{"enabled":false,"images":[]}';
+
   // Inject store context before </head>
   const inject = `<script>
 window.__API_BASE="${ctx.basePath}";
@@ -149,6 +160,7 @@ window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
 window.__DISPLAY_SETTINGS=${displaySettings};
 window.__TUTORIAL_STATE=${tutorialState};
 window.__TUTORIAL_AVATAR="${tutorialAvatar.replace(/"/g, '\\"')}";
+window.__BANNER_SETTINGS=${bannerSettings};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 </script>`;
   html = html.replace("</head>", inject + "\n</head>");
@@ -345,6 +357,24 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/popup-ads/delete") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handlePopupAdDelete(request, ctx);
+  }
+  // Banner routes
+  if (subPath === "/api/admin/banner") {
+    // GET is public (store front reads it), POST requires auth
+    if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleBannerSettings(request, ctx);
+  }
+  if (subPath === "/api/admin/banner/upload") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleBannerUpload(request, ctx);
+  }
+  if (subPath === "/api/admin/banner/delete") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleBannerDelete(request, ctx);
+  }
+  if (subPath === "/api/admin/banner/generate") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleBannerGenerate(request, ctx);
   }
   if (subPath === "/api/admin/clear-sync-products") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
