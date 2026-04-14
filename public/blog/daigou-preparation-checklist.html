@@ -206,11 +206,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   <div class="nav-inner">
     <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:62px;height:35px;" /></a>
     <div class="nav-actions">
+      <button id="nav-music-btn" type="button" onclick="toggleMusic()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;opacity:0.7;transition:opacity 0.2s;" title="播放主題曲">
+        <svg id="nav-music-icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <svg id="nav-music-icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
       <a href="/blog/" class="nav-link">代購教學</a>
       <a href="/login.html" class="btn-sm btn-fill">登入</a>
     </div>
   </div>
 </nav>
+
+<div id="lyric-bar" style="display:none;position:sticky;top:53px;z-index:99;background:rgba(34,34,34,0.92);backdrop-filter:blur(10px);color:#fff;text-align:center;padding:8px 16px;font-size:13px;line-height:1.5;min-height:36px;overflow:hidden;transition:opacity 0.3s;">
+  <span id="lyric-text" style="display:inline-block;max-width:100%;transition:opacity 0.15s;"></span>
+</div>
 
 <article class="article-wrapper">
 
@@ -486,6 +494,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </article>
 <script src="/assets/blog-data.js"></script>
+<script src="/assets/music-player.js"></script>
 
 <footer class="footer">
   <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:50px;height:28px;margin-bottom:8px;" /></a><br>
