@@ -573,7 +573,7 @@ ${eventMessage ? `- The message "${eventMessage}" should appear as supporting te
   let outputMimeFromApi = "image/png";
 
   if (provider === "openrouter") {
-    // OpenRouter path (text-to-image via chat completions)
+    // OpenRouter path — supports Gemini image models via chat completions
     let orRes: Response;
     try {
       orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -589,18 +589,38 @@ ${eventMessage ? `- The message "${eventMessage}" should appear as supporting te
     }
     if (!orRes.ok) {
       const errText = await orRes.text().catch(() => "");
-      return json({ ok: false, error: `OpenRouter API 錯誤 (${orRes.status})：${errText.slice(0, 300)}` }, 502);
+      return json({ ok: false, error: `OpenRouter API 錯誤 (${orRes.status})：${errText.slice(0, 300)}`, model: modelId, provider }, 502);
     }
     const orData = (await orRes.json()) as Record<string, any>;
-    const content = orData?.choices?.[0]?.message?.content || "";
-    // OpenRouter image models may return base64 in content or as image_url
-    const imgMatch = content.match(/data:image\/(png|webp|jpeg);base64,([A-Za-z0-9+/=]+)/);
-    if (imgMatch) {
-      outputMimeFromApi = `image/${imgMatch[1]}`;
-      imageData = imgMatch[2];
+    const message = orData?.choices?.[0]?.message;
+    const content = message?.content;
+
+    // Try multiple response formats:
+    // 1. content is array with image_url parts (OpenAI-style multipart)
+    if (Array.isArray(content)) {
+      for (const part of content) {
+        if (part.type === "image_url" && part.image_url?.url) {
+          const m = part.image_url.url.match(/^data:image\/(png|webp|jpeg);base64,(.+)/s);
+          if (m) { outputMimeFromApi = `image/${m[1]}`; imageData = m[2]; break; }
+        }
+        // Gemini via OpenRouter may use inline_data
+        if (part.type === "image" && part.source?.data) {
+          outputMimeFromApi = part.source.media_type || "image/png";
+          imageData = part.source.data; break;
+        }
+      }
+    }
+    // 2. content is string with embedded base64 data URL
+    if (!imageData && typeof content === "string") {
+      const imgMatch = content.match(/data:image\/(png|webp|jpeg);base64,([A-Za-z0-9+/=\s]+)/s);
+      if (imgMatch) {
+        outputMimeFromApi = `image/${imgMatch[1]}`;
+        imageData = imgMatch[2].replace(/\s/g, "");
+      }
     }
     if (!imageData) {
-      return json({ ok: false, error: "AI 無法生成招牌圖片（OpenRouter 未回傳圖片）", debug: content.slice(0, 200) }, 502);
+      const debugStr = typeof content === "string" ? content.slice(0, 300) : JSON.stringify(content).slice(0, 300);
+      return json({ ok: false, error: `AI 無法生成招牌圖片（模型：${modelId}）`, debug: debugStr, model: modelId, provider }, 502);
     }
   } else {
     // Gemini path
