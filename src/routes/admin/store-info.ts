@@ -347,7 +347,7 @@ export async function handleTemplate(
   }
 
   if (request.method === "POST") {
-    const body = await request.json<{ template: string }>();
+    const body = (await request.json()) as { template: string };
     const tpl = body?.template;
     if (!tpl || !TEMPLATES[tpl]) {
       return json({ ok: false, error: "Invalid template" }, 400);

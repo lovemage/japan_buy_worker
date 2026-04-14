@@ -63,12 +63,12 @@
     </aside>
 
     <!-- Banner carousel -->
-    <style>#banner-carousel{height:320px}#banner-carousel .banner-slide{height:320px}@media(min-width:768px){#banner-carousel{height:420px}#banner-carousel .banner-slide{height:420px}}</style>
+    <style>#banner-carousel{height:280px}#banner-carousel .banner-slide{height:280px}#banner-carousel .banner-nav-btn{display:none}@media(min-width:768px){#banner-carousel{height:420px}#banner-carousel .banner-slide{height:420px}#banner-carousel .banner-nav-btn{display:block}}</style>
     <div id="banner-carousel" style="display:none;position:relative;width:100%;overflow:hidden;background:#f5f5f5;">
       <div id="banner-track" style="display:flex;transition:transform 0.3s ease;width:100%;">
       </div>
-      <button id="banner-prev" onclick="slideBanner(-1)" style="display:none;position:absolute;left:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.85);border:1px solid #ddd;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1);z-index:2;">&#8249;</button>
-      <button id="banner-next" onclick="slideBanner(1)" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.85);border:1px solid #ddd;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1);z-index:2;">&#8250;</button>
+      <button id="banner-prev" class="banner-nav-btn" onclick="slideBanner(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.85);border:1px solid #ddd;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1);z-index:2;">&#8249;</button>
+      <button id="banner-next" class="banner-nav-btn" onclick="slideBanner(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.85);border:1px solid #ddd;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1);z-index:2;">&#8250;</button>
       <div id="banner-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2;"></div>
     </div>
     <script>
@@ -91,8 +91,6 @@
 
       // Dots
       if (images.length > 1) {
-        document.getElementById("banner-prev").style.display = "";
-        document.getElementById("banner-next").style.display = "";
         dots.innerHTML = images.map(function(_, i) {
           return '<span data-dot="' + i + '" style="width:8px;height:8px;border-radius:50%;background:' + (i === 0 ? '#333' : 'rgba(0,0,0,0.3)') + ';cursor:pointer;transition:background 0.2s;"></span>';
         }).join("");
