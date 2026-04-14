@@ -643,18 +643,6 @@
               </div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <div>
-                  <label style="font-size:12px;display:block;margin-bottom:2px;">商店名稱 <span style="color:red;">*</span></label>
-                  <input id="banner-gen-store-name" type="text" class="input-cute" placeholder="我的代購小舖" />
-                </div>
-                <div>
-                  <label style="font-size:12px;display:block;margin-bottom:2px;">活動名稱</label>
-                  <input id="banner-gen-event-name" type="text" class="input-cute" placeholder="例：春季特賣會" />
-                </div>
-                <div>
-                  <label style="font-size:12px;display:block;margin-bottom:2px;">活動訊息</label>
-                  <input id="banner-gen-event-msg" type="text" class="input-cute" placeholder="例：全館 85 折，限時三天" />
-                </div>
-                <div>
                   <label style="font-size:12px;display:block;margin-bottom:2px;">風格</label>
                   <select id="banner-gen-style" class="input-cute">
                     <option value="japanese">日式和風</option>
@@ -665,7 +653,7 @@
                   </select>
                 </div>
                 <div>
-                  <label style="font-size:12px;display:block;margin-bottom:2px;">額外描述</label>
+                  <label style="font-size:12px;display:block;margin-bottom:2px;">描述</label>
                   <textarea id="banner-gen-desc" class="input-cute" rows="3" placeholder="描述你想要的畫面或氛圍..."></textarea>
                 </div>
                 <button class="button" type="button" id="banner-gen-btn" onclick="generateBannerAI()">生成招牌圖片</button>
@@ -1311,9 +1299,6 @@
         renderBannerPreview();
       }
     });
-    // Pre-fill store name for AI gen
-    var nameInput = document.getElementById("banner-gen-store-name");
-    if (nameInput && window.__STORE_NAME) nameInput.value = window.__STORE_NAME;
   }
 
   function toggleBannerCollapse() {
@@ -1414,9 +1399,6 @@
     showBannerGenPopup("正在生成招牌圖片...");
 
     var payload = {
-      storeName: document.getElementById("banner-gen-store-name")?.value || "",
-      eventName: document.getElementById("banner-gen-event-name")?.value || "",
-      eventMessage: document.getElementById("banner-gen-event-msg")?.value || "",
       style: document.getElementById("banner-gen-style")?.value || "japanese",
       description: document.getElementById("banner-gen-desc")?.value || "",
     };

@@ -517,29 +517,31 @@ export async function handleBannerGenerate(
     }
   }
 
-  let body: { storeName?: string; eventName?: string; eventMessage?: string; style?: string; description?: string };
+  let body: { style?: string; description?: string };
   try {
     body = (await request.json()) as typeof body;
   } catch {
     return json({ ok: false, error: "Invalid JSON" }, 400);
   }
 
-  const storeName = (body.storeName || "").trim();
-  const eventName = (body.eventName || "").trim();
-  const eventMessage = (body.eventMessage || "").trim();
   const style = body.style || "japanese";
   const description = (body.description || "").trim();
 
-  if (!storeName) return json({ ok: false, error: "請輸入商店名稱" }, 400);
+  // Auto-inject store name from DB
+  const storeRow = await ctx.db
+    .prepare("SELECT name FROM stores WHERE id = ?")
+    .bind(ctx.storeId)
+    .first<{ name: string }>();
+  const storeName = storeRow?.name || "My Store";
 
   const stylePrompt = BANNER_STYLE_PROMPTS[style] || BANNER_STYLE_PROMPTS.japanese;
 
   // Get banner-specific API settings (fallback to image_gen settings)
-  const bannerSettings = await ctx.db
+  const bannerSettingsRow = await ctx.db
     .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('banner_provider', 'banner_api_key', 'banner_model', 'image_gen_api_key', 'image_gen_model')")
     .all<{ key: string; value: string }>();
   const settingsMap: Record<string, string> = {};
-  for (const row of bannerSettings.results) settingsMap[row.key] = row.value;
+  for (const row of bannerSettingsRow.results) settingsMap[row.key] = row.value;
 
   const provider = settingsMap["banner_provider"] || "gemini";
   let apiKey = settingsMap["banner_api_key"] || settingsMap["image_gen_api_key"] || "";
@@ -549,25 +551,31 @@ export async function handleBannerGenerate(
   }
   const modelId = settingsMap["banner_model"] || settingsMap["image_gen_model"] || "gemini-2.5-flash-preview-image-generation";
 
-  const prompt = `Generate a professional e-commerce store banner image with 16:9 aspect ratio.
+  // System prompt — auto-injected, not visible to user
+  const prompt = `Generate a professional e-commerce store banner image.
 
-## Banner requirements
+## MANDATORY OUTPUT RULES
+- Output image aspect ratio MUST be exactly 16:9 (e.g. 1920x1080 or 1280x720). This is non-negotiable.
+- All Chinese characters (繁體中文) MUST be rendered correctly with proper strokes. No garbled, broken, or misaligned Chinese text.
+- If the design includes Chinese text, use clean and legible fonts. Verify every character is a real, correct Chinese character.
+
+## Store info
 - Store name: "${storeName}"
-- ${eventName ? `Event/campaign name: "${eventName}"` : "No specific event"}
-- ${eventMessage ? `Promotional message: "${eventMessage}"` : "No promotional message"}
-- Visual style: ${stylePrompt}
-${description ? `- Additional description: ${description}` : ""}
+
+## Visual style
+${stylePrompt}
+
+## User description
+${description || "（使用者未提供額外描述，請根據商店名稱和風格自由發揮）"}
 
 ## Design rules
-- Output aspect ratio MUST be 16:9 (wide banner format, e.g. 1920x1080 or 1280x720)
 - The store name "${storeName}" must be prominently displayed and clearly readable
-${eventName ? `- The event name "${eventName}" should be visible as a secondary heading` : ""}
-${eventMessage ? `- The message "${eventMessage}" should appear as supporting text` : ""}
-- Use high-quality, professional design suitable for an online store homepage
-- Text must be crisp and clearly legible
-- DO NOT add any watermarks
-- Create a visually appealing composition with proper hierarchy of information
-- Ensure the overall design feels cohesive and polished`;
+- Use high-quality, professional design suitable for an online store homepage banner
+- Text must be crisp, clearly legible, and properly kerned
+- DO NOT add any watermarks or placeholder text
+- Create a visually appealing composition with proper hierarchy
+- The overall design should feel cohesive, polished, and ready to use as a real store banner
+- Prefer using the store name in its original language. If the store name is in Chinese, display it in Chinese.`;
 
   let imageData: string | undefined;
   let outputMimeFromApi = "image/png";
