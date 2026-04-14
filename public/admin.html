@@ -567,6 +567,64 @@
           <p id="store-logo-status" class="admin-status">已儲存</p>
         </div>
 
+        <!-- 商店招牌製作 (Pro / Pro+ only) -->
+        <div class="settings-group" id="banner-section" style="display:none;">
+          <h3 class="settings-group__title" style="cursor:pointer;user-select:none;" onclick="toggleBannerCollapse()">
+            商店招牌製作 <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span>
+            <span id="banner-collapse-icon" style="float:right;font-size:14px;">&#9660;</span>
+          </h3>
+          <div id="banner-collapse-body" style="display:none;">
+            <p class="meta" style="margin-bottom:8px;">在商店首頁顯示招牌橫幅（16:9），最多 3 張圖片，顧客可左右滑動瀏覽。</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <label style="font-size:13px;font-weight:500;">啟用橫幅</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="banner-enabled" onchange="saveBannerSettings()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div id="banner-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+              <label class="upload-btn" style="margin:0;">
+                + 上傳圖片
+                <input type="file" id="banner-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadBannerImages(this.files)" />
+              </label>
+              <button class="button secondary" type="button" style="margin:0;font-size:13px;white-space:nowrap;" onclick="toggleBannerGenPanel()">AI 廣告招牌</button>
+            </div>
+            <div id="banner-gen-panel" style="display:none;border:1px solid var(--admin-border);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:var(--admin-bg-subtle, #fafafa);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;">AI 廣告招牌</span>
+                <button type="button" style="background:none;border:none;font-size:18px;cursor:pointer;color:#999;line-height:1;" onclick="toggleBannerGenPanel()">×</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                  <label style="font-size:12px;display:block;margin-bottom:2px;">風格</label>
+                  <select id="banner-gen-style" class="input-cute">
+                    <option value="japanese">日式和風</option>
+                    <option value="american">美式現代</option>
+                    <option value="taiwanese">台灣在地</option>
+                    <option value="minimalist">簡約設計</option>
+                    <option value="luxury">奢華精品</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:12px;display:block;margin-bottom:2px;">描述</label>
+                  <textarea id="banner-gen-desc" class="input-cute" rows="3" placeholder="描述你想要的畫面或氛圍...">發揮你的創意，創造有趣的招牌</textarea>
+                </div>
+                <button class="button" type="button" id="banner-gen-btn" onclick="generateBannerAI()">生成招牌圖片</button>
+                <p id="banner-gen-status" class="meta" style="display:none;"></p>
+                <div id="banner-gen-preview" style="display:none;margin-top:8px;">
+                  <img id="banner-gen-preview-img" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;border:1px solid var(--admin-border);" />
+                  <button class="button secondary" type="button" style="margin-top:6px;" onclick="useBannerGenResult()">使用這張圖片</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="button" type="button" onclick="saveBannerSettings()">儲存橫幅設定</button>
+            </div>
+            <p id="banner-status" class="admin-status">已儲存</p>
+          </div>
+        </div>
+
         <div class="settings-group">
           <h3 class="settings-group__title">商品列表檢視模式</h3>
           <div class="view-mode-grid" id="view-mode-selector">
@@ -606,71 +664,6 @@
 
         <button class="button" type="button" style="margin-top:4px;" onclick="saveDisplaySettings()">儲存外觀設定</button>
         <p id="display-status" class="admin-status">已儲存</p>
-
-        <!-- 商店招牌製作 (Pro / Pro+ only) -->
-        <div class="settings-group" id="banner-section" style="display:none;">
-          <h3 class="settings-group__title" style="cursor:pointer;user-select:none;" onclick="toggleBannerCollapse()">
-            商店招牌製作 <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span>
-            <span id="banner-collapse-icon" style="float:right;font-size:14px;">&#9660;</span>
-          </h3>
-          <div id="banner-collapse-body" style="display:none;">
-            <p class="meta" style="margin-bottom:8px;">在商店首頁顯示招牌橫幅（16:9），最多 3 張圖片，顧客可左右滑動瀏覽。</p>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-              <label style="font-size:13px;font-weight:500;">啟用橫幅</label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="banner-enabled" onchange="saveBannerSettings()" />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
-            <!-- Banner preview -->
-            <div id="banner-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
-
-            <!-- Upload + AI button row -->
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-              <label class="upload-btn" style="margin:0;">
-                + 上傳圖片
-                <input type="file" id="banner-upload" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="uploadBannerImages(this.files)" />
-              </label>
-              <button class="button secondary" type="button" style="margin:0;font-size:13px;white-space:nowrap;" onclick="toggleBannerGenPanel()">AI 廣告招牌</button>
-            </div>
-
-            <!-- AI Generate panel (hidden by default) -->
-            <div id="banner-gen-panel" style="display:none;border:1px solid var(--admin-border);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:var(--admin-bg-subtle, #fafafa);">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="font-size:13px;font-weight:600;">AI 廣告招牌</span>
-                <button type="button" style="background:none;border:none;font-size:18px;cursor:pointer;color:#999;line-height:1;" onclick="toggleBannerGenPanel()">×</button>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px;">
-                <div>
-                  <label style="font-size:12px;display:block;margin-bottom:2px;">風格</label>
-                  <select id="banner-gen-style" class="input-cute">
-                    <option value="japanese">日式和風</option>
-                    <option value="american">美式現代</option>
-                    <option value="taiwanese">台灣在地</option>
-                    <option value="minimalist">簡約設計</option>
-                    <option value="luxury">奢華精品</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size:12px;display:block;margin-bottom:2px;">描述</label>
-                  <textarea id="banner-gen-desc" class="input-cute" rows="3" placeholder="描述你想要的畫面或氛圍...">發揮你的創意，創造有趣的招牌</textarea>
-                </div>
-                <button class="button" type="button" id="banner-gen-btn" onclick="generateBannerAI()">生成招牌圖片</button>
-                <p id="banner-gen-status" class="meta" style="display:none;"></p>
-                <div id="banner-gen-preview" style="display:none;margin-top:8px;">
-                  <img id="banner-gen-preview-img" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;border:1px solid var(--admin-border);" />
-                  <button class="button secondary" type="button" style="margin-top:6px;" onclick="useBannerGenResult()">使用這張圖片</button>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <button class="button" type="button" onclick="saveBannerSettings()">儲存橫幅設定</button>
-            </div>
-            <p id="banner-status" class="admin-status">已儲存</p>
-          </div>
-        </div>
       </div>
 
       <!-- 標籤設定（原 branding tab 整合進來） -->
