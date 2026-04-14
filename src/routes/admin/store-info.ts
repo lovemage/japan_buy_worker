@@ -534,20 +534,20 @@ export async function handleBannerGenerate(
 
   const stylePrompt = BANNER_STYLE_PROMPTS[style] || BANNER_STYLE_PROMPTS.japanese;
 
-  // Get image gen API key and model
-  const imageGenKeyRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'image_gen_api_key'")
-    .first<{ value: string }>();
-  let apiKey = imageGenKeyRow?.value || "";
+  // Get banner-specific API settings (fallback to image_gen settings)
+  const bannerSettings = await ctx.db
+    .prepare("SELECT key, value FROM app_settings WHERE store_id = 0 AND key IN ('banner_provider', 'banner_api_key', 'banner_model', 'image_gen_api_key', 'image_gen_model')")
+    .all<{ key: string; value: string }>();
+  const settingsMap: Record<string, string> = {};
+  for (const row of bannerSettings.results) settingsMap[row.key] = row.value;
+
+  const provider = settingsMap["banner_provider"] || "gemini";
+  let apiKey = settingsMap["banner_api_key"] || settingsMap["image_gen_api_key"] || "";
   if (!apiKey) apiKey = await getGeminiApiKey(ctx.db, ctx.storeId, ctx.storePlan);
   if (!apiKey) {
-    return json({ ok: false, error: "AI 圖片生成功能尚未啟用，請聯繫 vovosnap 管理員處理" }, 400);
+    return json({ ok: false, error: "AI 招牌生成功能尚未啟用，請聯繫 vovosnap 管理員處理" }, 400);
   }
-
-  const modelRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'image_gen_model'")
-    .first<{ value: string }>();
-  const modelId = modelRow?.value || "gemini-2.5-flash-preview-image-generation";
+  const modelId = settingsMap["banner_model"] || settingsMap["image_gen_model"] || "gemini-2.5-flash-preview-image-generation";
 
   const prompt = `Generate a professional e-commerce store banner image with 16:9 aspect ratio.
 
@@ -569,45 +569,81 @@ ${eventMessage ? `- The message "${eventMessage}" should appear as supporting te
 - Create a visually appealing composition with proper hierarchy of information
 - Ensure the overall design feels cohesive and polished`;
 
-  const geminiBody = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
-  };
+  let imageData: string | undefined;
+  let outputMimeFromApi = "image/png";
 
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1alpha/models/${modelId}:generateContent?key=${apiKey}`;
+  if (provider === "openrouter") {
+    // OpenRouter path (text-to-image via chat completions)
+    let orRes: Response;
+    try {
+      orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: modelId,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+    } catch (err) {
+      return json({ ok: false, error: `OpenRouter API 連線失敗：${String(err)}` }, 502);
+    }
+    if (!orRes.ok) {
+      const errText = await orRes.text().catch(() => "");
+      return json({ ok: false, error: `OpenRouter API 錯誤 (${orRes.status})：${errText.slice(0, 300)}` }, 502);
+    }
+    const orData = (await orRes.json()) as Record<string, any>;
+    const content = orData?.choices?.[0]?.message?.content || "";
+    // OpenRouter image models may return base64 in content or as image_url
+    const imgMatch = content.match(/data:image\/(png|webp|jpeg);base64,([A-Za-z0-9+/=]+)/);
+    if (imgMatch) {
+      outputMimeFromApi = `image/${imgMatch[1]}`;
+      imageData = imgMatch[2];
+    }
+    if (!imageData) {
+      return json({ ok: false, error: "AI 無法生成招牌圖片（OpenRouter 未回傳圖片）", debug: content.slice(0, 200) }, 502);
+    }
+  } else {
+    // Gemini path
+    const geminiBody = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+    };
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1alpha/models/${modelId}:generateContent?key=${apiKey}`;
 
-  let geminiRes: Response;
-  try {
-    geminiRes = await fetch(geminiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(geminiBody),
-    });
-  } catch (err) {
-    return json({ ok: false, error: `Gemini API 連線失敗：${String(err)}` }, 502);
-  }
+    let geminiRes: Response;
+    try {
+      geminiRes = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(geminiBody),
+      });
+    } catch (err) {
+      return json({ ok: false, error: `Gemini API 連線失敗：${String(err)}` }, 502);
+    }
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text().catch(() => "");
+      return json({ ok: false, error: `Gemini API 錯誤 (${geminiRes.status})：${errText.slice(0, 300)}` }, 502);
+    }
 
-  if (!geminiRes.ok) {
-    const errText = await geminiRes.text().catch(() => "");
-    return json({ ok: false, error: `Gemini API 錯誤 (${geminiRes.status})：${errText.slice(0, 300)}` }, 502);
-  }
+    const geminiRaw = await geminiRes.json() as Record<string, any>;
+    const candidates = geminiRaw?.candidates || [];
+    const parts = candidates[0]?.content?.parts || [];
+    const imagePart = parts.find((p: any) => (p.inline_data?.data) || (p.inlineData?.data));
+    imageData = imagePart?.inline_data?.data || imagePart?.inlineData?.data;
+    if (imageData) {
+      outputMimeFromApi = imagePart?.inline_data?.mime_type || imagePart?.inlineData?.mimeType || "image/png";
+    }
 
-  const geminiRaw = await geminiRes.json() as Record<string, any>;
-  const candidates = geminiRaw?.candidates || [];
-  const parts = candidates[0]?.content?.parts || [];
-  const imagePart = parts.find((p: any) => (p.inline_data?.data) || (p.inlineData?.data));
-  const imageData = imagePart?.inline_data?.data || imagePart?.inlineData?.data;
-
-  if (!imageData) {
-    const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(" ");
-    return json({ ok: false, error: "AI 無法生成招牌圖片，請稍後再試", debug: textParts.slice(0, 200) }, 502);
+    if (!imageData) {
+      const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(" ");
+      return json({ ok: false, error: "AI 無法生成招牌圖片，請稍後再試", debug: textParts.slice(0, 200) }, 502);
+    }
   }
 
   // Upload to R2
   if (!ctx.r2) return json({ ok: false, error: "R2 儲存空間未設定" }, 500);
 
-  const outputMime = imagePart?.inline_data?.mime_type || imagePart?.inlineData?.mimeType || "image/png";
-  const ext = outputMime.includes("webp") ? "webp" : "png";
+  const ext = outputMimeFromApi.includes("webp") ? "webp" : "png";
   const r2Key = `${ctx.storeId}/banners/${Date.now()}.${ext}`;
   const binaryString = atob(imageData);
   const bytes = new Uint8Array(binaryString.length);
@@ -615,7 +651,7 @@ ${eventMessage ? `- The message "${eventMessage}" should appear as supporting te
     bytes[i] = binaryString.charCodeAt(i);
   }
   await ctx.r2.put(r2Key, bytes.buffer, {
-    httpMetadata: { contentType: outputMime },
+    httpMetadata: { contentType: outputMimeFromApi },
   });
 
   // Increment usage counter
