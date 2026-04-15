@@ -1238,7 +1238,7 @@ function switchBilling(months) {
   // Plus is monthly-only: hide when 6 or 12 months selected
   var plusCard = document.querySelector('.plan[data-plan="plus"]');
   if (plusCard) {
-    plusCard.classList.toggle("plan-unavailable", months !== 1);
+    plusCard.style.display = months !== 1 ? "none" : "";
   }
   // Update Plus price (only monthly)
   updatePlanPrice("plus", months, offers);
