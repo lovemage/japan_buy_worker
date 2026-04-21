@@ -1806,96 +1806,9 @@
   <!-- AI 圖片編輯 Loading Popup -->
   <div id="ai-image-edit-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:14px;padding:28px 24px 20px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">vovoimageAI 修改���</div>
-      <div style="font-size:13px;color:#888;margin-bottom:12px;">請���關閉視窗</div>
-      <div class="octopus-anim" aria-label="圖片優化中">
-        <svg viewBox="0 0 200 180" width="130" height="117" style="display:block;margin:0 auto;image-rendering:pixelated;">
-          <defs><style>
-            @keyframes imBlink{0%,89%,93%,100%{opacity:0}90%,92%{opacity:1}}
-            @keyframes imPupil{0%,25%{transform:translate(0,3px)}30%,55%{transform:translate(-2px,2px)}60%,80%{transform:translate(2px,3px)}85%,100%{transform:translate(0,3px)}}
-            @keyframes imCheek{0%,100%{opacity:.45}50%{opacity:.75}}
-            @keyframes imSmile{0%,100%{d:path('M88 80 Q94 86 100 86 Q106 86 112 80')}50%{d:path('M88 80 Q94 88 100 88 Q106 88 112 80')}}
-            @keyframes imTentL1{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
-            @keyframes imTentL2{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
-            @keyframes imTentL3{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
-            @keyframes imTentR1{0%,100%{transform:rotate(0)}50%{transform:rotate(8deg)}}
-            @keyframes imTentR2{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
-            @keyframes imTentR3{0%,100%{transform:rotate(0)}50%{transform:rotate(10deg)}}
-            @keyframes imWand{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(15deg)}}
-            @keyframes imSparkle{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1.2)}}
-            @keyframes imHatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
-          </style></defs>
-          <!-- Wizard hat -->
-          <g style="animation:imHatBob 2.5s ease-in-out infinite">
-            <rect x="48" y="14" width="104" height="4" fill="#4834D4"/>
-            <rect x="52" y="10" width="96" height="5" fill="#5B45E0"/>
-            <rect x="60" y="5" width="80" height="6" fill="#5B45E0"/>
-            <rect x="68" y="0" width="64" height="6" fill="#5B45E0"/>
-            <rect x="80" y="-5" width="40" height="6" fill="#5B45E0"/>
-            <rect x="90" y="-9" width="20" height="5" fill="#5B45E0"/>
-            <!-- Star on hat -->
-            <rect x="82" y="2" width="6" height="6" fill="#FFD93D"/>
-            <rect x="80" y="4" width="10" height="2" fill="#FFD93D"/>
-            <!-- Hat brim -->
-            <rect x="38" y="17" width="124" height="4" fill="#4834D4"/>
-            <rect x="34" y="19" width="132" height="3" fill="#3C2CB8"/>
-          </g>
-          <!-- Head -->
-          <rect x="56" y="20" width="88" height="6" fill="#7B68EE"/>
-          <rect x="48" y="26" width="104" height="6" fill="#7B68EE"/>
-          <rect x="44" y="32" width="112" height="6" fill="#7B68EE"/>
-          <rect x="40" y="38" width="120" height="6" fill="#7B68EE"/>
-          <rect x="40" y="44" width="120" height="6" fill="#7B68EE"/>
-          <rect x="40" y="50" width="120" height="6" fill="#7B68EE"/>
-          <rect x="40" y="56" width="120" height="6" fill="#7B68EE"/>
-          <rect x="40" y="62" width="120" height="6" fill="#7B68EE"/>
-          <rect x="44" y="68" width="112" height="6" fill="#7B68EE"/>
-          <rect x="44" y="74" width="112" height="6" fill="#7B68EE"/>
-          <rect x="48" y="80" width="104" height="6" fill="#7B68EE"/>
-          <rect x="52" y="86" width="96" height="6" fill="#7B68EE"/>
-          <rect x="56" y="92" width="88" height="6" fill="#7B68EE"/>
-          <rect x="60" y="26" width="20" height="4" fill="#9B8AFE" opacity=".5"/>
-          <rect x="56" y="32" width="12" height="4" fill="#9B8AFE" opacity=".35"/>
-          <!-- Eyes (looking down at artwork) -->
-          <rect x="62" y="46" width="16" height="18" fill="#fff"/>
-          <rect x="122" y="46" width="16" height="18" fill="#fff"/>
-          <g style="animation:imPupil 5s ease-in-out infinite">
-            <rect x="64" y="48" width="13" height="15" fill="#2a2a3a"/>
-            <rect x="123" y="48" width="13" height="15" fill="#2a2a3a"/>
-            <rect x="71" y="48" width="4" height="4" fill="#fff"/>
-            <rect x="130" y="48" width="4" height="4" fill="#fff"/>
-            <rect x="66" y="57" width="3" height="3" fill="rgba(255,255,255,.4)"/>
-            <rect x="125" y="57" width="3" height="3" fill="rgba(255,255,255,.4)"/>
-          </g>
-          <rect x="62" y="46" width="16" height="18" fill="#7B68EE" style="animation:imBlink 5.5s ease-in-out infinite"/>
-          <rect x="122" y="46" width="16" height="18" fill="#7B68EE" style="animation:imBlink 5.5s ease-in-out infinite"/>
-          <!-- Cheeks + smile -->
-          <rect x="50" y="64" width="10" height="5" fill="#FF8FAB" style="animation:imCheek 2.5s ease-in-out infinite"/>
-          <rect x="140" y="64" width="10" height="5" fill="#FF8FAB" style="animation:imCheek 2.5s ease-in-out infinite"/>
-          <path d="M88 82 Q94 88 100 88 Q106 88 112 82" fill="none" stroke="#5a4abf" stroke-width="2.5" stroke-linecap="round" style="animation:imSmile 2.5s ease-in-out infinite"/>
-          <!-- Front-right tentacle with magic wand -->
-          <g style="transform-origin:148px 98px;animation:imTentR3 1.1s ease-in-out infinite">
-            <rect x="140" y="98" width="8" height="7" fill="#6A5ACD"/>
-            <rect x="144" y="105" width="8" height="7" fill="#6A5ACD"/>
-            <rect x="148" y="112" width="8" height="7" fill="#6A5ACD"/>
-            <!-- Wand -->
-            <g style="transform-origin:160px 108px;animation:imWand 1.5s ease-in-out infinite">
-              <rect x="156" y="106" width="3" height="18" fill="#222" transform="rotate(-30 157 115)"/>
-              <rect x="153" y="100" width="8" height="6" fill="#FFD93D" transform="rotate(-30 157 103)"/>
-              <!-- Sparkles -->
-              <rect x="162" y="92" width="5" height="5" fill="#FFD93D" style="animation:imSparkle 1s ease-in-out infinite"/>
-              <rect x="170" y="98" width="4" height="4" fill="#FF6B6B" style="animation:imSparkle 1s .3s ease-in-out infinite"/>
-              <rect x="158" y="85" width="4" height="4" fill="#48DBFB" style="animation:imSparkle 1s .6s ease-in-out infinite"/>
-            </g>
-          </g>
-          <!-- Other tentacles -->
-          <g style="transform-origin:62px 98px;animation:imTentL1 1.2s ease-in-out infinite"><rect x="54" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="50" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="46" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="42" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="38" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="38" y="133" width="8" height="5" fill="#8B7BEE"/></g>
-          <g style="transform-origin:78px 98px;animation:imTentL2 1.5s ease-in-out infinite"><rect x="70" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="68" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="64" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="60" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="58" y="133" width="8" height="5" fill="#8B7BEE"/></g>
-          <g style="transform-origin:92px 98px;animation:imTentL3 1.8s ease-in-out infinite"><rect x="86" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="84" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="82" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="80" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="78" y="133" width="8" height="5" fill="#8B7BEE"/></g>
-          <g style="transform-origin:114px 98px;animation:imTentR1 1.3s ease-in-out infinite"><rect x="106" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="108" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="110" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="112" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="114" y="133" width="8" height="5" fill="#8B7BEE"/></g>
-          <g style="transform-origin:130px 98px;animation:imTentR2 1.6s ease-in-out infinite"><rect x="122" y="98" width="8" height="7" fill="#6A5ACD"/><rect x="124" y="105" width="8" height="7" fill="#6A5ACD"/><rect x="128" y="112" width="8" height="7" fill="#6A5ACD"/><rect x="132" y="119" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="126" width="8" height="7" fill="#6A5ACD"/><rect x="134" y="133" width="8" height="5" fill="#8B7BEE"/></g>
-          <text x="100" y="160" text-anchor="middle" font-family="'Press Start 2P','Courier New',monospace" font-size="11" fill="#7B68EE" letter-spacing="1">vovosnap</text>
-        </svg>
+      <div class="ai-image-edit-loading" aria-live="polite" aria-label="圖片優化中">
+        <span class="ai-image-edit-loading__text">vovociAI 圖片優化中</span>
+        <span class="ai-image-edit-loading__dots" aria-hidden="true"><span></span><span></span><span></span></span>
       </div>
       <div id="ai-image-edit-popup-msg" style="font-size:13px;color:#444;min-height:20px;margin-top:8px;"></div>
     </div>

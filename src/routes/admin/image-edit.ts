@@ -166,17 +166,17 @@ export async function handleAdminImageEdit(
     });
   } catch (err) {
     return new Response(
-      JSON.stringify({ ok: false, error: `Gemini API 連線失敗：${String(err)}` }),
+      JSON.stringify({ ok: false, error: "AI 圖片優化連線失敗，請稍後再試" }),
       { status: 502, headers: { "content-type": "application/json" } }
     );
   }
 
   if (!geminiRes.ok) {
-    const errText = await geminiRes.text().catch(() => "");
+    await geminiRes.text().catch(() => "");
     return new Response(
       JSON.stringify({
         ok: false,
-        error: `Gemini API 錯誤 (${geminiRes.status})：${errText.slice(0, 300)}`,
+        error: "AI 圖片優化暫時無法使用，請稍後再試",
       }),
       { status: 502, headers: { "content-type": "application/json" } }
     );
@@ -195,17 +195,10 @@ export async function handleAdminImageEdit(
   const imageData = imagePart?.inline_data?.data || imagePart?.inlineData?.data;
 
   if (!imageData) {
-    const partTypes = parts.map((p: any) => {
-      if (p.inline_data || p.inlineData) return `image(${p.inline_data?.mime_type || p.inlineData?.mimeType || "?"})`;
-      if (p.text) return "text";
-      return `unknown(${Object.keys(p).join(",")})`;
-    }).join(", ");
-    const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(" ");
     return new Response(
       JSON.stringify({
         ok: false,
-        error: `AI 圖片優化暫時無法使用，請聯繫 vovosnap 管理員處理（${modelId}: ${partTypes || "空"}）`,
-        debug: textParts.slice(0, 200),
+        error: "AI 圖片優化暫時無法使用，請稍後再試",
       }),
       { status: 502, headers: { "content-type": "application/json" } }
     );

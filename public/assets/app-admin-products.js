@@ -708,6 +708,33 @@ async function saveEdit() {
 }
 
 async function doEditAiImage() {
+  const AI_IMAGE_EDIT_TIPS = [
+    "小技巧：拍攝時連同外包裝一起拍攝，效果更佳",
+    "小技巧：商品圖片盡量保持商品完整性，效果更佳",
+    "小技巧：將商品置中，拍攝時對焦商品，效果更佳",
+    "小技巧：避免逆光與過暗環境，使用明亮均勻光線效果更佳",
+    "小技巧：背景保持乾淨簡單，避免雜物干擾，效果更佳",
+  ];
+  let aiImageEditTipTimer = null;
+
+  function startAiImageEditTips(popupMsg) {
+    if (!popupMsg) return;
+    stopAiImageEditTips();
+    let idx = 0;
+    popupMsg.textContent = AI_IMAGE_EDIT_TIPS[idx];
+    aiImageEditTipTimer = setInterval(() => {
+      idx = (idx + 1) % AI_IMAGE_EDIT_TIPS.length;
+      popupMsg.textContent = AI_IMAGE_EDIT_TIPS[idx];
+    }, 2400);
+  }
+
+  function stopAiImageEditTips() {
+    if (aiImageEditTipTimer) {
+      clearInterval(aiImageEditTipTimer);
+      aiImageEditTipTimer = null;
+    }
+  }
+
   // Determine the first image source: existing gallery URL or new image base64
   let imageBase64 = null;
 
@@ -716,7 +743,7 @@ async function doEditAiImage() {
     const popup = document.getElementById("ai-image-edit-popup");
     const popupMsg = document.getElementById("ai-image-edit-popup-msg");
     if (popup) popup.style.display = "flex";
-    if (popupMsg) popupMsg.textContent = "";
+    startAiImageEditTips(popupMsg);
 
     const btn = document.getElementById("btn-edit-ai-image");
     if (btn) btn.disabled = true;
@@ -740,6 +767,7 @@ async function doEditAiImage() {
         img.src = bmpUrl;
       });
     } catch (err) {
+      stopAiImageEditTips();
       if (popupMsg) popupMsg.textContent = String(err);
       setTimeout(() => { if (popup) popup.style.display = "none"; }, 2000);
       setTimeout(() => { if (btn) btn.disabled = false; }, 30000);
@@ -756,7 +784,7 @@ async function doEditAiImage() {
   const popup = document.getElementById("ai-image-edit-popup");
   const popupMsg = document.getElementById("ai-image-edit-popup-msg");
   if (popup) popup.style.display = "flex";
-  if (popupMsg) popupMsg.textContent = "";
+  startAiImageEditTips(popupMsg);
 
   const btn = document.getElementById("btn-edit-ai-image");
   if (btn) btn.disabled = true;
@@ -770,6 +798,7 @@ async function doEditAiImage() {
 
     const data = await res.json();
     if (!data.ok) {
+      stopAiImageEditTips();
       if (popupMsg) popupMsg.textContent = data.error || "失敗";
       setTimeout(() => { if (popup) popup.style.display = "none"; }, 2500);
       return;
@@ -800,11 +829,14 @@ async function doEditAiImage() {
     syncFromOrdered();
     renderEditGallery();
 
+    stopAiImageEditTips();
     if (popup) popup.style.display = "none";
   } catch (err) {
+    stopAiImageEditTips();
     if (popupMsg) popupMsg.textContent = String(err);
     setTimeout(() => { if (popup) popup.style.display = "none"; }, 2500);
   } finally {
+    stopAiImageEditTips();
     if (btn) {
       setTimeout(() => { btn.disabled = false; }, 30000);
     }
