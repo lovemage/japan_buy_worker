@@ -76,7 +76,7 @@
       const itemsEl = document.getElementById("order-items");
       const items = order.items || [];
       itemsEl.innerHTML = items.map(function(item) {
-        const spec = [item.desiredSize, item.desiredColor].filter(Boolean).join(" / ");
+        const spec = item.variantName || [item.desiredSize, item.desiredColor].filter(Boolean).join(" / ");
         return '<div class="order-item">' +
           '<div class="name">' + (item.productNameSnapshot || "商品") +
             (spec ? '<div class="spec">' + spec + ' × ' + item.quantity + '</div>' : '<div class="spec">× ' + item.quantity + '</div>') +

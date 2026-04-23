@@ -100,6 +100,39 @@ function renderSelectOptions(options, selected, placeholder) {
   return head + body;
 }
 
+function normalizeVariantOptions(options) {
+  if (!Array.isArray(options)) return [];
+  return options
+    .map((option) => {
+      if (!option || typeof option !== "object") return null;
+      const name = String(option.name || "").trim();
+      const stock = Number(option.stock);
+      const price = option.price === null || option.price === undefined || option.price === ""
+        ? null
+        : Number(option.price);
+      if (!name) return null;
+      return {
+        name,
+        stock: Number.isFinite(stock) && stock >= 0 ? Math.round(stock) : 0,
+        price: Number.isFinite(price) && price >= 0 ? Math.round(price) : null,
+      };
+    })
+    .filter(Boolean);
+}
+
+function applyVariantPricing(item) {
+  const variants = normalizeVariantOptions(item.variantOptions);
+  if (variants.length === 0) return;
+  const selected = variants.find((variant) => variant.name === item.variantName) || variants[0];
+  const adjusted = calcAdjustedPrices(selected.price, pricingConfig);
+  item.variantOptions = variants;
+  item.variantName = selected.name;
+  item.variantPriceJpyTaxIn = adjusted.jpy;
+  item.variantUnitPriceTwd = adjusted.twd;
+  item.priceJpyTaxIn = adjusted.jpy;
+  item.unitPriceTwd = adjusted.twd;
+}
+
 function renderDraftItems() {
   const wrapper = document.getElementById("request-items");
   if (!wrapper) {
@@ -123,15 +156,21 @@ function renderDraftItems() {
           <p class="request-item__price">${pricingConfig?.pricingMode === "manual" ? `NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")} (${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")})` : `${srcSym}${Number(item.priceJpyTaxIn || 0).toLocaleString("en-US")} → NT$${Number(item.unitPriceTwd || 0).toLocaleString("en-US")}`}</p>
           <div class="request-item__fields">
             <label class="request-item__field-label">數量<input type="number" min="1" data-field="quantity" value="${item.quantity || 1}" class="request-item__field-input request-item__field-input--qty" aria-label="${escapeHtml(item.productNameSnapshot)} 數量" /></label>
-            <label class="request-item__field-label">尺寸${
-              Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0
-                ? `<select data-field="desiredSize" class="request-item__field-input" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸">${renderSelectOptions(
-                    item.sizeOptions,
-                    item.desiredSize || "",
-                    "選擇"
-                  )}</select>`
-                : `<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" class="request-item__field-input request-item__field-input--size" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸" />`
-            }</label>
+            ${
+              Array.isArray(item.variantOptions) && item.variantOptions.length > 0
+                ? `<label class="request-item__field-label">規格<select data-field="variantName" class="request-item__field-input request-item__field-input--variant" aria-label="${escapeHtml(item.productNameSnapshot)} 規格">${renderSelectOptions(
+                    item.variantOptions.map((variant) => variant.name),
+                    item.variantName || "",
+                    "選擇規格"
+                  )}</select></label>`
+                : Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0
+                  ? `<label class="request-item__field-label">尺寸<select data-field="desiredSize" class="request-item__field-input" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸">${renderSelectOptions(
+                      item.sizeOptions,
+                      item.desiredSize || "",
+                      "選擇"
+                    )}</select></label>`
+                  : `<label class="request-item__field-label">尺寸<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" class="request-item__field-input request-item__field-input--size" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸" /></label>`
+            }
           </div>
           <div class="request-item__note-row">
             <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" class="request-item__field-input request-item__field-input--note" aria-label="${escapeHtml(item.productNameSnapshot)} 備註" />
@@ -157,7 +196,13 @@ function renderDraftItems() {
           return;
         }
         d.items[idx][field] = field === "quantity" ? Number(input.value || 1) : input.value;
+        if (field === "variantName") {
+          applyVariantPricing(d.items[idx]);
+        }
         setDraft(d);
+        if (field === "variantName") {
+          renderDraftItems();
+        }
         renderTotals();
       });
     });
@@ -270,7 +315,8 @@ async function hydrateDraftWithOptions() {
     }
     const hasSize = Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0;
     const hasColor = Array.isArray(item.colorOptions) && item.colorOptions.length > 0;
-    if (hasSize && hasColor) {
+    const hasVariants = Array.isArray(item.variantOptions) && item.variantOptions.length > 0;
+    if (hasVariants || (hasSize && hasColor)) {
       continue;
     }
     const res = await apiFetch(`/api/product?code=${encodeURIComponent(item.code)}`);
@@ -282,9 +328,15 @@ async function hydrateDraftWithOptions() {
     if (!product) {
       continue;
     }
+    const variantOptions = normalizeVariantOptions(product.variants);
     const sizeOptions = Array.isArray(product.sizeOptions) ? product.sizeOptions.filter(Boolean) : [];
     const colorOptions = Array.isArray(product.colorOptions) ? product.colorOptions.filter(Boolean) : [];
-    if (!item.priceJpyTaxIn || !item.unitPriceTwd) {
+    if (variantOptions.length > 0) {
+      item.variantOptions = variantOptions;
+      item.variantName = item.variantName || variantOptions[0].name;
+      applyVariantPricing(item);
+      changed = true;
+    } else if (!item.priceJpyTaxIn || !item.unitPriceTwd) {
       const adjusted = calcAdjustedPrices(product.priceJpyTaxIn, pricingConfig);
       item.priceJpyTaxIn = adjusted.jpy;
       item.unitPriceTwd = adjusted.twd;
@@ -410,6 +462,7 @@ async function onSubmit(event) {
       unitPriceTwd: Number(item.unitPriceTwd || 0),
       subtotalJpy: Number(item.priceJpyTaxIn || 0) * Number(item.quantity || 1),
       subtotalTwd: Number(item.unitPriceTwd || 0) * Number(item.quantity || 1),
+      variantName: item.variantName || "",
       desiredSize: item.desiredSize || "",
       desiredColor: item.desiredColor || "",
       note: item.note || "",

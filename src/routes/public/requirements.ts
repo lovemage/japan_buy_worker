@@ -10,6 +10,7 @@ type RequirementItemInput = {
   unitPriceTwd?: number | null;
   subtotalJpy?: number | null;
   subtotalTwd?: number | null;
+  variantName?: string;
   desiredSize?: string;
   desiredColor?: string;
   note?: string;
@@ -92,6 +93,10 @@ type RequirementItemRow = {
   note: string | null;
   product_code: string | null;
 };
+
+function normalizeVariantName(item: RequirementItemInput): string {
+  return (item.variantName || item.desiredSize || "").trim();
+}
 
 export async function handlePublicRequirements(
   request: Request,
@@ -233,7 +238,7 @@ INSERT INTO requirement_items (
         Number.isFinite(Number(item.unitPriceTwd)) ? Number(item.unitPriceTwd) : null,
         Number.isFinite(Number(item.subtotalJpy)) ? Number(item.subtotalJpy) : null,
         Number.isFinite(Number(item.subtotalTwd)) ? Number(item.subtotalTwd) : null,
-        (item.desiredSize || "").trim(),
+        normalizeVariantName(item),
         (item.desiredColor || "").trim(),
         (item.note || "").trim()
       )
@@ -373,6 +378,7 @@ ORDER BY ri.id ASC
           unitPriceTwd: Number(item.unit_price_twd || 0),
           subtotalJpy: Number(item.subtotal_jpy || 0),
           subtotalTwd: Number(item.subtotal_twd || 0),
+          variantName: item.desired_size || "",
           desiredSize: item.desired_size || "",
           desiredColor: item.desired_color || "",
           note: item.note || "",

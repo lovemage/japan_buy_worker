@@ -10,8 +10,30 @@ type ManualProductRequest = {
   specs: Record<string, string>;
   sizeOptions: string[];
   colorOptions: string[];
+  variants?: Array<{ name?: string; stock?: number | null; price?: number | null }>;
   images: string[];
 };
+
+function sanitizeVariants(input: unknown): Array<{ name: string; stock: number; price: number | null }> {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as { name?: string; stock?: number | null; price?: number | null };
+      const name = String(row.name || "").trim();
+      const stock = Number(row.stock);
+      const price = row.price === null || row.price === undefined || row.price === ""
+        ? null
+        : Number(row.price);
+      if (!name) return null;
+      return {
+        name,
+        stock: Number.isFinite(stock) && stock >= 0 ? Math.round(stock) : 10,
+        price: Number.isFinite(price) && price !== null && price >= 0 ? Math.round(price) : null,
+      };
+    })
+    .filter((item): item is { name: string; stock: number; price: number | null } => Boolean(item));
+}
 
 type ProductLimitState = {
   limit: number | null;
@@ -109,6 +131,7 @@ export async function handleAdminProducts(
     specs: body.specs || {},
     sizeOptions: Array.isArray(body.sizeOptions) ? body.sizeOptions : [],
     colorOptions: Array.isArray(body.colorOptions) ? body.colorOptions : [],
+    variants: sanitizeVariants(body.variants),
     gallery: imageUrls,
   });
 
@@ -227,6 +250,7 @@ export async function handleAdminProductUpdate(
     category?: string;
     priceJpyTaxIn?: number | null;
     description?: string;
+    variants?: Array<{ name?: string; stock?: number | null; price?: number | null }>;
     gallery?: string[];
     newImages?: string[];
     tags?: string[];
@@ -277,33 +301,70 @@ export async function handleAdminProductUpdate(
     payloadObj.description = body.description;
     payloadChanged = true;
   }
+  if (body.variants !== undefined) {
+    payloadObj.variants = sanitizeVariants(body.variants);
+    payloadChanged = true;
+  }
 
   // Handle gallery updates (existing URLs kept + new images uploaded)
   let finalGallery: string[] | undefined;
   if (body.gallery !== undefined || (body.newImages && body.newImages.length > 0)) {
-    let existingGallery: string[] = [];
-    if (body.gallery !== undefined) {
-      existingGallery = body.gallery;
-    } else {
-      existingGallery = Array.isArray(payloadObj.gallery) ? payloadObj.gallery as string[] : [];
-    }
+    const mixedEntries: string[] = body.gallery !== undefined
+      ? (body.gallery || [])
+      : (Array.isArray(payloadObj.gallery) ? (payloadObj.gallery as string[]) : []);
 
-    // Upload new images to R2
-    const newUrls: string[] = [];
-    if (body.newImages && body.newImages.length > 0 && ctx.r2) {
-      const code = current?.source_product_code || `product-${id}`;
-      const ts = Date.now();
-      for (let i = 0; i < body.newImages.length; i++) {
-        const raw = body.newImages[i];
-        const b64 = raw.includes(",") ? raw.split(",")[1] : raw;
-        const key = `${ctx.storeId}/products/${code}/${ts}-${i}.webp`;
-        const buffer = base64ToArrayBuffer(b64);
-        await ctx.r2.put(key, buffer, { httpMetadata: { contentType: "image/webp" } });
-        newUrls.push(`/api/images/${key}`);
+    type GalleryPart = { kind: "existing"; url: string } | { kind: "new"; base64: string };
+    const galleryParts: GalleryPart[] = [];
+
+    for (const rawEntry of mixedEntries) {
+      const entry = String(rawEntry || "").trim();
+      if (!entry) continue;
+      if (entry.startsWith("data:image/")) {
+        const b64 = entry.includes(",") ? entry.split(",")[1] : "";
+        if (b64) galleryParts.push({ kind: "new", base64: b64 });
+        continue;
+      }
+      if (entry.startsWith("/api/images/") || entry.startsWith("http://") || entry.startsWith("https://")) {
+        galleryParts.push({ kind: "existing", url: entry });
       }
     }
 
-    finalGallery = [...existingGallery, ...newUrls];
+    // Backward compatibility: allow legacy newImages array and append to current order.
+    for (const raw of body.newImages || []) {
+      const b64 = String(raw || "").includes(",") ? String(raw).split(",")[1] : String(raw || "");
+      if (b64) galleryParts.push({ kind: "new", base64: b64 });
+    }
+
+    const uploadedNewUrls: string[] = [];
+    const newPartIndexes = galleryParts
+      .map((p, idx) => ({ p, idx }))
+      .filter(({ p }) => p.kind === "new")
+      .map(({ idx }) => idx);
+
+    if (newPartIndexes.length > 0 && ctx.r2) {
+      const code = current?.source_product_code || `product-${id}`;
+      const ts = Date.now();
+      let uploadSeq = 0;
+      for (const partIndex of newPartIndexes) {
+        const part = galleryParts[partIndex] as { kind: "new"; base64: string };
+        const key = `${ctx.storeId}/products/${code}/${ts}-${uploadSeq}.webp`;
+        uploadSeq += 1;
+        const buffer = base64ToArrayBuffer(part.base64);
+        await ctx.r2.put(key, buffer, { httpMetadata: { contentType: "image/webp" } });
+        uploadedNewUrls.push(`/api/images/${key}`);
+      }
+    }
+
+    let uploadCursor = 0;
+    finalGallery = galleryParts
+      .map((part) => {
+        if (part.kind === "existing") return part.url;
+        const uploaded = uploadedNewUrls[uploadCursor];
+        uploadCursor += 1;
+        return uploaded || "";
+      })
+      .filter(Boolean);
+
     payloadObj.gallery = finalGallery;
     payloadChanged = true;
 

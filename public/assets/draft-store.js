@@ -27,10 +27,14 @@ export function addItem(item) {
   const draft = getDraft();
   const addQty = Math.max(1, Number(item.quantity || 1));
   const selectedImageUrl = item.selectedImageUrl || item.imageUrl || "";
+  const variantName = (item.variantName || "").trim();
+  const variantPriceJpyTaxIn = item.variantPriceJpyTaxIn ?? item.priceJpyTaxIn ?? null;
+  const variantUnitPriceTwd = item.variantUnitPriceTwd ?? item.unitPriceTwd ?? null;
   const found = draft.items.find(
     (x) =>
       x.productId === item.productId &&
-      (x.selectedImageUrl || x.imageUrl || "") === selectedImageUrl
+      (x.selectedImageUrl || x.imageUrl || "") === selectedImageUrl &&
+      (x.variantName || "") === variantName
   );
   if (found) {
     found.quantity = Number(found.quantity || 1) + addQty;
@@ -46,6 +50,18 @@ export function addItem(item) {
     if ((!Array.isArray(found.colorOptions) || found.colorOptions.length === 0) && Array.isArray(item.colorOptions)) {
       found.colorOptions = item.colorOptions;
     }
+    if ((!Array.isArray(found.variantOptions) || found.variantOptions.length === 0) && Array.isArray(item.variantOptions)) {
+      found.variantOptions = item.variantOptions;
+    }
+    if (!found.variantName && variantName) {
+      found.variantName = variantName;
+    }
+    if ((found.variantPriceJpyTaxIn === null || found.variantPriceJpyTaxIn === undefined) && variantPriceJpyTaxIn !== null && variantPriceJpyTaxIn !== undefined) {
+      found.variantPriceJpyTaxIn = variantPriceJpyTaxIn;
+    }
+    if ((found.variantUnitPriceTwd === null || found.variantUnitPriceTwd === undefined) && variantUnitPriceTwd !== null && variantUnitPriceTwd !== undefined) {
+      found.variantUnitPriceTwd = variantUnitPriceTwd;
+    }
   } else {
     draft.items.push({
       productId: item.productId,
@@ -57,10 +73,14 @@ export function addItem(item) {
       note: "",
       imageUrl: item.imageUrl || "",
       selectedImageUrl,
-      priceJpyTaxIn: item.priceJpyTaxIn ?? null,
-      unitPriceTwd: item.unitPriceTwd ?? null,
+      priceJpyTaxIn: variantPriceJpyTaxIn,
+      unitPriceTwd: variantUnitPriceTwd,
       sizeOptions: Array.isArray(item.sizeOptions) ? item.sizeOptions : [],
       colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],
+      variantOptions: Array.isArray(item.variantOptions) ? item.variantOptions : [],
+      variantName,
+      variantPriceJpyTaxIn,
+      variantUnitPriceTwd,
     });
   }
   setDraft(draft);

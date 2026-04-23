@@ -53,6 +53,7 @@ function mapProduct(item: ProductRow) {
     displayImageUrl: toDisplayImageUrl(item.image_url),
     lastCrawledAt: item.last_crawled_at,
     gallery: payload.gallery,
+    variants: payload.variants,
     tags: (() => { try { return JSON.parse(item.tags || "[]"); } catch { return []; } })(),
   };
 }
@@ -363,6 +364,7 @@ LIMIT 1
         description,
         sizeOptions: storedPayload.sizeOptions,
         colorOptions: storedPayload.colorOptions,
+        variants: storedPayload.variants,
         specifications: {
           code: mapped.code,
           category: mapped.category || "",

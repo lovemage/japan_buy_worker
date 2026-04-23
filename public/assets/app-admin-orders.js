@@ -82,11 +82,12 @@ function renderForms(forms) {
     const itemsHtml = Array.isArray(form.items)
       ? form.items.map((item) => {
           const imageUrl = withProductImageFallback(item.selectedImageUrl || item.imageUrl || "");
+          const variantText = item.variantName || item.desiredSize || item.desiredColor || "";
           return `<li class="admin-item-row">
             <img class="admin-item-image" src="${imageUrl}" alt="${item.productNameSnapshot}" data-fallback="product" />
             <div class="admin-item-info">
               <p><strong>${item.productNameSnapshot}</strong>（${item.code || "無代碼"}）x ${item.quantity}</p>
-              <p class="meta">尺寸：${item.desiredSize || "未選"}，顏色：${item.desiredColor || "未選"}</p>
+              <p class="meta">規格：${variantText || "未選"}</p>
               <p class="meta">單價 &yen;${formatCurrency(item.unitPriceJpy)} / NT$${formatCurrency(item.unitPriceTwd)}，小計 &yen;${formatCurrency(item.subtotalJpy)} / NT$${formatCurrency(item.subtotalTwd)}</p>
               ${item.note ? `<p class="meta">備註：${item.note}</p>` : ""}
               ${item.productUrl ? `<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer" class="meta">原商品頁</a>` : ""}

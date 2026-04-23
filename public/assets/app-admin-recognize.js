@@ -4,6 +4,86 @@ const MAX_IMAGE_SIZE = 800;
 const WEBP_QUALITY = 0.8;
 
 let selectedImages = [];
+let draftVariants = [];
+let manualVariants = [];
+
+function normalizeVariants(items, fallbackPrice) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const name = String(item.name || "").trim();
+      const stock = Number(item.stock);
+      const rawPrice = item.price === null || item.price === undefined || item.price === ""
+        ? fallbackPrice
+        : item.price;
+      const price = rawPrice === null || rawPrice === undefined || rawPrice === ""
+        ? null
+        : Number(rawPrice);
+      if (!name) return null;
+      return {
+        name,
+        stock: Number.isFinite(stock) && stock >= 0 ? Math.round(stock) : 10,
+        price: Number.isFinite(price) && price >= 0 ? Math.round(price) : null,
+      };
+    })
+    .filter(Boolean);
+}
+
+function getVariantState(prefix) {
+  return prefix === "me" ? manualVariants : draftVariants;
+}
+
+function setVariantState(prefix, value) {
+  if (prefix === "me") manualVariants = value;
+  else draftVariants = value;
+}
+
+function getVariantFallbackPrice(prefix) {
+  const price = Number(document.getElementById(`${prefix}-price`)?.value || 0);
+  return Number.isFinite(price) && price >= 0 ? Math.round(price) : null;
+}
+
+function renderVariantEditor(prefix) {
+  const root = document.getElementById(`${prefix}-variants`);
+  if (!root) return;
+  const variants = getVariantState(prefix);
+  if (variants.length === 0) {
+    root.innerHTML = '<div class="variant-empty">尚未新增規格</div>';
+    return;
+  }
+  root.innerHTML = `<div class="variant-editor__list">${variants.map((variant, index) => `
+    <div class="variant-row" data-prefix="${prefix}" data-variant-index="${index}">
+      <label>規格名稱<input type="text" class="input-cute" data-field="name" value="${variant.name || ""}" placeholder="例如：單盒 / 三盒組" /></label>
+      <label>數量<input type="number" min="0" class="input-cute" data-field="stock" value="${variant.stock ?? 10}" /></label>
+      <label>價格<input type="number" min="0" class="input-cute" data-field="price" value="${variant.price ?? ""}" /></label>
+      <button type="button" class="variant-remove" data-remove-index="${index}" data-prefix="${prefix}">×</button>
+    </div>
+  `).join("")}</div>`;
+
+  root.querySelectorAll(".variant-row input").forEach((input) => {
+    input.addEventListener("input", () => {
+      const row = input.closest(".variant-row");
+      const stateKey = row?.getAttribute("data-prefix");
+      const index = Number(row?.getAttribute("data-variant-index"));
+      const field = input.getAttribute("data-field");
+      const state = getVariantState(stateKey);
+      if (!Number.isInteger(index) || index < 0 || !field || !state[index]) return;
+      state[index][field] = field === "name" ? input.value : Number(input.value || 0);
+    });
+  });
+
+  root.querySelectorAll(".variant-remove").forEach((button) => {
+    button.addEventListener("click", () => {
+      const stateKey = button.getAttribute("data-prefix");
+      const index = Number(button.getAttribute("data-remove-index"));
+      const state = getVariantState(stateKey);
+      if (!Number.isInteger(index) || index < 0) return;
+      state.splice(index, 1);
+      renderVariantEditor(stateKey);
+    });
+  });
+}
 
 function setDescriptionEditButtonState(button, editing) {
   if (!button) return;
@@ -237,6 +317,8 @@ function fillDraft(result) {
   set("draft-brand", result.brand);
   set("draft-category", result.category);
   set("draft-price", result.priceJpy);
+  draftVariants = [];
+  renderVariantEditor("draft");
   set("draft-description", result.description);
   syncDraftDescriptionPreview();
   setDraftDescriptionEditing(false);
@@ -259,6 +341,8 @@ function fillDraft(result) {
 function cancelDraft() {
   const draft = document.getElementById("recognize-draft");
   if (draft) draft.classList.add("hidden");
+  draftVariants = [];
+  renderVariantEditor("draft");
   setDraftDescriptionEditing(false);
   showRecognizeStatus("");
   showListingStatus("");
@@ -291,6 +375,7 @@ async function confirmListing() {
     brand: get("draft-brand"),
     category: get("draft-category"),
     priceJpyTaxIn: Number.isFinite(priceJpy) ? priceJpy : null,
+    variants: normalizeVariants(draftVariants, priceJpy),
     description: get("draft-description"),
     specs,
     sizeOptions: get("draft-sizes").split(",").map((s) => s.trim()).filter(Boolean),
@@ -333,12 +418,15 @@ async function confirmListing() {
 
 function updateHint() {
   const hint = document.getElementById("recognize-hint");
+  const addMoreHint = document.getElementById("camera-add-more-hint");
+  const hasImages = selectedImages.length > 0;
+
+  if (addMoreHint) {
+    addMoreHint.classList.toggle("hidden", !hasImages);
+  }
+
   if (hint) {
-    if (selectedImages.length > 0) {
-      hint.classList.remove("hidden");
-    } else {
-      hint.classList.add("hidden");
-    }
+    hint.classList.toggle("hidden", !hasImages);
   }
 }
 
@@ -384,12 +472,16 @@ function showManualEntryForm() {
   const draft = document.getElementById("recognize-draft");
   if (draft) draft.classList.add("hidden");
   if (form) form.classList.remove("hidden");
+  manualVariants = [];
+  renderVariantEditor("me");
   loadManualEntryCategories();
 }
 
 function cancelManualEntry() {
   const form = document.getElementById("manual-entry-form");
   if (form) form.classList.add("hidden");
+  manualVariants = [];
+  renderVariantEditor("me");
   showManualEntryStatus("");
 }
 
@@ -425,6 +517,7 @@ async function submitManualEntry() {
     brand: get("me-brand"),
     category: get("me-category"),
     priceJpyTaxIn: Number.isFinite(priceJpy) ? priceJpy : null,
+    variants: normalizeVariants(manualVariants, priceJpy),
     description: get("me-description"),
     specs: {},
     sizeOptions: get("me-sizes").split(",").map((s) => s.trim()).filter(Boolean),
@@ -563,6 +656,14 @@ function initPhotoRecognize() {
 
   const confirmBtn = document.getElementById("btn-confirm-listing");
   if (confirmBtn) confirmBtn.addEventListener("click", confirmListing);
+  document.getElementById("draft-add-variant")?.addEventListener("click", () => {
+    draftVariants.push({ name: "", stock: 10, price: getVariantFallbackPrice("draft") });
+    renderVariantEditor("draft");
+  });
+  document.getElementById("me-add-variant")?.addEventListener("click", () => {
+    manualVariants.push({ name: "", stock: 10, price: getVariantFallbackPrice("me") });
+    renderVariantEditor("me");
+  });
 
   const aiEditBtn = document.getElementById("btn-ai-image-edit");
   if (aiEditBtn) aiEditBtn.addEventListener("click", doAiImageEdit);
@@ -581,6 +682,8 @@ function initPhotoRecognize() {
   if (draftDescriptionInput) {
     draftDescriptionInput.addEventListener("input", syncDraftDescriptionPreview);
   }
+  document.getElementById("draft-price")?.addEventListener("input", () => renderVariantEditor("draft"));
+  document.getElementById("me-price")?.addEventListener("input", () => renderVariantEditor("me"));
 
   const manualEntryBtn = document.getElementById("btn-manual-entry");
   if (manualEntryBtn) manualEntryBtn.addEventListener("click", showManualEntryForm);
@@ -594,6 +697,8 @@ function initPhotoRecognize() {
   initCameraModeToggle();
   syncDraftDescriptionPreview();
   setDraftDescriptionEditing(false);
+  renderVariantEditor("draft");
+  renderVariantEditor("me");
   updateButtons();
 }
 

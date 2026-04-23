@@ -45,10 +45,31 @@ function fmtSrcPrice(val) {
   return `${sym}${val.toLocaleString("en-US")}`;
 }
 
+function normalizeVariants(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const name = String(item.name || "").trim();
+      const stock = Number(item.stock);
+      const price = item.price === null || item.price === undefined || item.price === ""
+        ? null
+        : Number(item.price);
+      if (!name) return null;
+      return {
+        name,
+        stock: Number.isFinite(stock) && stock >= 0 ? Math.round(stock) : 0,
+        price: Number.isFinite(price) && price >= 0 ? Math.round(price) : null,
+      };
+    })
+    .filter(Boolean);
+}
+
 function renderProduct(item, pricing) {
   const title = item.nameZhTw || item.nameJa || "未命名商品";
   const mainImage = withProductImageFallback(item.mainImageUrl || item.displayImageUrl || item.imageUrl || "");
   const images = Array.isArray(item.gallery) && item.gallery.length > 0 ? item.gallery : [mainImage];
+  const variants = normalizeVariants(item.variants);
 
   const main = document.getElementById("detail-main-image");
   const mainWrap = document.getElementById("detail-main-wrap");
@@ -124,22 +145,6 @@ function renderProduct(item, pricing) {
 
   bindText("detail-category", `分類：${item.category || "未分類"}`);
   bindText("detail-color-count", `顏色數：${item.colorCount ?? "-"}`);
-  bindText(
-    "detail-size-options",
-    `尺寸：${
-      Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0
-        ? item.sizeOptions.join(" / ")
-        : "未提供"
-    }`
-  );
-  bindText(
-    "detail-color-options",
-    `顏色：${
-      Array.isArray(item.colorOptions) && item.colorOptions.length > 0
-        ? item.colorOptions.join(" / ")
-        : "未提供"
-    }`
-  );
   bindText("detail-description", item.description || "");
 
   const specList = document.getElementById("detail-spec-list");
@@ -164,6 +169,56 @@ function renderProduct(item, pricing) {
   // Quantity stepper
   initQuantityStepper();
 
+  const variantBox = document.getElementById("detail-variant-box");
+  const variantSelect = document.getElementById("detail-variant-select");
+  const variantStock = document.getElementById("detail-variant-stock");
+  let selectedVariant = variants[0] || null;
+
+  const renderPriceBlock = () => {
+    const effectiveBase = selectedVariant?.price ?? item.priceJpyTaxIn;
+    const adjusted = calcAdjustedPrices(effectiveBase, pricing);
+    if (priceBlock) {
+      if (adjusted.twd !== null) {
+        let subLine = "";
+        if (adjusted.src !== null) {
+          subLine = pricing?.pricingMode === "manual"
+            ? `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}</p>`
+            : `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`;
+        }
+        priceBlock.innerHTML =
+          `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` + subLine;
+      } else {
+        priceBlock.innerHTML = `<p class="detail-price-twd">價格未提供</p>`;
+      }
+    }
+    return adjusted;
+  };
+
+  if (variantBox && variantSelect) {
+    if (variants.length > 0) {
+      variantBox.classList.remove("hidden");
+      variantSelect.innerHTML = variants
+        .map((variant, idx) => {
+          const base = variant.price ?? item.priceJpyTaxIn;
+          const adjusted = calcAdjustedPrices(base, pricing);
+          const twdText = adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供";
+          return `<option value="${variant.name}" ${idx === 0 ? "selected" : ""}>${variant.name}｜${twdText}</option>`;
+        })
+        .join("");
+      const syncVariantMeta = () => {
+        selectedVariant = variants.find((variant) => variant.name === variantSelect.value) || variants[0] || null;
+        if (variantStock) {
+          variantStock.textContent = selectedVariant ? `剩餘數量：${selectedVariant.stock}` : "";
+        }
+        renderPriceBlock();
+      };
+      variantSelect.addEventListener("change", syncVariantMeta);
+      syncVariantMeta();
+    } else {
+      variantBox.classList.add("hidden");
+    }
+  }
+
   // Add to cart with delight
   const addButton = document.getElementById("detail-add");
   const qtyInput = document.getElementById("detail-quantity");
@@ -171,6 +226,7 @@ function renderProduct(item, pricing) {
     addButton.addEventListener("click", () => {
       const quantity = Math.max(1, Number(qtyInput?.value || 1));
       const selectedImageUrl = main?.src || images[0] || mainImage;
+      const adjusted = renderPriceBlock();
       addItem({
         productId: item.id,
         code: item.code || "",
@@ -182,6 +238,10 @@ function renderProduct(item, pricing) {
         unitPriceTwd: adjusted.twd,
         sizeOptions: Array.isArray(item.sizeOptions) ? item.sizeOptions : [],
         colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],
+        variantName: selectedVariant?.name || "",
+        variantPriceJpyTaxIn: adjusted.src,
+        variantUnitPriceTwd: adjusted.twd,
+        variantOptions: variants,
       });
       renderDraftCount();
       bumpFloatingButton();

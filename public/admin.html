@@ -87,6 +87,13 @@
             </label>
             <label><span id="edit-price-label">價格（<span class="src-currency">JPY</span>）</span><input id="edit-price" type="number" min="0" class="input-cute" /></label>
             <div id="edit-price-info" style="margin:-4px 0 8px;padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12px;color:var(--admin-text-secondary);line-height:1.8;display:none;"></div>
+            <div class="variant-editor">
+              <div class="variant-editor__head">
+                <label>商品規格</label>
+                <button id="edit-add-variant" class="button secondary" type="button">+ 新增</button>
+              </div>
+              <div id="edit-variants"></div>
+            </div>
             <div style="margin:-4px 0 8px;text-align:right;"><a href="#" id="edit-pricing-help-link" style="font-size:11px;color:var(--admin-text-muted);text-decoration:underline;">定價說明</a></div>
             <div id="edit-pricing-help-popup" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;align-items:center;justify-content:center;display:none;">
               <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);" id="edit-pricing-help-backdrop"></div>
@@ -309,6 +316,7 @@
               <input id="photo-input" type="file" accept="image/*" multiple hidden />
             </label>
           </div>
+          <p id="camera-add-more-hint" class="meta hidden" style="text-align:center;margin-top:2px;font-size:12px;line-height:1.4;">可繼續新增商品圖片</p>
           <p class="meta" id="photo-count" style="text-align:center;"></p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -420,6 +428,13 @@
           <label>品牌<input id="draft-brand" type="text" class="input-cute" /></label>
           <label>分類<input id="draft-category" type="text" class="input-cute" /></label>
           <label><span class="price-label-dynamic">價格（<span class="src-currency">JPY</span>）</span><input id="draft-price" type="number" min="0" class="input-cute" /></label>
+          <div class="variant-editor">
+            <div class="variant-editor__head">
+              <label>商品規格</label>
+              <button id="draft-add-variant" class="button secondary" type="button">+ 新增</button>
+            </div>
+            <div id="draft-variants"></div>
+          </div>
           <div class="description-field">
             <div class="description-field__head">
               <label for="draft-description">商品描述</label>
@@ -452,6 +467,13 @@
           <label>分類<input id="me-category" type="text" class="input-cute" list="me-category-datalist" /></label>
           <datalist id="me-category-datalist"></datalist>
           <label><span class="price-label-dynamic">價格（<span class="src-currency">JPY</span>）</span><input id="me-price" type="number" min="0" class="input-cute" /></label>
+          <div class="variant-editor">
+            <div class="variant-editor__head">
+              <label>商品規格</label>
+              <button id="me-add-variant" class="button secondary" type="button">+ 新增</button>
+            </div>
+            <div id="me-variants"></div>
+          </div>
           <label>商品描述<textarea id="me-description" rows="3" class="input-cute"></textarea></label>
           <label>尺寸選項（逗號分隔）<input id="me-sizes" type="text" class="input-cute" placeholder="S, M, L" /></label>
           <label>顏色選項（逗號分隔）<input id="me-colors" type="text" class="input-cute" placeholder="紅色, 藍色" /></label>

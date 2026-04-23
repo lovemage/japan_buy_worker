@@ -11,11 +11,19 @@ test('parseStoredProductPayload returns gallery and schema from products.source_
     gallery: ['a.jpg', 'b.jpg'],
     schema: { hasVariant: [{ sku: 'A' }, { sku: 'B' }] },
     description: 'desc',
+    variants: [
+      { name: '大包', stock: 10, price: 1200 },
+      { name: '小包', stock: 5, price: 900 },
+    ],
   }));
 
   assert.deepEqual(parsed.gallery, ['a.jpg', 'b.jpg']);
   assert.equal(parsed.description, 'desc');
   assert.deepEqual(parsed.schema, { hasVariant: [{ sku: 'A' }, { sku: 'B' }] });
+  assert.deepEqual(parsed.variants, [
+    { name: '大包', stock: 10, price: 1200 },
+    { name: '小包', stock: 5, price: 900 },
+  ]);
 });
 
 test('parseStoredProductPayload is resilient to invalid json', () => {
@@ -23,6 +31,7 @@ test('parseStoredProductPayload is resilient to invalid json', () => {
   assert.deepEqual(parsed.gallery, []);
   assert.equal(parsed.description, '');
   assert.equal(parsed.schema, null);
+  assert.deepEqual(parsed.variants, []);
 });
 
 test('buildProductUpsertPayload includes payload and status badges on products row', () => {

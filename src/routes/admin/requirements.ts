@@ -219,6 +219,7 @@ ORDER BY ri.id DESC
           unitPriceTwd: item.unit_price_twd,
           subtotalJpy: item.subtotal_jpy,
           subtotalTwd: item.subtotal_twd,
+          variantName: item.desired_size || "",
           desiredSize: item.desired_size || "",
           desiredColor: item.desired_color || "",
           note: item.note || "",

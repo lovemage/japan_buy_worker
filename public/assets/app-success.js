@@ -31,8 +31,9 @@ function buildCopyText(requirement) {
   const shippingText = shippingMethodText(requirement.shippingMethod);
   const itemLines = requirement.items
     .map((item, idx) => {
+      const variantText = item.variantName || item.desiredSize || item.desiredColor || "未選";
       return `${idx + 1}. ${item.productNameSnapshot} (${item.code || "無代碼"}) x${item.quantity}
-   規格: 尺寸=${item.desiredSize || "未選"}, 顏色=${item.desiredColor || "未選"}
+   規格: ${variantText}
    選擇圖片: ${item.selectedImageUrl || "-"}
    金額: ${_srcCurrency} ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}
    商品頁: ${item.productUrl || "-"}`;
@@ -64,8 +65,9 @@ function renderDetail(requirement) {
   const shippingText = shippingMethodText(requirement.shippingMethod);
   const itemsHtml = requirement.items
     .map((item) => {
+      const variantText = item.variantName || item.desiredSize || item.desiredColor || "未選";
       return `<li>${item.productNameSnapshot}（${item.code || "無代碼"}）x ${item.quantity}，
-      尺寸：${item.desiredSize || "未選"}，顏色：${item.desiredColor || "未選"}，
+      規格：${variantText}，
       選圖：${item.selectedImageUrl ? `<a href="${item.selectedImageUrl}" target="_blank" rel="noopener noreferrer">查看</a>` : "無"}，
       小計 ${_srcCurrency} ${formatNumber(item.subtotalJpy)} / TWD ${formatNumber(item.subtotalTwd)}</li>`;
     })

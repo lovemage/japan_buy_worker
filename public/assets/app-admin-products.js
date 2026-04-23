@@ -95,6 +95,76 @@ function updateEditPriceInfo() {
   infoEl.style.display = "";
 }
 
+let editVariants = [];
+
+function normalizeVariantRows(items, fallbackPrice) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const name = String(item.name || "").trim();
+      const stock = Number(item.stock);
+      const rawPrice = item.price === null || item.price === undefined || item.price === ""
+        ? fallbackPrice
+        : item.price;
+      const price = rawPrice === null || rawPrice === undefined || rawPrice === ""
+        ? null
+        : Number(rawPrice);
+      if (!name) return null;
+      return {
+        name,
+        stock: Number.isFinite(stock) && stock >= 0 ? Math.round(stock) : 10,
+        price: Number.isFinite(price) && price >= 0 ? Math.round(price) : null,
+      };
+    })
+    .filter(Boolean);
+}
+
+function getDefaultEditVariant() {
+  const price = Number(document.getElementById("edit-price")?.value || 0);
+  return {
+    name: "",
+    stock: 10,
+    price: Number.isFinite(price) && price >= 0 ? Math.round(price) : null,
+  };
+}
+
+function renderEditVariants() {
+  const root = document.getElementById("edit-variants");
+  if (!root) return;
+  if (editVariants.length === 0) {
+    root.innerHTML = '<div class="variant-empty">尚未新增規格</div>';
+    return;
+  }
+  root.innerHTML = `<div class="variant-editor__list">${editVariants.map((variant, index) => `
+    <div class="variant-row" data-variant-index="${index}">
+      <label>規格名稱<input type="text" class="input-cute" data-field="name" value="${variant.name || ""}" placeholder="例如：大包 / 小包" /></label>
+      <label>數量<input type="number" min="0" class="input-cute" data-field="stock" value="${variant.stock ?? 10}" /></label>
+      <label>價格<input type="number" min="0" class="input-cute" data-field="price" value="${variant.price ?? ""}" /></label>
+      <button type="button" class="variant-remove" data-remove-index="${index}">×</button>
+    </div>
+  `).join("")}</div>`;
+
+  root.querySelectorAll(".variant-row input").forEach((input) => {
+    input.addEventListener("input", () => {
+      const row = input.closest(".variant-row");
+      const index = Number(row?.getAttribute("data-variant-index"));
+      const field = input.getAttribute("data-field");
+      if (!Number.isInteger(index) || index < 0 || !field) return;
+      editVariants[index][field] = field === "name" ? input.value : Number(input.value || 0);
+    });
+  });
+
+  root.querySelectorAll(".variant-remove").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.getAttribute("data-remove-index"));
+      if (!Number.isInteger(index) || index < 0) return;
+      editVariants.splice(index, 1);
+      renderEditVariants();
+    });
+  });
+}
+
 let adminPricing = null;
 async function loadAdminPricing() {
   if (adminPricing) return adminPricing;
@@ -479,8 +549,19 @@ async function openEditModal(btn) {
   updateEditPriceInfo();
   const priceInput = document.getElementById("edit-price");
   if (priceInput) {
-    priceInput.oninput = updateEditPriceInfo;
+    priceInput.oninput = () => {
+      updateEditPriceInfo();
+      editVariants = editVariants.map((variant) => ({
+        ...variant,
+        price: variant.price === null || variant.price === undefined || variant.price === 0
+          ? getDefaultEditVariant().price
+          : variant.price,
+      }));
+      renderEditVariants();
+    };
   }
+  editVariants = [];
+  renderEditVariants();
   document.getElementById("edit-status").textContent = "";
 
   // Set button visibility based on active state
@@ -593,10 +674,12 @@ async function openEditModal(btn) {
     if (res.ok) {
       const data = await res.json();
       editGallery = Array.isArray(data.product?.gallery) ? data.product.gallery : [];
+      editVariants = normalizeVariantRows(data.product?.variants, document.getElementById("edit-price")?.value);
       const descEl = document.getElementById("edit-description");
       if (descEl && data.product?.description) descEl.value = data.product.description;
       syncEditDescriptionPreview();
       setEditDescriptionEditing(false);
+      renderEditVariants();
     }
   }
   rebuildEditOrdered();
@@ -623,6 +706,8 @@ function closeEditModal() {
   editNewImages = [];
   editGallery = [];
   editOrderedItems = [];
+  editVariants = [];
+  renderEditVariants();
   hideEditCategoryDropdown();
 }
 
@@ -679,9 +764,12 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
+    variants: normalizeVariantRows(editVariants, document.getElementById("edit-price")?.value),
     description: document.getElementById("edit-description")?.value?.trim() || "",
-    gallery: editOrderedItems.filter(i => i.type === "existing").map(i => i.url),
-    newImages: editOrderedItems.filter(i => i.type === "new").map(i => i.img.base64),
+    // Keep exact visual order: existing URLs + new images as data URLs.
+    // Backend will detect data URLs and upload them, then persist in the same order.
+    gallery: editOrderedItems.map((i) => (i.type === "existing" ? i.url : i.img.dataUrl)),
+    newImages: [],
     tags,
   };
 
@@ -709,11 +797,11 @@ async function saveEdit() {
 
 async function doEditAiImage() {
   const AI_IMAGE_EDIT_TIPS = [
-    "小技巧：拍攝時連同外包裝一起拍攝，效果更佳",
-    "小技巧：商品圖片盡量保持商品完整性，效果更佳",
-    "小技巧：將商品置中，拍攝時對焦商品，效果更佳",
-    "小技巧：避免逆光與過暗環境，使用明亮均勻光線效果更佳",
-    "小技巧：背景保持乾淨簡單，避免雜物干擾，效果更佳",
+    "小技巧：拍攝時把商品和外包裝一起入鏡，AI 還原會更穩定。",
+    "小技巧：盡量把商品完整拍進畫面，避免切到邊角，效果會更自然。",
+    "小技巧：商品放在畫面正中央，先對焦再拍，優化後會更俐落。",
+    "小技巧：用明亮、均勻的光線拍攝，避免逆光，細節會更清楚。",
+    "小技巧：背景越乾淨越好，先移開雜物，成圖會更專業。",
   ];
   let aiImageEditTipTimer = null;
 
@@ -846,6 +934,10 @@ async function doEditAiImage() {
 function initEditModal() {
   document.getElementById("edit-cancel")?.addEventListener("click", closeEditModal);
   document.getElementById("edit-save")?.addEventListener("click", saveEdit);
+  document.getElementById("edit-add-variant")?.addEventListener("click", () => {
+    editVariants.push(getDefaultEditVariant());
+    renderEditVariants();
+  });
   document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
   document.getElementById("btn-edit-product-description")?.addEventListener("click", function() {
     const { textarea } = getEditDescriptionElements();

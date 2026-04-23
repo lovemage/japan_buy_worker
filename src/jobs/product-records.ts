@@ -7,6 +7,7 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
   specs: Record<string, string>;
   sizeOptions: string[];
   colorOptions: string[];
+  variants: Array<{ name: string; stock: number; price: number | null }>;
 } {
   try {
     const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
@@ -17,6 +18,25 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
     for (const [k, v] of Object.entries(rawSpecs)) {
       if (typeof v === 'string' && v.trim()) specs[k] = v;
     }
+    const variants = Array.isArray(parsed.variants)
+      ? parsed.variants
+          .map((entry) => {
+            if (!entry || typeof entry !== 'object') return null;
+            const name = typeof (entry as Record<string, unknown>).name === 'string'
+              ? String((entry as Record<string, unknown>).name).trim()
+              : '';
+            const stockNum = Number((entry as Record<string, unknown>).stock);
+            const priceNum = Number((entry as Record<string, unknown>).price);
+            if (!name) return null;
+            return {
+              name,
+              stock: Number.isFinite(stockNum) && stockNum >= 0 ? Math.round(stockNum) : 0,
+              price: Number.isFinite(priceNum) && priceNum >= 0 ? Math.round(priceNum) : null,
+            };
+          })
+          .filter((entry): entry is { name: string; stock: number; price: number | null } => Boolean(entry))
+      : [];
+
     return {
       gallery: Array.isArray(parsed.gallery)
         ? parsed.gallery.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
@@ -33,6 +53,7 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
       colorOptions: Array.isArray(parsed.colorOptions)
         ? parsed.colorOptions.filter((x): x is string => typeof x === 'string')
         : [],
+      variants,
     };
   } catch {
     return {
@@ -42,6 +63,7 @@ export function parseStoredProductPayload(raw: string | null | undefined): {
       specs: {},
       sizeOptions: [],
       colorOptions: [],
+      variants: [],
     };
   }
 }
