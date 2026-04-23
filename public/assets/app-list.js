@@ -507,9 +507,22 @@ function closeDrawer() {
   document.body.style.overflow = "";
 }
 
+function getUniqueElements(selectors) {
+  const seen = new Set();
+  return selectors
+    .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+    .filter((element) => {
+      if (seen.has(element)) {
+        return false;
+      }
+      seen.add(element);
+      return true;
+    });
+}
+
 function renderCategoryFilters(categories) {
-  const wrapper = document.getElementById("category-filters");
-  if (!wrapper) {
+  const wrappers = getUniqueElements(["#category-filters", "[data-category-filters]"]);
+  if (wrappers.length === 0) {
     return;
   }
   const selectedCategory = getCategory();
@@ -522,19 +535,22 @@ function renderCategoryFilters(categories) {
         </button>`
     ),
   ];
-  wrapper.innerHTML = buttons.join("");
-  wrapper.querySelectorAll("button[data-category]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const category = (button.getAttribute("data-category") || "").trim();
-      closeDrawer();
-      goPage(1, category);
+  const html = buttons.join("");
+  wrappers.forEach((wrapper) => {
+    wrapper.innerHTML = html;
+    wrapper.querySelectorAll("button[data-category]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const category = (button.getAttribute("data-category") || "").trim();
+        closeDrawer();
+        goPage(1, category);
+      });
     });
   });
 }
 
 function renderBrandFilters(brands) {
-  const wrapper = document.getElementById("brand-filters");
-  if (!wrapper) {
+  const wrappers = getUniqueElements(["#brand-filters", "[data-brand-filters]"]);
+  if (wrappers.length === 0) {
     return;
   }
 
@@ -549,16 +565,19 @@ function renderBrandFilters(brands) {
         </button>`
     ),
   ];
-  wrapper.innerHTML = buttons.join("");
-  wrapper.querySelectorAll("button[data-brand]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const brand = (button.getAttribute("data-brand") || "").trim();
-      closeDrawer();
-      if (!brand) {
-        goPage(1, getCategory(), getPromoMaxTwd(), []);
-        return;
-      }
-      goPage(1, getCategory(), getPromoMaxTwd(), nextSingleBrandSelection(getSelectedBrands(), brand));
+  const html = buttons.join("");
+  wrappers.forEach((wrapper) => {
+    wrapper.innerHTML = html;
+    wrapper.querySelectorAll("button[data-brand]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const brand = (button.getAttribute("data-brand") || "").trim();
+        closeDrawer();
+        if (!brand) {
+          goPage(1, getCategory(), getPromoMaxTwd(), []);
+          return;
+        }
+        goPage(1, getCategory(), getPromoMaxTwd(), nextSingleBrandSelection(getSelectedBrands(), brand));
+      });
     });
   });
 }

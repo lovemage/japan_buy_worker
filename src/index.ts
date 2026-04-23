@@ -244,7 +244,7 @@ export default {
 
     // ── Platform admin ──
     if (url.pathname.startsWith("/platform-admin") || url.pathname.startsWith("/api/platform-admin")) {
-      return handlePlatformAdmin(request, env.DB, env.PLATFORM_ADMIN_PASSWORD || "", env.ASSETS);
+      return handlePlatformAdmin(request, env.DB, env.PLATFORM_ADMIN_PASSWORD || "", env.ASSETS, env.IMAGES);
     }
 
     // ── Public API: plan limits (for landing page) ──

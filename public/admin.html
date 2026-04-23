@@ -556,7 +556,7 @@
         </div>
 
         <div class="settings-group" id="logo-section" style="display:none;">
-          <h3 class="settings-group__title">商店 Logo <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span></h3>
+          <h3 class="settings-group__title">商店 Logo <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Plus / Pro / Pro+</span></h3>
           <p class="meta" style="margin-bottom:8px;">上傳 1:1 去背圖片，會顯示在商品列表、商品詳情、訂單右上角。</p>
           <div id="store-logo-preview" style="margin-bottom:8px;"></div>
           <label class="upload-btn">
@@ -1535,8 +1535,8 @@
       if (tagSec) tagSec.style.display = "";
     }
 
-    // Pro / Pro+: show logo section
-    if (plan === "pro" || plan === "proplus") {
+    // Plus / Pro / Pro+: show logo section
+    if (plan === "plus" || plan === "pro" || plan === "proplus") {
       var logoSec = document.getElementById("logo-section");
       if (logoSec) logoSec.style.display = "";
     }

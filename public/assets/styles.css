@@ -277,13 +277,10 @@ body {
 .drawer.open { transform: translateX(0); }
 
 .drawer-header {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: flex-end; align-items: center;
   padding: 16px 16px 12px;
   border-bottom: 1px solid var(--line);
 }
-.drawer-header h2 { font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; }
-.drawer-logo { width: 35px; height: 35px; object-fit: contain; border-radius: 8px; }
-
 .drawer-close {
   width: 32px; height: 32px; border: none; background: none;
   color: var(--muted); cursor: pointer; display: flex;
@@ -326,6 +323,84 @@ body {
 .drawer-filter-list .btn-pill.is-active {
   background: var(--brand);
   color: #fff;
+}
+
+.storefront-layout {
+  display: block;
+}
+
+.store-sidebar {
+  display: none;
+}
+
+.store-sidebar__panel {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.store-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.store-sidebar__logo-link {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.store-sidebar__logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.72);
+}
+
+.store-sidebar__brand-copy {
+  min-width: 0;
+}
+
+.store-sidebar__eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.store-sidebar__name {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--text-color);
+}
+
+.store-sidebar__desc {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.store-sidebar__section + .store-sidebar__section {
+  margin-top: 18px;
+}
+
+.store-sidebar__promo-switch {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.store-sidebar__promo-switch .view-switch__btn {
+  flex: 1 1 calc(50% - 6px);
 }
 
 .button {
@@ -1716,6 +1791,34 @@ select:disabled {
 @media (max-width: 1024px) {
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .hamburger-btn,
+  .drawer,
+  .drawer-overlay {
+    display: none !important;
+  }
+
+  .storefront-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .store-sidebar {
+    display: block;
+  }
+
+  .store-sidebar__panel {
+    position: sticky;
+    top: 86px;
+  }
+
+  .storefront-content {
+    min-width: 0;
   }
 }
 

@@ -1,6 +1,7 @@
 import type { RequestContext } from "../../context";
 import { normalizeSlug, getSlugValidationError, canChangeSlugOnceForPro } from "../../shared/slug-rules.js";
 import { getGeminiApiKey } from "./settings";
+import { parseDisplaySettings, sanitizeDisplaySettingsPatch } from "../../shared/display-settings.js";
 
 // Country → currency mapping
 export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number; defaultMarkup: number }> = {
@@ -103,13 +104,7 @@ export async function handleDisplaySettings(
       .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
       .bind(ctx.storeId)
       .first<{ value: string }>();
-    const defaults = { viewMode: "2card", promoEnabled: true, promoFilters: ["all", "350", "450", "550"] };
-    try {
-      const data = row?.value ? JSON.parse(row.value) : defaults;
-      return json({ ok: true, ...data });
-    } catch {
-      return json({ ok: true, ...defaults });
-    }
+    return json({ ok: true, ...parseDisplaySettings(row?.value || null) });
   }
 
   if (request.method === "POST") {
@@ -124,14 +119,11 @@ export async function handleDisplaySettings(
       .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
       .bind(ctx.storeId)
       .first<{ value: string }>();
-    let existing: Record<string, unknown> = {};
-    try { if (existingRow?.value) existing = JSON.parse(existingRow.value); } catch {}
-    // Strip Pro-only fields for non-Pro plans
-    if (ctx.storePlan !== "pro") {
-      delete body.tagNames;
-      delete body.storeLogo;
-    }
-    const settings: Record<string, unknown> = { ...existing, ...body };
+    const existing = parseDisplaySettings(existingRow?.value || null);
+    const settings: Record<string, unknown> = {
+      ...existing,
+      ...sanitizeDisplaySettingsPatch(body, ctx.storePlan),
+    };
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
       .bind(ctx.storeId, JSON.stringify(settings))

@@ -41,7 +41,6 @@
     <!-- Drawer -->
     <aside class="drawer" id="drawer">
       <div class="drawer-header">
-        <h2 id="drawer-title"><a href="/"><img id="drawer-logo" class="drawer-logo" src="/assets/images/logo2.png" alt="商店 Logo" /></a><span>篩選</span></h2>
         <button class="drawer-close" id="drawer-close" aria-label="關閉">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -55,9 +54,9 @@
           <h3 class="drawer-section-title">種類</h3>
           <div id="category-filters" class="drawer-filter-list"></div>
         </div>
-        <div class="drawer-section" id="promo-drawer-section" style="display:none;">
+        <div class="drawer-section" id="promo-drawer-section" data-promo-section="mobile" style="display:none;">
           <h3 class="drawer-section-title">價格篩選</h3>
-          <div id="promo-switch" class="view-switch" aria-label="價格篩選切換" style="flex-wrap:wrap;gap:6px;"></div>
+          <div id="promo-switch" class="view-switch" aria-label="價格篩選切換" data-promo-switch="mobile" style="flex-wrap:wrap;gap:6px;"></div>
         </div>
       </div>
     </aside>
@@ -120,15 +119,43 @@
     })();
     </script>
 
-    <main class="container">
-      <section id="list-error" class="notice hidden"></section>
-      <section id="product-grid" class="product-grid" aria-live="polite"></section>
-      <section id="pagination" class="pagination hidden" aria-live="polite" style="display:none;">
-        <button id="page-prev" class="btn-pill secondary" type="button" style="display:none;">&larr;</button>
-        <p id="page-indicator" class="meta"></p>
-        <button id="page-next" class="btn-pill secondary" type="button" style="display:none;">&rarr;</button>
-      </section>
-      <footer style="text-align:center;padding:24px 0 60px;"><p id="last-updated-text" class="meta" style="font-size:11px;color:#aaa;">資料載入中...</p></footer>
+    <main class="container storefront-layout">
+      <aside class="store-sidebar" aria-label="桌面篩選選單">
+        <div class="store-sidebar__panel">
+          <div class="store-sidebar__brand">
+            <a href="/" id="store-sidebar-logo-link" class="store-sidebar__logo-link">
+              <img id="store-sidebar-logo" class="store-sidebar__logo" src="/assets/images/logo2.png" alt="商店 Logo" />
+            </a>
+            <div class="store-sidebar__brand-copy">
+              <p class="store-sidebar__eyebrow">會員商店</p>
+              <h2 id="store-sidebar-name" class="store-sidebar__name">商品列表</h2>
+              <p id="store-sidebar-desc" class="store-sidebar__desc" style="display:none;"></p>
+            </div>
+          </div>
+          <div class="store-sidebar__section">
+            <h3 class="drawer-section-title">品牌</h3>
+            <div class="drawer-filter-list" data-brand-filters="desktop"></div>
+          </div>
+          <div class="store-sidebar__section">
+            <h3 class="drawer-section-title">種類</h3>
+            <div class="drawer-filter-list" data-category-filters="desktop"></div>
+          </div>
+          <div class="store-sidebar__section" data-promo-section="desktop" style="display:none;">
+            <h3 class="drawer-section-title">價格篩選</h3>
+            <div class="view-switch store-sidebar__promo-switch" aria-label="價格篩選切換" data-promo-switch="desktop"></div>
+          </div>
+        </div>
+      </aside>
+      <div class="storefront-content">
+        <section id="list-error" class="notice hidden"></section>
+        <section id="product-grid" class="product-grid" aria-live="polite"></section>
+        <section id="pagination" class="pagination hidden" aria-live="polite" style="display:none;">
+          <button id="page-prev" class="btn-pill secondary" type="button" style="display:none;">&larr;</button>
+          <p id="page-indicator" class="meta"></p>
+          <button id="page-next" class="btn-pill secondary" type="button" style="display:none;">&rarr;</button>
+        </section>
+        <footer style="text-align:center;padding:24px 0 60px;"><p id="last-updated-text" class="meta" style="font-size:11px;color:#aaa;">資料載入中...</p></footer>
+      </div>
     </main>
     <!-- Old promo popup removed. Use admin popup-ads carousel instead. -->
     <div class="floating-nav-buttons" aria-label="分頁快捷按鈕">
@@ -157,21 +184,27 @@
     <script>
     var h = document.getElementById("store-header-name");
     if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+    var sidebarName = document.getElementById("store-sidebar-name");
+    if (sidebarName && window.__STORE_NAME) sidebarName.textContent = window.__STORE_NAME;
     if (window.__STORE_DESC) {
       var descEl = document.getElementById("store-desc");
       if (descEl) { descEl.textContent = window.__STORE_DESC; descEl.style.display = "block"; }
+      var sidebarDesc = document.getElementById("store-sidebar-desc");
+      if (sidebarDesc) { sidebarDesc.textContent = window.__STORE_DESC; sidebarDesc.style.display = "block"; }
     }
     // Render store logo
     var ds = window.__DISPLAY_SETTINGS || {};
     var base = window.__API_BASE || "";
     var logoLink = document.getElementById("store-logo-link");
     if (logoLink && base) logoLink.href = base + "/";
+    var sidebarLogoLink = document.getElementById("store-sidebar-logo-link");
+    if (sidebarLogoLink && base) sidebarLogoLink.href = base + "/";
     if (ds.storeLogo) {
       var logoSrc = base + "/api/images/" + ds.storeLogo;
       var logoEl = document.getElementById("store-logo");
       if (logoEl) logoEl.src = logoSrc;
-      var drawerLogo = document.getElementById("drawer-logo");
-      if (drawerLogo) drawerLogo.src = logoSrc;
+      var sidebarLogo = document.getElementById("store-sidebar-logo");
+      if (sidebarLogo) sidebarLogo.src = logoSrc;
     }
     // Fix floating request button href
     (function() {
@@ -216,20 +249,21 @@
     })();
     // Render promo filter buttons inside drawer
     var promos = ds.promoFilters || [];
-    var promoEl = document.getElementById("promo-switch");
-    var promoSection = document.getElementById("promo-drawer-section");
-    if (promoEl && ds.promoEnabled && promos.length > 0) {
-      promoEl.innerHTML = promos
+    var promoTargets = Array.from(document.querySelectorAll("[data-promo-switch]"));
+    var promoSections = Array.from(document.querySelectorAll("[data-promo-section]"));
+    if (promoTargets.length > 0 && ds.promoEnabled && promos.length > 0) {
+      var promoHtml = promos
         .filter(function(p) { return typeof p === "string" ? true : p.enabled !== false; })
         .map(function(p) {
           var val = typeof p === "string" ? p : p.value;
           var label = typeof p === "string" ? (p === "all" ? "一般" : "&lt;" + p) : (p.label || p.value);
           return '<button type="button" class="btn-pill secondary view-switch__btn" data-promo-max="' + val + '">' + label + '</button>';
         }).join("");
-      if (promoSection) promoSection.style.display = "";
+      promoTargets.forEach(function(el) { el.innerHTML = promoHtml; });
+      promoSections.forEach(function(el) { el.style.display = ""; });
     } else {
-      if (promoEl) promoEl.innerHTML = "";
-      if (promoSection) promoSection.style.display = "none";
+      promoTargets.forEach(function(el) { el.innerHTML = ""; });
+      promoSections.forEach(function(el) { el.style.display = "none"; });
     }
     </script>
     <!-- Popup ad carousel -->

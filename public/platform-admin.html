@@ -237,6 +237,27 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .plan-option .po-sub { font-size: 11px; color: var(--pa-muted); }
 .plan-option .po-price { font-size: 13px; font-weight: 700; color: var(--pa-text); white-space: nowrap; }
 
+/* ── Logo modal ── */
+.logo-modal-backdrop { position: fixed; inset: 0; z-index: 220; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); padding: 16px; }
+.logo-modal-backdrop.open { display: flex; }
+.logo-modal { background: var(--pa-card); border-radius: 14px; padding: 24px; width: 360px; max-width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,0.15); }
+.logo-modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.logo-modal .meta { font-size: 12px; color: var(--pa-muted); margin-bottom: 14px; }
+.logo-preview { width: 120px; height: 120px; border: 1px dashed var(--pa-line); border-radius: 16px; display: grid; place-items: center; background: #faf8f3; margin: 0 auto 12px; overflow: hidden; }
+.logo-preview img { width: 100%; height: 100%; object-fit: contain; }
+.logo-preview__empty { font-size: 12px; color: var(--pa-muted); text-align: center; line-height: 1.5; padding: 12px; }
+.logo-modal .desc { font-size: 12px; color: var(--pa-muted); margin-bottom: 12px; line-height: 1.6; }
+.logo-modal__actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.logo-modal__actions button { flex: 1; min-width: 96px; padding: 10px 12px; border: none; border-radius: var(--pa-radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
+.logo-modal__actions button:active { transform: scale(0.97); }
+.logo-modal__actions .btn-primary { background: var(--pa-accent); color: #fff; }
+.logo-modal__actions .btn-primary:hover { background: var(--pa-accent-hover); }
+.logo-modal__actions .btn-muted { background: #f3f4f6; color: #666; }
+.logo-modal__actions .btn-muted:hover { background: #eee; }
+.logo-modal__actions .btn-danger { background: #fff1f2; color: var(--pa-red); }
+.logo-modal__actions .btn-danger:hover { background: #ffe4e6; }
+.logo-status { font-size: 12px; color: var(--pa-green); min-height: 18px; margin-top: 10px; }
+
 /* ── Responsive ── */
 @media (max-width: 960px) {
   body { padding-bottom: 72px; }
@@ -610,6 +631,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <span>設定</span>
     </button>
   </nav>
+
+  <div id="logo-modal" class="logo-modal-backdrop" onclick="if(event.target===this)closeLogoManager()">
+    <div class="logo-modal">
+      <h3 id="logo-modal-title">會員 Logo 管理</h3>
+      <p id="logo-modal-meta" class="meta"></p>
+      <div id="logo-preview" class="logo-preview"></div>
+      <p class="desc">平台管理員可直接替 Plus / Pro / Pro+ 會員設定商店 Logo。建議上傳去背或留白充足的正方形圖。</p>
+      <input id="platform-logo-input" type="file" accept="image/png,image/webp" style="display:none;" onchange="handlePlatformLogoFile(this.files[0])">
+      <div class="logo-modal__actions">
+        <button class="btn-primary" type="button" onclick="triggerLogoUpload()">上傳 Logo</button>
+        <button class="btn-danger" type="button" onclick="removePlatformLogo()">移除</button>
+        <button class="btn-muted" type="button" onclick="closeLogoManager()">關閉</button>
+      </div>
+      <div id="logo-modal-status" class="logo-status"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -620,6 +657,8 @@ let allStores = [];
 let testStoreIds = [];
 let allLogs = [];
 let logFilter = "all";
+let logoModalStoreId = null;
+let logoModalLogoKey = "";
 var TEMPLATES = [
   { id: "default", name: "抹茶暖色" },
   { id: "ink-blue", name: "墨藍" },
@@ -883,6 +922,7 @@ function renderStores(stores) {
       '</div>' +
       '<div class="member-actions">' +
         planBtns +
+        (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
         '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
         (s.onboarding_step === "phone_pending" ? '<button style="color:#b45309;" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
         (s.is_active ? '<button style="color:#ef4444;" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button style="color:#16a34a;" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
@@ -897,6 +937,122 @@ function copyUrl(url, btn) {
     btn.textContent = "已複製";
     setTimeout(function() { btn.textContent = "複製"; }, 1500);
   });
+}
+
+function renderLogoPreview() {
+  var el = document.getElementById("logo-preview");
+  if (!el) return;
+  if (!logoModalLogoKey) {
+    el.innerHTML = '<div class="logo-preview__empty">目前沒有會員 Logo</div>';
+    return;
+  }
+  el.innerHTML = '<img src="/api/images/' + logoModalLogoKey + '" alt="會員 Logo">';
+}
+
+function setLogoModalStatus(message, isError) {
+  var el = document.getElementById("logo-modal-status");
+  if (!el) return;
+  el.textContent = message || "";
+  el.style.color = isError ? "var(--pa-red)" : "var(--pa-green)";
+}
+
+async function showLogoManager(storeId) {
+  var store = allStores.find(function(s) { return s.id === storeId; });
+  if (!store) return;
+  if (["plus", "pro", "proplus"].indexOf(store.plan) < 0) {
+    alert("此會員目前不是 Plus / Pro / Pro+，不可設定 Logo");
+    return;
+  }
+  logoModalStoreId = storeId;
+  logoModalLogoKey = "";
+  document.getElementById("logo-modal-title").textContent = "會員 Logo 管理";
+  document.getElementById("logo-modal-meta").textContent = (store.name || store.owner_email) + " · " + (store.plan || "").toUpperCase();
+  setLogoModalStatus("載入中...", false);
+  renderLogoPreview();
+  document.getElementById("logo-modal").classList.add("open");
+
+  var res = await fetch("/api/platform-admin/stores/" + storeId + "/display-settings", {
+    headers: { authorization: "Bearer " + adminToken },
+  });
+  var data = await res.json();
+  if (!data.ok) {
+    setLogoModalStatus(data.error || "載入失敗", true);
+    return;
+  }
+  logoModalLogoKey = data.storeLogo || "";
+  renderLogoPreview();
+  setLogoModalStatus("", false);
+}
+
+function closeLogoManager() {
+  var modal = document.getElementById("logo-modal");
+  if (modal) modal.classList.remove("open");
+  logoModalStoreId = null;
+  logoModalLogoKey = "";
+  var input = document.getElementById("platform-logo-input");
+  if (input) input.value = "";
+  setLogoModalStatus("", false);
+}
+
+function triggerLogoUpload() {
+  if (!logoModalStoreId) return;
+  document.getElementById("platform-logo-input").click();
+}
+
+async function savePlatformLogoKey(key) {
+  if (!logoModalStoreId) return false;
+  var res = await fetch("/api/platform-admin/stores/" + logoModalStoreId + "/display-settings", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ storeLogo: key }),
+  });
+  var data = await res.json();
+  if (!data.ok) {
+    setLogoModalStatus(data.error || "儲存失敗", true);
+    return false;
+  }
+  logoModalLogoKey = key || "";
+  renderLogoPreview();
+  setLogoModalStatus("已儲存", false);
+  return true;
+}
+
+async function handlePlatformLogoFile(file) {
+  if (!file || !logoModalStoreId) return;
+  setLogoModalStatus("上傳中...", false);
+  var img = new Image();
+  img.onload = async function() {
+    var canvas = document.createElement("canvas");
+    var size = Math.max(img.naturalWidth, img.naturalHeight);
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, (size - img.naturalWidth) / 2, (size - img.naturalHeight) / 2);
+    var dataUrl = canvas.toDataURL("image/webp", 0.9);
+    var base64 = dataUrl.split(",")[1];
+
+    var res = await fetch("/api/platform-admin/stores/" + logoModalStoreId + "/logo-upload", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+      body: JSON.stringify({ image: base64 }),
+    });
+    var data = await res.json();
+    if (!data.ok) {
+      setLogoModalStatus(data.error || "上傳失敗", true);
+      return;
+    }
+    await savePlatformLogoKey(data.key || "");
+  };
+  img.onerror = function() {
+    setLogoModalStatus("圖片讀取失敗", true);
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+async function removePlatformLogo() {
+  if (!logoModalStoreId) return;
+  setLogoModalStatus("移除中...", false);
+  await savePlatformLogoKey("");
 }
 
 var PLAN_OFFERS = {

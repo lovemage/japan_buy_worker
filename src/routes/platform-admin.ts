@@ -1,5 +1,7 @@
 import type { D1DatabaseLike } from "../types/d1";
 import { DEFAULT_PLAN_OFFERS, getPlanOfferByMonths } from "../shared/plan-offers.js";
+import { getEffectivePlan } from "../context";
+import { parseDisplaySettings, sanitizeDisplaySettingsPatch, canManageStoreLogo } from "../shared/display-settings.js";
 
 function json(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
@@ -79,7 +81,10 @@ export async function handlePlatformAdmin(
   request: Request,
   db: D1DatabaseLike,
   platformPassword: string,
-  assets?: { fetch: (request: Request) => Promise<Response> }
+  assets?: { fetch: (request: Request) => Promise<Response> },
+  r2?: {
+    put: (key: string, value: ArrayBuffer, options?: { httpMetadata?: { contentType?: string } }) => Promise<void>;
+  }
 ): Promise<Response> {
   const url = new URL(request.url);
 
@@ -355,6 +360,86 @@ export async function handlePlatformAdmin(
       default:
         return json({ ok: false, error: "Unknown action" }, 400);
     }
+  }
+
+  const displaySettingsMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/display-settings$/);
+  if (displaySettingsMatch && request.method === "GET") {
+    const storeId = parseInt(displaySettingsMatch[1], 10);
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+      .bind(storeId)
+      .first<{ value: string }>();
+    return json({ ok: true, ...parseDisplaySettings(row?.value || null) });
+  }
+
+  if (displaySettingsMatch && request.method === "POST") {
+    const storeId = parseInt(displaySettingsMatch[1], 10);
+    let body: Record<string, unknown>;
+    try {
+      body = (await request.json()) as Record<string, unknown>;
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+
+    const store = await db
+      .prepare("SELECT id, plan, plan_expires_at FROM stores WHERE id = ?")
+      .bind(storeId)
+      .first<{ id: number; plan: string; plan_expires_at: string | null }>();
+    if (!store) return json({ ok: false, error: "Store not found" }, 404);
+
+    const existingRow = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+      .bind(storeId)
+      .first<{ value: string }>();
+    const effectivePlan = getEffectivePlan(store as any);
+    const settings = {
+      ...parseDisplaySettings(existingRow?.value || null),
+      ...sanitizeDisplaySettingsPatch(body, effectivePlan),
+    };
+
+    await db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(storeId, JSON.stringify(settings))
+      .run();
+
+    return json({ ok: true, ...settings });
+  }
+
+  const logoUploadMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/logo-upload$/);
+  if (logoUploadMatch && request.method === "POST") {
+    const storeId = parseInt(logoUploadMatch[1], 10);
+    if (!r2) return json({ ok: false, error: "R2 not configured" }, 500);
+
+    const store = await db
+      .prepare("SELECT id, plan, plan_expires_at FROM stores WHERE id = ?")
+      .bind(storeId)
+      .first<{ id: number; plan: string; plan_expires_at: string | null }>();
+    if (!store) return json({ ok: false, error: "Store not found" }, 404);
+
+    const effectivePlan = getEffectivePlan(store as any);
+    if (!canManageStoreLogo(effectivePlan)) {
+      return json({ ok: false, error: "此會員方案不可設定 Logo" }, 403);
+    }
+
+    let body: { image?: string };
+    try {
+      body = (await request.json()) as { image?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    if (!body.image) return json({ ok: false, error: "Missing image" }, 400);
+
+    const binaryString = atob(body.image);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const key = `${storeId}/logos/${Date.now()}.webp`;
+    await r2.put(key, bytes.buffer, {
+      httpMetadata: { contentType: "image/webp" },
+    });
+    return json({ ok: true, key });
   }
 
   // Delete a store (requires password)
