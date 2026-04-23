@@ -340,54 +340,6 @@ body {
   padding: 18px;
 }
 
-.store-sidebar__brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding-bottom: 16px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--line);
-}
-
-.store-sidebar__logo-link {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-.store-sidebar__logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.72);
-}
-
-.store-sidebar__brand-copy {
-  min-width: 0;
-}
-
-.store-sidebar__eyebrow {
-  margin: 0 0 6px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.store-sidebar__name {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.15;
-  color: var(--text-color);
-}
-
-.store-sidebar__desc {
-  margin: 8px 0 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-
 .store-sidebar__section + .store-sidebar__section {
   margin-top: 18px;
 }

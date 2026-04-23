@@ -122,16 +122,6 @@
     <main class="container storefront-layout">
       <aside class="store-sidebar" aria-label="桌面篩選選單">
         <div class="store-sidebar__panel">
-          <div class="store-sidebar__brand">
-            <a href="/" id="store-sidebar-logo-link" class="store-sidebar__logo-link">
-              <img id="store-sidebar-logo" class="store-sidebar__logo" src="/assets/images/logo2.png" alt="商店 Logo" />
-            </a>
-            <div class="store-sidebar__brand-copy">
-              <p class="store-sidebar__eyebrow">會員商店</p>
-              <h2 id="store-sidebar-name" class="store-sidebar__name">商品列表</h2>
-              <p id="store-sidebar-desc" class="store-sidebar__desc" style="display:none;"></p>
-            </div>
-          </div>
           <div class="store-sidebar__section">
             <h3 class="drawer-section-title">品牌</h3>
             <div class="drawer-filter-list" data-brand-filters="desktop"></div>
@@ -184,27 +174,19 @@
     <script>
     var h = document.getElementById("store-header-name");
     if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
-    var sidebarName = document.getElementById("store-sidebar-name");
-    if (sidebarName && window.__STORE_NAME) sidebarName.textContent = window.__STORE_NAME;
     if (window.__STORE_DESC) {
       var descEl = document.getElementById("store-desc");
       if (descEl) { descEl.textContent = window.__STORE_DESC; descEl.style.display = "block"; }
-      var sidebarDesc = document.getElementById("store-sidebar-desc");
-      if (sidebarDesc) { sidebarDesc.textContent = window.__STORE_DESC; sidebarDesc.style.display = "block"; }
     }
     // Render store logo
     var ds = window.__DISPLAY_SETTINGS || {};
     var base = window.__API_BASE || "";
     var logoLink = document.getElementById("store-logo-link");
     if (logoLink && base) logoLink.href = base + "/";
-    var sidebarLogoLink = document.getElementById("store-sidebar-logo-link");
-    if (sidebarLogoLink && base) sidebarLogoLink.href = base + "/";
     if (ds.storeLogo) {
       var logoSrc = base + "/api/images/" + ds.storeLogo;
       var logoEl = document.getElementById("store-logo");
       if (logoEl) logoEl.src = logoSrc;
-      var sidebarLogo = document.getElementById("store-sidebar-logo");
-      if (sidebarLogo) sidebarLogo.src = logoSrc;
     }
     // Fix floating request button href
     (function() {
