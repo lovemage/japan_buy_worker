@@ -258,11 +258,16 @@ function renderEditVariants() {
     root.innerHTML = '<div class="variant-empty">尚未新增規格</div>';
     return;
   }
-  root.innerHTML = `<div class="variant-editor__list">${editVariants.map((variant, index) => `
+  root.innerHTML = `<div class="variant-editor__cols">
+      <span>規格名稱</span>
+      <span>數量</span>
+      <span>價格</span>
+      <span></span>
+    </div><div class="variant-editor__list">${editVariants.map((variant, index) => `
     <div class="variant-row" data-variant-index="${index}">
-      <label>規格名稱<input type="text" class="input-cute" data-field="name" value="${variant.name || ""}" placeholder="例如：大包 / 小包" /></label>
-      <label>數量<input type="number" min="0" class="input-cute" data-field="stock" value="${variant.stock ?? 10}" /></label>
-      <label>價格<input type="number" min="0" class="input-cute" data-field="price" value="${variant.price ?? ""}" /></label>
+      <input type="text" class="input-cute" data-field="name" value="${variant.name || ""}" placeholder="例如：大包 / 小包" aria-label="規格名稱" />
+      <input type="number" min="0" class="input-cute" data-field="stock" value="${variant.stock ?? 10}" aria-label="數量" />
+      <input type="number" min="0" class="input-cute" data-field="price" value="${variant.price ?? ""}" aria-label="價格" />
       <button type="button" class="variant-remove" data-remove-index="${index}">×</button>
     </div>
   `).join("")}</div>`;
