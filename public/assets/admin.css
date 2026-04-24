@@ -1404,6 +1404,10 @@
   align-items: center;
   gap: 6px;
 }
+.admin-body .variant-editor__head-actions .button {
+  white-space: nowrap;
+  padding: 8px 12px;
+}
 .admin-body .variant-editor__head label { margin: 0; }
 .admin-body .variant-editor__cols {
   display: grid;
@@ -1446,11 +1450,6 @@
   border-radius: 10px;
   color: var(--admin-text-muted);
   font-size: 12px;
-}
-.admin-body .variant-editor__foot {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
 }
 .admin-body .variant-records-panel {
   margin-top: 8px;

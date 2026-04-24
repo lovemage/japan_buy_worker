@@ -137,7 +137,7 @@ function renderEditVariantRecords() {
   if (!panel || !list || !toggleBtn) return;
 
   panel.classList.toggle("hidden", !isEditVariantRecordsOpen);
-  toggleBtn.textContent = isEditVariantRecordsOpen ? "收合紀錄" : "紀錄";
+  toggleBtn.textContent = "紀錄";
 
   const records = loadEditVariantRecords();
   if (records.length === 0) {
