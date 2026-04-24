@@ -1,4 +1,5 @@
 import { loadManagedProducts } from "./app-admin-products.js";
+import { handleUnauthorized } from "./session-guard.js";
 
 const MAX_IMAGE_SIZE = 800;
 const WEBP_QUALITY = 0.8;
@@ -282,10 +283,7 @@ async function doRecognize() {
 
     showRecognizeLoading(false);
 
-    if (res.status === 401) {
-      location.href = "/admin-login.html";
-      return;
-    }
+    if (handleUnauthorized(res)) return;
 
     const data = await res.json();
     if (!data.ok) {
@@ -394,10 +392,7 @@ async function confirmListing() {
       body: JSON.stringify(payload),
     });
 
-    if (res.status === 401) {
-      location.href = "/admin-login.html";
-      return;
-    }
+    if (handleUnauthorized(res)) return;
 
     const data = await res.json();
     if (!data.ok) {
@@ -535,10 +530,7 @@ async function submitManualEntry() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (res.status === 401) {
-      location.href = "/admin-login.html";
-      return;
-    }
+    if (handleUnauthorized(res)) return;
     const data = await res.json();
     if (!data.ok) {
       showManualEntryStatus(data.error || "上架失敗");
@@ -586,10 +578,7 @@ async function doAiImageEdit() {
       body: JSON.stringify({ imageBase64: selectedImages[0].base64 }),
     });
 
-    if (res.status === 401) {
-      location.href = "/admin-login.html";
-      return;
-    }
+    if (handleUnauthorized(res)) return;
 
     const data = await res.json();
 

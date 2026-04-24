@@ -7,6 +7,14 @@ function showError(message) {
   node.classList.remove("hidden");
 }
 
+// Only allow same-origin relative paths to prevent open-redirect attacks.
+function getSafeRedirect() {
+  const raw = new URLSearchParams(location.search).get("redirect");
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 async function onSubmit(event) {
   event.preventDefault();
   const username = (document.getElementById("username")?.value || "").trim();
@@ -22,7 +30,9 @@ async function onSubmit(event) {
     showError(body?.error || `登入失敗：${res.status}`);
     return;
   }
-  location.href = (window.__API_BASE || '') + "/admin.html";
+  const base = window.__API_BASE || "";
+  const redirect = getSafeRedirect();
+  location.href = base + (redirect || "/admin.html");
 }
 
 function bootstrap() {

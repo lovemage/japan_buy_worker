@@ -1,6 +1,7 @@
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 import { calculateAdminFormTotals } from "./admin-totals.js";
 import { showError, hideError } from "./app-admin.js";
+import { handleUnauthorized } from "./session-guard.js";
 
 function formatCurrency(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
@@ -125,7 +126,7 @@ function renderForms(forms) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ id: formId, status: select.value }),
       });
-      if (res.status === 401) { location.href = "/admin-login.html"; return; }
+      if (handleUnauthorized(res)) return;
       if (!res.ok) { showError(`狀態更新失敗：${res.status}`); return; }
       const target = allForms.find((f) => f.id === formId);
       if (target) target.status = select.value;
@@ -141,7 +142,7 @@ function renderForms(forms) {
       if (!confirm(`確定刪除訂單 #${id}？此操作無法復原。`)) return;
       hideError();
       const res = await apiFetch(`/api/admin/requirements?id=${id}`, { method: "DELETE" });
-      if (res.status === 401) { location.href = "/admin-login.html"; return; }
+      if (handleUnauthorized(res)) return;
       if (!res.ok) { showError(`刪除失敗：${res.status}`); return; }
       await loadForms();
     });
@@ -151,7 +152,7 @@ function renderForms(forms) {
 async function loadForms() {
   hideError();
   const res = await apiFetch("/api/admin/requirements");
-  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (handleUnauthorized(res)) return;
   if (!res.ok) { showError(`讀取失敗：${res.status}`); return; }
   const body = await res.json();
   allForms = body.forms || [];

@@ -1,6 +1,7 @@
 import { showError } from "./app-admin.js";
 import { withProductImageFallback, applyProductImageFallback } from "./image-fallback.js";
 import { buildProductShareUrl } from "./store-url.js";
+import { handleUnauthorized } from "./session-guard.js";
 
 function prefixImageUrl(url) {
   if (!url) return url;
@@ -915,7 +916,7 @@ async function saveEdit() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    if (handleUnauthorized(res)) return;
     const data = await res.json();
     if (!data.ok) { if (status) status.textContent = `儲存失敗：${data.error}`; return; }
     closeEditModal();
@@ -1251,7 +1252,7 @@ async function submitManualProduct() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    if (handleUnauthorized(res)) return;
     const data = await res.json();
     if (!data.ok) { showStatus(`上架失敗：${data.error}`); return; }
     showStatus(`上架成功！商品代碼：${data.code}`);

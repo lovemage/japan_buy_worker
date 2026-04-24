@@ -1,4 +1,5 @@
 import { showError } from "./app-admin.js";
+import { handleUnauthorized } from "./session-guard.js";
 
 let currentMarkupMode = "flat";
 let currentPricingMode = "manual";
@@ -51,7 +52,7 @@ function setMarkupMode(mode) {
 
 async function loadPricing() {
   const res = await apiFetch("/api/admin/pricing");
-  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (handleUnauthorized(res)) return;
   if (!res.ok) return;
   const body = await res.json();
   const p = body?.pricing || {};
@@ -87,13 +88,13 @@ async function savePricing() {
       shippingOptionsEnabled: Boolean(document.getElementById("shipping-options-enabled")?.checked),
     }),
   });
-  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (handleUnauthorized(res)) return;
   if (!res.ok) { showError("儲存失敗"); return; }
 }
 
 async function loadGeminiSettings() {
   const res = await apiFetch("/api/admin/settings/gemini");
-  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (handleUnauthorized(res)) return;
   if (!res.ok) return;
   const body = await res.json();
   const status = document.getElementById("gemini-key-status");
@@ -109,7 +110,7 @@ async function saveGeminiKey() {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ geminiApiKey: key }),
   });
-  if (res.status === 401) { location.href = "/admin-login.html"; return; }
+  if (handleUnauthorized(res)) return;
   if (!res.ok) { showError("儲存失敗"); return; }
   input.value = "";
   await loadGeminiSettings();

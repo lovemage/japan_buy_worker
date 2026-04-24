@@ -1,4 +1,5 @@
 import { showError } from "./app-admin.js";
+import { handleUnauthorized } from "./session-guard.js";
 
 let progressInterval = null;
 let wakeLock = null;
@@ -61,7 +62,7 @@ async function runSync() {
 
   try {
     const res = await apiFetch("/admin/crawl", { method: "POST" });
-    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    if (handleUnauthorized(res)) return;
 
     if (barFill) barFill.classList.replace("phase-2", "phase-3");
     if (loadingText) loadingText.textContent = "同步完成！";

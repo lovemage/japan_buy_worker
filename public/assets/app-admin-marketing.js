@@ -1,3 +1,5 @@
+import { handleUnauthorized } from "./session-guard.js";
+
 let selectedTone = "professional";
 let selectedPlatform = "line";
 
@@ -119,7 +121,7 @@ async function generateMarketing() {
       body: JSON.stringify({ tone: selectedTone, platform: selectedPlatform }),
     });
 
-    if (res.status === 401) { location.href = "/admin-login.html"; return; }
+    if (handleUnauthorized(res)) return;
     const data = await res.json();
 
     if (!data.ok) {
