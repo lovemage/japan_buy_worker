@@ -172,7 +172,20 @@ function renderProduct(item, pricing) {
   const variantBox = document.getElementById("detail-variant-box");
   const variantSelect = document.getElementById("detail-variant-select");
   const variantStock = document.getElementById("detail-variant-stock");
-  let selectedVariant = variants[0] || null;
+  let selectedVariant = null;
+
+  const clearVariantError = () => {
+    variantBox?.classList.remove("detail-variant-box--error");
+    variantSelect?.classList.remove("detail-variant-select--error");
+  };
+
+  const showVariantError = () => {
+    variantBox?.classList.add("detail-variant-box--error");
+    variantSelect?.classList.add("detail-variant-select--error");
+    if (variantStock) {
+      variantStock.textContent = "請先選擇規格";
+    }
+  };
 
   const renderPriceBlock = () => {
     const effectiveBase = selectedVariant?.price ?? item.priceJpyTaxIn;
@@ -197,19 +210,19 @@ function renderProduct(item, pricing) {
   if (variantBox && variantSelect) {
     if (variants.length > 0) {
       variantBox.classList.remove("hidden");
-      variantSelect.innerHTML = variants
-        .map((variant, idx) => {
+      variantSelect.innerHTML = [`<option value="" selected>(無選擇)</option>`, ...variants
+        .map((variant) => {
           const base = variant.price ?? item.priceJpyTaxIn;
           const adjusted = calcAdjustedPrices(base, pricing);
           const twdText = adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供";
-          return `<option value="${variant.name}" ${idx === 0 ? "selected" : ""}>${variant.name}｜${twdText}</option>`;
-        })
-        .join("");
+          return `<option value="${variant.name}">${variant.name}｜${twdText}</option>`;
+        })].join("");
       const syncVariantMeta = () => {
-        selectedVariant = variants.find((variant) => variant.name === variantSelect.value) || variants[0] || null;
+        selectedVariant = variants.find((variant) => variant.name === variantSelect.value) || null;
         if (variantStock) {
-          variantStock.textContent = selectedVariant ? `剩餘數量：${selectedVariant.stock}` : "";
+          variantStock.textContent = selectedVariant ? `剩餘數量：${selectedVariant.stock}` : "請先選擇規格";
         }
+        if (selectedVariant) clearVariantError();
         renderPriceBlock();
       };
       variantSelect.addEventListener("change", syncVariantMeta);
@@ -224,6 +237,10 @@ function renderProduct(item, pricing) {
   const qtyInput = document.getElementById("detail-quantity");
   if (addButton) {
     addButton.addEventListener("click", () => {
+      if (variants.length > 0 && !selectedVariant) {
+        showVariantError();
+        return;
+      }
       const quantity = Math.max(1, Number(qtyInput?.value || 1));
       const selectedImageUrl = main?.src || images[0] || mainImage;
       const adjusted = renderPriceBlock();

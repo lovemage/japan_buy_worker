@@ -96,6 +96,128 @@ function updateEditPriceInfo() {
 }
 
 let editVariants = [];
+const EDIT_VARIANT_RECORDS_KEY = "adminProductVariantRecordsV1";
+let isEditVariantRecordsOpen = false;
+
+function loadEditVariantRecords() {
+  try {
+    const raw = localStorage.getItem(EDIT_VARIANT_RECORDS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const id = String(item.id || "").trim();
+        const name = String(item.name || "").trim();
+        const variants = normalizeVariantRows(item.variants, document.getElementById("edit-price")?.value);
+        if (!id || !name || variants.length === 0) return null;
+        return {
+          id,
+          name,
+          variants,
+          updatedAt: Number(item.updatedAt) || Date.now(),
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+  } catch {
+    return [];
+  }
+}
+
+function persistEditVariantRecords(records) {
+  localStorage.setItem(EDIT_VARIANT_RECORDS_KEY, JSON.stringify(records));
+}
+
+function renderEditVariantRecords() {
+  const panel = document.getElementById("edit-variant-records-panel");
+  const list = document.getElementById("edit-variant-records-list");
+  const toggleBtn = document.getElementById("edit-variant-records-toggle");
+  if (!panel || !list || !toggleBtn) return;
+
+  panel.classList.toggle("hidden", !isEditVariantRecordsOpen);
+  toggleBtn.textContent = isEditVariantRecordsOpen ? "收合紀錄" : "紀錄";
+
+  const records = loadEditVariantRecords();
+  if (records.length === 0) {
+    list.innerHTML = '<div class="variant-empty">尚未紀錄常用規格</div>';
+    return;
+  }
+
+  list.className = "variant-records-list";
+  list.innerHTML = records
+    .map((record) => {
+      const names = record.variants.map((variant) => variant.name).filter(Boolean).join(" / ");
+      return `
+        <div class="variant-record-item" data-record-id="${record.id}">
+          <div>
+            <p class="variant-record-item__title">${record.name}</p>
+            <p class="variant-record-item__meta">${names || "無規格名稱"}</p>
+          </div>
+          <div class="variant-record-item__actions">
+            <button type="button" class="button secondary" data-record-action="apply" data-record-id="${record.id}">套用</button>
+            <button type="button" class="button secondary" data-record-action="delete" data-record-id="${record.id}">刪除</button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  list.querySelectorAll("[data-record-action='apply']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const recordId = btn.getAttribute("data-record-id") || "";
+      const record = loadEditVariantRecords().find((item) => item.id === recordId);
+      if (!record) return;
+      editVariants = record.variants.map((variant) => ({ ...variant }));
+      renderEditVariants();
+    });
+  });
+
+  list.querySelectorAll("[data-record-action='delete']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const recordId = btn.getAttribute("data-record-id") || "";
+      const records = loadEditVariantRecords();
+      const next = records.filter((item) => item.id !== recordId);
+      persistEditVariantRecords(next);
+      renderEditVariantRecords();
+    });
+  });
+}
+
+function saveCurrentEditVariantsAsRecord() {
+  const normalized = normalizeVariantRows(editVariants, document.getElementById("edit-price")?.value);
+  if (normalized.length === 0) {
+    showError("請先新增至少一個有效規格，再進行紀錄");
+    return;
+  }
+
+  const suggestion = normalized.map((variant) => variant.name).slice(0, 2).join(" / ") || "常用規格";
+  const inputName = prompt("請輸入規格紀錄名稱", suggestion);
+  if (inputName === null) return;
+  const name = String(inputName).trim();
+  if (!name) {
+    showError("規格紀錄名稱不可空白");
+    return;
+  }
+
+  const records = loadEditVariantRecords();
+  const existing = records.find((item) => item.name === name);
+  if (existing) {
+    existing.variants = normalized;
+    existing.updatedAt = Date.now();
+  } else {
+    records.unshift({
+      id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      name,
+      variants: normalized,
+      updatedAt: Date.now(),
+    });
+  }
+  persistEditVariantRecords(records.slice(0, 30));
+  isEditVariantRecordsOpen = true;
+  renderEditVariantRecords();
+}
 
 function normalizeVariantRows(items, fallbackPrice) {
   if (!Array.isArray(items)) return [];
@@ -562,6 +684,8 @@ async function openEditModal(btn) {
   }
   editVariants = [];
   renderEditVariants();
+  isEditVariantRecordsOpen = false;
+  renderEditVariantRecords();
   document.getElementById("edit-status").textContent = "";
 
   // Set button visibility based on active state
@@ -680,6 +804,7 @@ async function openEditModal(btn) {
       syncEditDescriptionPreview();
       setEditDescriptionEditing(false);
       renderEditVariants();
+      renderEditVariantRecords();
     }
   }
   rebuildEditOrdered();
@@ -708,6 +833,8 @@ function closeEditModal() {
   editOrderedItems = [];
   editVariants = [];
   renderEditVariants();
+  isEditVariantRecordsOpen = false;
+  renderEditVariantRecords();
   hideEditCategoryDropdown();
 }
 
@@ -938,6 +1065,11 @@ function initEditModal() {
     editVariants.push(getDefaultEditVariant());
     renderEditVariants();
   });
+  document.getElementById("edit-save-variant-record")?.addEventListener("click", saveCurrentEditVariantsAsRecord);
+  document.getElementById("edit-variant-records-toggle")?.addEventListener("click", () => {
+    isEditVariantRecordsOpen = !isEditVariantRecordsOpen;
+    renderEditVariantRecords();
+  });
   document.getElementById("edit-photo-input")?.addEventListener("change", onEditPhotos);
   document.getElementById("btn-edit-product-description")?.addEventListener("click", function() {
     const { textarea } = getEditDescriptionElements();
@@ -973,6 +1105,7 @@ function initEditModal() {
 
   syncEditDescriptionPreview();
   setEditDescriptionEditing(false);
+  renderEditVariantRecords();
 }
 
 function initManageSearch() {

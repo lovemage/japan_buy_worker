@@ -90,9 +90,19 @@
             <div class="variant-editor">
               <div class="variant-editor__head">
                 <label>商品規格</label>
-                <button id="edit-add-variant" class="button secondary" type="button">+ 新增</button>
+                <div class="variant-editor__head-actions">
+                  <button id="edit-add-variant" class="button secondary" type="button">+ 新增</button>
+                  <button id="edit-variant-records-toggle" class="button secondary" type="button">紀錄</button>
+                </div>
               </div>
               <div id="edit-variants"></div>
+              <div class="variant-editor__foot">
+                <button id="edit-save-variant-record" class="button secondary" type="button">紀錄規格</button>
+              </div>
+              <div id="edit-variant-records-panel" class="variant-records-panel hidden">
+                <p class="meta">點擊「套用」可快速帶入已紀錄規格。</p>
+                <div id="edit-variant-records-list"></div>
+              </div>
             </div>
             <div style="margin:-4px 0 8px;text-align:right;"><a href="#" id="edit-pricing-help-link" style="font-size:11px;color:var(--admin-text-muted);text-decoration:underline;">定價說明</a></div>
             <div id="edit-pricing-help-popup" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;align-items:center;justify-content:center;display:none;">

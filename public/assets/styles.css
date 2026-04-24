@@ -690,6 +690,21 @@ body {
   font: inherit;
 }
 
+.detail-variant-box--error {
+  border-color: #d34f4f;
+  background: #fff7f7;
+  box-shadow: 0 0 0 2px rgba(211, 79, 79, 0.15);
+}
+
+.detail-variant-box--error .detail-variant-label,
+.detail-variant-box--error #detail-variant-stock {
+  color: #b33a3a;
+}
+
+.detail-variant-select--error {
+  border-color: #d34f4f;
+}
+
 /* Request & Form Styles */
 .request-items {
   display: grid;
