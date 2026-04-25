@@ -221,7 +221,9 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .hero-decor { position: absolute; z-index: 1; pointer-events: none; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.14)); }
 .hero-decor-camera { width: 168px; bottom: 10px; left: -22px; transform: rotate(-7deg); }
 .hero-collage { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.1fr); gap: 28px; align-items: center; max-width: 920px; margin: 0 auto; min-height: 590px; }
-.hero-copy { position: relative; z-index: 3; padding: 34px 0 34px 4px; min-width: 0; max-width: 520px; }
+.hero-copy { position: relative; z-index: 3; padding: 28px 26px 28px 24px; min-width: 0; max-width: 520px; }
+.hero-copy::before { content: ""; position: absolute; inset: -10px -22px -8px -16px; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.08); box-shadow: 0 14px 32px rgba(31,22,12,0.14); clip-path: polygon(2% 4%, 13% 0, 27% 3%, 42% 1%, 60% 5%, 74% 1%, 90% 3%, 100% 6%, 99% 96%, 84% 100%, 65% 96%, 48% 99%, 32% 96%, 14% 100%, 0 95%); transform: rotate(-0.6deg); pointer-events: none; z-index: -1; }
+.hero-copy::after { content: ""; position: absolute; left: 18%; top: -14px; width: 88px; height: 22px; background: linear-gradient(180deg, rgba(231,173,50,0.82) 0%, rgba(231,173,50,0.6) 100%); transform: rotate(-6deg); box-shadow: 0 2px 5px rgba(31,22,12,0.12); pointer-events: none; z-index: 1; }
 .hero-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--paper-warm); color: var(--navy); border: 1px solid rgba(8,38,74,0.14); box-shadow: 0 4px 0 rgba(8,38,74,0.08); padding: 8px 13px; border-radius: 5px; font-size: 12px; font-weight: 900; margin-bottom: 22px; transform: rotate(-1.5deg); }
 .hero h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 52px; font-weight: 900; color: var(--ink); line-height: 1.13; margin-bottom: 16px; letter-spacing: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
 .hero h1 .brand-line { display: block; white-space: nowrap; }
@@ -294,7 +296,8 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .step-icon svg { width: 42px; height: 42px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .collage-step h3 { font-size: 18px; font-weight: 900; margin-bottom: 10px; color: var(--ink); }
 .collage-step p { font-size: 13px; line-height: 1.7; color: var(--muted); font-weight: 700; overflow-wrap: anywhere; }
-.why-band { margin-top: 76px; padding: 70px 22px 76px; overflow: visible; }
+.why-band { margin-top: 76px; padding: 70px 22px 76px; overflow: visible; background: var(--navy) url("/assets/images/landing-collage/why-band-denim.webp") center/cover no-repeat; }
+.why-band::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,38,74,0.18) 0%, rgba(8,38,74,0.42) 100%); pointer-events: none; z-index: 0; }
 .why-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
 .why-title { text-align: center; font-size: 28px; font-weight: 900; line-height: 1.25; margin-bottom: 36px; color: #fff8ec; }
 .why-title em { color: var(--orange); font-style: normal; }
@@ -317,10 +320,13 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .before-after-main .ba-tape-tl { top: -16px; left: 12%; transform: rotate(-10deg); width: 110px; }
 .before-after-main .ba-tape-br { bottom: -16px; right: 12%; transform: rotate(8deg); width: 110px; }
 .before-after-notes { display: flex; flex-direction: column; gap: 22px; }
-.ba-note { background: var(--mustard); color: var(--ink); padding: 18px 22px; border-radius: 4px; box-shadow: 0 5px 12px rgba(132,62,22,0.16); font-family: 'Zen Maru Gothic', sans-serif; font-size: 14px; line-height: 1.5; text-align: center; font-weight: 600; }
-.ba-note strong { display: block; font-size: 18px; color: var(--orange-dark); margin-bottom: 4px; font-weight: 800; letter-spacing: 0; }
+.ba-note { position: relative; background: var(--mustard) url("/assets/images/landing-collage/ba-bamboo.webp") center/cover no-repeat; color: var(--ink); padding: 18px 22px; border-radius: 4px; box-shadow: 0 5px 12px rgba(132,62,22,0.16); font-family: 'Zen Maru Gothic', sans-serif; font-size: 14px; line-height: 1.5; text-align: center; font-weight: 600; overflow: hidden; isolation: isolate; }
+.ba-note::before { content: ""; position: absolute; inset: 0; background: rgba(255,250,242,0.42); pointer-events: none; z-index: -1; }
+.ba-note > * { position: relative; }
+.ba-note strong { display: block; font-size: 18px; color: var(--orange-dark); margin-bottom: 4px; font-weight: 800; letter-spacing: 0; text-shadow: 0 1px 0 rgba(255,250,242,0.6); }
 .ba-note-1 { transform: rotate(-3deg); }
-.ba-note-2 { transform: rotate(2deg); background: #fff; }
+.ba-note-2 { transform: rotate(2deg); background: var(--paper-warm) url("/assets/images/landing-collage/ba-velvet.webp") center/cover no-repeat; }
+.ba-note-2::before { background: rgba(255,255,255,0.18); }
 .ba-note-3 { transform: rotate(-2deg); }
 @media (max-width: 760px) {
   .before-after { padding: 64px 18px; }
