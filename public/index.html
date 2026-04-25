@@ -224,19 +224,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .section-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 40px; }
 
 /* ── Flow chart ── */
-.flow { display: flex; align-items: flex-start; justify-content: center; gap: 0; }
-.flow-step { flex: 1; max-width: 180px; text-align: center; padding: 12px 8px; }
-.flow-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: var(--brand-light); border-radius: 18px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); border: 1.5px solid rgba(107,140,62,0.15); }
-.flow-step:nth-child(3) .flow-icon { background: var(--amber-light); border-color: rgba(196,135,10,0.15); }
-.flow-step:nth-child(5) .flow-icon { background: var(--accent-light); border-color: rgba(212,98,43,0.15); }
-.flow-icon svg { width: 30px; height: 30px; }
-.flow-step:hover .flow-icon { transform: translateY(-4px) scale(1.05); box-shadow: 0 8px 28px rgba(107,140,62,0.25); border-color: var(--brand); }
-.flow-step:nth-child(3):hover .flow-icon { box-shadow: 0 8px 28px rgba(196,135,10,0.2); border-color: var(--amber); }
-.flow-step:nth-child(5):hover .flow-icon { box-shadow: 0 8px 28px rgba(212,98,43,0.2); border-color: var(--accent); }
-.flow-step h3 { font-size: 15px; font-weight: 800; margin-bottom: 5px; color: var(--text); }
-.flow-step p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
-.flow-arrow { display: flex; align-items: center; padding-top: 20px; color: var(--brand); }
-.flow-arrow svg { width: 20px; height: 20px; opacity: 0.6; }
 @keyframes flowIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .fs-1 { animation: flowIn 0.5s ease-out 0.1s both; }
 .fa-1 { animation: flowIn 0.4s ease-out 0.3s both; }
@@ -426,21 +413,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .footer-logo small { display: block; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-align: left; }
 
 /* ── AI Before/After ── */
-.ba-section { background: var(--bg-alt); }
-.ba-grid { display: flex; gap: 20px; justify-content: center; align-items: stretch; }
-.ba-card { flex: 1; max-width: 420px; border-radius: 16px; overflow: hidden; border: 1.5px solid var(--border); background: var(--bg-card); cursor: pointer; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); display: flex; flex-direction: column; }
-.ba-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.1); transform: translateY(-4px); border-color: var(--brand); }
-.ba-card-img { flex: 1; overflow: hidden; }
-.ba-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.ba-label { text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
-.ba-label span { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; }
-.ba-label .before-tag { background: #fef3c7; color: #92400e; }
-.ba-label .after-tag { background: #dcfce7; color: #166534; }
-.ba-overlay { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-.ba-overlay.active { display: flex; }
-.ba-overlay img { max-width: 92vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); cursor: pointer; }
-.ba-overlay-tag { padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; pointer-events: none; }
-.ba-overlay-hint { font-size: 12px; color: rgba(255,255,255,0.5); pointer-events: none; }
 
 /* ── Animations ── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
@@ -465,7 +437,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
   .hero-copy { padding-top: 18px; }
   .hero h1 { font-size: 48px; }
   .hero-visual { min-height: 470px; transform: none; }
-  .flow-step { max-width: 160px; }
   .collage-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .collage-step::after { display: none; }
   .why-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 520px; margin: 0 auto; }
@@ -500,11 +471,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
   .phone-card { right: 0; bottom: -24px; width: 116px; }
   .hero-note { right: 8px; top: 8px; font-size: 20px; }
   .hero-note-card { display: none; }
-  .flow { flex-direction: row; gap: 0; }
-  .flow-step { flex: 1; max-width: none; padding: 10px 4px; }
-  .flow-arrow { display: none; }
-  .flow-step p { font-size: 11px; }
-  .flow-icon { font-size: 28px; }
   .feat-header h2 { font-size: 18px; }
   .feat-section { padding-left: 14px; padding-right: 14px; }
   .feat-wrap { padding: 18px 14px 20px; transform: none; }
@@ -798,24 +764,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 </section>
 
 
-<!-- AI Image Before/After -->
-<section class="section ba-section fade-in">
-  <div class="section-inner">
-    <h2 class="section-title"><em>AI</em> 圖片優化</h2>
-    <p class="section-sub">Amazon・Rakuten 大平台等級商業圖片，一鍵優化</p>
-    <div class="ba-grid">
-      <div class="ba-card" onclick="openBaPopup('before')">
-        <div class="ba-card-img"><img src="/assets/images/before.webp" alt="優化前" loading="lazy" /></div>
-        <div class="ba-label"><span class="before-tag">Before</span></div>
-      </div>
-      <div class="ba-card" onclick="openBaPopup('after')">
-        <div class="ba-card-img"><img src="/assets/images/after.webp" alt="優化後" loading="lazy" /></div>
-        <div class="ba-label"><span class="after-tag">After</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- Pricing -->
 <section class="section pricing-section fade-in" id="pricing">
   <div class="section-inner">
@@ -1087,40 +1035,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
   <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
 </footer>
 
-<!-- BA Popup Overlay -->
-<div class="ba-overlay" id="ba-overlay">
-  <span class="ba-overlay-tag" id="ba-overlay-tag"></span>
-  <img id="ba-overlay-img" src="" alt="" onclick="toggleBaPopup(event)" />
-  <span class="ba-overlay-hint">點擊圖片切換 Before / After</span>
-</div>
-
-<script>
-var baState = "before";
-var baSrcs = { before: "/assets/images/before.webp", after: "/assets/images/after.webp" };
-function openBaPopup(which) {
-  baState = which;
-  updateBaPopup();
-  document.getElementById("ba-overlay").classList.add("active");
-}
-function updateBaPopup() {
-  var img = document.getElementById("ba-overlay-img");
-  var tag = document.getElementById("ba-overlay-tag");
-  if (img) img.src = baSrcs[baState];
-  if (tag) {
-    tag.textContent = baState === "before" ? "Before" : "After";
-    tag.style.background = baState === "before" ? "#fef3c7" : "#dcfce7";
-    tag.style.color = baState === "before" ? "#92400e" : "#166534";
-  }
-}
-function toggleBaPopup(e) {
-  e.stopPropagation();
-  baState = baState === "before" ? "after" : "before";
-  updateBaPopup();
-}
-document.getElementById("ba-overlay").addEventListener("click", function(e) {
-  if (e.target === this) this.classList.remove("active");
-});
-</script>
 
 <script>
 // FAQ toggle
