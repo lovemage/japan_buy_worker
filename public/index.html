@@ -483,7 +483,9 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
   .nav-brand-text strong { font-size: 14px; }
   .nav-brand-text small { display: none; }
   #nav-music-btn { display: none !important; }
-  .nav-menu { display: none; }
+  .nav-menu { display: flex; gap: 0; align-items: center; }
+  .nav-menu .nav-link { display: none; }
+  .nav-menu .nav-link.nav-link-show-mobile { display: inline-flex; font-size: 12px; padding: 5px 8px; }
   .nav-actions { display: flex; gap: 6px; align-items: center; margin-left: auto; }
   .nav-actions > .btn-fill:not(#nav-store-btn) { display: none; }
   .nav-actions.is-logged-in #nav-auth-btn { display: none; }
@@ -572,7 +574,7 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
       <a href="#features" class="nav-link">解決方案</a>
       <a href="https://japan.vovosnap.com/" target="_blank" rel="noopener" class="nav-link">案例分享</a>
       <a href="#pricing" class="nav-link">方案價格</a>
-      <a href="/blog/first-time-daigou-guide.html" class="nav-link">資源中心</a>
+      <a href="/blog/first-time-daigou-guide.html" class="nav-link nav-link-show-mobile">教學資源</a>
     </div>
     <div class="nav-actions">
       <button id="nav-music-btn" type="button" onclick="toggleMusic()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;opacity:0.7;transition:opacity 0.2s;" title="播放主題曲">
