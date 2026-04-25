@@ -34,6 +34,11 @@ test("landing page uses the collage redesign hooks without dropping critical int
     "hero-decor-camera",
     "hero-decor-flower",
     "dashboard-avatar",
+    "feat-paper-frame",
+    "feat-notes",
+    "AI 自動辨識商品",
+    "自動換算匯率與售價",
+    "一鍵分享給 LINE 群",
   ];
 
   for (const snippet of requiredSnippets) {
@@ -55,6 +60,11 @@ test("landing page no longer contains removed legacy sections", () => {
     'openBaPopup',
     '.flow-step',
     '.flow-arrow',
+    'class="feat-text-track"',
+    'id="feat-text-track"',
+    'class="feat-text-slide"',
+    'feat-prev',
+    'feat-next',
   ];
   for (const snippet of removed) {
     assert.ok(!html.includes(snippet), `Expected landing page to NOT include ${snippet}`);
