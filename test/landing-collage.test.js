@@ -39,6 +39,8 @@ test("landing page no longer contains removed legacy sections", () => {
   const removed = [
     'class="edu-bubble"',
     '<section class="section edu-section',
+    'class="ai-hook',
+    '<section class="ai-hook',
   ];
   for (const snippet of removed) {
     assert.ok(!html.includes(snippet), `Expected landing page to NOT include ${snippet}`);
