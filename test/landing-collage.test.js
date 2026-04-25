@@ -34,3 +34,13 @@ test("landing page uses the collage redesign hooks without dropping critical int
     assert.ok(html.includes(snippet), `Expected landing page to include ${snippet}`);
   }
 });
+
+test("landing page no longer contains removed legacy sections", () => {
+  const removed = [
+    'class="edu-bubble"',
+    '<section class="section edu-section',
+  ];
+  for (const snippet of removed) {
+    assert.ok(!html.includes(snippet), `Expected landing page to NOT include ${snippet}`);
+  }
+});
