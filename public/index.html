@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>vovosnap — 出國旅遊順便賺｜拍照就能開始代購</title>
-<meta name="description" content="幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動上架、翻譯、算好售價，朋友用手機下單，你只管逛街。免費開始，不用學電商。" />
-<meta property="og:title" content="vovosnap — 出國旅遊，順便賺回機票錢" />
-<meta property="og:description" content="幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動幫你開店，朋友用手機下單，你只管逛街。" />
+<title>我拍｜開店平台 — 創作者一鍵開店，從內容到成交全自動</title>
+<meta name="description" content="拍照上傳 → AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。讓創作者專注分享，10,000+ 創作者正在使用。" />
+<meta property="og:title" content="我拍｜開店平台 — 創作者一鍵開店，從內容到成交全自動" />
+<meta property="og:description" content="拍照上傳，AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。讓創作者專注分享。" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://vovosnap.com/" />
-<meta property="og:image" content="https://vovosnap.com/assets/images/hero.webp" />
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="vovosnap — 出國旅遊，順便賺回機票錢" />
-<meta name="twitter:description" content="幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動幫你開店，免費開始。" />
-<meta name="twitter:image" content="https://vovosnap.com/assets/images/hero.webp" />
+<meta property="og:image" content="https://vovosnap.com/assets/images/new_sale.webp" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="我拍｜開店平台 — 創作者一鍵開店" />
+<meta name="twitter:description" content="拍照上傳，AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。" />
+<meta name="twitter:image" content="https://vovosnap.com/assets/images/new_sale.webp" />
 <link rel="canonical" href="https://vovosnap.com/" />
-<link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
+<link rel="icon" type="image/png" href="/assets/images/logo_new01.png" />
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E3TD4YZSWY"></script>
 <script>
@@ -98,73 +98,128 @@
 </script>
 <style>
 :root {
-  --brand: #6B8C3E;
-  --brand-light: #E8EFD8;
-  --brand-dark: #527226;
-  --accent: #D4622B;
-  --accent-light: #FDF0E8;
-  --accent-dark: #B8511F;
-  --amber: #C4870A;
-  --amber-light: #FEF7E6;
-  --text: #2A2520;
-  --text-secondary: #6B6560;
-  --text-muted: #9A948A;
-  --bg: #FAF8F4;
-  --bg-alt: #F0EDE4;
-  --bg-card: #FFFEFA;
-  --border: #E0DAD0;
-  --success: #6B8C3E;
-  --radius: 14px;
+  --paper: #f6efe2;
+  --paper-warm: #fff8ec;
+  --paper-deep: #eadcc4;
+  --ink: #101316;
+  --navy: #08264a;
+  --navy-soft: #123963;
+  --orange: #f26b1d;
+  --orange-dark: #c94f13;
+  --mustard: #e7ad32;
+  --muted: #6f665d;
+  --line: rgba(16, 19, 22, 0.16);
+  --paper-shadow: 0 18px 42px rgba(51, 34, 12, 0.14), 0 2px 0 rgba(255,255,255,0.5) inset;
+
+  --brand: var(--navy);
+  --brand-light: #dce8f0;
+  --brand-dark: #041a33;
+  --accent: var(--orange);
+  --accent-light: #fff0e3;
+  --accent-dark: var(--orange-dark);
+  --amber: var(--mustard);
+  --amber-light: #fff5d9;
+  --text: var(--ink);
+  --text-secondary: var(--muted);
+  --text-muted: #8d8173;
+  --bg: var(--paper);
+  --bg-alt: #efe2cc;
+  --bg-card: var(--paper-warm);
+  --border: var(--line);
+  --success: var(--navy);
+  --radius: 8px;
 }
 html { scroll-behavior: smooth; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; max-width: 960px; margin: 0 auto; }
+body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--text); background: var(--paper); -webkit-font-smoothing: antialiased; max-width: 960px; margin: 0 auto; background-image: radial-gradient(rgba(8,38,74,0.05) 1px, transparent 1px), linear-gradient(105deg, rgba(242,107,29,0.07), transparent 28%, rgba(8,38,74,0.06) 72%, transparent); background-size: 18px 18px, 100% 100%; overflow-x: hidden; }
 
 /* ── Hero fonts ── */
 @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
 
+/* ── Collage primitives ── */
+.paper-card { position: relative; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.12); border-radius: 6px; box-shadow: var(--paper-shadow); }
+.paper-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background-image: linear-gradient(135deg, rgba(255,255,255,0.46), transparent 38%), radial-gradient(rgba(8,38,74,0.05) 1px, transparent 1px); background-size: 100% 100%, 14px 14px; mix-blend-mode: multiply; opacity: 0.6; }
+.tape { position: absolute; width: 76px; height: 22px; background: rgba(231,173,50,0.5); border: 1px solid rgba(161,112,21,0.16); box-shadow: 0 2px 5px rgba(31,22,12,0.1); transform: rotate(-7deg); pointer-events: none; z-index: 4; }
+.torn-band { position: relative; background: var(--navy); color: #fff8ec; clip-path: polygon(0 5%, 9% 0, 23% 4%, 39% 1%, 56% 6%, 75% 2%, 100% 5%, 100% 94%, 83% 100%, 63% 96%, 41% 100%, 25% 95%, 9% 99%, 0 94%); }
+.collage-stage { position: relative; isolation: isolate; }
+.scribble-note { font-family: "Comic Sans MS", "Segoe Print", cursive; color: var(--navy); line-height: 1.05; transform: rotate(-7deg); }
+
 /* ── Nav ── */
-.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-.nav-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-.nav-logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
-.nav-logo span { color: var(--brand); }
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(246,239,226,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(8,38,74,0.1); }
+.nav-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.nav-brand { display: inline-flex; align-items: center; gap: 9px; color: var(--navy); text-decoration: none; min-width: 150px; }
+.nav-brand img { width: 42px; height: 42px; object-fit: contain; display: block; flex-shrink: 0; }
+.nav-brand-text { display: grid; gap: 1px; line-height: 1; }
+.nav-brand-text strong { font-size: 17px; font-weight: 900; letter-spacing: 0; }
+.nav-brand-text small { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; }
+.nav-menu { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .nav-actions { display: flex; gap: 8px; align-items: center; }
-.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
-.nav-link:hover { background: var(--bg-alt); color: var(--text); }
+.nav-link { font-size: 13px; color: var(--navy); text-decoration: none; padding: 7px 10px; border-radius: 6px; transition: background 0.15s, color 0.15s; white-space: nowrap; font-weight: 700; }
+.nav-link:hover { background: rgba(242,107,29,0.1); color: var(--orange-dark); }
 .btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s cubic-bezier(0.25,1,0.5,1); }
 .btn-sm:active { transform: scale(0.97); }
-.btn-fill { background: var(--brand); color: #fff; box-shadow: 0 2px 8px rgba(107,140,62,0.25); }
-.btn-fill:hover { background: var(--brand-dark); box-shadow: 0 4px 14px rgba(107,140,62,0.35); transform: translateY(-1px); }
-.btn-ghost { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
-.btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+.btn-fill { background: var(--orange); color: #fff; box-shadow: 0 4px 0 rgba(107,49,15,0.2); }
+.btn-fill:hover { background: var(--orange-dark); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--navy); border: 1.5px solid rgba(8,38,74,0.2); }
+.btn-ghost:hover { border-color: var(--orange); color: var(--orange-dark); }
 
 /* ── Hero ── */
-.hero { position: relative; overflow: hidden; background: #1a1814; min-height: 600px; }
-.hero-img { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; display: block; }
-.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(170deg, rgba(26,24,20,0.88) 0%, rgba(42,37,32,0.7) 40%, rgba(107,140,62,0.35) 80%, rgba(212,98,43,0.25) 100%); z-index: 1; }
-.hero-overlay { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px 24px 80px; min-height: 600px; }
-.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); backdrop-filter: blur(12px); color: #fff; padding: 10px 22px; border-radius: 28px; font-size: 13px; font-weight: 700; margin-bottom: 28px; letter-spacing: 1.5px; border: 1px solid rgba(255,255,255,0.18); text-transform: uppercase; }
-.hero h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 64px; font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 12px; letter-spacing: -2px; }
-.hero h1 em { font-style: normal; display: block; font-size: 22px; font-weight: 400; color: rgba(255,255,255,0.55); letter-spacing: 4px; margin-top: 14px; text-transform: uppercase; }
-.hero-sub { font-size: 17px; color: rgba(255,255,255,0.8); max-width: 500px; line-height: 1.8; margin-bottom: 44px; font-weight: 400; }
-.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.hero { position: relative; overflow: hidden; background: transparent; min-height: 640px; padding: 34px 20px 54px; }
+.hero::before { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 178px; background: var(--navy); clip-path: polygon(0 10%, 16% 2%, 39% 12%, 62% 4%, 83% 11%, 100% 3%, 100% 88%, 79% 95%, 54% 88%, 30% 98%, 0 90%); opacity: 0.96; z-index: 0; }
+.hero-collage { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.1fr); gap: 28px; align-items: center; max-width: 920px; margin: 0 auto; min-height: 590px; }
+.hero-copy { position: relative; z-index: 3; padding: 34px 0 34px 4px; min-width: 0; max-width: 520px; }
+.hero-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--paper-warm); color: var(--navy); border: 1px solid rgba(8,38,74,0.14); box-shadow: 0 4px 0 rgba(8,38,74,0.08); padding: 8px 13px; border-radius: 5px; font-size: 12px; font-weight: 900; margin-bottom: 22px; transform: rotate(-1.5deg); }
+.hero h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 52px; font-weight: 900; color: var(--ink); line-height: 1.13; margin-bottom: 16px; letter-spacing: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+.hero h1 .brand-line { display: block; white-space: nowrap; }
+.hero h1 .hero-tail { display: block; }
+.hero h1 .highlight { color: var(--orange); position: relative; display: inline-block; }
+.hero h1 .highlight::after { content: ""; position: absolute; left: -3px; right: -3px; bottom: 4px; height: 10px; background: rgba(231,173,50,0.4); z-index: -1; transform: rotate(-1deg); }
+.hero-sub { font-size: 16px; color: var(--muted); max-width: 420px; line-height: 1.9; margin-bottom: 28px; font-weight: 600; }
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 22px; }
 .btn-hero { display: inline-flex; align-items: center; gap: 10px; padding: 18px 36px; border-radius: 14px; font-size: 17px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: all 0.3s cubic-bezier(0.25,1,0.5,1); }
 .btn-hero:active { transform: scale(0.96); }
-.btn-hero-primary { background: var(--brand); color: #fff; box-shadow: 0 8px 32px rgba(107,140,62,0.45), 0 2px 8px rgba(0,0,0,0.25); position: relative; }
-.btn-hero-primary::after { content: ""; position: absolute; inset: -3px; border-radius: 17px; background: linear-gradient(135deg, rgba(107,140,62,0.4), rgba(212,98,43,0.3)); z-index: -1; filter: blur(8px); opacity: 0; transition: opacity 0.3s; }
-.btn-hero-primary:hover { background: var(--brand-dark); transform: translateY(-3px); box-shadow: 0 14px 44px rgba(107,140,62,0.55), 0 4px 12px rgba(0,0,0,0.3); }
+.btn-hero-primary { background: var(--orange); color: #fff; box-shadow: 0 7px 0 rgba(132,62,22,0.24), 0 16px 34px rgba(242,107,29,0.22); position: relative; border-radius: 7px; }
+.btn-hero-primary::after { content: ""; position: absolute; inset: -3px; border-radius: 10px; background: rgba(242,107,29,0.22); z-index: -1; filter: blur(8px); opacity: 0; transition: opacity 0.3s; }
+.btn-hero-primary:hover { background: var(--orange-dark); transform: translateY(-3px); box-shadow: 0 9px 0 rgba(132,62,22,0.22), 0 20px 38px rgba(242,107,29,0.25); }
 .btn-hero-primary:hover::after { opacity: 1; }
 .btn-hero-primary svg { width: 20px; height: 20px; }
-.btn-hero-outline { background: rgba(255,255,255,0.08); color: #fff; border: 2px solid rgba(255,255,255,0.3); backdrop-filter: blur(4px); }
-.btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,0.15); transform: translateY(-3px); }
-.hero-decoration { position: absolute; z-index: 1; pointer-events: none; }
-.hero-deco-circle { width: 400px; height: 400px; border-radius: 50%; border: 1.5px solid rgba(107,140,62,0.12); top: -120px; right: -100px; }
-.hero-deco-circle-2 { width: 260px; height: 260px; border-radius: 50%; border: 1.5px solid rgba(212,98,43,0.1); bottom: -60px; left: -50px; }
+.btn-hero-outline { background: var(--paper-warm); color: var(--navy); border: 1.5px solid rgba(8,38,74,0.2); border-radius: 7px; box-shadow: 0 4px 0 rgba(8,38,74,0.08); }
+.btn-hero-outline:hover { border-color: var(--orange); color: var(--orange-dark); transform: translateY(-3px); }
+.hero-proof { display: inline-flex; align-items: center; gap: 10px; color: var(--navy); font-size: 13px; font-weight: 800; background: rgba(255,248,236,0.9); border: 1px solid rgba(8,38,74,0.12); border-radius: 999px; padding: 6px 13px 6px 7px; box-shadow: 0 4px 0 rgba(8,38,74,0.08); }
+.hero-avatar-row { display: flex; }
+.hero-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--paper); background: var(--paper-warm); object-fit: cover; display: block; margin-left: -7px; box-shadow: 0 2px 0 rgba(8,38,74,0.1); }
+.hero-avatar:first-child { margin-left: 0; }
+.hero-visual { position: relative; min-height: 510px; transform: rotate(2deg); }
+.dashboard-mockup { position: relative; z-index: 2; width: min(100%, 500px); margin: 40px auto 0; padding: 18px; transform: rotate(-1.5deg); }
+.dashboard-shell { position: relative; display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 16px; background: rgba(255,248,236,0.92); border: 1px solid rgba(8,38,74,0.18); border-radius: 6px; padding: 18px; box-shadow: var(--paper-shadow); }
+.dashboard-logo { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 900; color: var(--navy); }
+.dashboard-logo img { width: 34px; height: 26px; object-fit: contain; }
+.dashboard-side { display: grid; gap: 11px; align-content: start; font-size: 12px; color: var(--navy); font-weight: 800; }
+.dashboard-side span { display: flex; align-items: center; gap: 7px; }
+.dashboard-main h2 { font-size: 20px; margin-bottom: 12px; letter-spacing: 0; }
+.dashboard-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.metric { background: #fffaf2; border: 1px solid rgba(8,38,74,0.12); border-radius: 5px; padding: 10px 8px; min-height: 72px; }
+.metric b { display: block; font-size: 18px; color: var(--ink); line-height: 1.1; margin-top: 3px; }
+.metric small { display: block; font-size: 10px; color: var(--muted); }
+.metric em { display: block; font-style: normal; font-size: 10px; color: #177a4d; margin-top: 5px; font-weight: 800; }
+.chart-card { background: #fffaf2; border: 1px solid rgba(8,38,74,0.12); border-radius: 5px; padding: 12px; }
+.chart-card h3 { font-size: 12px; margin-bottom: 6px; color: var(--navy); }
+.chart-card svg { width: 100%; height: 126px; display: block; }
+.phone-card { position: absolute; z-index: 5; right: -18px; bottom: -48px; width: 128px; padding: 9px; background: #111; border-radius: 18px; transform: rotate(9deg); box-shadow: 0 20px 36px rgba(16,19,22,0.25); }
+.phone-screen { background: #fffaf2; border-radius: 12px; overflow: hidden; padding: 8px; color: var(--ink); }
+.phone-screen img { width: 100%; aspect-ratio: 1 / 0.76; object-fit: cover; border-radius: 8px; display: block; margin-bottom: 7px; }
+.phone-screen strong { display: block; font-size: 10px; line-height: 1.3; margin-bottom: 4px; }
+.phone-screen span { display: block; font-size: 10px; color: var(--orange-dark); font-weight: 900; margin-bottom: 6px; }
+.phone-screen button { width: 100%; border: 0; border-radius: 4px; background: var(--orange); color: #fff; font-size: 10px; font-weight: 900; padding: 6px 4px; }
+.hero-note { position: absolute; right: -4px; top: 56px; z-index: 1; font-size: 25px; max-width: 92px; }
+.hero-note-card { position: absolute; right: 18px; bottom: 10px; z-index: 0; width: 132px; height: 92px; background: var(--orange); clip-path: polygon(8% 0, 100% 5%, 92% 100%, 0 88%); opacity: 0.94; }
+.hero .tape-one { left: 44%; top: 48px; }
+.hero .tape-two { right: 98px; bottom: 64px; transform: rotate(9deg); }
 
 /* ── Section shared ── */
 .section { padding: 72px 20px; }
 .section-inner { max-width: 960px; margin: 0 auto; }
-.section-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; text-align: center; margin-bottom: 8px; letter-spacing: -0.5px; color: var(--text); }
+.section-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; text-align: center; margin-bottom: 8px; letter-spacing: 0; color: var(--text); }
 .section-title em { font-style: normal; color: var(--brand); }
 .section-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 40px; }
 
@@ -189,24 +244,50 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .fa-2 { animation: flowIn 0.4s ease-out 0.7s both; }
 .fs-3 { animation: flowIn 0.5s ease-out 0.9s both; }
 
+.collage-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: stretch; margin-top: 32px; width: 100%; max-width: 100%; }
+.collage-step { position: relative; min-width: 0; padding: 34px 18px 24px; min-height: 210px; transform: rotate(var(--tilt)); }
+.collage-step::after { content: "→"; position: absolute; right: -24px; top: 46%; color: var(--navy); font-size: 28px; font-weight: 900; transform: rotate(calc(var(--tilt) * -1)); }
+.collage-step:last-child::after { content: ""; }
+.step-badge { position: absolute; top: -14px; left: 16px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--navy); color: #fff8ec; font-size: 13px; font-weight: 900; border: 2px solid var(--paper); }
+.step-icon { width: 54px; height: 54px; display: grid; place-items: center; color: var(--orange); margin-bottom: 14px; }
+.step-icon svg { width: 42px; height: 42px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.collage-step h3 { font-size: 18px; font-weight: 900; margin-bottom: 10px; color: var(--ink); }
+.collage-step p { font-size: 13px; line-height: 1.7; color: var(--muted); font-weight: 700; overflow-wrap: anywhere; }
+.why-band { margin-top: 76px; padding: 70px 22px 76px; overflow: visible; }
+.why-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+.why-title { text-align: center; font-size: 28px; font-weight: 900; line-height: 1.25; margin-bottom: 36px; color: #fff8ec; }
+.why-title em { color: var(--orange); font-style: normal; }
+.why-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.why-item { min-width: 0; text-align: center; color: #fff8ec; }
+.why-icon { width: 68px; height: 68px; margin: 0 auto 14px; display: grid; place-items: center; background: var(--paper-warm); color: var(--navy); clip-path: polygon(11% 3%, 91% 0, 100% 83%, 50% 100%, 0 86%); }
+.why-icon svg { width: 38px; height: 38px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.why-item h3 { font-size: 15px; font-weight: 900; margin-bottom: 8px; }
+.why-item p { font-size: 12px; line-height: 1.6; color: rgba(255,248,236,0.78); font-weight: 700; overflow-wrap: anywhere; }
+
 /* ── Feature: video + text overlay ── */
-.feat-section { background: var(--bg-alt); padding: 48px 0 36px; }
-.feat-header { text-align: center; padding: 0 20px; margin-bottom: 24px; }
-.feat-header h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 4px; }
+.feat-section { position: relative; background-color: var(--bg-alt); background-image: url("/assets/images/you_dont_have_to_learn.webp"); background-position: center; background-repeat: no-repeat; background-size: cover; padding: 64px 20px 56px; overflow: hidden; }
+.feat-section > * { position: relative; z-index: 1; }
+.feat-section::before { content: ""; position: absolute; left: 6%; top: 34px; width: 118px; height: 34px; background: rgba(231,173,50,0.46); border: 1px solid rgba(161,112,21,0.14); transform: rotate(-8deg); box-shadow: 0 2px 6px rgba(31,22,12,0.1); }
+.feat-section::after { content: ""; position: absolute; right: 4%; bottom: 28px; width: 150px; height: 94px; background: var(--navy); clip-path: polygon(8% 0, 100% 8%, 90% 100%, 0 86%); opacity: 0.9; transform: rotate(5deg); }
+.feat-header { position: relative; z-index: 1; text-align: center; padding: 0 20px; margin-bottom: 24px; }
+.feat-header h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 0; margin-bottom: 4px; }
 .feat-header p { font-size: 13px; color: var(--text-muted); }
-.feat-wrap { margin: 0 16px; border-radius: 18px; overflow: hidden; background: var(--bg-card); box-shadow: 0 6px 32px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); border: 1.5px solid var(--border); }
+.feat-wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 22px 22px 26px; border-radius: 6px; overflow: visible; background: var(--paper-warm); box-shadow: var(--paper-shadow); border: 1px solid rgba(8,38,74,0.14); transform: rotate(-1deg); }
+.feat-wrap::before { content: ""; position: absolute; left: 46%; top: -15px; width: 104px; height: 26px; background: rgba(231,173,50,0.55); border: 1px solid rgba(161,112,21,0.14); transform: rotate(4deg); box-shadow: 0 2px 5px rgba(31,22,12,0.1); z-index: 3; }
+.feat-wrap::after { content: "AI handles it"; position: absolute; right: -16px; top: 42px; width: 78px; padding: 12px 8px; background: var(--orange); color: #fff8ec; font-family: "Comic Sans MS", "Segoe Print", cursive; font-size: 16px; line-height: 1.05; text-align: center; transform: rotate(8deg); box-shadow: var(--paper-shadow); clip-path: polygon(6% 0, 100% 8%, 90% 100%, 0 88%); z-index: 2; }
 /* Text carousel on top */
-.feat-text-area { position: relative; overflow: hidden; height: 88px; }
+.feat-text-area { position: relative; overflow: hidden; height: 96px; margin-bottom: 16px; border: 1px dashed rgba(8,38,74,0.18); background: rgba(255,250,242,0.76); border-radius: 5px; }
 .feat-text-track { display: flex; transition: transform 0.45s cubic-bezier(0.25,1,0.5,1); height: 100%; }
 .feat-text-slide { min-width: 100%; padding: 12px 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
 .feat-label { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: var(--brand); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
 .feat-label svg { width: 12px; height: 12px; }
-.feat-text-slide h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; font-weight: 900; line-height: 1.3; margin-bottom: 4px; letter-spacing: -0.2px; }
+.feat-text-slide h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; font-weight: 900; line-height: 1.3; margin-bottom: 4px; letter-spacing: 0; }
 .feat-text-slide p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .feat-text-slide .hl { color: var(--brand-dark); font-weight: 600; }
 /* Video area */
-.feat-video-area { position: relative; width: 310px; margin: 0 auto; background: #2c2a25; }
-.feat-video-area video { width: 100%; height: auto; display: block; }
+.feat-video-area { position: relative; width: min(330px, 100%); margin: 0 auto; padding: 12px; background: var(--navy); border-radius: 24px; box-shadow: 0 16px 28px rgba(8,38,74,0.22); transform: rotate(1.2deg); }
+.feat-video-area::before { content: ""; position: absolute; left: 50%; top: 8px; width: 56px; height: 6px; border-radius: 999px; background: rgba(255,248,236,0.28); transform: translateX(-50%); z-index: 2; }
+.feat-video-area video { width: 100%; height: auto; display: block; border-radius: 16px; background: #2c2a25; }
 .feat-video-area .feat-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.3px; z-index: 2; }
 
 /* ── Billing toggle ── */
@@ -218,8 +299,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .billing-toggle-btn.has-save .toggle-save { display: block; }
 
 /* ── Pricing carousel ── */
+.pricing-section { position: relative; overflow: hidden; background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%); }
+.pricing-section .section-inner { position: relative; }
+.pricing-section .section-inner::before { content: ""; position: absolute; left: -8px; top: 86px; width: 90px; height: 24px; background: rgba(231,173,50,0.46); border: 1px solid rgba(161,112,21,0.14); transform: rotate(-10deg); }
 .plan-carousel { position: relative; overflow: hidden; margin: 0 -20px; padding: 0 20px; }
-.plan-track { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 16px 0; }
+.plan-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 26px 0 18px; }
 .plan-track::-webkit-scrollbar { display: none; }
 .plan-dots { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
 .plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: all 0.2s; }
@@ -263,42 +347,47 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .compare-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
 .compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text); }
 .compare-table td:nth-child(4) { background: rgba(253,240,232,0.5); color: var(--text); font-weight: 500; }
-.plan { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 16px; padding: 28px 20px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
-.plan:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+.plan { position: relative; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.14); border-radius: 6px; padding: 30px 20px 24px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; box-shadow: var(--paper-shadow); transform: rotate(-0.8deg); transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
+.plan:nth-child(2) { transform: rotate(0.7deg); }
+.plan:nth-child(3) { transform: rotate(-0.4deg); }
+.plan:nth-child(4) { transform: rotate(0.9deg); }
+.plan::after { content: ""; position: absolute; right: 16px; top: -12px; width: 64px; height: 22px; background: rgba(231,173,50,0.46); border: 1px solid rgba(161,112,21,0.14); transform: rotate(6deg); }
+.plan:hover { transform: translateY(-4px) rotate(0deg); box-shadow: 0 20px 44px rgba(51,34,12,0.18); }
 .plan.plan-unavailable { opacity: 0.35; pointer-events: none; filter: grayscale(0.6); transform: scale(0.96); }
 .plan.plan-unavailable:hover { transform: scale(0.96); box-shadow: none; }
-.plan.pop { border-color: var(--accent); border-width: 2px; position: relative; box-shadow: 0 8px 36px rgba(212,98,43,0.15); }
+.plan.pop { border-color: var(--accent); border-width: 2px; position: relative; box-shadow: 0 18px 44px rgba(212,98,43,0.16); }
 .plan.pop:hover { box-shadow: 0 12px 44px rgba(212,98,43,0.22); }
-.plan.pop::before { content: "推薦"; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 4px 18px; border-radius: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+.plan.pop::before { content: "推薦"; position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(-3deg); background: var(--accent); color: #fff8ec; padding: 5px 18px; border-radius: 4px; font-size: 12px; font-weight: 900; letter-spacing: 0; box-shadow: 0 4px 0 rgba(107,49,15,0.18); z-index: 2; }
 .plan-name { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
 .plan.pop .plan-name { color: var(--accent); }
 .plan-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
-.plan-price { font-size: 40px; font-weight: 900; margin-bottom: 2px; letter-spacing: -1.5px; }
+.plan-price { font-size: 40px; font-weight: 900; margin-bottom: 2px; letter-spacing: 0; }
 .plan-price .cur { font-size: 16px; font-weight: 600; vertical-align: top; }
 .plan-price .per { font-size: 13px; font-weight: 400; color: var(--text-muted); }
 .plan-discount { font-size: 11px; color: var(--text-muted); margin: 4px 0 0; line-height: 1.5; }
 .plan-discount-link { background: none; border: none; padding: 0; font: inherit; color: var(--brand); text-decoration: underline; cursor: pointer; }
 .plan-discount-link:hover { color: var(--brand-dark); }
-.plan-line { height: 1px; background: var(--border); margin: 14px 0; }
+.plan-line { height: 1px; background: repeating-linear-gradient(90deg, rgba(8,38,74,0.22) 0 8px, transparent 8px 14px); margin: 14px 0; }
 .plan-list { list-style: none; flex: 1; margin-bottom: 18px; }
 .plan-list li { padding: 5px 0; font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 7px; }
 .plan-list li::before { content: "✓"; color: var(--brand); font-weight: 700; flex-shrink: 0; }
 .plan-list li.off { color: var(--text-muted); opacity: 0.5; }
 .plan-list li.off::before { content: "—"; color: var(--text-muted); }
-.plan-btn { display: block; width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; text-align: center; text-decoration: none; border: 1.5px solid var(--border); color: var(--text); background: var(--bg); transition: all 0.25s cubic-bezier(0.25,1,0.5,1); cursor: pointer; margin-top: auto; }
+.plan-btn { display: block; width: 100%; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 800; text-align: center; text-decoration: none; border: 1.5px solid var(--border); color: var(--navy); background: var(--bg); transition: all 0.25s cubic-bezier(0.25,1,0.5,1); cursor: pointer; margin-top: auto; }
 .plan-btn:hover { border-color: var(--brand); color: var(--brand); transform: translateY(-1px); }
 .plan.pop .plan-btn { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 16px rgba(212,98,43,0.3); }
 .plan.pop .plan-btn:hover { background: var(--accent-dark); box-shadow: 0 6px 24px rgba(212,98,43,0.4); }
 
-/* ── FAQ ── */
 .faq-section { background: var(--bg); }
-.faq-list { max-width: 640px; margin: 0 auto; }
-.faq-item { border-bottom: 1px solid var(--border); border-left: 3px solid transparent; padding-left: 0; transition: border-color 0.25s, padding-left 0.25s; }
-.faq-item.open { border-left-color: var(--brand); padding-left: 12px; }
-.faq-q { width: 100%; background: none; border: none; padding: 18px 0; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--text); text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: color 0.2s; }
-.faq-q:hover { color: var(--brand); }
-.faq-q::after { content: "+"; font-size: 22px; font-weight: 300; color: var(--text-muted); transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), color 0.2s; flex-shrink: 0; }
-.faq-q:hover::after { color: var(--brand); }
+.faq-list { max-width: 860px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.faq-item { position: relative; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.14); border-radius: 6px; box-shadow: 0 10px 24px rgba(51,34,12,0.08); padding: 0 16px; transform: rotate(-0.5deg); transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+.faq-item:nth-child(2n) { transform: rotate(0.5deg); }
+.faq-item:nth-child(3n)::before { content: ""; position: absolute; right: 18px; top: -10px; width: 48px; height: 18px; background: rgba(231,173,50,0.36); transform: rotate(7deg); }
+.faq-item.open { border-color: var(--orange); box-shadow: 0 16px 34px rgba(51,34,12,0.13); transform: rotate(0deg) translateY(-2px); }
+.faq-q { width: 100%; background: none; border: none; padding: 17px 0; font-family: inherit; font-size: 15px; font-weight: 800; color: var(--text); text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: color 0.2s; }
+.faq-q:hover { color: var(--orange-dark); }
+.faq-q::after { content: "+"; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--navy); color: #fff8ec; font-size: 20px; font-weight: 400; transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), background 0.2s; flex-shrink: 0; }
+.faq-q:hover::after { background: var(--orange); color: #fff8ec; }
 .faq-item.open .faq-q::after { content: "−"; }
 .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.25,1,0.5,1); }
 .faq-a p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding: 0 0 16px; margin: 0; }
@@ -319,8 +408,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 /* ── CTA ── */
 .cta { text-align: center; background: linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%); padding-top: 80px; padding-bottom: 80px; }
-.cta h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 28px; font-weight: 900; margin-bottom: 10px; letter-spacing: -0.5px; }
+.cta h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 28px; font-weight: 900; margin-bottom: 10px; letter-spacing: 0; }
 .cta p { font-size: 15px; color: var(--text-secondary); margin-bottom: 28px; }
+.final-cta { position: relative; margin: 24px 0 0; padding: 76px 20px 62px; background: var(--orange); color: #fff8ec; text-align: center; overflow: hidden; clip-path: polygon(0 9%, 16% 2%, 39% 8%, 62% 0, 81% 7%, 100% 3%, 100% 90%, 80% 100%, 56% 93%, 31% 100%, 12% 92%, 0 96%); }
+.final-cta::before { content: ""; position: absolute; left: 28px; bottom: 10px; width: 168px; height: 94px; background: var(--navy); clip-path: polygon(7% 0, 100% 8%, 92% 100%, 0 88%); opacity: 0.95; transform: rotate(-4deg); }
+.final-cta::after { content: ""; position: absolute; right: 34px; top: 34px; width: 112px; height: 98px; background: var(--paper-warm); clip-path: polygon(7% 0, 100% 9%, 88% 100%, 0 89%); transform: rotate(7deg); box-shadow: var(--paper-shadow); }
+.final-cta-inner { position: relative; z-index: 2; max-width: 640px; margin: 0 auto; }
+.final-cta h2 { font-size: 30px; font-weight: 900; line-height: 1.3; margin-bottom: 8px; }
+.final-cta p { font-size: 16px; font-weight: 800; margin-bottom: 26px; color: rgba(255,248,236,0.9); }
+.final-note { position: absolute; right: 48px; top: 58px; z-index: 3; font-size: 21px; color: var(--navy); max-width: 96px; }
+.footer { padding: 42px 20px; border-top: none; text-align: center; font-size: 12px; color: rgba(255,248,236,0.72); background: var(--navy); }
+.footer a { color: rgba(255,248,236,0.82); text-decoration: none; margin: 0 10px; transition: color 0.2s; }
+.footer a:hover { color: #fff8ec; }
+.footer-logo { display: inline-flex; align-items: center; gap: 10px; color: #fff8ec; text-decoration: none; margin-bottom: 12px; }
+.footer-logo img { width: 44px; height: 44px; object-fit: contain; background: var(--paper-warm); border-radius: 4px; }
+.footer-logo strong { display: block; font-size: 17px; font-weight: 900; text-align: left; }
+.footer-logo small { display: block; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-align: left; }
 
 /* ── AI Before/After ── */
 .ba-section { background: var(--bg-alt); }
@@ -339,71 +442,109 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .ba-overlay-tag { padding: 6px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; pointer-events: none; }
 .ba-overlay-hint { font-size: 12px; color: rgba(255,255,255,0.5); pointer-events: none; }
 
-/* ── Footer ── */
-.footer { padding: 36px 20px; border-top: 1.5px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); background: var(--bg-alt); }
-.footer a { color: var(--text-muted); text-decoration: none; margin: 0 10px; transition: color 0.2s; }
-.footer a:hover { color: var(--brand); }
-
 /* ── Animations ── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes heroImgReveal { from { opacity: 0; transform: scale(1.12); } to { opacity: 1; transform: scale(1); } }
 @keyframes heroKenBurns { from { transform: scale(1); } to { transform: scale(1.06); } }
-@keyframes heroTitleIn { from { opacity: 0; transform: translateY(36px) scale(0.92); letter-spacing: 6px; } to { opacity: 1; transform: translateY(0) scale(1); letter-spacing: -2px; } }
+@keyframes heroTitleIn { from { opacity: 0; transform: translateY(32px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes heroBadgePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(107,140,62,0.3); } 50% { box-shadow: 0 0 0 8px rgba(107,140,62,0); } }
 .hero-img { opacity: 0; animation: heroImgReveal 1.8s ease-out 0.2s both, heroKenBurns 24s ease-in-out 2s infinite alternate; }
-.hero-overlay > * { opacity: 0; animation: fadeUp 0.9s cubic-bezier(0.25,1,0.5,1) both; }
-.hero-badge { animation-delay: 0.3s; }
-.hero-badge { animation: fadeUp 0.9s cubic-bezier(0.25,1,0.5,1) 0.3s both, heroBadgePulse 3s ease-in-out 2s infinite; }
-.hero h1 { animation: heroTitleIn 1.1s cubic-bezier(0.25,1,0.5,1) 0.5s both; }
+.hero-copy, .dashboard-mockup, .hero-note { opacity: 0; animation: fadeUp 0.85s cubic-bezier(0.25,1,0.5,1) both; }
+.dashboard-mockup { animation-delay: 0.18s; }
+.hero-note { animation-delay: 0.34s; }
+.hero h1 { animation: none; opacity: 1; transform: none; }
 .hero-sub { animation-delay: 0.8s; }
 .hero-cta { animation-delay: 1.1s; }
 .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.55s, transform 0.55s cubic-bezier(0.25,1,0.5,1); }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
 /* ── Tablet ── */
-@media (max-width: 1024px) {
-  .hero h1 { font-size: 52px; }
-  .hero h1 em { font-size: 20px; }
+@media (max-width: 860px) {
+  .hero-collage { grid-template-columns: 1fr; gap: 6px; }
+  .hero-copy { padding-top: 18px; }
+  .hero h1 { font-size: 48px; }
+  .hero-visual { min-height: 470px; transform: none; }
   .flow-step { max-width: 160px; }
+  .collage-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .collage-step::after { display: none; }
+  .why-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 520px; margin: 0 auto; }
 }
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .nav-inner { padding: 10px 14px; gap: 10px; }
-  .nav-actions { gap: 6px; align-items: center; }
+  .nav-brand { min-width: 0; }
+  .nav-brand img { width: 38px; height: 38px; }
+  .nav-brand-text strong { font-size: 14px; }
+  .nav-brand-text small { display: none; }
+  #nav-music-btn { display: none !important; }
+  .nav-menu { display: none; }
+  .nav-actions { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+  .nav-actions > .btn-fill:not(#nav-store-btn) { display: none; }
+  .nav-actions.is-logged-in #nav-auth-btn { display: none; }
+  #nav-auth-btn, #nav-store-btn { padding: 8px 12px; min-height: 38px; font-size: 12px; white-space: nowrap; }
   .nav-link, .btn-sm { min-height: 40px; display: inline-flex; align-items: center; }
-  .hero { min-height: 500px; }
-  .hero-overlay { min-height: 500px; padding: 72px 20px 56px; }
-  .hero h1 { font-size: 42px; letter-spacing: -1.5px; }
-  .hero h1 em { font-size: 17px; letter-spacing: 2px; }
-  .hero-sub { font-size: 14px; }
-  .hero-cta { width: min(360px, 100%); flex-direction: column; }
+  .hero { min-height: auto; padding: 20px 14px 42px; }
+  .hero::before { top: auto; bottom: 32px; height: 230px; }
+  .hero h1 { font-size: 32px; letter-spacing: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .hero h1 .brand-line { white-space: normal; }
+  .hero-sub { font-size: 14px; max-width: 100%; overflow-wrap: anywhere; word-break: break-all; }
+  .hero-cta { width: min(360px, 100%); flex-direction: column; align-items: stretch; }
   .btn-hero { padding: 14px 24px; font-size: 14px; min-height: 46px; width: 100%; justify-content: center; }
+  .hero-visual { min-height: 430px; }
+  .dashboard-mockup { width: min(100%, 440px); margin-top: 14px; padding: 12px; transform: rotate(-1deg); }
+  .dashboard-shell { grid-template-columns: 1fr; gap: 12px; padding: 14px; }
+  .dashboard-side { display: none; }
+  .dashboard-metrics { grid-template-columns: repeat(2, 1fr); }
+  .phone-card { right: 0; bottom: -24px; width: 116px; }
+  .hero-note { right: 8px; top: 8px; font-size: 20px; }
+  .hero-note-card { display: none; }
   .flow { flex-direction: row; gap: 0; }
   .flow-step { flex: 1; max-width: none; padding: 10px 4px; }
   .flow-arrow { display: none; }
   .flow-step p { font-size: 11px; }
   .flow-icon { font-size: 28px; }
   .feat-header h2 { font-size: 18px; }
+  .feat-section { padding-left: 14px; padding-right: 14px; }
+  .feat-wrap { padding: 18px 14px 20px; transform: none; }
+  .feat-wrap::after { display: none; }
+  .feat-text-area { height: 104px; }
   .plan { min-width: 240px; }
   .plan-price { font-size: 28px; }
   .section { padding: 52px 16px; }
   .section-title { font-size: 24px; }
+  .section-sub { max-width: 100%; overflow-wrap: anywhere; word-break: break-all; }
   .nav-link { font-size: 12px; padding: 5px 8px; }
   .faq-q { min-height: 44px; line-height: 1.45; }
+  .faq-list { grid-template-columns: 1fr; max-width: 560px; gap: 12px; }
+  .faq-item, .faq-item:nth-child(2n) { transform: none; }
   .cta .btn-hero { max-width: 320px; width: 100%; }
   .cta .btn-hero + .btn-hero { margin-top: 10px !important; }
+  .collage-flow { grid-template-columns: minmax(0, 1fr); gap: 22px; overflow: hidden; }
+  .collage-step { width: 100%; max-width: 100%; transform: rotate(0deg); min-height: 0; }
+  .collage-step p { word-break: break-all; }
+  .why-band { margin-top: 50px; padding: 54px 18px 58px; }
+  .why-title { font-size: 23px; }
+  .why-grid { grid-template-columns: minmax(0, 1fr); max-width: 280px; gap: 26px; }
+  .final-cta { padding: 62px 18px 56px; }
+  .final-cta::before { width: 118px; height: 72px; left: -20px; bottom: 6px; }
+  .final-cta::after, .final-note { display: none; }
+  .final-cta h2 { font-size: 25px; }
 }
 @media (max-width: 480px) {
-  .hero-badge { font-size: 12px; padding: 6px 12px; }
-  .hero-overlay { padding-left: 14px; padding-right: 14px; }
+  .hero-kicker { font-size: 11px; }
   .compare-table table { min-width: 520px; }
+  .dashboard-metrics { gap: 6px; }
+  .metric b { font-size: 15px; }
+  .chart-card svg { height: 102px; }
 }
 @media (max-width: 380px) {
-  .hero h1 { font-size: 34px; letter-spacing: -1px; }
-  .hero h1 em { font-size: 15px; }
-  .btn-ghost { display: none; }
+  .hero h1 { font-size: 29px; letter-spacing: 0; }
+  .btn-ghost:not(#nav-auth-btn) { display: none; }
+  #nav-auth-btn { display: inline-flex; }
+  .nav-brand-text strong { font-size: 13px; }
+  .phone-card { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -415,15 +556,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <!-- Nav -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:62px;height:35px;" /></a>
+    <a href="/" class="nav-brand">
+      <img src="/assets/images/logo_new01.png" alt="" />
+      <span class="nav-brand-text" aria-label="我拍開店平台 vovosnap.com">
+        <strong>我拍｜開店平台</strong>
+        <small>vovosnap.com</small>
+      </span>
+    </a>
+    <div class="nav-menu">
+      <a href="#features" class="nav-link">功能特色</a>
+      <a href="#edu" class="nav-link">解決方案</a>
+      <a href="https://japan.vovosnap.com/" target="_blank" rel="noopener" class="nav-link">案例分享</a>
+      <a href="#pricing" class="nav-link">方案價格</a>
+      <a href="/blog/first-time-daigou-guide.html" class="nav-link">資源中心</a>
+    </div>
     <div class="nav-actions">
       <button id="nav-music-btn" type="button" onclick="toggleMusic()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;opacity:0.7;transition:opacity 0.2s;" title="播放主題曲">
         <svg id="nav-music-icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <svg id="nav-music-icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
       </button>
-      <a href="/blog/first-time-daigou-guide.html" class="nav-link">新手入門</a>
       <a href="#" class="btn-sm btn-fill" id="nav-store-btn" style="display:none;">進入商店</a>
-      <a href="/login.html" class="btn-sm btn-fill" id="nav-auth-btn">登入</a>
+      <a href="/login.html" class="btn-sm btn-ghost" id="nav-auth-btn">登入</a>
+      <a href="/login.html" class="btn-sm btn-fill" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'nav'})">免費開始</a>
     </div>
   </div>
 </nav>
@@ -433,41 +587,103 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </div>
 
 <!-- Hero -->
-<section class="hero">
-  <img src="/assets/images/hero.webp" alt="VOVOSnap — 出國旅遊，順便賺回機票錢" class="hero-img" />
-  <div class="hero-decoration hero-deco-circle"></div>
-  <div class="hero-decoration hero-deco-circle-2"></div>
-  <div class="hero-overlay">
-    <div class="hero-badge">🇯🇵 🇰🇷 🇹🇭 出國就能賺</div>
-    <h1>出國旅遊<em>順便賺回機票錢</em></h1>
-    <p class="hero-sub">幫朋友帶伴手禮就是最簡單的代購。拍張照，AI 自動幫你開店，朋友用手機下單，你只管逛街。</p>
-    <div class="hero-cta">
-      <a href="/login.html" class="btn-hero btn-hero-primary" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'hero'})">
-        <svg viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        免費開始
-      </a>
-      <a href="#edu" class="btn-hero btn-hero-outline">看看怎麼做 ↓</a>
+<section class="hero collage-stage">
+  <span class="tape tape-one"></span>
+  <span class="tape tape-two"></span>
+  <div class="hero-collage">
+    <div class="hero-copy">
+      <div class="hero-kicker">拍照上傳 / AI 上架 / 自動成交</div>
+      <h1 aria-label="我拍｜開店平台 讓創作者一鍵開店，從內容到成交，全自動"><span class="brand-line">我拍｜開店平台</span>讓創作者<span class="highlight">一鍵開店</span><span class="hero-tail">從內容到成交，全自動</span></h1>
+      <p class="hero-sub">拍照上傳，AI 生成商品頁，一鍵上架開店。自動導購、回覆、成交，讓你把時間留給創作和旅行。</p>
+      <div class="hero-cta">
+        <a href="/login.html" class="btn-hero btn-hero-primary" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'hero'})">
+          <svg viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          免費開始
+        </a>
+        <a href="https://japan.vovosnap.com/" target="_blank" rel="noopener" class="btn-hero btn-hero-outline">查看範例店舖</a>
+      </div>
+      <div class="hero-proof">
+        <div class="hero-avatar-row" aria-hidden="true">
+          <img class="hero-avatar" src="/assets/images/creator-avatar-01.webp" alt="" loading="eager">
+          <img class="hero-avatar" src="/assets/images/creator-avatar-02.webp" alt="" loading="eager">
+          <img class="hero-avatar" src="/assets/images/creator-avatar-03.webp" alt="" loading="eager">
+          <img class="hero-avatar" src="/assets/images/creator-avatar-04.webp" alt="" loading="eager">
+        </div>
+        <span>10,000+ 創作者正在使用</span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-note scribble-note">Create<br>Build<br>Sell</div>
+      <div class="hero-note-card"></div>
+      <div class="dashboard-mockup paper-card">
+        <div class="dashboard-shell">
+          <div class="dashboard-logo">
+            <img src="/assets/images/logo_new01.png" alt="" />
+            <span>我拍｜開店平台</span>
+          </div>
+          <div class="dashboard-side" aria-label="後台功能選單">
+            <span>⌂ 總覽</span>
+            <span>▣ 商品</span>
+            <span>▤ 訂單</span>
+            <span>♙ 顧客</span>
+            <span>↗ 行銷</span>
+            <span>▧ 數據分析</span>
+            <span>⚙ 設定</span>
+          </div>
+          <div class="dashboard-main">
+            <h2>總覽</h2>
+            <div class="dashboard-metrics">
+              <div class="metric"><small>今日訂單</small><b>128</b><em>+12%</em></div>
+              <div class="metric"><small>今日營收</small><b>NT$ 24,560</b><em>+18%</em></div>
+              <div class="metric"><small>總瀏覽數</small><b>6,320</b><em>+11%</em></div>
+              <div class="metric"><small>轉換率</small><b>3.2%</b><em>+0.8%</em></div>
+            </div>
+            <div class="chart-card">
+              <h3>營收趨勢</h3>
+              <svg viewBox="0 0 320 126" role="img" aria-label="營收趨勢圖">
+                <path d="M18 108H304M18 82H304M18 56H304M18 30H304" stroke="rgba(8,38,74,0.09)" />
+                <path d="M24 98L62 78L100 90L138 58L176 70L214 48L252 64L296 24" fill="none" stroke="#f26b1d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M24 98L62 78L100 90L138 58L176 70L214 48L252 64L296 24V112H24Z" fill="rgba(242,107,29,0.12)" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="phone-card" aria-label="手機商品卡預覽">
+          <div class="phone-screen">
+            <img src="/assets/images/hero.webp" alt="範例商品照片" />
+            <strong>橙楓陶瓷花瓶組</strong>
+            <span>NT$ 1,280</span>
+            <button type="button">加入購物車</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- Section 2: 痛點教育 -->
 <style>
+.edu-section { position: relative; overflow: hidden; background-color: var(--bg-alt); background-image: url("/assets/images/more_easy_than_you_thaught.webp"); background-position: center; background-repeat: no-repeat; background-size: cover; }
+.edu-section::before { content: ""; position: absolute; inset: 0; background: rgba(246,239,226,0.58); pointer-events: none; }
+.edu-section .section-inner { position: relative; z-index: 1; width: 100%; }
 .edu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; }
 .edu-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .edu-card-icon { width: 88px; height: 88px; margin-bottom: 4px; flex-shrink: 0; }
 .edu-card-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.edu-bubble { position: relative; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px 10px; }
-.edu-bubble::before { content: ""; position: absolute; top: -7px; left: 50%; width: 12px; height: 12px; background: var(--bg-alt); border-left: 1.5px solid var(--border); border-top: 1.5px solid var(--border); transform: translateX(-50%) rotate(45deg); }
+.edu-bubble { position: relative; background: rgba(255,248,236,0.9); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px 10px; box-shadow: 0 10px 24px rgba(51,34,12,0.08); }
+.edu-bubble::before { content: ""; position: absolute; top: -7px; left: 50%; width: 12px; height: 12px; background: rgba(255,248,236,0.9); border-left: 1.5px solid var(--border); border-top: 1.5px solid var(--border); transform: translateX(-50%) rotate(45deg); }
 .edu-bubble h4 { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
 .edu-bubble p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-@media (max-width: 768px) { .edu-grid { grid-template-columns: 1fr; gap: 18px; } }
+@media (max-width: 768px) {
+  .edu-section { background-size: cover; }
+  .edu-grid { grid-template-columns: 1fr; gap: 18px; }
+}
 </style>
-<section class="section fade-in" id="edu" style="background:var(--bg-alt);">
+<section class="section edu-section fade-in" id="edu" aria-label="代購，比你想的簡單：不用開店、不用囤貨、不用學電商">
   <div class="section-inner">
     <h2 class="section-title">代購，比你想的<em>簡單</em></h2>
     <p class="section-sub">不用開店、不用囤貨、不用學電商</p>
-    <p style="text-align:center;font-size:15px;color:var(--text-secondary);line-height:1.8;max-width:540px;margin:0 auto 0;">代購就是幫朋友從國外帶東西，加點跑腿費。一趟日本帶 10 件藥妝，每件加 150 元，多 1,500 元，夠吃一頓好料~</p>
+    <p class="edu-desc" style="text-align:center;font-size:15px;color:var(--text-secondary);line-height:1.8;max-width:540px;margin:0 auto 0;">代購就是幫朋友從國外帶東西，加點跑腿費。一趟日本帶 10 件藥妝，每件加 150 元，多 1,500 元，夠吃一頓好料~</p>
     <div class="edu-grid">
       <div class="edu-card">
         <div class="edu-card-icon"><img src="/assets/images/c1.webp" alt="零囤貨風險的代購新手" loading="lazy" /></div>
@@ -497,28 +713,40 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <!-- How it works -->
 <section class="section fade-in">
   <div class="section-inner">
-    <h2 class="section-title">三步驟<em>開始代購</em></h2>
-    <p class="section-sub">出國前 5 分鐘搞定，剩下的交給 AI</p>
-    <p style="text-align:center;font-size:11px;color:var(--text-muted);margin-bottom:24px;">先完成一次性設定（選國家、設利潤，1 分鐘），之後每趟出國直接拍照</p>
-    <div class="flow">
-      <div class="flow-step fs-1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;margin-bottom:12px;">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
-        <h3>拍照</h3><p>AI 搞定品名、規格、匯率，一拍就上架</p>
+    <h2 class="section-title" aria-label="開店只要 4 步驟">開店只要 <em>4</em> 步驟</h2>
+    <p class="section-sub">出國前設定一次，之後每趟直接拍照、分享、收單</p>
+    <div class="collage-flow" aria-label="開店四步驟">
+      <div class="collage-step paper-card" style="--tilt:-2deg;">
+        <span class="step-badge">01</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <h3>拍照 / 上傳</h3>
+        <p>拍下商品或上傳圖片，AI 自動生成文案、圖片與商品頁。</p>
       </div>
-      <div class="flow-step fs-2">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;margin-bottom:12px;">
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-        </svg>
-        <h3>分享連結</h3><p>貼到 LINE 群或 IG，朋友自己逛、自己下單</p>
+      <div class="collage-step paper-card" style="--tilt:1.5deg;">
+        <span class="step-badge">02</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v12H4z"/><path d="M8 20h8"/><path d="M12 16v4"/><path d="M9 9h6"/><path d="M9 12h4"/></svg>
+        </div>
+        <h3>AI 生成</h3>
+        <p>一鍵生成專屬店舖，品名、規格、售價與社群文案都整理好。</p>
       </div>
-      <div class="flow-step fs-3">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;margin-bottom:12px;">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-        <h3>看訂單出貨</h3><p>回國後一目瞭然，打包出貨不手忙腳亂</p>
+      <div class="collage-step paper-card" style="--tilt:-1deg;">
+        <span class="step-badge">03</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 11h4l10-5v12L7 13H3z"/><path d="M7 13v5"/><path d="M19 9l2-2"/><path d="M19 15l2 2"/></svg>
+        </div>
+        <h3>自動導購</h3>
+        <p>分享給 LINE 群或社群，客人自己逛、自己下單，不再一個一個問。</p>
+      </div>
+      <div class="collage-step paper-card" style="--tilt:2deg;">
+        <span class="step-badge">04</span>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v12"/><path d="M16 8H9.5a2.5 2.5 0 0 0 0 5H14a2.5 2.5 0 0 1 0 5H8"/></svg>
+        </div>
+        <h3>成交 / 收款</h3>
+        <p>訂單自動彙整，回國後照清單採買、收款、出貨，流程乾淨不漏單。</p>
       </div>
     </div>
     <div style="text-align:center;margin-top:24px;">
@@ -527,16 +755,50 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
 </section>
 
+<!-- Why choose -->
+<section class="why-band torn-band fade-in">
+  <div class="why-inner">
+    <h2 class="why-title" aria-label="為什麼選擇 我拍開店平台？">為什麼選擇 <em>我拍開店平台</em>？</h2>
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="why-icon"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 10-13h-7z"/></svg></div>
+        <h3>超快速開店</h3>
+        <p>1 分鐘生成店舖，快速上架開賣。</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V4"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M9 17h6"/></svg></div>
+        <h3>AI 全自動化</h3>
+        <p>AI 生成內容、導購、回覆，讓你省時又省力。</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-4 3 3 5-7"/></svg></div>
+        <h3>提升轉換率</h3>
+        <p>商品頁與訂單流程順，成交率提升 3.2x。</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg></div>
+        <h3>安全可靠</h3>
+        <p>商店 SSL 證書、資料隔離，營運更安心。</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></div>
+        <h3>專為創作者設計</h3>
+        <p>簡單好上手，讓你專注分享、旅程和成交。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Time-saving banner -->
 <section class="section fade-in" style="padding:0;">
-  <img src="/assets/images/give_customer_time_travel.webp" alt="VOVOSnap 前後對比：從手忙腳亂的代購作業到一鍵上架，把時間留給經營客戶以及愛旅遊的你" loading="lazy" style="width:100%;display:block;border-radius:var(--radius);" />
+  <img src="/assets/images/new_sale.webp" alt="VOVOSnap 前後對比：從手忙腳亂的代購作業到一鍵上架，把時間留給經營客戶以及愛旅遊的你" loading="lazy" style="width:100%;display:block;border-radius:var(--radius);" />
 </section>
 
 <!-- AI handles everything hook -->
 <style>
 .ai-hook { padding: 72px 20px; }
 .ai-hook-inner { max-width: 720px; margin: 0 auto; text-align: center; }
-.ai-hook-inner h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; color: var(--text); }
+.ai-hook-inner h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; letter-spacing: 0; margin-bottom: 8px; color: var(--text); }
 .ai-hook-inner h2 em { font-style: normal; color: var(--accent); }
 .ai-hook-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
 .ai-hook-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 40px; max-width: 540px; margin-left: auto; margin-right: auto; }
@@ -822,7 +1084,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </section>
 
 <!-- Pricing -->
-<section class="section fade-in" id="pricing">
+<section class="section pricing-section fade-in" id="pricing">
   <div class="section-inner">
     <h2 class="section-title">選擇 我|我拍 <em>方案</em></h2>
     <p class="section-sub">所有方案免費開始，隨時升級</p>
@@ -1061,19 +1323,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 </section>
 
 <!-- CTA -->
-<section class="section cta fade-in">
-  <h2>免費開始你的<span style="color:var(--accent)">第一次代購</span></h2>
-  <p>不需要信用卡，30 秒就能開始。</p>
-  <a href="/login.html" class="btn-hero btn-hero-primary" style="background:var(--brand);color:#fff;" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'footer'})">
-    <svg viewBox="0 0 24 24" style="width:18px;height:18px;"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-    免費開始
-  </a>
-  <a href="/blog/first-time-daigou-guide.html" class="btn-hero" style="margin-top:8px;background:#fff;color:var(--text);border:2px solid var(--border);">新手入門教學</a>
+<section class="final-cta fade-in">
+  <div class="final-note scribble-note" aria-label="Start your business today!">Start your<br>business<br>today!</div>
+  <div class="final-cta-inner">
+    <h2>開始你的第一筆自動成交</h2>
+    <p>我拍｜開店平台，讓創作更有價值。</p>
+    <a href="/login.html" class="btn-hero btn-hero-outline" onclick="typeof gtag==='function'&&gtag('event','cta_click',{section:'footer'})">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;"><path fill="#08264a" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#08264a" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#08264a" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#08264a" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      免費開店，立即體驗
+    </a>
+  </div>
 </section>
 
 <!-- Footer -->
 <footer class="footer">
-  <a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" style="width:50px;height:28px;margin-bottom:8px;" /></a><br>
+  <a href="/" class="footer-logo">
+    <img src="/assets/images/logo_new01.png" alt="" />
+    <span>
+      <strong>我拍｜開店平台</strong>
+      <small>vovosnap.com</small>
+    </span>
+  </a><br>
+  <a href="#features">功能特色</a>
+  <a href="#pricing">方案價格</a>
+  <a href="/blog/first-time-daigou-guide.html">教學文章</a>
   <a href="/privacy.html">隱私權政策</a>
   <a href="/terms.html">服務條款</a>
   <p style="margin-top:8px;">聯絡信箱：<a href="mailto:info@vovosnap.com">info@vovosnap.com</a></p>
@@ -1426,6 +1699,8 @@ if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     if (storeBtn && d.store.slug) {
       storeBtn.href = "/s/" + d.store.slug + "/admin";
       storeBtn.style.display = "";
+      var navActions = document.querySelector(".nav-actions");
+      if (navActions) navActions.classList.add("is-logged-in");
     }
   }).catch(function(){});
 })();
