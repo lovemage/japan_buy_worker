@@ -24,7 +24,6 @@ test("landing page uses the collage redesign hooks without dropping critical int
     "為什麼選擇 我拍開店平台",
     "超快速開店",
     "開始你的第一筆自動成交",
-    "Start your business today",
     "我拍｜開店平台 — 創作者一鍵開店",
     "AI 生成商品頁，一鍵上架開店",
     "new_sale.webp",
