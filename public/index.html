@@ -216,12 +216,10 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .btn-ghost:hover { border-color: var(--orange); color: var(--orange-dark); }
 
 /* ── Hero ── */
-.hero { position: relative; overflow: hidden; background: transparent; min-height: 640px; padding: 34px 20px 54px; }
-.hero::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; top: 30%; background: var(--navy); clip-path: polygon(0 10%, 12% 2%, 28% 14%, 44% 4%, 60% 12%, 76% 3%, 88% 11%, 100% 5%, 100% 88%, 86% 96%, 70% 90%, 52% 98%, 32% 90%, 14% 96%, 0 92%); opacity: 0.94; z-index: 0; }
-.hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 12px; height: 88px; background: var(--paper-deep); clip-path: polygon(0 30%, 14% 14%, 30% 24%, 48% 8%, 64% 22%, 82% 12%, 100% 24%, 100% 100%, 0 100%); opacity: 0.85; z-index: 0; pointer-events: none; }
+.hero { position: relative; overflow: hidden; min-height: 640px; padding: 34px 20px 54px; background: var(--paper) url("/assets/images/landing-collage/hero-bg-konbini.webp") center/cover no-repeat; }
+.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(246,239,226,0.0) 0%, rgba(246,239,226,0.55) 60%, rgba(246,239,226,0.85) 100%); pointer-events: none; z-index: 0; }
 .hero-decor { position: absolute; z-index: 1; pointer-events: none; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.14)); }
 .hero-decor-camera { width: 168px; bottom: 10px; left: -22px; transform: rotate(-7deg); }
-.hero-decor-flower { width: 134px; top: 14px; right: 4%; transform: rotate(8deg); z-index: 0; }
 .hero-collage { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.1fr); gap: 28px; align-items: center; max-width: 920px; margin: 0 auto; min-height: 590px; }
 .hero-copy { position: relative; z-index: 3; padding: 34px 0 34px 4px; min-width: 0; max-width: 520px; }
 .hero-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--paper-warm); color: var(--navy); border: 1px solid rgba(8,38,74,0.14); box-shadow: 0 4px 0 rgba(8,38,74,0.08); padding: 8px 13px; border-radius: 5px; font-size: 12px; font-weight: 900; margin-bottom: 22px; transform: rotate(-1.5deg); }
@@ -271,8 +269,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .hero-note-card { position: absolute; right: -8px; top: -14px; z-index: 4; background: var(--orange); color: #fff; padding: 18px 22px 16px; border-radius: 4px; transform: rotate(7deg); box-shadow: 0 6px 16px rgba(132,62,22,0.28); font-family: 'Caveat', 'Patrick Hand', cursive; font-weight: 700; font-size: 28px; line-height: 1.05; text-align: center; letter-spacing: 0.02em; min-width: 92px; }
 .hero-note-card::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-6deg); width: 56px; height: 16px; background: linear-gradient(180deg, rgba(231,173,50,0.96), rgba(231,173,50,0.76)); box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
 .dashboard-avatar { position: absolute; top: -18px; right: -14px; width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--paper); box-shadow: 0 6px 14px rgba(0,0,0,0.18); z-index: 5; object-fit: cover; background: var(--paper-warm); transform: rotate(-4deg); }
-.hero .tape-one { left: 44%; top: 48px; }
-.hero .tape-two { right: 98px; bottom: 64px; transform: rotate(9deg); }
 
 /* ── Section shared ── */
 .section { padding: 72px 20px; }
@@ -552,7 +548,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
   .phone-card { right: 0; bottom: -24px; width: 116px; }
   .hero-note-card { transform: scale(0.7) rotate(7deg); top: -6px; right: 4%; font-size: 22px; padding: 12px 16px 10px; }
   .hero-decor-camera { width: 108px; bottom: 8px; left: -14px; }
-  .hero-decor-flower { width: 86px; top: 6px; right: 4%; }
   .dashboard-avatar { width: 48px; height: 48px; top: -12px; right: -8px; }
   .feat-header h2 { font-size: 22px; }
   .feat-section { padding: 56px 16px 48px; }
@@ -646,10 +641,7 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 
 <!-- Hero -->
 <section class="hero collage-stage">
-  <span class="tape tape-one"></span>
-  <span class="tape tape-two"></span>
   <img class="hero-decor hero-decor-camera" src="/assets/images/landing-collage/collage-camera.webp" alt="" loading="eager" width="168" height="168" aria-hidden="true">
-  <img class="hero-decor hero-decor-flower" src="/assets/images/landing-collage/collage-flower.webp" alt="" loading="eager" width="134" height="134" aria-hidden="true">
   <div class="hero-collage">
     <div class="hero-copy">
       <div class="hero-kicker">拍照上傳 / AI 上架 / 自動成交</div>
