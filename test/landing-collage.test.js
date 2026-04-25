@@ -28,6 +28,12 @@ test("landing page uses the collage redesign hooks without dropping critical int
     "我拍｜開店平台 — 創作者一鍵開店",
     "AI 生成商品頁，一鍵上架開店",
     "new_sale.webp",
+    "collage-camera.webp",
+    "collage-flower.webp",
+    "family=Caveat",
+    "hero-decor-camera",
+    "hero-decor-flower",
+    "dashboard-avatar",
   ];
 
   for (const snippet of requiredSnippets) {
