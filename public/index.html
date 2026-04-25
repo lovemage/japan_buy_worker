@@ -354,19 +354,25 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .upgrade-modal .close-btn { display: block; margin: 16px auto 0; background: var(--text); color: #fff; border: none; padding: 8px 28px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
 /* Compare table */
-.compare-table { margin-top: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.compare-table { margin-top: 28px; overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--paper); border: 1px dashed rgba(8,38,74,0.18); border-radius: 4px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); padding: 8px; }
 .compare-table table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 320px; }
-.compare-table th { background: var(--bg-alt); padding: 8px 10px; text-align: center; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+.compare-table th { background: var(--paper-deep); padding: 10px; text-align: center; font-weight: 800; color: var(--navy); border-bottom: 1px dashed rgba(8,38,74,0.18); }
 .compare-table th:first-child { text-align: left; }
-.compare-table th:nth-child(4) { color: var(--accent); background: var(--accent-light); }
-.compare-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
-.compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text); }
-.compare-table td:nth-child(4) { background: rgba(253,240,232,0.5); color: var(--text); font-weight: 500; }
+.compare-table th:nth-child(4) { color: var(--orange); background: rgba(242,107,29,0.08); }
+.compare-table td { padding: 8px 10px; text-align: center; border-bottom: 1px dashed rgba(8,38,74,0.1); color: var(--muted); }
+.compare-table td:first-child { text-align: left; font-weight: 600; color: var(--ink); }
+.compare-table td:nth-child(4) { background: rgba(242,107,29,0.05); color: var(--ink); font-weight: 600; }
+.compare-table tr:hover td { background: rgba(242,107,29,0.04); }
+.compare-table tr:hover td:nth-child(4) { background: rgba(242,107,29,0.1); }
 .plan { position: relative; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.14); border-radius: 6px; padding: 30px 20px 24px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; box-shadow: var(--paper-shadow); transform: rotate(-0.8deg); transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
 .plan:nth-child(2) { transform: rotate(0.7deg); }
 .plan:nth-child(3) { transform: rotate(-0.4deg); }
 .plan:nth-child(4) { transform: rotate(0.9deg); }
-.plan::after { content: ""; position: absolute; right: 16px; top: -12px; width: 64px; height: 22px; background: rgba(231,173,50,0.46); border: 1px solid rgba(161,112,21,0.14); transform: rotate(6deg); }
+.plan::after { content: ""; position: absolute; top: -10px; width: 80px; height: 22px; background: linear-gradient(180deg, rgba(231,173,50,0.78) 0%, rgba(231,173,50,0.55) 100%); filter: contrast(1.08); box-shadow: 0 2px 4px rgba(31,22,12,0.1); pointer-events: none; }
+.plan:nth-child(1)::after { left: 18%; transform: rotate(-6deg); width: 72px; }
+.plan:nth-child(2)::after { right: 14%; transform: rotate(8deg); width: 96px; top: -14px; }
+.plan:nth-child(3)::after { left: 42%; transform: rotate(-3deg); width: 76px; top: -8px; }
+.plan:nth-child(4)::after { right: 22%; transform: rotate(5deg); width: 88px; top: -12px; }
 .plan:hover { transform: translateY(-4px) rotate(0deg); box-shadow: 0 20px 44px rgba(51,34,12,0.18); }
 .plan.plan-unavailable { opacity: 0.35; pointer-events: none; filter: grayscale(0.6); transform: scale(0.96); }
 .plan.plan-unavailable:hover { transform: scale(0.96); box-shadow: none; }
