@@ -39,6 +39,11 @@ test("landing page uses the collage redesign hooks without dropping critical int
     "AI 自動辨識商品",
     "自動換算匯率與售價",
     "一鍵分享給 LINE 群",
+    'class="before-after fade-in"',
+    'id="before-after"',
+    "節省時間",
+    "自動成交",
+    "隨時隨地",
   ];
 
   for (const snippet of requiredSnippets) {
