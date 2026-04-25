@@ -7,6 +7,7 @@ dist/
 *.log
 backup-*.sql
 .gstack/
+.superpowers/
 
 # 備份用，實際開發以根目錄為主
 workers/
