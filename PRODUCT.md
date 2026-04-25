@@ -1,7 +1,13 @@
 # Product
 
 ## Register
-product
+mixed — 拆兩線：
+- **marketing 頁面（`public/index.html`、`public/blog/*`、所有 landing / SEO 入口）= brand**
+  設計就是產品，必須撐住「手作拼貼 + 開店平台」的品牌承諾，能用實體素材就用，動畫與裝飾值得多花預算。
+- **app shell（`public/admin.html`、`public/onboarding.html`、`public/store.html`、`public/platform-admin.html`、`src/` 後台路由）= product**
+  設計服務任務效率：資訊密度、CTA 清晰、極少裝飾、零模態優先、表單可達。
+
+`/impeccable` 系列指令套到哪一檔，請依檔案落點挑 register。對應 register 後再對齊本檔下方共用的 personality / anti-references / principles。
 
 ## Users
 

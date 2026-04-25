@@ -111,7 +111,11 @@
     var btn = document.getElementById("nav-music-btn");
     if (playIcon) playIcon.style.display = playing ? "none" : "";
     if (pauseIcon) pauseIcon.style.display = playing ? "" : "none";
-    if (btn) btn.style.opacity = playing ? "1" : "0.7";
+    if (btn) {
+      btn.style.opacity = playing ? "1" : "0.7";
+      btn.setAttribute("aria-pressed", playing ? "true" : "false");
+      btn.setAttribute("aria-label", playing ? "暫停主題曲" : "播放主題曲");
+    }
   }
 
   function showBar() {
