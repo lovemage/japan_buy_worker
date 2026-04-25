@@ -293,17 +293,15 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .feat-header h2 em { font-style: normal; color: var(--orange); }
 .feat-header p { font-size: 15px; color: var(--muted); line-height: 1.7; }
 .feat-wrap { position: relative; max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 48px; align-items: center; }
-.feat-paper-frame { position: relative; background: var(--paper); border: 14px solid #2a2620; border-radius: 6px; padding: 0; overflow: hidden; box-shadow: 0 14px 30px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(0,0,0,0.06); transform: rotate(-1.5deg); clip-path: polygon(0 2%, 100% 0, 100% 98%, 0 100%); }
+.feat-paper-frame { position: relative; background: var(--paper); border: 14px solid #2a2620; border-radius: 6px; padding: 0; overflow: hidden; box-shadow: 0 14px 30px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(0,0,0,0.06); }
 .feat-paper-frame .feat-tape-tl { top: -14px; left: -10px; transform: rotate(-12deg); width: 96px; }
 .feat-paper-frame .feat-tape-br { bottom: -14px; right: -10px; transform: rotate(12deg); width: 96px; }
 .feat-video { width: 100%; height: auto; display: block; }
 .feat-notes { display: flex; flex-direction: column; gap: 18px; }
 .feat-note { position: relative; background: #fff; padding: 16px 20px 16px 60px; border-radius: 4px; font-size: 16px; font-weight: 700; color: var(--ink); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid rgba(8,38,74,0.12); }
 .feat-note .feat-step { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Caveat', cursive; font-size: 18px; font-weight: 700; box-shadow: 0 3px 6px rgba(132,62,22,0.24); }
-.feat-note-1 { transform: rotate(-2deg); }
-.feat-note-2 { transform: rotate(1.5deg); background: #fffaf2; }
-.feat-note-3 { transform: rotate(-1deg); }
-.feat-note-4 { transform: rotate(2deg); background: #fffaf2; }
+.feat-note-2 { background: #fffaf2; }
+.feat-note-4 { background: #fffaf2; }
 
 /* ── Billing toggle ── */
 .billing-toggle { display: flex; justify-content: center; margin-bottom: 24px; }
@@ -364,21 +362,18 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
 .compare-table td:nth-child(4) { background: rgba(242,107,29,0.05); color: var(--ink); font-weight: 600; }
 .compare-table tr:hover td { background: rgba(242,107,29,0.04); }
 .compare-table tr:hover td:nth-child(4) { background: rgba(242,107,29,0.1); }
-.plan { position: relative; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.14); border-radius: 6px; padding: 30px 20px 24px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; box-shadow: var(--paper-shadow); transform: rotate(-0.8deg); transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
-.plan:nth-child(2) { transform: rotate(0.7deg); }
-.plan:nth-child(3) { transform: rotate(-0.4deg); }
-.plan:nth-child(4) { transform: rotate(0.9deg); }
+.plan { position: relative; background: var(--paper-warm); border: 1px solid rgba(8,38,74,0.14); border-radius: 6px; padding: 30px 20px 24px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; box-shadow: var(--paper-shadow); transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s cubic-bezier(0.25,1,0.5,1); }
 .plan::after { content: ""; position: absolute; top: -10px; width: 80px; height: 22px; background: linear-gradient(180deg, rgba(231,173,50,0.78) 0%, rgba(231,173,50,0.55) 100%); filter: contrast(1.08); box-shadow: 0 2px 4px rgba(31,22,12,0.1); pointer-events: none; }
 .plan:nth-child(1)::after { left: 18%; transform: rotate(-6deg); width: 72px; }
 .plan:nth-child(2)::after { right: 14%; transform: rotate(8deg); width: 96px; top: -14px; }
 .plan:nth-child(3)::after { left: 42%; transform: rotate(-3deg); width: 76px; top: -8px; }
 .plan:nth-child(4)::after { right: 22%; transform: rotate(5deg); width: 88px; top: -12px; }
-.plan:hover { transform: translateY(-4px) rotate(0deg); box-shadow: 0 20px 44px rgba(51,34,12,0.18); }
+.plan:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(51,34,12,0.18); }
 .plan.plan-unavailable { opacity: 0.35; pointer-events: none; filter: grayscale(0.6); transform: scale(0.96); }
 .plan.plan-unavailable:hover { transform: scale(0.96); box-shadow: none; }
 .plan.pop { border-color: var(--accent); border-width: 2px; position: relative; box-shadow: 0 18px 44px rgba(212,98,43,0.16); }
 .plan.pop:hover { box-shadow: 0 12px 44px rgba(212,98,43,0.22); }
-.plan.pop::before { content: "推薦"; position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(-3deg); background: var(--accent); color: #fff8ec; padding: 5px 18px; border-radius: 4px; font-size: 12px; font-weight: 900; letter-spacing: 0; box-shadow: 0 4px 0 rgba(107,49,15,0.18); z-index: 2; }
+.plan.pop::before { content: "推薦"; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff8ec; padding: 5px 18px; border-radius: 4px; font-size: 12px; font-weight: 900; letter-spacing: 0; box-shadow: 0 4px 0 rgba(107,49,15,0.18); z-index: 2; }
 .plan-name { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
 .plan.pop .plan-name { color: var(--accent); }
 .plan-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
@@ -512,7 +507,6 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
   .feat-header h2 { font-size: 22px; }
   .feat-section { padding: 56px 16px 48px; }
   .feat-wrap { grid-template-columns: 1fr; gap: 32px; }
-  .feat-paper-frame { transform: rotate(-1deg); }
   .feat-note { font-size: 14px; padding: 12px 16px 12px 52px; }
   .feat-note .feat-step { width: 30px; height: 30px; font-size: 16px; left: 12px; }
   .plan { min-width: 240px; }
