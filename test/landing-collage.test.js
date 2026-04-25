@@ -44,6 +44,7 @@ test("landing page uses the collage redesign hooks without dropping critical int
     "節省時間",
     "自動成交",
     "隨時隨地",
+    'class="final-cta-camera"',
   ];
 
   for (const snippet of requiredSnippets) {
