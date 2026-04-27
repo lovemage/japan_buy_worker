@@ -1463,8 +1463,13 @@ select:disabled {
   box-shadow: 0 1px 4px var(--brand-shadow-sm);
 }
 
+.detail-add-btn__icon,
 .detail-add-btn__check {
   display: none;
+}
+
+.detail-add-btn__icon {
+  display: block;
 }
 
 .detail-add-btn.is-added {
@@ -1473,7 +1478,7 @@ select:disabled {
   box-shadow: 0 4px 16px var(--brand-shadow-lg);
 }
 
-.detail-add-btn.is-added .detail-add-btn__text {
+.detail-add-btn.is-added .detail-add-btn__icon {
   display: none;
 }
 

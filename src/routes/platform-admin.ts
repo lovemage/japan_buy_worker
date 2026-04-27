@@ -77,6 +77,10 @@ async function setTestStoreIds(db: D1DatabaseLike, ids: number[]): Promise<void>
     .run();
 }
 
+function canManageStoreBanner(plan: string): boolean {
+  return plan === "pro" || plan === "proplus";
+}
+
 export async function handlePlatformAdmin(
   request: Request,
   db: D1DatabaseLike,
@@ -84,6 +88,7 @@ export async function handlePlatformAdmin(
   assets?: { fetch: (request: Request) => Promise<Response> },
   r2?: {
     put: (key: string, value: ArrayBuffer, options?: { httpMetadata?: { contentType?: string } }) => Promise<void>;
+    delete: (key: string) => Promise<void>;
   }
 ): Promise<Response> {
   const url = new URL(request.url);
@@ -403,6 +408,112 @@ export async function handlePlatformAdmin(
       .run();
 
     return json({ ok: true, ...settings });
+  }
+
+  const bannerSettingsMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/banner$/);
+  if (bannerSettingsMatch && request.method === "GET") {
+    const storeId = parseInt(bannerSettingsMatch[1], 10);
+    const row = await db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'banner_settings'")
+      .bind(storeId)
+      .first<{ value: string }>();
+
+    if (!row?.value) return json({ ok: true, enabled: false, images: [] });
+
+    try {
+      const data = JSON.parse(row.value) as { enabled?: boolean; images?: string[] };
+      return json({ ok: true, enabled: !!data.enabled, images: Array.isArray(data.images) ? data.images.slice(0, 3) : [] });
+    } catch {
+      return json({ ok: true, enabled: false, images: [] });
+    }
+  }
+
+  if (bannerSettingsMatch && request.method === "POST") {
+    const storeId = parseInt(bannerSettingsMatch[1], 10);
+    let body: { enabled?: boolean; images?: string[] };
+    try {
+      body = (await request.json()) as { enabled?: boolean; images?: string[] };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+
+    const store = await db
+      .prepare("SELECT id, plan, plan_expires_at FROM stores WHERE id = ?")
+      .bind(storeId)
+      .first<{ id: number; plan: string; plan_expires_at: string | null }>();
+    if (!store) return json({ ok: false, error: "Store not found" }, 404);
+
+    const effectivePlan = getEffectivePlan(store as any);
+    if (!canManageStoreBanner(effectivePlan)) {
+      return json({ ok: false, error: "此會員方案不可設定招牌" }, 403);
+    }
+
+    const images = (Array.isArray(body.images) ? body.images : []).filter((key) => typeof key === "string" && key.startsWith(`${storeId}/`)).slice(0, 3);
+    const enabled = !!body.enabled;
+
+    await db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'banner_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(storeId, JSON.stringify({ enabled, images }))
+      .run();
+
+    return json({ ok: true, enabled, images });
+  }
+
+  const bannerUploadMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/banner-upload$/);
+  if (bannerUploadMatch && request.method === "POST") {
+    const storeId = parseInt(bannerUploadMatch[1], 10);
+    if (!r2) return json({ ok: false, error: "R2 not configured" }, 500);
+
+    const store = await db
+      .prepare("SELECT id, plan, plan_expires_at FROM stores WHERE id = ?")
+      .bind(storeId)
+      .first<{ id: number; plan: string; plan_expires_at: string | null }>();
+    if (!store) return json({ ok: false, error: "Store not found" }, 404);
+
+    const effectivePlan = getEffectivePlan(store as any);
+    if (!canManageStoreBanner(effectivePlan)) {
+      return json({ ok: false, error: "此會員方案不可設定招牌" }, 403);
+    }
+
+    let body: { image?: string };
+    try {
+      body = (await request.json()) as { image?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    if (!body.image) return json({ ok: false, error: "Missing image" }, 400);
+
+    const binaryString = atob(body.image);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const key = `${storeId}/banners/${Date.now()}.webp`;
+    await r2.put(key, bytes.buffer, {
+      httpMetadata: { contentType: "image/webp" },
+    });
+    return json({ ok: true, key });
+  }
+
+  const bannerDeleteMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/banner-delete$/);
+  if (bannerDeleteMatch && request.method === "POST") {
+    const storeId = parseInt(bannerDeleteMatch[1], 10);
+    if (!r2) return json({ ok: false, error: "R2 not configured" }, 500);
+
+    let body: { key?: string };
+    try {
+      body = (await request.json()) as { key?: string };
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    if (!body.key) return json({ ok: false, error: "Missing key" }, 400);
+    if (!body.key.startsWith(`${storeId}/`)) {
+      return json({ ok: false, error: "Unauthorized" }, 403);
+    }
+
+    await r2.delete(body.key);
+    return json({ ok: true });
   }
 
   const logoUploadMatch = url.pathname.match(/^\/api\/platform-admin\/stores\/(\d+)\/logo-upload$/);

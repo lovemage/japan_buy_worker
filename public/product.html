@@ -151,8 +151,12 @@
         <input id="detail-quantity" class="qty-stepper__input" type="number" min="1" value="1" aria-label="數量" />
         <button type="button" class="qty-stepper__btn" id="qty-plus" aria-label="增加數量">+</button>
       </div>
-      <button id="detail-add" class="button detail-add-btn" type="button">
-        <span class="detail-add-btn__text">加入訂單</span>
+      <button id="detail-add" class="button detail-add-btn" type="button" aria-label="加入訂單">
+        <svg class="detail-add-btn__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="20" r="1"></circle>
+          <circle cx="18" cy="20" r="1"></circle>
+          <path d="M2 4h3l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 7H6.2"></path>
+        </svg>
         <svg class="detail-add-btn__check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="4 12 10 18 20 6" />
         </svg>

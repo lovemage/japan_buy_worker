@@ -257,6 +257,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .logo-modal__actions .btn-danger { background: #fff1f2; color: var(--pa-red); }
 .logo-modal__actions .btn-danger:hover { background: #ffe4e6; }
 .logo-status { font-size: 12px; color: var(--pa-green); min-height: 18px; margin-top: 10px; }
+.banner-preview-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.banner-preview-card { position: relative; width: calc(33.333% - 6px); min-width: 92px; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; border: 1px solid var(--pa-line); background: #faf8f3; }
+.banner-preview-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.banner-preview-card__remove { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.95); border: 1px solid #ddd; color: #444; font-size: 15px; line-height: 22px; text-align: center; cursor: pointer; }
+.banner-preview-empty { width: 100%; padding: 18px 12px; border: 1px dashed var(--pa-line); border-radius: 10px; text-align: center; color: var(--pa-muted); font-size: 12px; background: #faf8f3; }
+.banner-toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: #444; }
+.banner-toggle-row input { width: 16px; height: 16px; }
+@media (max-width: 640px) {
+  .banner-preview-card { width: calc(50% - 4px); }
+}
 
 /* ── Responsive ── */
 @media (max-width: 960px) {
@@ -647,6 +657,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div id="logo-modal-status" class="logo-status"></div>
     </div>
   </div>
+
+  <div id="banner-modal" class="logo-modal-backdrop" onclick="if(event.target===this)closeBannerManager()">
+    <div class="logo-modal" style="width:520px;">
+      <h3 id="banner-modal-title">會員招牌管理</h3>
+      <p id="banner-modal-meta" class="meta"></p>
+      <div class="banner-toggle-row">
+        <input id="platform-banner-enabled" type="checkbox" onchange="savePlatformBannerSettings()">
+        <label for="platform-banner-enabled" style="margin:0;">啟用 store 頁上方招牌輪播</label>
+      </div>
+      <div id="banner-preview" class="banner-preview-grid"></div>
+      <p class="desc">平台管理員可直接替 Pro / Pro+ 會員維護 store 頁上方招牌。最多 3 張，建議 16:9 橫圖。</p>
+      <input id="platform-banner-input" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="handlePlatformBannerFiles(this.files)">
+      <div class="logo-modal__actions">
+        <button class="btn-primary" type="button" onclick="triggerBannerUpload()">上傳招牌</button>
+        <button class="btn-muted" type="button" onclick="closeBannerManager()">關閉</button>
+      </div>
+      <div id="banner-modal-status" class="logo-status"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -659,6 +688,9 @@ let allLogs = [];
 let logFilter = "all";
 let logoModalStoreId = null;
 let logoModalLogoKey = "";
+let bannerModalStoreId = null;
+let bannerModalImages = [];
+let bannerModalEnabled = false;
 var TEMPLATES = [
   { id: "default", name: "抹茶暖色" },
   { id: "ink-blue", name: "墨藍" },
@@ -923,6 +955,7 @@ function renderStores(stores) {
       '<div class="member-actions">' +
         planBtns +
         (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
+        (["pro", "proplus"].indexOf(s.plan) >= 0 ? '<button onclick="showBannerManager(' + s.id + ')">招牌</button>' : '') +
         '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
         (s.onboarding_step === "phone_pending" ? '<button style="color:#b45309;" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
         (s.is_active ? '<button style="color:#ef4444;" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button style="color:#16a34a;" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
@@ -1053,6 +1086,169 @@ async function removePlatformLogo() {
   if (!logoModalStoreId) return;
   setLogoModalStatus("移除中...", false);
   await savePlatformLogoKey("");
+}
+
+function renderBannerPreview() {
+  var el = document.getElementById("banner-preview");
+  if (!el) return;
+  if (!bannerModalImages.length) {
+    el.innerHTML = '<div class="banner-preview-empty">目前沒有會員招牌圖片</div>';
+    return;
+  }
+  el.innerHTML = bannerModalImages.map(function(img, i) {
+    return '<div class="banner-preview-card">' +
+      '<img src="/api/images/' + img + '" alt="會員招牌">' +
+      '<button class="banner-preview-card__remove" type="button" onclick="deletePlatformBannerImage(' + i + ')">×</button>' +
+    '</div>';
+  }).join("");
+}
+
+function setBannerModalStatus(message, isError) {
+  var el = document.getElementById("banner-modal-status");
+  if (!el) return;
+  el.textContent = message || "";
+  el.style.color = isError ? "var(--pa-red)" : "var(--pa-green)";
+}
+
+async function showBannerManager(storeId) {
+  var store = allStores.find(function(s) { return s.id === storeId; });
+  if (!store) return;
+  if (["pro", "proplus"].indexOf(store.plan) < 0) {
+    alert("此會員目前不是 Pro / Pro+，不可設定招牌");
+    return;
+  }
+  bannerModalStoreId = storeId;
+  bannerModalImages = [];
+  bannerModalEnabled = false;
+  document.getElementById("banner-modal-title").textContent = "會員招牌管理";
+  document.getElementById("banner-modal-meta").textContent = (store.name || store.owner_email) + " · " + (store.plan || "").toUpperCase();
+  var toggle = document.getElementById("platform-banner-enabled");
+  if (toggle) toggle.checked = false;
+  setBannerModalStatus("載入中...", false);
+  renderBannerPreview();
+  document.getElementById("banner-modal").classList.add("open");
+
+  var res = await fetch("/api/platform-admin/stores/" + storeId + "/banner", {
+    headers: { authorization: "Bearer " + adminToken },
+  });
+  var data = await res.json();
+  if (!data.ok) {
+    setBannerModalStatus(data.error || "載入失敗", true);
+    return;
+  }
+  bannerModalImages = data.images || [];
+  bannerModalEnabled = !!data.enabled;
+  if (toggle) toggle.checked = bannerModalEnabled;
+  renderBannerPreview();
+  setBannerModalStatus("", false);
+}
+
+function closeBannerManager() {
+  var modal = document.getElementById("banner-modal");
+  if (modal) modal.classList.remove("open");
+  bannerModalStoreId = null;
+  bannerModalImages = [];
+  bannerModalEnabled = false;
+  var input = document.getElementById("platform-banner-input");
+  if (input) input.value = "";
+  var toggle = document.getElementById("platform-banner-enabled");
+  if (toggle) toggle.checked = false;
+  setBannerModalStatus("", false);
+}
+
+function triggerBannerUpload() {
+  if (!bannerModalStoreId) return;
+  document.getElementById("platform-banner-input").click();
+}
+
+async function savePlatformBannerSettings() {
+  if (!bannerModalStoreId) return false;
+  bannerModalEnabled = !!document.getElementById("platform-banner-enabled")?.checked;
+  var res = await fetch("/api/platform-admin/stores/" + bannerModalStoreId + "/banner", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ enabled: bannerModalEnabled, images: bannerModalImages }),
+  });
+  var data = await res.json();
+  if (!data.ok) {
+    setBannerModalStatus(data.error || "儲存失敗", true);
+    return false;
+  }
+  bannerModalEnabled = !!data.enabled;
+  bannerModalImages = data.images || [];
+  setBannerModalStatus("已儲存", false);
+  renderBannerPreview();
+  return true;
+}
+
+async function uploadOnePlatformBanner(file) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      var ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setBannerModalStatus("圖片處理失敗", true);
+        resolve();
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      var dataUrl = canvas.toDataURL("image/webp", 0.85);
+      var base64 = dataUrl.split(",")[1];
+      fetch("/api/platform-admin/stores/" + bannerModalStoreId + "/banner-upload", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+        body: JSON.stringify({ image: base64 }),
+      }).then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) {
+          setBannerModalStatus(d.error || "上傳失敗", true);
+        } else if (d.key) {
+          bannerModalImages.push(d.key);
+        }
+        resolve();
+      }).catch(function() {
+        setBannerModalStatus("上傳失敗", true);
+        resolve();
+      });
+    };
+    img.onerror = function() {
+      setBannerModalStatus("圖片讀取失敗", true);
+      resolve();
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function handlePlatformBannerFiles(files) {
+  if (!files || !files.length || !bannerModalStoreId) return;
+  if (bannerModalImages.length + files.length > 3) {
+    alert("最多 3 張橫幅圖片");
+    return;
+  }
+  setBannerModalStatus("上傳中...", false);
+  var uploads = [];
+  for (var i = 0; i < files.length; i++) uploads.push(uploadOnePlatformBanner(files[i]));
+  await Promise.all(uploads);
+  renderBannerPreview();
+  if (bannerModalImages.length) {
+    await savePlatformBannerSettings();
+  }
+}
+
+async function deletePlatformBannerImage(index) {
+  if (!bannerModalStoreId) return;
+  var key = bannerModalImages[index];
+  if (!key) return;
+  bannerModalImages.splice(index, 1);
+  renderBannerPreview();
+  await fetch("/api/platform-admin/stores/" + bannerModalStoreId + "/banner-delete", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
+    body: JSON.stringify({ key: key }),
+  });
+  await savePlatformBannerSettings();
 }
 
 var PLAN_OFFERS = {
