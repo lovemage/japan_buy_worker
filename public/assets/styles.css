@@ -330,6 +330,10 @@ body {
 .drawer-filter-list {
   display: flex; flex-direction: column; gap: 4px;
 }
+.drawer-filter-list[hidden],
+[data-drawer-panel][hidden] {
+  display: none;
+}
 .drawer-section--collapsible .drawer-filter-list {
   margin-top: 10px;
 }
