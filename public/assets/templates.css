@@ -472,11 +472,17 @@
   background: #1A1A1A;
   box-shadow: 0 4px 16px rgba(30, 30, 20, 0.4);
 }
+[data-template="bold-gold"] .detail-add-btn {
+  color: #FFE066;
+}
 [data-template="bold-gold"] .floating-request-btn:hover,
 [data-template="bold-gold"] .floating-back-btn:hover,
 [data-template="bold-gold"] .detail-add-btn:hover {
   background: #000;
   box-shadow: 0 6px 24px rgba(30, 30, 20, 0.5);
+}
+[data-template="bold-gold"] .detail-add-btn:hover {
+  color: #FFE066;
 }
 [data-template="bold-gold"] .product-card__body .button {
   background: #333; color: #FFE066; box-shadow: none;
