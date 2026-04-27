@@ -46,13 +46,19 @@
         </button>
       </div>
       <div class="drawer-body">
-        <div class="drawer-section">
-          <h3 class="drawer-section-title">品牌</h3>
-          <div id="brand-filters" class="drawer-filter-list"></div>
+        <div class="drawer-section drawer-section--collapsible is-collapsed" data-drawer-section>
+          <button class="drawer-section-toggle" type="button" data-drawer-toggle aria-expanded="false" aria-controls="brand-filters">
+            <span class="drawer-section-title">品牌</span>
+            <span class="drawer-section-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div id="brand-filters" class="drawer-filter-list" data-drawer-panel hidden></div>
         </div>
-        <div class="drawer-section">
-          <h3 class="drawer-section-title">種類</h3>
-          <div id="category-filters" class="drawer-filter-list"></div>
+        <div class="drawer-section drawer-section--collapsible" data-drawer-section>
+          <button class="drawer-section-toggle" type="button" data-drawer-toggle aria-expanded="true" aria-controls="category-filters">
+            <span class="drawer-section-title">種類</span>
+            <span class="drawer-section-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div id="category-filters" class="drawer-filter-list" data-drawer-panel></div>
         </div>
         <div class="drawer-section" id="promo-drawer-section" data-promo-section="mobile" style="display:none;">
           <h3 class="drawer-section-title">價格篩選</h3>
@@ -140,9 +146,9 @@
         <section id="list-error" class="notice hidden"></section>
         <section id="product-grid" class="product-grid" aria-live="polite"></section>
         <section id="pagination" class="pagination hidden" aria-live="polite" style="display:none;">
-          <button id="page-prev" class="btn-pill secondary" type="button" style="display:none;">&larr;</button>
+          <button id="page-prev" class="btn-pill secondary" type="button">上一頁</button>
           <p id="page-indicator" class="meta"></p>
-          <button id="page-next" class="btn-pill secondary" type="button" style="display:none;">&rarr;</button>
+          <button id="page-next" class="btn-pill secondary" type="button">下一頁</button>
         </section>
         <footer style="text-align:center;padding:24px 0 60px;"><p id="last-updated-text" class="meta" style="font-size:11px;color:#aaa;">資料載入中...</p></footer>
       </div>

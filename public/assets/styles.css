@@ -297,9 +297,41 @@ body {
   margin: 0 0 10px; padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
 }
+.drawer-section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.drawer-section-toggle .drawer-section-title {
+  flex: 1;
+  margin: 0;
+}
+.drawer-section-chevron {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+.drawer-section-toggle:hover .drawer-section-chevron {
+  color: var(--text-color);
+}
+.drawer-section--collapsible.is-collapsed .drawer-section-chevron {
+  transform: rotate(-90deg);
+}
 
 .drawer-filter-list {
   display: flex; flex-direction: column; gap: 4px;
+}
+.drawer-section--collapsible .drawer-filter-list {
+  margin-top: 10px;
 }
 .drawer-filter-list .btn-pill {
   justify-content: flex-start;

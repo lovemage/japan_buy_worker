@@ -3,7 +3,7 @@ import { applyProductImageFallback, withProductImageFallback } from "./image-fal
 import { buildListQueryParams } from "./list-query.js";
 import { getNormalizedPromoMax, nextSingleBrandSelection } from "./list-state.js";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 30;
 const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = { markupJpy: 1000, markupMode: "flat", markupPercent: 15, jpyToTwd: _cc.defaultRate || 0.21, promoTagMaxTwd: 500 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
@@ -480,7 +480,8 @@ function renderPagination(paging) {
   }
 
   wrapper.classList.remove("hidden");
-  indicator.textContent = `第 ${paging.page} / ${paging.totalPages} 頁，共 ${paging.total} 筆`;
+  wrapper.style.display = "flex";
+  indicator.textContent = `第 ${paging.page} 頁 / 共 ${paging.totalPages} 頁`;
   prev.disabled = paging.page <= 1;
   next.disabled = paging.page >= paging.totalPages;
   prev.onclick = () => goPage(paging.page - 1);
@@ -505,6 +506,25 @@ function closeDrawer() {
   if (drawer) drawer.classList.remove("open");
   if (overlay) overlay.classList.remove("open");
   document.body.style.overflow = "";
+}
+
+function initDrawerSections() {
+  document.querySelectorAll("[data-drawer-section]").forEach((section) => {
+    const toggle = section.querySelector("[data-drawer-toggle]");
+    const panel = section.querySelector("[data-drawer-panel]");
+    if (!(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement)) {
+      return;
+    }
+    const sync = (expanded) => {
+      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+      panel.hidden = !expanded;
+      section.classList.toggle("is-collapsed", !expanded);
+    };
+    sync(toggle.getAttribute("aria-expanded") === "true");
+    toggle.addEventListener("click", () => {
+      sync(toggle.getAttribute("aria-expanded") !== "true");
+    });
+  });
 }
 
 function getUniqueElements(selectors) {
@@ -619,6 +639,7 @@ function initPromoModal() {
 
 async function bootstrap() {
   renderDraftCount();
+  initDrawerSections();
   initPromoModal();
   initViewSwitch();
   initPromoSwitch();
@@ -660,11 +681,11 @@ async function bootstrap() {
     const body = await res.json();
     const products = Array.isArray(body.products) ? body.products : [];
     const last = products.find((p) => p.lastCrawledAt)?.lastCrawledAt;
-    const totalSku = Number(body?.paging?.totalSku || body?.paging?.total || 0);
+    const totalProducts = Number(body?.paging?.total || 0);
     const lastNode = document.getElementById("last-updated-text");
     if (lastNode) {
       const dateText = last ? formatDateOnly(last) : "未知";
-      lastNode.textContent = `最後更新：${dateText}｜總SKU數：${totalSku.toLocaleString("en-US")}`;
+      lastNode.textContent = `最後更新：${dateText}｜商品數量：${totalProducts.toLocaleString("en-US")}`;
     }
     renderProducts(products, pricing, promoMaxTwd);
     initProductCardGalleries();
