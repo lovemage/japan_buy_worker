@@ -599,10 +599,18 @@
 
         <!-- 商店招牌製作 (Pro / Pro+ only) -->
         <div class="settings-group" id="banner-section" style="display:none;">
-          <h3 class="settings-group__title" style="cursor:pointer;user-select:none;" onclick="toggleBannerCollapse()">
-            商店招牌製作 <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span>
-            <span id="banner-collapse-icon" style="float:right;font-size:14px;">&#9660;</span>
-          </h3>
+          <button
+            id="banner-collapse-toggle"
+            type="button"
+            class="settings-group__title"
+            aria-expanded="false"
+            aria-controls="banner-collapse-body"
+            onclick="toggleBannerCollapse()"
+            style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;text-align:left;background:none;border:none;padding:0;"
+          >
+            <span>商店招牌製作 <span style="font-size:11px;font-weight:400;color:var(--admin-text-muted);">Pro</span></span>
+            <span id="banner-collapse-icon" style="font-size:14px;flex-shrink:0;">&#9660;</span>
+          </button>
           <div id="banner-collapse-body" style="display:none;">
             <p class="meta" style="margin-bottom:8px;">在商店首頁顯示招牌橫幅（16:9），最多 3 張圖片，顧客可左右滑動瀏覽。</p>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
@@ -1327,10 +1335,19 @@
   function toggleBannerCollapse() {
     var body = document.getElementById("banner-collapse-body");
     var icon = document.getElementById("banner-collapse-icon");
+    var toggle = document.getElementById("banner-collapse-toggle");
     if (!body) return;
-    var isHidden = body.style.display === "none";
-    body.style.display = isHidden ? "" : "none";
-    if (icon) icon.innerHTML = isHidden ? "&#9650;" : "&#9660;";
+    syncBannerCollapse(body.style.display === "none");
+  }
+
+  function syncBannerCollapse(expanded) {
+    var body = document.getElementById("banner-collapse-body");
+    var icon = document.getElementById("banner-collapse-icon");
+    var toggle = document.getElementById("banner-collapse-toggle");
+    if (!body) return;
+    body.style.display = expanded ? "" : "none";
+    if (icon) icon.innerHTML = expanded ? "&#9650;" : "&#9660;";
+    if (toggle) toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
   }
 
   function toggleBannerGenPanel() {

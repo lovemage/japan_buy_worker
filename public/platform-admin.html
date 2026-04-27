@@ -7,39 +7,41 @@
 <style>
 /* ── Tokens ── */
 :root {
-  --pa-accent: #8a9a5b;
-  --pa-accent-light: #eef1e6;
-  --pa-accent-hover: #768a4a;
-  --pa-bg: #f9f7f1;
-  --pa-card: #fffefa;
-  --pa-text: #3d3a35;
-  --pa-muted: #7a756d;
-  --pa-line: #e5e0d6;
-  --pa-radius: 10px;
-  --pa-radius-sm: 6px;
-  --pa-radius-pill: 20px;
+  --pa-accent: #111111;
+  --pa-accent-light: #f3f3f3;
+  --pa-accent-hover: #000000;
+  --pa-bg: #f5f5f5;
+  --pa-card: #ffffff;
+  --pa-text: #111111;
+  --pa-muted: #666666;
+  --pa-line: #dddddd;
+  --pa-line-strong: #c9c9c9;
+  --pa-soft: #fafafa;
+  --pa-radius: 14px;
+  --pa-radius-sm: 10px;
+  --pa-radius-pill: 999px;
   --pa-ease: cubic-bezier(0.25, 1, 0.5, 1);
   --pa-fast: 150ms var(--pa-ease);
   --pa-normal: 250ms var(--pa-ease);
+  --pa-shadow: 0 12px 32px rgba(0,0,0,0.06);
   --pa-green: #166534;
-  --pa-green-bg: #dcfce7;
-  --pa-amber: #92400e;
-  --pa-amber-bg: #fef3c7;
-  --pa-red: #991b1b;
-  --pa-red-bg: #fee2e2;
+  --pa-green-bg: #e9f8ef;
+  --pa-amber: #8a5a00;
+  --pa-amber-bg: #fff6dd;
+  --pa-red: #b42318;
+  --pa-red-bg: #ffeaea;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--pa-text); background: var(--pa-bg); -webkit-tap-highlight-color: transparent; min-height: 100vh; }
 
 /* ── Login ── */
-.login-wrap { max-width: 360px; margin: 80px auto; padding: 32px; background: var(--pa-card); border-radius: var(--pa-radius); border: 1px solid var(--pa-line); }
+.login-wrap { max-width: 380px; margin: 80px auto; padding: 32px; background: var(--pa-card); border-radius: 20px; border: 1px solid var(--pa-line); box-shadow: var(--pa-shadow); }
 .login-wrap h1 { font-size: 20px; margin-bottom: 4px; }
-.login-wrap h1 span { color: var(--pa-accent); }
 .login-wrap .sub { font-size: 13px; color: var(--pa-muted); margin-bottom: 16px; }
 .brand-logo { display: block; width: auto; height: 34px; }
 .login-logo { height: 42px; margin: 0 auto 10px; }
-.login-wrap input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: var(--pa-radius-sm); font-size: 14px; margin-bottom: 12px; transition: border-color var(--pa-fast); outline: none; }
-.login-wrap input:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(138,154,91,0.16); }
+.login-wrap input { width: 100%; padding: 12px 14px; border: 1px solid var(--pa-line); border-radius: 12px; font-size: 14px; margin-bottom: 12px; transition: border-color var(--pa-fast), box-shadow var(--pa-fast); outline: none; }
+.login-wrap input:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(17,17,17,0.08); }
 .login-wrap button { width: 100%; padding: 10px; background: var(--pa-accent); color: #fff; border: none; border-radius: var(--pa-radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--pa-fast); }
 .login-wrap button:hover { background: var(--pa-accent-hover); }
 .login-wrap button:active { transform: scale(0.98); }
@@ -53,18 +55,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── Header ── */
-.header { background: var(--pa-card); border-bottom: 1px solid var(--pa-line); padding: 12px 18px; position: sticky; top: 0; z-index: 50; }
+.header { background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--pa-line); padding: 14px 18px; position: sticky; top: 0; z-index: 50; }
 .header-inner { max-width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
 .header h1 { font-size: 18px; font-weight: 700; }
-.header h1 span { color: var(--pa-accent); }
 .header-meta { display: flex; align-items: center; gap: 12px; }
 .header-meta p { font-size: 12px; color: var(--pa-muted); margin-top: 2px; }
-.header .logout-btn { padding: 6px 14px; background: #f5f5f5; border: none; border-radius: var(--pa-radius-sm); cursor: pointer; font-size: 12px; color: #666; transition: background var(--pa-fast); }
-.header .logout-btn:hover { background: #eee; }
+.header .logout-btn { padding: 8px 14px; background: var(--pa-soft); border: 1px solid var(--pa-line); border-radius: 999px; cursor: pointer; font-size: 12px; color: #444; transition: background var(--pa-fast), border-color var(--pa-fast); }
+.header .logout-btn:hover { background: #fff; border-color: var(--pa-line-strong); }
 
 /* ── Stats ── */
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.stat-card { background: var(--pa-card); border-radius: var(--pa-radius); padding: 16px; border: 1px solid var(--pa-line); text-align: center; transition: box-shadow var(--pa-fast); }
+.stat-card { background: var(--pa-card); border-radius: 16px; padding: 18px; border: 1px solid var(--pa-line); text-align: center; transition: box-shadow var(--pa-fast), transform var(--pa-fast); box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
 .stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .stat-num { font-size: 28px; font-weight: 800; }
 .stat-label { font-size: 12px; color: var(--pa-muted); margin-top: 2px; }
@@ -72,18 +73,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .stat-card--revenue .stat-num { color: #16a34a; }
 
 /* ── Cards ── */
-.card { background: var(--pa-card); border-radius: var(--pa-radius); padding: 16px; border: 1px solid var(--pa-line); margin-bottom: 12px; }
+.card { background: var(--pa-card); border-radius: 18px; padding: 18px; border: 1px solid var(--pa-line); margin-bottom: 12px; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
 .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 .card label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
-.card input[type="password"], .card input[type="text"], .card input[type="number"], .card textarea { width: 100%; padding: 8px 10px; border: 1.5px solid #ddd; border-radius: var(--pa-radius-sm); font-size: 13px; margin-bottom: 8px; transition: border-color var(--pa-fast); outline: none; }
-.card input:focus, .card textarea:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(138,154,91,0.16); }
+.card input[type="password"], .card input[type="text"], .card input[type="number"], .card textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--pa-line); border-radius: 12px; font-size: 13px; margin-bottom: 8px; transition: border-color var(--pa-fast), box-shadow var(--pa-fast); outline: none; background: #fff; }
+.card input:focus, .card textarea:focus { border-color: var(--pa-accent); box-shadow: 0 0 0 3px rgba(17,17,17,0.08); }
 .card textarea { resize: vertical; font-family: monospace; }
 .card .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .card .desc { font-size: 12px; color: var(--pa-muted); margin-bottom: 10px; }
 .card .divider { border: none; border-top: 1px solid var(--pa-line); margin: 16px 0; }
 
 /* ── Buttons ── */
-.btn { padding: 8px 18px; border: none; border-radius: var(--pa-radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--pa-fast); }
+.btn { padding: 9px 16px; border: 1px solid transparent; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--pa-fast); }
 .btn:active { transform: scale(0.97); }
 .btn-dark { background: var(--pa-accent); color: #fff; }
 .btn-dark:hover { background: var(--pa-accent-hover); }
@@ -95,28 +96,251 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 /* ── Pill filter (shared) ── */
 .pill-filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-.pill-btn { padding: 5px 12px; border: 1.5px solid var(--pa-line); background: var(--pa-card); border-radius: var(--pa-radius-pill); font-size: 12px; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
-.pill-btn:hover { border-color: #bbb; background: #fafafa; }
+.pill-btn { padding: 7px 12px; border: 1px solid var(--pa-line); background: var(--pa-card); border-radius: var(--pa-radius-pill); font-size: 12px; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
+.pill-btn:hover { border-color: var(--pa-line-strong); background: #fafafa; }
 .pill-btn:active { transform: scale(0.95); }
 .pill-btn.active { background: var(--pa-accent); color: #fff; border-color: var(--pa-accent); }
 
-/* ── Member list ── */
-.member-list { display: flex; flex-direction: column; gap: 8px; }
-.member-card { background: var(--pa-card); border: 1px solid var(--pa-line); border-radius: var(--pa-radius); padding: 14px; transition: box-shadow var(--pa-fast); }
-.member-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.member-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 8px; }
+/* ── Members ── */
+.members-shell { display: flex; flex-direction: column; gap: 14px; }
+.members-toolbar {
+  background: var(--pa-card);
+  border: 1px solid var(--pa-line);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+}
+.members-toolbar__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.members-toolbar__title h2 {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.members-toolbar__title p {
+  font-size: 13px;
+  color: var(--pa-muted);
+}
+.members-toolbar__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 420px;
+}
+.members-summary-card {
+  border: 1px solid var(--pa-line);
+  background: var(--pa-soft);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.members-summary-card strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+}
+.members-summary-card span {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--pa-muted);
+}
+.members-toolbar__controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(140px, 0.8fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.members-toolbar__controls input,
+.members-toolbar__controls select,
+.members-plan-control select,
+.members-template-select,
+.members-mobile-meta select,
+.revenue-header select,
+.log-card select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--pa-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--pa-text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--pa-fast), box-shadow var(--pa-fast);
+}
+.members-toolbar__controls input:focus,
+.members-toolbar__controls select:focus,
+.members-plan-control select:focus,
+.members-template-select:focus,
+.members-mobile-meta select:focus,
+.revenue-header select:focus,
+.log-card select:focus {
+  border-color: var(--pa-accent);
+  box-shadow: 0 0 0 3px rgba(17,17,17,0.08);
+}
+.members-quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.members-results-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--pa-muted);
+}
+.members-table-wrap {
+  background: var(--pa-card);
+  border: 1px solid var(--pa-line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+}
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.members-table th {
+  padding: 14px 16px;
+  background: #f8f8f8;
+  border-bottom: 1px solid var(--pa-line);
+  color: var(--pa-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  white-space: nowrap;
+}
+.members-table td {
+  padding: 16px;
+  border-bottom: 1px solid #efefef;
+  vertical-align: top;
+}
+.members-table tr:last-child td {
+  border-bottom: none;
+}
+.members-table tr:hover {
+  background: #fcfcfc;
+}
+.member-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.member-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .member-name { font-size: 14px; font-weight: 700; }
-.member-email { font-size: 12px; color: var(--pa-muted); }
-.member-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #666; }
-.member-meta span { display: flex; align-items: center; gap: 4px; }
-.member-meta a { color: var(--pa-accent); text-decoration: none; }
-.member-meta a:hover { text-decoration: underline; }
-.member-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
-.member-actions button { padding: 5px 12px; border: 1.5px solid var(--pa-line); background: var(--pa-card); border-radius: var(--pa-radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all var(--pa-fast); }
-.member-actions button:hover { background: #f5f5f5; border-color: #ccc; }
-.member-actions button:active { transform: scale(0.95); }
-.member-actions button.active-plan { background: var(--pa-accent); color: #fff; border-color: var(--pa-accent); }
-.member-actions button.is-test { background: var(--pa-amber-bg); color: var(--pa-amber); border-color: #f59e0b; }
+.member-email,
+.member-secondary,
+.member-inline-meta {
+  font-size: 12px;
+  color: var(--pa-muted);
+}
+.member-inline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.member-inline-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.member-inline-meta a,
+.member-mobile-card a {
+  color: var(--pa-text);
+  text-decoration: none;
+}
+.member-inline-meta a:hover,
+.member-mobile-card a:hover {
+  text-decoration: underline;
+}
+.members-plan-control {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.members-plan-control .btn {
+  white-space: nowrap;
+}
+.members-template-select {
+  min-width: 120px;
+}
+.member-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.member-row-actions button {
+  padding: 7px 10px;
+  border: 1px solid var(--pa-line);
+  background: #fff;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.member-row-actions button:hover {
+  background: var(--pa-soft);
+  border-color: var(--pa-line-strong);
+}
+.member-mobile-list {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+.member-mobile-card {
+  background: var(--pa-card);
+  border: 1px solid var(--pa-line);
+  border-radius: 16px;
+  padding: 16px;
+}
+.member-mobile-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.member-mobile-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--pa-muted);
+}
+.member-mobile-block {
+  border-top: 1px solid #efefef;
+  padding-top: 12px;
+}
+.members-empty {
+  background: var(--pa-card);
+  border: 1px dashed var(--pa-line-strong);
+  border-radius: 18px;
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--pa-muted);
+}
+.member-ghost-btn {
+  border: 1px solid var(--pa-line);
+  background: var(--pa-soft);
+  color: var(--pa-muted);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
 
 /* ── Member expires ── */
 .member-expires { font-size: 11px; margin-top: 4px; }
@@ -125,16 +349,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 /* ── Badges ── */
 .badge { display: inline-block; padding: 2px 8px; border-radius: var(--pa-radius-pill); font-size: 11px; font-weight: 600; }
-.badge-free { background: #f3f4f6; color: #6b7280; }
-.badge-plus { background: #e8f0fe; color: #1a73e8; }
-.badge-pro { background: #eef1e6; color: #5f7135; }
-.badge-proplus { background: #f3e9e1; color: #9e5f38; }
+.badge-free { background: #f2f2f2; color: #444; }
+.badge-plus { background: #ededed; color: #222; }
+.badge-pro { background: #e6e6e6; color: #111; }
+.badge-proplus { background: #dcdcdc; color: #000; }
 .badge-active { background: var(--pa-green-bg); color: var(--pa-green); }
 .badge-onboarding { background: var(--pa-amber-bg); color: var(--pa-amber); }
 .badge-inactive { background: var(--pa-red-bg); color: var(--pa-red); }
 .badge-test { background: var(--pa-amber-bg); color: var(--pa-amber); }
-.badge-google { background: #fef3c7; color: #92400e; }
-.badge-line { background: #d1fae5; color: #065f46; }
+.badge-google { background: #f0f0f0; color: #444; }
+.badge-line { background: #ebebeb; color: #222; }
 
 /* ── Navigation ── */
 .bottom-nav {
@@ -178,8 +402,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 /* ── Revenue log ── */
 .revenue-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .revenue-header strong { font-size: 14px; }
-.revenue-header select, .log-card select { padding: 6px 10px; border: 1.5px solid #ddd; border-radius: var(--pa-radius-sm); font-size: 13px; font-family: inherit; background: var(--pa-card); cursor: pointer; transition: border-color var(--pa-fast); outline: none; }
-.revenue-header select:focus, .log-card select:focus { border-color: var(--pa-accent); }
 .log-card { background: var(--pa-card); border: 1px solid var(--pa-line); border-radius: var(--pa-radius); padding: 12px 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 12px; transition: box-shadow var(--pa-fast); }
 .log-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .log-card .log-info { flex: 1; min-width: 0; }
@@ -273,6 +495,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   body { padding-bottom: 72px; }
   .page-content { margin-left: 0; padding: 16px; }
   .header-meta p { display: none; }
+  .members-toolbar__top,
+  .members-results-meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .members-toolbar__summary {
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .members-toolbar__controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .members-table-wrap {
+    display: none;
+  }
+  .member-mobile-list {
+    display: flex;
+  }
   .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -309,6 +549,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   .card .row { grid-template-columns: 1fr; }
   .log-card { flex-wrap: wrap; }
   .log-card .log-amount { width: 100%; text-align: left; }
+  .members-toolbar {
+    padding: 16px;
+  }
+  .members-toolbar__summary,
+  .members-toolbar__controls,
+  .member-mobile-meta {
+    grid-template-columns: 1fr;
+  }
+  .members-plan-control {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -364,16 +616,75 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
   <!-- Tab: 會員 -->
   <div class="page-content hidden" id="page-members">
-    <div class="pill-filters" id="member-filters">
-      <button class="pill-btn active" onclick="filterStores('all', this)">全部</button>
-      <button class="pill-btn" onclick="filterStores('free', this)">Free</button>
-      <button class="pill-btn" onclick="filterStores('plus', this)">Plus</button>
-      <button class="pill-btn" onclick="filterStores('pro', this)">Pro</button>
-      <button class="pill-btn" onclick="filterStores('proplus', this)">Pro+</button>
-      <button class="pill-btn" onclick="filterStores('test', this)">測試</button>
-      <button class="pill-btn" onclick="filterStores('onboarding', this)">Onboarding</button>
+    <div class="members-shell">
+      <div class="members-toolbar">
+        <div class="members-toolbar__top">
+          <div class="members-toolbar__title">
+            <h2>會員管理</h2>
+            <p>用搜尋、篩選與方案下拉快速維護會員狀態。</p>
+          </div>
+          <div class="members-toolbar__summary">
+            <div class="members-summary-card"><strong id="member-summary-total">0</strong><span>顯示中會員</span></div>
+            <div class="members-summary-card"><strong id="member-summary-paid">0</strong><span>付費方案</span></div>
+            <div class="members-summary-card"><strong id="member-summary-test">0</strong><span>測試帳號</span></div>
+            <div class="members-summary-card"><strong id="member-summary-pending">0</strong><span>未完成 onboarding</span></div>
+          </div>
+        </div>
+        <div class="members-toolbar__controls">
+          <input id="member-search" type="search" placeholder="搜尋名稱、Email、slug" oninput="onMemberFilterChange()">
+          <select id="member-plan-filter" onchange="onMemberFilterChange()">
+            <option value="all">全部方案</option>
+            <option value="free">Free</option>
+            <option value="plus">Plus</option>
+            <option value="pro">Pro</option>
+            <option value="proplus">Pro+</option>
+          </select>
+          <select id="member-status-filter" onchange="onMemberFilterChange()">
+            <option value="all">全部狀態</option>
+            <option value="active">啟用中</option>
+            <option value="inactive">已停用</option>
+            <option value="test">測試帳號</option>
+            <option value="onboarding">Onboarding</option>
+          </select>
+          <select id="member-sort" onchange="onMemberFilterChange()">
+            <option value="created_desc">最新加入</option>
+            <option value="created_asc">最早加入</option>
+            <option value="products_desc">商品數高到低</option>
+            <option value="orders_desc">訂單數高到低</option>
+            <option value="name_asc">名稱 A-Z</option>
+          </select>
+        </div>
+        <div class="members-quick-filters" id="member-filters">
+          <button class="pill-btn active" type="button" data-filter="all" onclick="setMemberFilterSegment('all', this)">全部</button>
+          <button class="pill-btn" type="button" data-filter="free" onclick="setMemberFilterSegment('free', this)">Free</button>
+          <button class="pill-btn" type="button" data-filter="plus" onclick="setMemberFilterSegment('plus', this)">Plus</button>
+          <button class="pill-btn" type="button" data-filter="pro" onclick="setMemberFilterSegment('pro', this)">Pro</button>
+          <button class="pill-btn" type="button" data-filter="proplus" onclick="setMemberFilterSegment('proplus', this)">Pro+</button>
+          <button class="pill-btn" type="button" data-filter="test" onclick="setMemberFilterSegment('test', this)">測試</button>
+          <button class="pill-btn" type="button" data-filter="onboarding" onclick="setMemberFilterSegment('onboarding', this)">Onboarding</button>
+        </div>
+      </div>
+      <div class="members-results-meta">
+        <span id="member-results-text">0 筆結果</span>
+        <span>桌機可直接在表格內切換方案，手機版保留摘要操作。</span>
+      </div>
+      <div class="members-table-wrap">
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th>會員</th>
+              <th>商店資訊</th>
+              <th>方案管理</th>
+              <th>模板</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="member-table-body"></tbody>
+        </table>
+      </div>
+      <div class="member-mobile-list" id="member-mobile-list"></div>
+      <div class="members-empty" id="member-empty-state" style="display:none;">目前沒有符合條件的會員。</div>
     </div>
-    <div class="member-list" id="member-list"></div>
   </div>
 
   <!-- Tab: API Keys (super-admin only) -->
@@ -850,8 +1161,8 @@ async function toggleTest(storeId) {
     await loadStores();
     // Switch to test tab if newly added, or back to all if removed
     var targetFilter = isCurrentlyTest ? "all" : "test";
-    var targetBtn = document.querySelector('#member-filters .pill-btn[onclick*="' + targetFilter + '"]');
-    if (targetBtn) filterStores(targetFilter, targetBtn);
+    var targetBtn = document.querySelector('#member-filters .pill-btn[data-filter="' + targetFilter + '"]');
+    if (targetBtn) setMemberFilterSegment(targetFilter, targetBtn);
   } else alert(data.error || "操作失敗");
 }
 
@@ -867,7 +1178,13 @@ async function skipPhonePending(storeId) {
   else alert(data.error || "操作失敗");
 }
 
-var currentMemberFilter = "all";
+var memberViewState = {
+  segment: "all",
+  search: "",
+  plan: "all",
+  status: "all",
+  sort: "created_desc",
+};
 
 async function loadStores() {
   const res = await fetch("/api/platform-admin/stores", { headers: { authorization: "Bearer " + adminToken } });
@@ -880,23 +1197,73 @@ async function loadStores() {
   document.getElementById("stat-plus").textContent = nonTest.filter(s => s.plan === "plus").length;
   document.getElementById("stat-pro").textContent = nonTest.filter(s => s.plan === "pro").length;
   document.getElementById("stat-proplus").textContent = nonTest.filter(s => s.plan === "proplus").length;
-  // Re-apply current filter
-  applyCurrentFilter();
-}
-function filterStores(filter, btn) {
-  currentMemberFilter = filter;
-  document.querySelectorAll("#member-filters .pill-btn").forEach(b => b.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-  applyCurrentFilter();
+  applyMemberFilters();
 }
 
-function applyCurrentFilter() {
-  var filter = currentMemberFilter;
-  var filtered;
-  if (filter === "test") filtered = allStores.filter(function(s) { return testStoreIds.indexOf(s.id) >= 0; });
-  else if (filter === "onboarding") filtered = allStores.filter(function(s) { return s.onboarding_step !== "complete"; });
-  else if (filter === "all") filtered = allStores.filter(function(s) { return testStoreIds.indexOf(s.id) < 0; });
-  else filtered = allStores.filter(function(s) { return s.plan === filter && testStoreIds.indexOf(s.id) < 0; });
+function onMemberFilterChange() {
+  memberViewState.search = (document.getElementById("member-search")?.value || "").trim().toLowerCase();
+  memberViewState.plan = document.getElementById("member-plan-filter")?.value || "all";
+  memberViewState.status = document.getElementById("member-status-filter")?.value || "all";
+  memberViewState.sort = document.getElementById("member-sort")?.value || "created_desc";
+  applyMemberFilters();
+}
+
+function setMemberFilterSegment(filter, btn) {
+  memberViewState.segment = filter;
+  document.querySelectorAll("#member-filters .pill-btn").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  applyMemberFilters();
+}
+
+function applyMemberFilters() {
+  var filtered = allStores.slice();
+
+  filtered = filtered.filter(function(s) {
+    var isTest = testStoreIds.indexOf(s.id) >= 0;
+    if (memberViewState.segment === "test") return isTest;
+    if (memberViewState.segment === "onboarding") return s.onboarding_step !== "complete";
+    if (memberViewState.segment === "all") return !isTest;
+    return s.plan === memberViewState.segment && !isTest;
+  });
+
+  if (memberViewState.plan !== "all") {
+    filtered = filtered.filter(function(s) { return s.plan === memberViewState.plan; });
+  }
+
+  if (memberViewState.status === "active") {
+    filtered = filtered.filter(function(s) { return s.onboarding_step === "complete" && !!s.is_active; });
+  } else if (memberViewState.status === "inactive") {
+    filtered = filtered.filter(function(s) { return s.onboarding_step === "complete" && !s.is_active; });
+  } else if (memberViewState.status === "test") {
+    filtered = filtered.filter(function(s) { return testStoreIds.indexOf(s.id) >= 0; });
+  } else if (memberViewState.status === "onboarding") {
+    filtered = filtered.filter(function(s) { return s.onboarding_step !== "complete"; });
+  }
+
+  if (memberViewState.search) {
+    filtered = filtered.filter(function(s) {
+      var haystack = [s.name, s.owner_email, s.slug].join(" ").toLowerCase();
+      return haystack.indexOf(memberViewState.search) >= 0;
+    });
+  }
+
+  filtered.sort(function(a, b) {
+    if (memberViewState.sort === "created_asc") {
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    }
+    if (memberViewState.sort === "products_desc") {
+      return Number(b.product_count || 0) - Number(a.product_count || 0);
+    }
+    if (memberViewState.sort === "orders_desc") {
+      return Number(b.order_count || 0) - Number(a.order_count || 0);
+    }
+    if (memberViewState.sort === "name_asc") {
+      return String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  updateMemberSummary(filtered);
   renderStores(filtered);
 }
 
@@ -910,56 +1277,191 @@ function formatExpires(expiresAt) {
   return '<div class="member-expires"><span class="active">到期：' + dateStr + '（剩 ' + days + ' 天）</span></div>';
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeJsString(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\r?\n/g, " ");
+}
+
+function getStatusBadge(store, isTest) {
+  if (store.onboarding_step !== "complete") {
+    return '<span class="badge badge-onboarding">' + escapeHtml(store.onboarding_step) + '</span>';
+  }
+  if (isTest) {
+    return '<span class="badge badge-test">測試</span>';
+  }
+  return store.is_active
+    ? '<span class="badge badge-active">啟用</span>'
+    : '<span class="badge badge-inactive">停用</span>';
+}
+
+function getAuthBadge(store) {
+  if (store.line_login_id) return '<span class="badge badge-line">LINE</span>';
+  if (store.google_id) return '<span class="badge badge-google">Google</span>';
+  return "";
+}
+
+function renderPlanSelect(store, selectId) {
+  return '<select id="' + selectId + '">' +
+    '<option value="free"' + (store.plan === "free" ? " selected" : "") + '>Free</option>' +
+    '<option value="plus"' + (store.plan === "plus" ? " selected" : "") + '>Plus</option>' +
+    '<option value="pro"' + (store.plan === "pro" ? " selected" : "") + '>Pro</option>' +
+    '<option value="proplus"' + (store.plan === "proplus" ? " selected" : "") + '>Pro+</option>' +
+  '</select>';
+}
+
+function applyPlanChange(storeId, selectId) {
+  var select = document.getElementById(selectId);
+  if (!select) return;
+  var nextPlan = select.value;
+  if (!nextPlan) return;
+  if (nextPlan === "free") {
+    updateStore(storeId, "free");
+    return;
+  }
+  var isTest = testStoreIds.indexOf(storeId) >= 0;
+  if (isTest) {
+    updateStore(storeId, nextPlan);
+    return;
+  }
+  showPlanModal(storeId, nextPlan);
+}
+
+function updateMemberSummary(stores) {
+  var total = stores.length;
+  var paid = stores.filter(function(s) { return ["plus", "pro", "proplus"].indexOf(s.plan) >= 0; }).length;
+  var testCount = stores.filter(function(s) { return testStoreIds.indexOf(s.id) >= 0; }).length;
+  var pendingCount = stores.filter(function(s) { return s.onboarding_step !== "complete"; }).length;
+  document.getElementById("member-summary-total").textContent = total;
+  document.getElementById("member-summary-paid").textContent = paid;
+  document.getElementById("member-summary-test").textContent = testCount;
+  document.getElementById("member-summary-pending").textContent = pendingCount;
+  document.getElementById("member-results-text").textContent = total + " 筆結果";
+}
+
 function renderStores(stores) {
-  document.getElementById("member-list").innerHTML = stores.map(s => {
+  var tableBody = document.getElementById("member-table-body");
+  var mobileList = document.getElementById("member-mobile-list");
+  var emptyState = document.getElementById("member-empty-state");
+  if (!tableBody || !mobileList || !emptyState) return;
+
+  if (!stores.length) {
+    tableBody.innerHTML = "";
+    mobileList.innerHTML = "";
+    emptyState.style.display = "block";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  tableBody.innerHTML = stores.map(function(s) {
     var isTest = testStoreIds.indexOf(s.id) >= 0;
     var planClass = "badge-" + s.plan;
-    var badges = '<span class="badge ' + planClass + '">' + s.plan.toUpperCase() + '</span> ';
-    if (s.line_login_id) badges += '<span class="badge badge-line">LINE</span> ';
-    else if (s.google_id) badges += '<span class="badge badge-google">Google</span> ';
-    if (isTest) badges += '<span class="badge badge-test">測試</span> ';
-    var statusBadge = s.onboarding_step !== "complete"
-      ? '<span class="badge badge-onboarding">' + s.onboarding_step + '</span>'
-      : s.is_active ? '<span class="badge badge-active">啟用</span>' : '<span class="badge badge-inactive">停用</span>';
-    var created = new Date(s.created_at).toLocaleDateString("zh-TW");
     var storeFullUrl = location.origin + "/s/" + s.slug + "/";
+    var tableSelectId = "member-plan-select-table-" + s.id;
+    var templateSelect = '<select class="members-template-select" onchange="setTemplate(' + s.id + ', this.value)">' +
+      TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + escapeHtml(t.name) + '</option>'; }).join('') +
+    '</select>';
+    var created = new Date(s.created_at).toLocaleDateString("zh-TW");
+    return '<tr>' +
+      '<td>' +
+        '<div class="member-primary">' +
+          '<div class="member-name-row">' +
+            '<span class="member-name">' + escapeHtml(s.name) + '</span>' +
+            '<button class="member-ghost-btn" type="button" onclick="renameStore(' + s.id + ',\'' + escapeJsString(s.name) + '\')">編輯</button>' +
+          '</div>' +
+          '<div class="member-email">' + escapeHtml(s.owner_email) + '</div>' +
+          formatExpires(s.plan_expires_at) +
+        '</div>' +
+      '</td>' +
+      '<td>' +
+        '<div class="member-inline-meta">' +
+          '<span><span class="badge ' + planClass + '">' + escapeHtml(s.plan.toUpperCase()) + '</span></span>' +
+          '<span>' + getAuthBadge(s) + '</span>' +
+          '<span>' + getStatusBadge(s, isTest) + '</span>' +
+        '</div>' +
+        '<div class="member-inline-meta" style="margin-top:10px;">' +
+          '<span><a href="/s/' + escapeHtml(s.slug) + '/" target="_blank" rel="noopener">' + escapeHtml(s.slug) + '</a></span>' +
+          '<span>' + Number(s.product_count || 0) + ' 商品</span>' +
+          '<span>' + Number(s.order_count || 0) + ' 訂單</span>' +
+          '<span>' + created + '</span>' +
+        '</div>' +
+      '</td>' +
+      '<td>' +
+        '<div class="members-plan-control">' +
+          renderPlanSelect(s, tableSelectId) +
+          '<button class="btn btn-dark" type="button" onclick="applyPlanChange(' + s.id + ',\'' + tableSelectId + '\')">更新方案</button>' +
+        '</div>' +
+      '</td>' +
+      '<td>' + templateSelect + '</td>' +
+      '<td>' +
+        '<div class="member-row-actions">' +
+          '<button type="button" onclick="copyUrl(\'' + storeFullUrl + '\',this)">複製網址</button>' +
+          (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
+          (["pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showBannerManager(' + s.id + ')">招牌</button>' : '') +
+          '<button type="button" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "標記測試") + '</button>' +
+          (s.onboarding_step === "phone_pending" ? '<button type="button" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
+          (s.is_active ? '<button type="button" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button type="button" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
+          '<button type="button" onclick="deleteStore(' + s.id + ',\'' + escapeJsString(s.name) + '\')">刪除</button>' +
+        '</div>' +
+      '</td>' +
+    '</tr>';
+  }).join("");
 
-    // Test members: direct plan switch; normal members: plan modal for paid plans
-    var planBtns;
-    if (isTest) {
-      planBtns =
-        '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
-        '<button class="' + (s.plan === "plus" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'plus\')">Plus</button>' +
-        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'pro\')">Pro</button>' +
-        '<button class="' + (s.plan === "proplus" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'proplus\')">Pro+</button>';
-    } else {
-      planBtns =
-        '<button class="' + (s.plan === "free" ? "active-plan" : "") + '" onclick="updateStore(' + s.id + ',\'free\')">Free</button>' +
-        '<button class="' + (s.plan === "plus" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'plus\')">Plus</button>' +
-        '<button class="' + (s.plan === "pro" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'pro\')">Pro</button>' +
-        '<button class="' + (s.plan === "proplus" ? "active-plan" : "") + '" onclick="showPlanModal(' + s.id + ',\'proplus\')">Pro+</button>';
-    }
-
-    return '<div class="member-card">' +
-      '<div class="member-top">' +
-        '<div><div class="member-name">' + s.name + ' <button onclick="renameStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')" style="border:none;background:none;cursor:pointer;font-size:11px;color:var(--pa-muted);">編輯</button></div><div class="member-email">' + s.owner_email + '</div>' + formatExpires(s.plan_expires_at) + '</div>' +
-        '<div>' + badges + statusBadge + '</div>' +
+  mobileList.innerHTML = stores.map(function(s) {
+    var isTest = testStoreIds.indexOf(s.id) >= 0;
+    var planClass = "badge-" + s.plan;
+    var mobileSelectId = "member-plan-select-mobile-" + s.id;
+    var storeFullUrl = location.origin + "/s/" + s.slug + "/";
+    var created = new Date(s.created_at).toLocaleDateString("zh-TW");
+    return '<div class="member-mobile-card">' +
+      '<div class="member-mobile-head">' +
+        '<div class="member-primary">' +
+          '<div class="member-name-row"><span class="member-name">' + escapeHtml(s.name) + '</span></div>' +
+          '<div class="member-email">' + escapeHtml(s.owner_email) + '</div>' +
+          formatExpires(s.plan_expires_at) +
+        '</div>' +
+        '<div>' +
+          '<span class="badge ' + planClass + '">' + escapeHtml(s.plan.toUpperCase()) + '</span> ' +
+          getStatusBadge(s, isTest) +
+        '</div>' +
       '</div>' +
-      '<div class="member-meta">' +
-        '<span><a href="/s/' + s.slug + '/" target="_blank">' + s.slug + '</a> <button onclick="copyUrl(\'' + storeFullUrl + '\',this)" style="border:1px solid #ddd;background:#f8f8f8;border-radius:4px;padding:1px 6px;font-size:10px;cursor:pointer;color:#666;">複製</button></span>' +
-        '<span>' + (s.product_count || 0) + ' 商品</span>' +
-        '<span>' + (s.order_count || 0) + ' 訂單</span>' +
-        '<span>' + created + '</span>' +
-        '<span><select onchange="setTemplate(' + s.id + ',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;">' + TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></span>' +
+      '<div class="member-mobile-meta">' +
+        '<div><strong>Slug</strong><div><a href="/s/' + escapeHtml(s.slug) + '/" target="_blank" rel="noopener">' + escapeHtml(s.slug) + '</a></div></div>' +
+        '<div><strong>登入</strong><div>' + (getAuthBadge(s) || "一般") + '</div></div>' +
+        '<div><strong>商品</strong><div>' + Number(s.product_count || 0) + ' 件</div></div>' +
+        '<div><strong>訂單</strong><div>' + Number(s.order_count || 0) + ' 筆</div></div>' +
+        '<div><strong>建立日</strong><div>' + created + '</div></div>' +
+        '<div><strong>模板</strong><div>' +
+          '<select onchange="setTemplate(' + s.id + ', this.value)">' +
+            TEMPLATES.map(function(t) { return '<option value="' + t.id + '"' + (s.template === t.id ? ' selected' : '') + '>' + escapeHtml(t.name) + '</option>'; }).join('') +
+          '</select>' +
+        '</div></div>' +
       '</div>' +
-      '<div class="member-actions">' +
-        planBtns +
-        (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
-        (["pro", "proplus"].indexOf(s.plan) >= 0 ? '<button onclick="showBannerManager(' + s.id + ')">招牌</button>' : '') +
-        '<button class="' + (isTest ? "is-test" : "") + '" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "測試") + '</button>' +
-        (s.onboarding_step === "phone_pending" ? '<button style="color:#b45309;" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
-        (s.is_active ? '<button style="color:#ef4444;" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button style="color:#16a34a;" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
-        '<button style="color:#991b1b;" onclick="deleteStore(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\')">刪除</button>' +
+      '<div class="member-mobile-block">' +
+        '<div class="members-plan-control">' +
+          renderPlanSelect(s, mobileSelectId) +
+          '<button class="btn btn-dark" type="button" onclick="applyPlanChange(' + s.id + ',\'' + mobileSelectId + '\')">更新方案</button>' +
+        '</div>' +
+        '<div class="member-row-actions" style="margin-top:12px;">' +
+          '<button type="button" onclick="copyUrl(\'' + storeFullUrl + '\',this)">複製網址</button>' +
+          '<button type="button" onclick="renameStore(' + s.id + ',\'' + escapeJsString(s.name) + '\')">編輯名稱</button>' +
+          (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
+          (["pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showBannerManager(' + s.id + ')">招牌</button>' : '') +
+          '<button type="button" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "標記測試") + '</button>' +
+          (s.onboarding_step === "phone_pending" ? '<button type="button" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
+          (s.is_active ? '<button type="button" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button type="button" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
+          '<button type="button" onclick="deleteStore(' + s.id + ',\'' + escapeJsString(s.name) + '\')">刪除</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join("");
