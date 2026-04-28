@@ -175,18 +175,20 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     // Parse banner and display settings for OG tags
     let bannerData: { enabled?: boolean; images?: string[] } = {};
     try { bannerData = JSON.parse(bannerSettings); } catch {}
-    let displayData: { storeRules?: string } = {};
+    let displayData: { storeRules?: string; storeLogo?: string } = {};
     try { displayData = JSON.parse(displaySettings); } catch {}
 
     // OG description: store description > store rules > default
     const ogDesc = escapeHtmlAttr(storeDesc || displayData.storeRules || `${storeName} — vovosnap 商店`);
 
-    // OG image: first banner image if enabled, else default logo
+    // OG image: first hero/banner image if enabled, else member logo, else default logo
     const requestUrl = new URL(request.url);
     const origin = requestUrl.origin;
     let ogImage = `${origin}/assets/images/logo-3.png`;
     if (bannerData.enabled && bannerData.images && bannerData.images.length > 0) {
       ogImage = `${origin}${ctx.basePath}/api/images/${bannerData.images[0]}`;
+    } else if (displayData.storeLogo) {
+      ogImage = `${origin}${ctx.basePath}/api/images/${displayData.storeLogo}`;
     }
 
     const ogTags = `<meta name="description" content="${ogDesc}" />
