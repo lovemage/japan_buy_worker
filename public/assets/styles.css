@@ -1073,6 +1073,49 @@ body {
   border-radius: 6px;
 }
 
+.captcha-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.captcha-row .input-cute {
+  flex: 1;
+  min-width: 0;
+}
+
+.captcha-refresh-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--muted-brand);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  padding: 0;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.captcha-refresh-btn:hover {
+  background: var(--accent-warm-subtle);
+  color: var(--accent-warm);
+  border-color: var(--accent-warm);
+}
+.captcha-refresh-btn:active {
+  transform: scale(0.92);
+}
+.captcha-refresh-btn.is-spinning svg {
+  animation: captcha-spin 500ms ease-in-out;
+}
+@keyframes captcha-spin {
+  from { transform: rotate(0); }
+  to { transform: rotate(360deg); }
+}
+
 input,
 textarea,
 select {

@@ -522,7 +522,13 @@ async function bootstrap() {
   renderTotals();
   const refreshBtn = document.getElementById("captcha-refresh");
   if (refreshBtn) {
-    refreshBtn.addEventListener("click", refreshCaptcha);
+    refreshBtn.addEventListener("click", () => {
+      refreshCaptcha();
+      // Restart spin animation by re-toggling the class
+      refreshBtn.classList.remove("is-spinning");
+      void refreshBtn.offsetWidth;
+      refreshBtn.classList.add("is-spinning");
+    });
   }
   refreshCaptcha();
   document.querySelectorAll('input[name="shippingMethod"]').forEach((node) => {
