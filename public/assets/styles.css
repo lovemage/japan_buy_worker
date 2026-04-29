@@ -751,10 +751,6 @@ body {
 
 .detail-variant-box {
   margin: 10px 0 14px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.7);
 }
 
 .detail-variant-label {
@@ -767,27 +763,29 @@ body {
 
 .detail-variant-select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--card-bg);
   color: var(--text-color);
   font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  cursor: pointer;
+}
+.detail-variant-select::-ms-expand {
+  display: none;
 }
 
-.detail-variant-box--error {
-  border-color: #d34f4f;
-  background: #fff7f7;
-  box-shadow: 0 0 0 2px rgba(211, 79, 79, 0.15);
-}
-
-.detail-variant-box--error .detail-variant-label,
-.detail-variant-box--error #detail-variant-stock {
+.detail-variant-box--error .detail-variant-label {
   color: #b33a3a;
 }
 
 .detail-variant-select--error {
   border-color: #d34f4f;
+  box-shadow: 0 0 0 2px rgba(211, 79, 79, 0.15);
 }
 
 /* Request & Form Styles */

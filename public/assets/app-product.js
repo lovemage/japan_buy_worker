@@ -174,9 +174,7 @@ async function renderProduct(item, pricing) {
   const showVariantError = () => {
     variantBox?.classList.add("detail-variant-box--error");
     variantSelect?.classList.add("detail-variant-select--error");
-    if (variantStock) {
-      variantStock.textContent = "請先選擇規格";
-    }
+    // Visual cue is the red select border; no helper copy
   };
 
   const renderPriceBlock = () => {
@@ -199,7 +197,7 @@ async function renderProduct(item, pricing) {
       const syncVariantMeta = () => {
         selectedVariant = variants.find((variant) => variant.name === variantSelect.value) || null;
         if (variantStock) {
-          variantStock.textContent = selectedVariant ? `剩餘數量：${selectedVariant.stock}` : "請先選擇規格";
+          variantStock.textContent = selectedVariant ? `剩餘數量：${selectedVariant.stock}` : "";
         }
         if (selectedVariant) clearVariantError();
         renderPriceBlock();
