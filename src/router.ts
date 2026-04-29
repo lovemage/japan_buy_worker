@@ -216,10 +216,10 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     if (code) {
       const productRow = await ctx.db
         .prepare(
-          "SELECT name_zh_tw, name_ja, brand, image_url, source_payload_json FROM products WHERE store_id = ? AND is_active = 1 AND source_product_code = ? LIMIT 1"
+          "SELECT title_zh_tw, title_ja, brand, image_url, source_payload_json FROM products WHERE store_id = ? AND is_active = 1 AND source_product_code = ? LIMIT 1"
         )
         .bind(ctx.storeId, code)
-        .first<{ name_zh_tw: string | null; name_ja: string | null; brand: string | null; image_url: string | null; source_payload_json: string | null }>();
+        .first<{ title_zh_tw: string | null; title_ja: string | null; brand: string | null; image_url: string | null; source_payload_json: string | null }>();
 
       if (productRow) {
         // Pick first image: gallery[0] from payload, else image_url column
@@ -239,7 +239,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
           }
         }
 
-        const productName = productRow.name_zh_tw || productRow.name_ja || "";
+        const productName = productRow.title_zh_tw || productRow.title_ja || "";
         if (productName) {
           ogTitle = `${productName} — ${storeName}`;
           ogDesc = productRow.brand ? `${productRow.brand}｜${productName}` : productName;
