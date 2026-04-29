@@ -226,15 +226,15 @@ body {
 }
 .header-cart-badge {
   position: absolute;
-  top: -3px;
-  right: -3px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 9px;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
   background: var(--accent-warm);
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
   display: inline-flex;
@@ -243,6 +243,9 @@ body {
   border: 2px solid var(--card-bg);
   box-sizing: border-box;
   pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 /* Store Logo (header) */
@@ -1443,9 +1446,9 @@ select:disabled {
 }
 
 .detail-share-btn.is-copied {
-  background: #16a34a;
+  background: var(--accent-warm);
   color: #fff;
-  border-color: #16a34a;
+  border-color: var(--accent-warm);
 }
 
 .detail-share-btn.is-copied .detail-share-btn__icon {
