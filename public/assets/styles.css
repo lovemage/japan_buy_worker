@@ -1058,6 +1058,10 @@ body {
   padding: 16px;
 }
 
+.request-form[hidden] {
+  display: none;
+}
+
 .request-form label {
   font-size: 14px;
   font-weight: 500;
