@@ -805,15 +805,18 @@ function updateCartReviewSummary() {
 function setStep(step) {
   const cartReview = document.getElementById("cart-review");
   const form = document.getElementById("request-form");
-  const items = document.querySelectorAll(".request-steps__item");
+  const itemsList = document.getElementById("request-items");
+  const stepNodes = document.querySelectorAll(".request-steps__item");
   if (step === 1) {
+    if (itemsList) itemsList.hidden = false;
     if (cartReview) cartReview.hidden = false;
     if (form) form.hidden = true;
   } else {
+    if (itemsList) itemsList.hidden = true;
     if (cartReview) cartReview.hidden = true;
     if (form) form.hidden = false;
   }
-  items.forEach((node) => {
+  stepNodes.forEach((node) => {
     const n = Number(node.getAttribute("data-step"));
     node.classList.toggle("is-active", n === step);
     node.classList.toggle("is-done", n < step);

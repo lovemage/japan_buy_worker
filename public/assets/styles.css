@@ -899,6 +899,10 @@ body {
   border-color: var(--accent-warm);
 }
 
+.request-items[hidden] {
+  display: none;
+}
+
 .request-items {
   display: grid;
   gap: 12px;
