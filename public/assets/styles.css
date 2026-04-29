@@ -1050,6 +1050,16 @@ body {
 
 .shipping-option strong {
   font-size: 14px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.shipping-option__price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-warm);
+  font-variant-numeric: tabular-nums;
 }
 
 .shipping-option .meta {

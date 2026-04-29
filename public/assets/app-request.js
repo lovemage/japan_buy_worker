@@ -241,20 +241,30 @@ function renderTotals() {
     0
   );
   const shippingOptionsEnabled = pricingConfig?.shippingOptionsEnabled !== false;
+  const checkedRadio = document.querySelector('input[name="shippingMethod"]:checked');
   const shippingMethod = shippingOptionsEnabled
-    ? document.querySelector('input[name="shippingMethod"]:checked')?.value || "consolidated_tw"
+    ? checkedRadio?.value || "consolidated_tw"
     : "shipping_hidden";
+  const legacyId = checkedRadio?.getAttribute("data-legacy") || "";
+  const customPriceAttr = checkedRadio?.getAttribute("data-price");
+  const isCustomMethod = !legacyId && customPriceAttr !== null && customPriceAttr !== undefined;
+
   const intlShippingTwd = Number(pricingConfig?.internationalShippingTwd || 0);
   const domesticShippingTwd = Number(pricingConfig?.domesticShippingTwd || 0);
   const limitedProxyShippingTwd = Number(pricingConfig?.limitedProxyShippingTwd || 0);
-  const shippingTwd =
-    shippingMethod === "jp_direct"
-      ? intlShippingTwd
-      : shippingMethod === "limited_proxy"
-        ? Math.round(limitedProxyShippingTwd)
-        : shippingMethod === "consolidated_tw"
-          ? intlShippingTwd + Math.round(domesticShippingTwd)
-          : 0;
+
+  let shippingTwd = 0;
+  if (!shippingOptionsEnabled) {
+    shippingTwd = 0;
+  } else if (isCustomMethod) {
+    shippingTwd = Math.max(0, Math.round(Number(customPriceAttr) || 0));
+  } else if (legacyId === "jp_direct") {
+    shippingTwd = intlShippingTwd;
+  } else if (legacyId === "limited_proxy") {
+    shippingTwd = Math.round(limitedProxyShippingTwd);
+  } else if (legacyId === "consolidated_tw") {
+    shippingTwd = intlShippingTwd + Math.round(domesticShippingTwd);
+  }
   const totalJpy = itemsTotalJpy;
   const totalTwd = itemsTotalTwd + shippingTwd;
   const totalJpyNode = document.getElementById("total-jpy");
@@ -271,25 +281,83 @@ function renderTotals() {
     totalTwdNode.textContent = `合計：NT$${totalTwd.toLocaleString("en-US")}`;
   }
   if (shippingNote) {
-    shippingNote.textContent = shippingOptionsEnabled
-      ? shippingMethod === "jp_direct"
-        ? "提醒：日本直送需完成 EZWAY 實名驗證。"
-        : shippingMethod === "limited_proxy"
-          ? "限時連線代購：使用固定運費。"
-          : "使用集運回台灣：含國際運費與國內 7-11 店到店。"
-      : "運費選項目前由 Admin 隱藏，將由客服後續確認。";
+    if (!shippingOptionsEnabled) {
+      shippingNote.textContent = "運費選項目前由 Admin 隱藏，將由客服後續確認。";
+    } else if (isCustomMethod) {
+      shippingNote.textContent = "";
+    } else if (legacyId === "jp_direct") {
+      shippingNote.textContent = "提醒：日本直送需完成 EZWAY 實名驗證。";
+    } else if (legacyId === "limited_proxy") {
+      shippingNote.textContent = "限時連線代購：使用固定運費。";
+    } else {
+      shippingNote.textContent = "使用集運回台灣：含國際運費與國內 7-11 店到店。";
+    }
   }
 
   return {
     shippingMethod,
     shippingInternationalTwd:
-      shippingMethod === "consolidated_tw" || shippingMethod === "jp_direct" ? intlShippingTwd : 0,
-    shippingDomesticTwd: shippingMethod === "consolidated_tw" ? Math.round(domesticShippingTwd) : 0,
+      legacyId === "consolidated_tw" || legacyId === "jp_direct" ? intlShippingTwd : 0,
+    shippingDomesticTwd:
+      legacyId === "consolidated_tw"
+        ? Math.round(domesticShippingTwd)
+        : isCustomMethod
+          ? shippingTwd
+          : 0,
     shippingTotalTwd: shippingTwd,
-    requiresEzway: shippingMethod === "jp_direct",
+    requiresEzway: legacyId === "jp_direct",
     totalJpy,
     totalTwd,
   };
+}
+
+// Legacy fallback options (used when admin hasn't configured custom shippingMethods)
+const LEGACY_SHIPPING_FALLBACK = [
+  { id: "consolidated_tw", name: "集運回台灣", desc: "國際運費 + 國內 7-11 店到店｜預估 NT$150–350 依重量", legacy: true },
+  { id: "jp_direct", name: "日本直送", desc: "僅國際運費｜預估 NT$300–800 依重量｜需完成 EZWAY 驗證", legacy: true },
+  { id: "limited_proxy", name: "限時連線代購", desc: "固定運費 NT$200", legacy: true },
+];
+
+function getActiveShippingMethods() {
+  const ds = window.__DISPLAY_SETTINGS || {};
+  const list = Array.isArray(ds.shippingMethods) ? ds.shippingMethods : [];
+  const enabled = list
+    .filter((m) => m && m.enabled !== false && String(m.name || "").trim())
+    .map((m) => ({
+      id: String(m.name).trim(),
+      name: String(m.name).trim(),
+      desc: String(m.desc || "").trim(),
+      price: Number.isFinite(Number(m.price)) ? Number(m.price) : 0,
+    }));
+  return enabled.length > 0 ? enabled : LEGACY_SHIPPING_FALLBACK;
+}
+
+function renderShippingOptions() {
+  const list = document.getElementById("shipping-options-list");
+  if (!list) return;
+  const methods = getActiveShippingMethods();
+  list.innerHTML = methods
+    .map((m, idx) => {
+      const checked = idx === 0 ? "checked" : "";
+      const priceTag = !m.legacy
+        ? `<span class="shipping-option__price">NT$${(m.price || 0).toLocaleString("en-US")}</span>`
+        : "";
+      const dataPrice = !m.legacy ? ` data-price="${m.price || 0}"` : "";
+      const dataLegacy = m.legacy ? ` data-legacy="${escapeHtml(m.id)}"` : "";
+      const descHtml = m.desc ? `<span class="meta">${escapeHtml(m.desc)}</span>` : "";
+      return `<label class="shipping-option">
+        <input type="radio" name="shippingMethod" value="${escapeHtml(m.id)}"${dataPrice}${dataLegacy} ${checked} />
+        <span>
+          <strong>${escapeHtml(m.name)}</strong>${priceTag}
+          ${descHtml}
+        </span>
+      </label>`;
+    })
+    .join("");
+  // Re-bind change listener so totals update on selection
+  list.querySelectorAll('input[name="shippingMethod"]').forEach((radio) => {
+    radio.addEventListener("change", () => renderTotals());
+  });
 }
 
 function applyShippingOptionsVisibility() {
@@ -531,9 +599,8 @@ async function bootstrap() {
     });
   }
   refreshCaptcha();
-  document.querySelectorAll('input[name="shippingMethod"]').forEach((node) => {
-    node.addEventListener("change", renderTotals);
-  });
+  // Render shipping radios from admin-configured shippingMethods (or legacy fallback)
+  renderShippingOptions();
   applyShippingOptionsVisibility();
   renderTotals();
   const form = document.getElementById("request-form");
