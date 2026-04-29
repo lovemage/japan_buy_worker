@@ -197,7 +197,50 @@ body {
 /* Header layout */
 .header-top { display: flex; justify-content: space-between; align-items: center; }
 .header-left { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
-.header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 12px; }
+.header-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 12px; }
+
+/* Header icon buttons (sub-page top nav) */
+.header-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--text-color);
+  background: transparent;
+  border: 0;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+.header-icon-btn:hover {
+  background: var(--accent-warm-subtle);
+  color: var(--accent-warm);
+}
+.header-icon-btn:active {
+  transform: scale(0.92);
+}
+.header-cart-btn.is-bumped {
+  animation: float-bump 400ms var(--ease-out-quart);
+}
+.header-cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--accent-warm);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid var(--card-bg);
+  box-sizing: border-box;
+}
 
 /* Store Logo (header) */
 .store-logo-header {

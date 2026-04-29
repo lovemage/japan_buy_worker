@@ -46,6 +46,15 @@
               <h1 id="store-header-name">商品詳情</h1>
             </div>
           </div>
+          <div class="header-right">
+            <a href="#" class="header-icon-btn header-back-btn" id="header-back-btn" aria-label="上一頁" onclick="event.preventDefault(); history.back();">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <a href="/request.html" class="header-icon-btn header-cart-btn" id="header-cart-btn" aria-label="購物車">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              <span class="header-cart-badge" id="floating-draft-count" style="display:none;">0</span>
+            </a>
+          </div>
         </div>
       </div>
       <div id="deadline-countdown" class="deadline-countdown" style="display:none;"></div>
@@ -73,12 +82,13 @@
           if (box && content) { content.textContent = ds.storeRules; box.style.display = ""; }
         });
       }
-      // Fix floating button hrefs
-      var reqBtn = document.querySelector(".floating-request-btn");
-      if (reqBtn) reqBtn.href = base + "/request.html";
-      var backBtn = document.getElementById("floating-back-btn");
+      // Fix header button hrefs (multi-tenant base path)
+      var cartBtn = document.getElementById("header-cart-btn");
+      if (cartBtn) cartBtn.href = base + "/request.html";
+      var backBtn = document.getElementById("header-back-btn");
       if (backBtn) {
         var returnTo = new URLSearchParams(location.search).get("returnTo") || "";
+        // Keep history.back() onclick as primary nav; href is fallback when JS disabled
         backBtn.href = returnTo && returnTo.startsWith("/") ? returnTo : (base + "/store.html");
       }
       // Deadline countdown
@@ -180,14 +190,6 @@
         </svg>
       </button>
     </div>
-    <a class="floating-back-btn" id="floating-back-btn" href="#" aria-label="上一頁" onclick="event.preventDefault(); history.back();">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </a>
-    <a class="floating-request-btn" href="/request.html" aria-label="購物車">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <span class="floating-cart-badge" id="floating-draft-count" style="display:none;">0</span>
-    </a>
-
     <script type="module" src="/assets/app-product.js"></script>
   </body>
 </html>

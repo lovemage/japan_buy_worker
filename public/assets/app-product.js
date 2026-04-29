@@ -418,10 +418,12 @@ function initQuantityStepper() {
 }
 
 function bumpFloatingButton() {
-  const btn = document.querySelector(".floating-request-btn");
-  if (!btn) {
-    return;
-  }
+  // Cart button now lives in the header on product detail; fall back to the
+  // legacy floating button for any other page that still mounts this script.
+  const btn =
+    document.querySelector(".header-cart-btn") ||
+    document.querySelector(".floating-request-btn");
+  if (!btn) return;
   btn.classList.remove("is-bumped");
   void btn.offsetWidth;
   btn.classList.add("is-bumped");
