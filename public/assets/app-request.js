@@ -284,7 +284,7 @@ function renderTotals() {
   }
   if (shippingNote) {
     if (!shippingOptionsEnabled) {
-      shippingNote.textContent = "運費選項目前由 Admin 隱藏，將由客服後續確認。";
+      shippingNote.textContent = "";
     } else if (isCustomMethod) {
       shippingNote.textContent = "";
     } else if (legacyId === "jp_direct") {
