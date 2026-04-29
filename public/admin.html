@@ -1530,15 +1530,24 @@
     var el = document.getElementById("shipping-methods-editor");
     if (!el) return;
     el.innerHTML = shippingMethods.map(function(m, i) {
+      var typeOpts = [
+        { v: '', label: '一般運送（自填地址）' },
+        { v: 'cvs-711', label: '7-11 門市寄送（提供門市搜尋）' },
+        { v: 'cvs-family', label: '全家門市寄送（提供門市搜尋）' }
+      ].map(function(o) {
+        return '<option value="' + o.v + '"' + ((m.type || '') === o.v ? ' selected' : '') + '>' + o.label + '</option>';
+      }).join('');
       return '<div style="padding:12px;border:1px solid var(--admin-border);border-radius:var(--admin-radius);background:var(--admin-surface);">' +
         '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">' +
           '<label class="toggle-label" style="flex-shrink:0;"><input type="checkbox" ' + (m.enabled ? 'checked' : '') + ' onchange="shippingMethods[' + i + '].enabled=this.checked"></label>' +
           '<input type="text" value="' + (m.name || '').replace(/"/g,'&quot;') + '" placeholder="方式名稱" style="flex:1;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:13px;font-weight:600;" onchange="shippingMethods[' + i + '].name=this.value">' +
           '<button type="button" onclick="shippingMethods.splice(' + i + ',1);renderShippingEditor()" style="width:28px;height:28px;padding:0;border:1px solid var(--admin-border);border-radius:4px;background:var(--admin-surface);cursor:pointer;font-size:12px;color:var(--admin-danger);line-height:28px;text-align:center;">✕</button>' +
         '</div>' +
-        '<input type="text" value="' + (m.desc || '').replace(/"/g,'&quot;') + '" placeholder="說明" style="width:100%;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:12px;color:var(--admin-text-secondary);margin-bottom:4px;" onchange="shippingMethods[' + i + '].desc=this.value">' +
-        '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<span style="font-size:12px;color:var(--admin-text-muted);">運費 NT$</span>' +
+        '<input type="text" value="' + (m.desc || '').replace(/"/g,'&quot;') + '" placeholder="說明" style="width:100%;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:12px;color:var(--admin-text-secondary);margin-bottom:6px;" onchange="shippingMethods[' + i + '].desc=this.value">' +
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+          '<span style="font-size:12px;color:var(--admin-text-muted);">類型</span>' +
+          '<select style="padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:12px;background:#fff;" onchange="shippingMethods[' + i + '].type=this.value">' + typeOpts + '</select>' +
+          '<span style="font-size:12px;color:var(--admin-text-muted);margin-left:8px;">運費 NT$</span>' +
           '<input type="number" min="0" value="' + (m.price || 0) + '" style="width:80px;padding:6px 8px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:13px;" onchange="shippingMethods[' + i + '].price=Number(this.value)">' +
         '</div>' +
       '</div>';
@@ -1546,7 +1555,7 @@
   }
 
   function addShippingMethod() {
-    shippingMethods.push({ name: "", desc: "", price: 0, enabled: true });
+    shippingMethods.push({ name: "", desc: "", price: 0, enabled: true, type: "" });
     renderShippingEditor();
   }
 

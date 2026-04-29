@@ -328,6 +328,7 @@ function getActiveShippingMethods() {
       name: String(m.name).trim(),
       desc: String(m.desc || "").trim(),
       price: Number.isFinite(Number(m.price)) ? Number(m.price) : 0,
+      type: String(m.type || "").trim(),
     }));
   return enabled.length > 0 ? enabled : LEGACY_SHIPPING_FALLBACK;
 }
@@ -344,9 +345,10 @@ function renderShippingOptions() {
         : "";
       const dataPrice = !m.legacy ? ` data-price="${m.price || 0}"` : "";
       const dataLegacy = m.legacy ? ` data-legacy="${escapeHtml(m.id)}"` : "";
+      const dataType = m.type ? ` data-type="${escapeHtml(m.type)}"` : "";
       const descHtml = m.desc ? `<span class="meta">${escapeHtml(m.desc)}</span>` : "";
       return `<label class="shipping-option">
-        <input type="radio" name="shippingMethod" value="${escapeHtml(m.id)}"${dataPrice}${dataLegacy} ${checked} />
+        <input type="radio" name="shippingMethod" value="${escapeHtml(m.id)}"${dataPrice}${dataLegacy}${dataType} ${checked} />
         <span>
           <strong>${escapeHtml(m.name)}</strong>${priceTag}
           ${descHtml}
@@ -356,7 +358,153 @@ function renderShippingOptions() {
     .join("");
   // Re-bind change listener so totals update on selection
   list.querySelectorAll('input[name="shippingMethod"]').forEach((radio) => {
-    radio.addEventListener("change", () => renderTotals());
+    radio.addEventListener("change", () => {
+      renderTotals();
+      applyCvsPickerVisibility();
+    });
+  });
+  applyCvsPickerVisibility();
+}
+
+// ── CVS store picker (7-11 / FamilyMart) ──
+const CVS_DATA_URLS = {
+  "cvs-711": "/assets/data/cvs-711.json",
+  "cvs-family": "/assets/data/cvs-family.json",
+};
+const cvsCache = {}; // cache loaded JSON per type
+let cvsSelectedStore = null; // { id, name, address, city, area, type }
+let cvsSearchTimer = null;
+
+function getSelectedShippingType() {
+  const checked = document.querySelector('input[name="shippingMethod"]:checked');
+  return checked?.getAttribute("data-type") || "";
+}
+
+async function loadCvsData(type) {
+  if (cvsCache[type]) return cvsCache[type];
+  const url = CVS_DATA_URLS[type];
+  if (!url) return [];
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load ${url}`);
+  const data = await res.json();
+  cvsCache[type] = Array.isArray(data) ? data : [];
+  return cvsCache[type];
+}
+
+function applyCvsPickerVisibility() {
+  const picker = document.getElementById("cvs-picker");
+  if (!picker) return;
+  const type = getSelectedShippingType();
+  const isCvs = type === "cvs-711" || type === "cvs-family";
+  picker.hidden = !isCvs;
+  // Reset on each switch — selection is per-method
+  cvsSelectedStore = null;
+  const sel = document.getElementById("cvs-picker-selected");
+  if (sel) { sel.hidden = true; sel.innerHTML = ""; }
+  const results = document.getElementById("cvs-picker-results");
+  if (results) { results.hidden = true; results.innerHTML = ""; }
+  const search = document.getElementById("cvs-search");
+  if (search) search.value = "";
+  const status = document.getElementById("cvs-picker-status");
+  if (status) status.textContent = isCvs ? "" : "";
+
+  if (isCvs) {
+    // Pre-warm the JSON so the first keystroke is fast
+    loadCvsData(type).catch((err) => {
+      if (status) status.textContent = "門市資料載入失敗，請稍後再試";
+    });
+  }
+}
+
+function renderCvsResults(matches, type) {
+  const results = document.getElementById("cvs-picker-results");
+  if (!results) return;
+  if (matches.length === 0) {
+    results.innerHTML = `<p class="meta cvs-picker__empty">查無門市，請換個關鍵字</p>`;
+    results.hidden = false;
+    return;
+  }
+  const limited = matches.slice(0, 30);
+  results.innerHTML = limited
+    .map(
+      (s) =>
+        `<button type="button" class="cvs-picker__item" data-id="${escapeHtml(s.id)}">
+          <strong>${escapeHtml(s.name)}</strong>
+          <span class="meta">#${escapeHtml(s.id)}｜${escapeHtml(s.address)}</span>
+        </button>`
+    )
+    .join("");
+  if (matches.length > 30) {
+    results.innerHTML += `<p class="meta cvs-picker__more">還有 ${matches.length - 30} 筆，請輸入更精確的關鍵字</p>`;
+  }
+  results.hidden = false;
+  results.querySelectorAll(".cvs-picker__item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-id");
+      const store = (cvsCache[type] || []).find((s) => s.id === id);
+      if (!store) return;
+      cvsSelectedStore = { ...store, type };
+      results.hidden = true;
+      results.innerHTML = "";
+      const sel = document.getElementById("cvs-picker-selected");
+      const search = document.getElementById("cvs-search");
+      if (sel) {
+        const chainLabel = type === "cvs-711" ? "7-11" : "全家";
+        sel.innerHTML = `已選擇：<strong>${escapeHtml(chainLabel)}・${escapeHtml(store.name)}</strong>（#${escapeHtml(store.id)}）<br><span class="meta">${escapeHtml(store.address)}</span>
+          <button type="button" class="cvs-picker__clear" id="cvs-picker-clear">變更門市</button>`;
+        sel.hidden = false;
+      }
+      if (search) search.value = "";
+      const clearBtn = document.getElementById("cvs-picker-clear");
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+          cvsSelectedStore = null;
+          if (sel) { sel.hidden = true; sel.innerHTML = ""; }
+        });
+      }
+    });
+  });
+}
+
+function bindCvsSearch() {
+  const search = document.getElementById("cvs-search");
+  if (!search || search.dataset.bound === "1") return;
+  search.dataset.bound = "1";
+  search.addEventListener("input", () => {
+    clearTimeout(cvsSearchTimer);
+    cvsSearchTimer = setTimeout(async () => {
+      const type = getSelectedShippingType();
+      if (type !== "cvs-711" && type !== "cvs-family") return;
+      const q = search.value.trim().toLowerCase();
+      const status = document.getElementById("cvs-picker-status");
+      if (q.length < 1) {
+        const results = document.getElementById("cvs-picker-results");
+        if (results) { results.hidden = true; results.innerHTML = ""; }
+        if (status) status.textContent = "";
+        return;
+      }
+      try {
+        const data = await loadCvsData(type);
+        const matches = data.filter((s) => {
+          const name = (s.name || "").toLowerCase();
+          const id = (s.id || "").toLowerCase();
+          const addr = (s.address || "").toLowerCase();
+          const city = (s.city || "").toLowerCase();
+          const area = (s.area || "").toLowerCase();
+          return (
+            name.includes(q) ||
+            id.includes(q) ||
+            addr.includes(q) ||
+            city.includes(q) ||
+            area.includes(q)
+          );
+        });
+        if (status) status.textContent = `共 ${matches.length} 筆符合`;
+        renderCvsResults(matches, type);
+      } catch {
+        if (status) status.textContent = "搜尋失敗，請重新整理頁面";
+      }
+    }, 220);
   });
 }
 
@@ -515,12 +663,33 @@ async function onSubmit(event) {
 
   const draft = getDraft();
   const totals = renderTotals();
+  const cvsType = getSelectedShippingType();
+  const isCvsMethod = cvsType === "cvs-711" || cvsType === "cvs-family";
+  if (isCvsMethod && !cvsSelectedStore) {
+    showError("請於下方搜尋並選擇取貨門市");
+    return;
+  }
+  let recipientCity = document.getElementById("recipientCity")?.value || "";
+  let recipientAddress = document.getElementById("recipientAddress")?.value || "";
+  if (isCvsMethod && cvsSelectedStore) {
+    const chainLabel = cvsType === "cvs-711" ? "7-11" : "全家";
+    recipientCity = cvsSelectedStore.city || recipientCity;
+    recipientAddress = `[${chainLabel} ${cvsSelectedStore.name} #${cvsSelectedStore.id}] ${cvsSelectedStore.address}`;
+  }
   const payload = {
     memberName: document.getElementById("memberName")?.value || "",
     memberPhone: document.getElementById("memberPhone")?.value || "",
-    recipientCity: document.getElementById("recipientCity")?.value || "",
-    recipientAddress: document.getElementById("recipientAddress")?.value || "",
+    recipientCity,
+    recipientAddress,
     lineId: document.getElementById("lineId")?.value || "",
+    cvsStore: isCvsMethod && cvsSelectedStore
+      ? {
+          chain: cvsType === "cvs-711" ? "7-11" : "family",
+          id: cvsSelectedStore.id,
+          name: cvsSelectedStore.name,
+          address: cvsSelectedStore.address,
+        }
+      : null,
     shippingMethod: totals.shippingMethod,
     shippingInternationalTwd: totals.shippingInternationalTwd,
     shippingDomesticTwd: totals.shippingDomesticTwd,
@@ -605,6 +774,7 @@ async function bootstrap() {
   // Render shipping radios from admin-configured shippingMethods (or legacy fallback)
   renderShippingOptions();
   applyShippingOptionsVisibility();
+  bindCvsSearch();
   renderTotals();
   const form = document.getElementById("request-form");
   if (form) {

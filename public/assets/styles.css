@@ -1062,6 +1062,107 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* CVS store picker (7-11 / FamilyMart) */
+.cvs-picker {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cvs-picker[hidden] { display: none; }
+.cvs-picker__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cvs-picker__results {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+}
+.cvs-picker__results[hidden] { display: none; }
+.cvs-picker__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+.cvs-picker__item:last-child { border-bottom: 0; }
+.cvs-picker__item:hover {
+  background: var(--accent-warm-subtle);
+}
+.cvs-picker__item strong {
+  font-size: 14px;
+  color: var(--text-color);
+}
+.cvs-picker__item .meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+.cvs-picker__empty,
+.cvs-picker__more {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.cvs-picker__selected {
+  padding: 10px 12px;
+  border: 1px solid var(--accent-warm);
+  border-radius: 8px;
+  background: var(--accent-warm-subtle);
+  font-size: 13px;
+  color: var(--text-color);
+  line-height: 1.5;
+  position: relative;
+}
+.cvs-picker__selected[hidden] { display: none; }
+.cvs-picker__selected .meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+.cvs-picker__clear {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--muted-brand);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition-fast);
+}
+.cvs-picker__clear:hover {
+  background: var(--card-bg);
+  color: var(--accent-warm);
+  border-color: var(--accent-warm);
+}
+.cvs-picker__status {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
 .shipping-option .meta {
   margin: 0;
   font-size: 12px;

@@ -63,6 +63,13 @@
         <fieldset id="shipping-options-box" class="shipping-options">
           <legend>配送方式</legend>
           <div id="shipping-options-list"></div>
+          <div id="cvs-picker" class="cvs-picker" hidden>
+            <p class="meta cvs-picker__hint">輸入店名、店號或地址關鍵字搜尋門市</p>
+            <input id="cvs-search" type="text" class="input-cute" placeholder="例：信義門市、117290、台北市" autocomplete="off" />
+            <div id="cvs-picker-results" class="cvs-picker__results" hidden></div>
+            <div id="cvs-picker-selected" class="cvs-picker__selected" hidden></div>
+            <p id="cvs-picker-status" class="meta cvs-picker__status"></p>
+          </div>
           <p id="shipping-note" class="meta"></p>
         </fieldset>
         <label>

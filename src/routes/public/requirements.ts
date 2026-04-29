@@ -16,17 +16,26 @@ type RequirementItemInput = {
   note?: string;
 };
 
+type CvsStoreInput = {
+  chain?: string;
+  id?: string;
+  name?: string;
+  address?: string;
+};
+
 type RequirementInput = {
   memberName?: string;
   memberPhone?: string;
   recipientCity?: string;
   recipientAddress?: string;
   lineId?: string;
-  shippingMethod?: "consolidated_tw" | "jp_direct" | "limited_proxy" | "shipping_hidden";
+  // Free-form string — covers legacy ids ("consolidated_tw" etc) and merchant-defined names
+  shippingMethod?: string;
   shippingInternationalTwd?: number;
   shippingDomesticTwd?: number;
   shippingTotalTwd?: number;
   requiresEzway?: boolean;
+  cvsStore?: CvsStoreInput | null;
   notes?: string;
   items?: RequirementItemInput[];
 };
@@ -190,7 +199,16 @@ RETURNING id, order_code
         : null,
       Number.isFinite(Number(body.shippingTotalTwd)) ? Number(body.shippingTotalTwd) : null,
       body.requiresEzway ? 1 : 0,
-      (body.notes || "").trim(),
+      (() => {
+        const userNotes = (body.notes || "").trim();
+        const cvs = body.cvsStore;
+        if (cvs && cvs.id && cvs.name) {
+          const chainLabel = cvs.chain === "7-11" ? "7-11" : cvs.chain === "family" ? "全家" : (cvs.chain || "");
+          const cvsLine = `[取貨門市] ${chainLabel} ${cvs.name} #${cvs.id}${cvs.address ? `｜${cvs.address}` : ""}`;
+          return userNotes ? `${cvsLine}\n${userNotes}` : cvsLine;
+        }
+        return userNotes;
+      })(),
       orderCode
     )
     .first<{ id: number; order_code: string }>();
