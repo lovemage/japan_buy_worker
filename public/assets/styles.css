@@ -1344,6 +1344,74 @@ select:disabled {
   color: var(--text-color);
 }
 
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-title-row .detail-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-share-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--muted-brand);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: inherit;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.detail-share-btn:hover {
+  background: var(--accent-warm-subtle);
+  color: var(--accent-warm);
+  border-color: var(--accent-warm);
+}
+
+.detail-share-btn:active {
+  transform: scale(0.92);
+}
+
+.detail-share-btn__icon,
+.detail-share-btn__check {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.detail-share-btn__check {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.detail-share-btn.is-copied {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+
+.detail-share-btn.is-copied .detail-share-btn__icon {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.detail-share-btn.is-copied .detail-share-btn__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .detail-brand {
   font-size: 14px;
   color: var(--muted-brand);

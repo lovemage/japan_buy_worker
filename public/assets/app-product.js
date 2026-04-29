@@ -128,6 +128,7 @@ async function renderProduct(item, pricing) {
 
   bindText("detail-title", title);
   bindText("detail-brand", item.brand || "未提供");
+  initShareButton(item, title);
 
   // Price block with prominent TWD
   const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
@@ -301,6 +302,49 @@ async function renderProduct(item, pricing) {
   applyProductImageFallback();
 }
 
+function initShareButton(item, title) {
+  const btn = document.getElementById("detail-share-btn");
+  if (!btn || btn.dataset.bound === "1") return;
+  btn.dataset.bound = "1";
+
+  const shareData = () => ({
+    title,
+    text: item.brand ? `${item.brand}｜${title}` : title,
+    url: location.href,
+  });
+
+  const showCopiedFeedback = () => {
+    btn.classList.add("is-copied");
+    btn.setAttribute("aria-label", "已複製連結");
+    setTimeout(() => {
+      btn.classList.remove("is-copied");
+      btn.setAttribute("aria-label", "分享商品");
+    }, 1800);
+  };
+
+  btn.addEventListener("click", async () => {
+    const data = shareData();
+    // Prefer native Web Share API on mobile / supported browsers
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(data);
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return; // user cancelled the share sheet
+        // any other error: fall through to clipboard fallback
+      }
+    }
+    // Fallback: copy URL to clipboard
+    try {
+      await navigator.clipboard.writeText(data.url);
+      showCopiedFeedback();
+    } catch {
+      // last-ditch fallback for very old browsers
+      try { window.prompt("複製此商品網址：", data.url); } catch {}
+    }
+  });
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
     "&": "&amp;",
@@ -316,7 +360,7 @@ async function loadRecommendations(currentItem, pricing) {
   const list = document.getElementById("recommendations-list");
   if (!section || !list) return;
 
-  const params = new URLSearchParams({ excludeCode: currentItem.code || "", limit: "6" });
+  const params = new URLSearchParams({ excludeCode: currentItem.code || "", limit: "10" });
   if (currentItem.category) params.set("category", currentItem.category);
 
   let products = [];
