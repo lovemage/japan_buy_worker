@@ -363,7 +363,15 @@ function renderShippingOptions() {
 function applyShippingOptionsVisibility() {
   const box = document.getElementById("shipping-options-box");
   const radios = document.querySelectorAll('input[name="shippingMethod"]');
-  const enabled = pricingConfig?.shippingOptionsEnabled !== false;
+  // If admin configured any custom shippingMethods, always show — that toggle
+  // only governed the legacy 3-option flow.
+  const ds = window.__DISPLAY_SETTINGS || {};
+  const hasCustom =
+    Array.isArray(ds.shippingMethods) &&
+    ds.shippingMethods.some(
+      (m) => m && m.enabled !== false && String(m?.name || "").trim()
+    );
+  const enabled = hasCustom || pricingConfig?.shippingOptionsEnabled !== false;
   if (box) {
     box.classList.toggle("hidden", !enabled);
   }
@@ -483,12 +491,7 @@ function validateForm(payload) {
   if (!payload.lineId?.trim()) {
     return "Line ID 為必填";
   }
-  if (
-    !payload.shippingMethod ||
-    !["consolidated_tw", "jp_direct", "limited_proxy", "shipping_hidden"].includes(
-      payload.shippingMethod
-    )
-  ) {
+  if (!payload.shippingMethod || !String(payload.shippingMethod).trim()) {
     return "配送方式為必填";
   }
   if (!Array.isArray(payload.items) || payload.items.length === 0) {
