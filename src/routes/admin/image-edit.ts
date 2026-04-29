@@ -57,13 +57,8 @@ async function getImageGenPrompt(db: RequestContext["db"]): Promise<string> {
   return row?.value || DEFAULT_IMAGE_GEN_PROMPT;
 }
 
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
+function buildImageDataUrl(base64Data: string, mimeType: string): string {
+  return `data:${mimeType};base64,${base64Data}`;
 }
 
 export async function handleAdminImageEdit(
@@ -204,23 +199,8 @@ export async function handleAdminImageEdit(
     );
   }
 
-  // Upload to R2
-  if (!ctx.r2) {
-    return new Response(
-      JSON.stringify({ ok: false, error: "R2 儲存空間未設定" }),
-      { status: 500, headers: { "content-type": "application/json" } }
-    );
-  }
-
-  const timestamp = Date.now();
   const outputMime = imagePart?.inline_data?.mime_type || imagePart?.inlineData?.mimeType || "image/png";
-  const ext = outputMime.includes("png") ? "png" : outputMime.includes("webp") ? "webp" : "png";
-  const r2Key = `${ctx.storeId}/ai-edit/${timestamp}.${ext}`;
-  const imageBuffer = base64ToArrayBuffer(imageData);
-
-  await ctx.r2.put(r2Key, imageBuffer, {
-    httpMetadata: { contentType: outputMime },
-  });
+  const imageDataUrl = buildImageDataUrl(imageData, outputMime);
 
   // Increment usage counter (non-blocking)
   const now = new Date();
@@ -246,7 +226,7 @@ export async function handleAdminImageEdit(
   ]).catch(() => {});
 
   return new Response(
-    JSON.stringify({ ok: true, imageUrl: `/api/images/${r2Key}` }),
+    JSON.stringify({ ok: true, imageDataUrl, mimeType: outputMime }),
     { status: 200, headers: { "content-type": "application/json" } }
   );
 }

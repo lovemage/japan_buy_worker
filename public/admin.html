@@ -1022,7 +1022,9 @@
     "moss":       "#C76B8A",
     "slate":      "#5E6B7A",
     "bold-gold":  "linear-gradient(135deg, #C8A415, #1A1A1A)",
-    "bold-ocean": "linear-gradient(135deg, #2563EB, #1A1A2E)"
+    "bold-ocean": "linear-gradient(135deg, #2563EB, #1A1A2E)",
+    "lilac":      "#B19CD9",
+    "matcha":     "#87A96B"
   };
 
   function loadTemplates() {
@@ -1037,7 +1039,9 @@
         { id: "moss", name: "櫻花粉" },
         { id: "slate", name: "石板灰藍" },
         { id: "bold-gold", name: "白黃黑" },
-        { id: "bold-ocean", name: "白藍黑" }
+        { id: "bold-ocean", name: "白藍黑" },
+        { id: "lilac", name: "淺紫" },
+        { id: "matcha", name: "抹茶綠" }
       ];
       var available = d.templates.map(function(t){ return t.id; });
       el.innerHTML = allTpls.map(function(t) {
@@ -1314,7 +1318,7 @@
   // ── Banner management ──
   var bannerImages = [];
   var bannerEnabled = false;
-  var bannerGenResultKey = null;
+  var bannerGenResultDataUrl = null;
 
   function loadBannerSettings() {
     var plan = window.__STORE_PLAN || "free";
@@ -1398,6 +1402,32 @@
     });
   }
 
+  function uploadBannerDataUrl(dataUrl) {
+    return new Promise(function(resolve) {
+      if (!dataUrl) { resolve(null); return; }
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        var webpDataUrl = canvas.toDataURL("image/webp", 0.85);
+        var base64 = webpDataUrl.split(",")[1];
+        apiFetch("/api/admin/banner/upload", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ image: base64 }),
+        }).then(function(r){return r.json()}).then(function(d) {
+          resolve(d.ok ? d.key : null);
+        }).catch(function() {
+          resolve(null);
+        });
+      };
+      img.onerror = function() { resolve(null); };
+      img.src = dataUrl;
+    });
+  }
+
   function deleteBannerImage(index) {
     var key = bannerImages[index];
     bannerImages.splice(index, 1);
@@ -1435,7 +1465,7 @@
     if (btn) btn.disabled = true;
     if (previewEl) previewEl.style.display = "none";
     if (statusEl) statusEl.style.display = "none";
-    bannerGenResultKey = null;
+    bannerGenResultDataUrl = null;
     showBannerGenPopup("正在生成招牌圖片...");
 
     var payload = {
@@ -1452,9 +1482,9 @@
       if (btn) btn.disabled = false;
       if (!d.ok) { if (statusEl) { statusEl.textContent = d.error || "生成失敗"; statusEl.style.display = ""; } return; }
       if (statusEl) { statusEl.textContent = "生成完成！"; statusEl.style.display = ""; setTimeout(function(){ statusEl.style.display = "none"; }, 3000); }
-      bannerGenResultKey = d.key;
       var img = document.getElementById("banner-gen-preview-img");
-      if (img) img.src = (window.__API_BASE||"") + d.imageUrl;
+      bannerGenResultDataUrl = d.imageDataUrl || null;
+      if (img) img.src = d.imageDataUrl || "";
       if (previewEl) previewEl.style.display = "";
     }).catch(function(err) {
       hideBannerGenPopup();
@@ -1464,14 +1494,22 @@
   }
 
   function useBannerGenResult() {
-    if (!bannerGenResultKey) return;
+    if (!bannerGenResultDataUrl) return;
     if (bannerImages.length >= 3) { alert("已有 3 張圖片，請先刪除再新增"); return; }
-    bannerImages.push(bannerGenResultKey);
-    renderBannerPreview();
-    saveBannerSettings();
-    bannerGenResultKey = null;
-    var previewEl = document.getElementById("banner-gen-preview");
-    if (previewEl) previewEl.style.display = "none";
+    showBannerGenPopup("正在轉成 WebP 並儲存...");
+    uploadBannerDataUrl(bannerGenResultDataUrl).then(function(key) {
+      hideBannerGenPopup();
+      if (!key) {
+        alert("招牌圖片儲存失敗，請重試");
+        return;
+      }
+      bannerImages.push(key);
+      renderBannerPreview();
+      saveBannerSettings();
+      bannerGenResultDataUrl = null;
+      var previewEl = document.getElementById("banner-gen-preview");
+      if (previewEl) previewEl.style.display = "none";
+    });
   }
 
   // Shipping methods

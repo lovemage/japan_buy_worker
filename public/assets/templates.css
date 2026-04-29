@@ -56,10 +56,10 @@
   background: #DCE2E8;
   color: #3B5064;
 }
-/* Buttons: 查看詳情 / 加入訂單 / 返回 */
+/* Buttons: 查看詳情 / 加入訂單 / 返回 — sharp corners */
 [data-template="ink-blue"] .button {
   background: #4A6178;
-  border-radius: 6px;
+  border-radius: 0;
 }
 [data-template="ink-blue"] .button:hover {
   background: #3B5064;
@@ -68,6 +68,7 @@
   background: #E8ECF0;
   color: #4A6178;
   border: 1px solid #CCD3DB;
+  border-radius: 0;
 }
 [data-template="ink-blue"] .button.secondary:hover {
   background: #DCE2E8;
@@ -92,13 +93,26 @@
 [data-template="ink-blue"] .product-card__body .button:hover {
   background: #CCD3DB; color: #2A3D4E; box-shadow: none;
 }
-/* Card styling — subtle borders for literary feel */
+/* Card styling — sharp corners for literary feel */
 [data-template="ink-blue"] .product-card {
   border: 1px solid #DDE2E8;
+  border-radius: 0;
+}
+[data-template="ink-blue"] .product-card__media {
+  border-radius: 0;
+}
+[data-template="ink-blue"] .qty-stepper {
+  border-radius: 0;
 }
 [data-template="ink-blue"] .qty-stepper__btn:hover {
   background: #E8ECF0;
   color: #4A6178;
+}
+[data-template="ink-blue"] .input-cute {
+  border-radius: 0;
+}
+[data-template="ink-blue"] .detail-price-block {
+  border-radius: 0;
 }
 
 
@@ -341,7 +355,7 @@
 }
 [data-template="slate"] .button {
   background: #5E6B7A;
-  border-radius: 4px;
+  border-radius: 0;
 }
 [data-template="slate"] .button:hover {
   background: #4D5968;
@@ -350,7 +364,7 @@
   background: #E4E7EC;
   color: #5E6B7A;
   border: 1px solid #CDD2DA;
-  border-radius: 4px;
+  border-radius: 0;
 }
 [data-template="slate"] .button.secondary:hover {
   background: #D8DCE3;
@@ -376,23 +390,23 @@
 }
 /* Sharp corners for modern feel */
 [data-template="slate"] .product-card {
-  border-radius: 6px;
+  border-radius: 0;
 }
 [data-template="slate"] .product-card__media {
-  border-radius: 4px 4px 0 0;
+  border-radius: 0;
 }
 [data-template="slate"] .qty-stepper {
-  border-radius: 4px;
+  border-radius: 0;
 }
 [data-template="slate"] .qty-stepper__btn:hover {
   background: #E4E7EC;
   color: #5E6B7A;
 }
 [data-template="slate"] .input-cute {
-  border-radius: 6px;
+  border-radius: 0;
 }
 [data-template="slate"] .detail-price-block {
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 
@@ -628,4 +642,224 @@
 [data-template="bold-ocean"] .detail-thumb-btn.is-active .detail-thumb {
   border-color: #2563EB;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+
+/* ══════════════════════════════════════════
+   Template: lilac (淺紫)
+   柔美女性風 — 圓體 + 淡雅薰衣草紫 + 8px 圓角
+   ══════════════════════════════════════════ */
+[data-template="lilac"] {
+  font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
+  --bg-color: #FBF8FE;
+  --card-bg: #FFFDFF;
+  --primary-color: #B19CD9;
+  --primary-hover: #9A82C7;
+  --text-color: #3D2E5C;
+  --accent-warm: #A68FCC;
+  --accent-warm-hover: #8E76B8;
+  --accent-warm-subtle: #F3EDFB;
+  --accent-gold: #C8B5E5;
+  --accent-gold-bg: #F8F2FE;
+  --muted: #9B8AB5;
+  --muted-brand: #8A78A8;
+  --line: #EAE0F5;
+  --shadow: 0 4px 12px rgba(177, 156, 217, 0.1);
+  --btn-secondary: #9886BE;
+  --btn-secondary-hover: #8674AC;
+  --btn-added: #6FA88A;
+  --card-border: rgba(177, 156, 217, 0.14);
+  --brand-shadow-sm: rgba(177, 156, 217, 0.18);
+  --brand-shadow-md: rgba(177, 156, 217, 0.24);
+  --brand-shadow-lg: rgba(177, 156, 217, 0.32);
+  --focus-ring: rgba(177, 156, 217, 0.12);
+}
+[data-template="lilac"] .promo-badge {
+  color: #fff;
+  background: #B19CD9;
+  border-color: #C8B5E5;
+  box-shadow: 0 2px 6px rgba(177, 156, 217, 0.28);
+}
+[data-template="lilac"] .btn-pill.secondary {
+  background: #F0E8FA;
+  color: #8E76B8;
+  border-color: #DCCEF0;
+}
+[data-template="lilac"] .btn-pill.secondary:hover {
+  background: #E6DAF2;
+  color: #6E58A0;
+}
+[data-template="lilac"] .button {
+  background: #B19CD9;
+  border-radius: 8px;
+}
+[data-template="lilac"] .button:hover {
+  background: #9A82C7;
+}
+[data-template="lilac"] .button.secondary {
+  background: #F0E8FA;
+  color: #8E76B8;
+  border: 1px solid #DCCEF0;
+  border-radius: 8px;
+}
+[data-template="lilac"] .button.secondary:hover {
+  background: #E6DAF2;
+  color: #6E58A0;
+}
+[data-template="lilac"] .floating-request-btn,
+[data-template="lilac"] .floating-back-btn,
+[data-template="lilac"] .detail-add-btn {
+  background: #B19CD9;
+  box-shadow: 0 4px 16px rgba(177, 156, 217, 0.4);
+}
+[data-template="lilac"] .floating-request-btn:hover,
+[data-template="lilac"] .floating-back-btn:hover,
+[data-template="lilac"] .detail-add-btn:hover {
+  background: #9A82C7;
+  box-shadow: 0 6px 24px rgba(177, 156, 217, 0.45);
+}
+[data-template="lilac"] .product-card__body .button {
+  background: #EBE0F8; color: #6E58A0; box-shadow: none;
+}
+[data-template="lilac"] .product-card__body .button:hover {
+  background: #DDD0F0; color: #5C4690; box-shadow: none;
+}
+[data-template="lilac"] .product-card {
+  border-radius: 8px;
+  border: 1px solid #EAE0F5;
+}
+[data-template="lilac"] .product-card__media {
+  border-radius: 8px 8px 0 0;
+}
+[data-template="lilac"] .qty-stepper {
+  border-radius: 8px;
+}
+[data-template="lilac"] .qty-stepper__btn:hover {
+  background: #F3EDFB;
+  color: #B19CD9;
+}
+[data-template="lilac"] .input-cute {
+  border-radius: 8px;
+}
+[data-template="lilac"] .detail-price-block {
+  background: #F3EDFB;
+  border-left: 3px solid #B19CD9;
+  border-radius: 8px;
+}
+[data-template="lilac"] .detail-price-twd {
+  color: #8E76B8;
+}
+[data-template="lilac"] .detail-thumb-btn.is-active .detail-thumb {
+  border-color: #B19CD9;
+  box-shadow: 0 0 0 3px rgba(177, 156, 217, 0.22);
+}
+
+
+/* ══════════════════════════════════════════
+   Template: matcha (抹茶綠)
+   清新女性風 — 圓體 + 柔和抹茶 + 12px 圓角
+   ══════════════════════════════════════════ */
+[data-template="matcha"] {
+  font-family: "M PLUS Rounded 1c", "Zen Maru Gothic", sans-serif;
+  --bg-color: #F6F9F2;
+  --card-bg: #FCFDF8;
+  --primary-color: #87A96B;
+  --primary-hover: #6F9054;
+  --text-color: #2E3D24;
+  --accent-warm: #A8896E;
+  --accent-warm-hover: #8E7158;
+  --accent-warm-subtle: #F2EDE4;
+  --accent-gold: #B9A678;
+  --accent-gold-bg: #F8F3E6;
+  --muted: #7E8B6F;
+  --muted-brand: #6E7B5F;
+  --line: #DDE5CF;
+  --shadow: 0 4px 12px rgba(135, 169, 107, 0.1);
+  --btn-secondary: #6F8A58;
+  --btn-secondary-hover: #5D7848;
+  --btn-added: #5F8E6A;
+  --card-border: rgba(135, 169, 107, 0.14);
+  --brand-shadow-sm: rgba(135, 169, 107, 0.18);
+  --brand-shadow-md: rgba(135, 169, 107, 0.24);
+  --brand-shadow-lg: rgba(135, 169, 107, 0.32);
+  --focus-ring: rgba(135, 169, 107, 0.12);
+}
+[data-template="matcha"] .promo-badge {
+  color: #fff;
+  background: #87A96B;
+  border-color: #B9A678;
+  box-shadow: 0 2px 6px rgba(135, 169, 107, 0.28);
+}
+[data-template="matcha"] .btn-pill.secondary {
+  background: #EAF0DD;
+  color: #6F9054;
+  border-color: #CDD9B7;
+}
+[data-template="matcha"] .btn-pill.secondary:hover {
+  background: #DEE7CC;
+  color: #547638;
+}
+[data-template="matcha"] .button {
+  background: #87A96B;
+  border-radius: 12px;
+}
+[data-template="matcha"] .button:hover {
+  background: #6F9054;
+}
+[data-template="matcha"] .button.secondary {
+  background: #EAF0DD;
+  color: #6F9054;
+  border: 1px solid #CDD9B7;
+  border-radius: 12px;
+}
+[data-template="matcha"] .button.secondary:hover {
+  background: #DEE7CC;
+  color: #547638;
+}
+[data-template="matcha"] .floating-request-btn,
+[data-template="matcha"] .floating-back-btn,
+[data-template="matcha"] .detail-add-btn {
+  background: #87A96B;
+  box-shadow: 0 4px 16px rgba(135, 169, 107, 0.4);
+}
+[data-template="matcha"] .floating-request-btn:hover,
+[data-template="matcha"] .floating-back-btn:hover,
+[data-template="matcha"] .detail-add-btn:hover {
+  background: #6F9054;
+  box-shadow: 0 6px 24px rgba(135, 169, 107, 0.45);
+}
+[data-template="matcha"] .product-card__body .button {
+  background: #E2EBCD; color: #547638; box-shadow: none;
+}
+[data-template="matcha"] .product-card__body .button:hover {
+  background: #D4E0BA; color: #3F5E25; box-shadow: none;
+}
+[data-template="matcha"] .product-card {
+  border-radius: 12px;
+  border: 1px solid #DDE5CF;
+}
+[data-template="matcha"] .product-card__media {
+  border-radius: 12px 12px 0 0;
+}
+[data-template="matcha"] .qty-stepper {
+  border-radius: 12px;
+}
+[data-template="matcha"] .qty-stepper__btn:hover {
+  background: #EAF0DD;
+  color: #87A96B;
+}
+[data-template="matcha"] .input-cute {
+  border-radius: 12px;
+}
+[data-template="matcha"] .detail-price-block {
+  background: #EAF0DD;
+  border-left: 3px solid #87A96B;
+  border-radius: 12px;
+}
+[data-template="matcha"] .detail-price-twd {
+  color: #6F9054;
+}
+[data-template="matcha"] .detail-thumb-btn.is-active .detail-thumb {
+  border-color: #87A96B;
+  box-shadow: 0 0 0 3px rgba(135, 169, 107, 0.22);
 }

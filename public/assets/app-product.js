@@ -1,7 +1,44 @@
 import { addItem, getDraft } from "./draft-store.js";
-import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+import { applyProductImageFallback, withProductImageFallback, PRODUCT_PLACEHOLDER } from "./image-fallback.js";
 const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = { markupJpy: 1000, markupMode: "flat", markupPercent: 15, jpyToTwd: _cc.defaultRate || 0.21 };
+
+function preloadImages(urls) {
+  return Promise.all(
+    urls.map((url) => new Promise((resolve) => {
+      if (!url) { resolve({ url, ok: false }); return; }
+      const img = new Image();
+      let settled = false;
+      const finish = (ok) => { if (settled) return; settled = true; resolve({ url, ok }); };
+      img.onload = () => finish(true);
+      img.onerror = () => finish(false);
+      img.src = url;
+      // Safety timeout — don't block UI on stuck images
+      setTimeout(() => finish(false), 5000);
+    }))
+  );
+}
+
+function isTwdSource() {
+  const cc = window.__COUNTRY_CONFIG || _cc || {};
+  return String(cc.currency || "").toUpperCase() === "TWD";
+}
+
+function renderPriceHtml(adjusted, pricing) {
+  if (adjusted.twd === null) {
+    return `<p class="detail-price-twd"><span class="detail-price-amount">價格未提供</span></p>`;
+  }
+  const mainLine =
+    `<p class="detail-price-twd">` +
+      `<span class="detail-price-symbol">NT$</span>` +
+      `<span class="detail-price-amount">${adjusted.twd.toLocaleString("en-US")}</span>` +
+    `</p>`;
+  // Hide secondary src-currency line when source = TWD (avoid two NT$ prices)
+  if (isTwdSource() || adjusted.src === null) return mainLine;
+  const isManual = pricing?.pricingMode === "manual";
+  const note = isManual ? "" : `<span class="detail-price-note">含代購費</span>`;
+  return mainLine + `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}${note}</p>`;
+}
 
 function setError(message) {
   const node = document.getElementById("detail-error");
@@ -65,55 +102,22 @@ function normalizeVariants(list) {
     .filter(Boolean);
 }
 
-function renderProduct(item, pricing) {
+async function renderProduct(item, pricing) {
   const title = item.nameZhTw || item.nameJa || "未命名商品";
   const mainImage = withProductImageFallback(item.mainImageUrl || item.displayImageUrl || item.imageUrl || "");
-  const images = Array.isArray(item.gallery) && item.gallery.length > 0 ? item.gallery : [mainImage];
+  const gallerySource = Array.isArray(item.gallery) && item.gallery.length > 0
+    ? item.gallery.filter(Boolean)
+    : [mainImage];
+  // Normalize gallery URLs (apply API base prefix + fallback) once, upfront
+  let galleryUrls = gallerySource.map(withProductImageFallback);
+  if (galleryUrls.length === 0) galleryUrls = [PRODUCT_PLACEHOLDER];
   const variants = normalizeVariants(item.variants);
 
   const main = document.getElementById("detail-main-image");
   const mainWrap = document.getElementById("detail-main-wrap");
-  if (main && images[0]) {
-    main.src = images[0];
-    main.alt = title;
-    main.addEventListener("load", () => { if (mainWrap) mainWrap.classList.add("is-loaded"); }, { once: true });
-    main.addEventListener("error", () => { if (mainWrap) mainWrap.classList.add("is-loaded"); }, { once: true });
-  }
-
   const gallery = document.getElementById("detail-gallery");
-  if (gallery) {
-    gallery.innerHTML = images
-      .filter(Boolean)
-      .map(
-        (img, idx) =>
-          `<button class="detail-thumb-btn ${idx === 0 ? "is-active" : ""}" type="button" data-image="${img}">
-            <img src="${withProductImageFallback(img)}" alt="${title}" class="detail-thumb" data-fallback="product" />
-          </button>`
-      )
-      .join("");
-    gallery.querySelectorAll(".detail-thumb-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        const image = button.getAttribute("data-image");
-        if (!main || !image) {
-          return;
-        }
-        // Crossfade animation on image switch
-        main.classList.add("is-switching");
-        main.src = image;
-        main.addEventListener("animationend", () => {
-          main.classList.remove("is-switching");
-        }, { once: true });
-        gallery.querySelectorAll(".detail-thumb-btn").forEach((node) => {
-          node.classList.remove("is-active");
-        });
-        button.classList.add("is-active");
-      });
-    });
-  }
-  if (main) {
-    main.setAttribute("data-fallback", "product");
-  }
-  applyProductImageFallback();
+  // Track first thumbnail URL for cart fallback (resolved after preload)
+  let firstResolvedUrl = mainImage;
 
   const bindText = (id, text) => {
     const node = document.getElementById(id);
@@ -128,20 +132,7 @@ function renderProduct(item, pricing) {
   // Price block with prominent TWD
   const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
   const priceBlock = document.getElementById("detail-price");
-  if (priceBlock) {
-    if (adjusted.twd !== null) {
-      let subLine = "";
-      if (adjusted.src !== null) {
-        subLine = pricing?.pricingMode === "manual"
-          ? `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}</p>`
-          : `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`;
-      }
-      priceBlock.innerHTML =
-        `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` + subLine;
-    } else {
-      priceBlock.innerHTML = `<p class="detail-price-twd">價格未提供</p>`;
-    }
-  }
+  if (priceBlock) priceBlock.innerHTML = renderPriceHtml(adjusted, pricing);
 
   bindText("detail-category", `分類：${item.category || "未分類"}`);
   bindText("detail-color-count", `顏色數：${item.colorCount ?? "-"}`);
@@ -190,20 +181,7 @@ function renderProduct(item, pricing) {
   const renderPriceBlock = () => {
     const effectiveBase = selectedVariant?.price ?? item.priceJpyTaxIn;
     const adjusted = calcAdjustedPrices(effectiveBase, pricing);
-    if (priceBlock) {
-      if (adjusted.twd !== null) {
-        let subLine = "";
-        if (adjusted.src !== null) {
-          subLine = pricing?.pricingMode === "manual"
-            ? `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}</p>`
-            : `<p class="detail-price-jpy">${fmtSrcPrice(adjusted.src)}（含代購費）</p>`;
-        }
-        priceBlock.innerHTML =
-          `<p class="detail-price-twd">NT$${adjusted.twd.toLocaleString("en-US")}</p>` + subLine;
-      } else {
-        priceBlock.innerHTML = `<p class="detail-price-twd">價格未提供</p>`;
-      }
-    }
+    if (priceBlock) priceBlock.innerHTML = renderPriceHtml(adjusted, pricing);
     return adjusted;
   };
 
@@ -242,7 +220,7 @@ function renderProduct(item, pricing) {
         return;
       }
       const quantity = Math.max(1, Number(qtyInput?.value || 1));
-      const selectedImageUrl = main?.src || images[0] || mainImage;
+      const selectedImageUrl = main?.src || firstResolvedUrl || mainImage;
       const adjusted = renderPriceBlock();
       addItem({
         productId: item.id,
@@ -273,13 +251,54 @@ function renderProduct(item, pricing) {
     });
   }
 
-  // Trigger entrance animation
+  // Trigger entrance animation immediately so text/title slides in
+  // (image area shows loading bar until preload completes below)
   const article = document.getElementById("product-detail");
   if (article) {
     requestAnimationFrame(() => {
       article.classList.add("is-loaded");
     });
   }
+
+  // Preload all gallery images so the actual <img> elements appear instantly
+  // from cache — prevents the flash of 4 broken/404 icons before bytes arrive.
+  const preloadResults = await preloadImages(galleryUrls);
+  const finalUrls = preloadResults.map((r) => (r.ok ? r.url : PRODUCT_PLACEHOLDER));
+  firstResolvedUrl = finalUrls[0] || mainImage;
+
+  if (main && finalUrls[0]) {
+    main.src = finalUrls[0];
+    main.alt = title;
+    main.setAttribute("data-fallback", "product");
+    if (mainWrap) mainWrap.classList.add("is-loaded");
+  }
+
+  if (gallery) {
+    gallery.innerHTML = finalUrls
+      .map(
+        (img, idx) =>
+          `<button class="detail-thumb-btn ${idx === 0 ? "is-active" : ""}" type="button" data-image="${img}">
+            <img src="${img}" alt="${title}" class="detail-thumb" data-fallback="product" />
+          </button>`
+      )
+      .join("");
+    gallery.querySelectorAll(".detail-thumb-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        const image = button.getAttribute("data-image");
+        if (!main || !image) return;
+        main.classList.add("is-switching");
+        main.src = image;
+        main.addEventListener("animationend", () => {
+          main.classList.remove("is-switching");
+        }, { once: true });
+        gallery.querySelectorAll(".detail-thumb-btn").forEach((node) => {
+          node.classList.remove("is-active");
+        });
+        button.classList.add("is-active");
+      });
+    });
+  }
+  applyProductImageFallback();
 }
 
 function initQuantityStepper() {
@@ -347,7 +366,7 @@ async function bootstrap() {
     setError("商品載入失敗");
     return;
   }
-  renderProduct(body.product, pricing);
+  await renderProduct(body.product, pricing);
 }
 
 bootstrap();

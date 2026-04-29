@@ -310,13 +310,15 @@ export async function handlePopupAdDelete(
 
 // ── Template selection ──
 const TEMPLATES: Record<string, { name: string; plans: string[] }> = {
-  default:      { name: "抹茶暖色", plans: ["free", "plus", "pro", "proplus"] },
+  default:      { name: "極簡黑白", plans: ["free", "plus", "pro", "proplus"] },
   "ink-blue":   { name: "墨藍",     plans: ["pro", "proplus"] },
-  sand:         { name: "暖沙灰",   plans: ["proplus"] },
-  moss:         { name: "苔蘚灰綠", plans: ["proplus"] },
+  sand:         { name: "薰衣紫",   plans: ["proplus"] },
+  moss:         { name: "櫻花粉",   plans: ["proplus"] },
   slate:        { name: "石板灰藍", plans: ["proplus"] },
   "bold-gold":  { name: "白黃黑",   plans: ["proplus"] },
   "bold-ocean": { name: "白藍黑",   plans: ["proplus"] },
+  lilac:        { name: "淺紫",     plans: ["plus", "pro", "proplus"] },
+  matcha:       { name: "抹茶綠",   plans: ["plus", "pro", "proplus"] },
 };
 
 export { TEMPLATES };
@@ -484,6 +486,10 @@ const BANNER_GEN_LIMITS: Record<string, number> = {
   pro: 5,
   proplus: -1,
 };
+
+function buildImageDataUrl(base64Data: string, mimeType: string): string {
+  return `data:${mimeType};base64,${base64Data}`;
+}
 
 export async function handleBannerGenerate(
   request: Request,
@@ -660,19 +666,7 @@ ${description || "（使用者未提供額外描述，請根據商店名稱和�
     }
   }
 
-  // Upload to R2
-  if (!ctx.r2) return json({ ok: false, error: "R2 儲存空間未設定" }, 500);
-
-  const ext = outputMimeFromApi.includes("webp") ? "webp" : "png";
-  const r2Key = `${ctx.storeId}/banners/${Date.now()}.${ext}`;
-  const binaryString = atob(imageData);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  await ctx.r2.put(r2Key, bytes.buffer, {
-    httpMetadata: { contentType: outputMimeFromApi },
-  });
+  const imageDataUrl = buildImageDataUrl(imageData, outputMimeFromApi);
 
   // Increment usage counter
   const now = new Date();
@@ -697,5 +691,5 @@ ${description || "（使用者未提供額外描述，請根據商店名稱和�
       .run(),
   ]).catch(() => {});
 
-  return json({ ok: true, imageUrl: `/api/images/${r2Key}`, key: r2Key });
+  return json({ ok: true, imageDataUrl, mimeType: outputMimeFromApi });
 }

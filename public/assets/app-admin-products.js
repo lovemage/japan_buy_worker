@@ -1025,23 +1025,17 @@ async function doEditAiImage() {
       return;
     }
 
-    // Fetch the AI image and convert to webp
-    const aiRes = await apiFetch(data.imageUrl);
-    if (!aiRes.ok) throw new Error("AI 圖片下載失敗");
-    const aiBlob = await aiRes.blob();
-    const bmpUrl = URL.createObjectURL(aiBlob);
     const newDataUrl = await new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        URL.revokeObjectURL(bmpUrl);
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
         canvas.getContext("2d").drawImage(img, 0, 0);
         resolve(canvas.toDataURL("image/webp", 0.8));
       };
-      img.onerror = () => { URL.revokeObjectURL(bmpUrl); reject(new Error("圖片載入失敗")); };
-      img.src = bmpUrl;
+      img.onerror = () => reject(new Error("圖片載入失敗"));
+      img.src = data.imageDataUrl;
     });
 
     // Insert AI image as first, keep all originals

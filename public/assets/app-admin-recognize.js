@@ -588,20 +588,9 @@ async function doAiImageEdit() {
       return;
     }
 
-    // Fetch the AI image and convert to webp base64 via canvas
-    const imageRes = await apiFetch(data.imageUrl);
-    if (!imageRes.ok) {
-      setAiImageEditPopupMsg("圖片下載失敗，請重試");
-      setTimeout(() => showAiImageEditPopup(false), 2500);
-      return;
-    }
-
-    const blob = await imageRes.blob();
-    const bmpUrl = URL.createObjectURL(blob);
     const newDataUrl = await new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        URL.revokeObjectURL(bmpUrl);
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
@@ -609,8 +598,8 @@ async function doAiImageEdit() {
         c.drawImage(img, 0, 0);
         resolve(canvas.toDataURL("image/webp", WEBP_QUALITY));
       };
-      img.onerror = () => { URL.revokeObjectURL(bmpUrl); reject(new Error("圖片載入失敗")); };
-      img.src = bmpUrl;
+      img.onerror = () => reject(new Error("圖片載入失敗"));
+      img.src = data.imageDataUrl;
     });
 
     const newBase64 = newDataUrl.split(",")[1];
