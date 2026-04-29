@@ -169,12 +169,15 @@ function renderDraftItems() {
                       item.desiredSize || "",
                       "選擇"
                     )}</select></label>`
-                  : `<label class="request-item__field-label">尺寸<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="手動填寫" class="request-item__field-input request-item__field-input--size" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸" /></label>`
+                  : `<label class="request-item__field-label">尺寸<input type="text" data-field="desiredSize" value="${item.desiredSize || ""}" placeholder="可留空" class="request-item__field-input request-item__field-input--size" aria-label="${escapeHtml(item.productNameSnapshot)} 尺寸" /></label>`
             }
           </div>
           <div class="request-item__note-row">
             <input type="text" data-field="note" value="${item.note || ""}" placeholder="備註" class="request-item__field-input request-item__field-input--note" aria-label="${escapeHtml(item.productNameSnapshot)} 備註" />
-            <button type="button" class="js-remove-item request-item__remove" data-remove-idx="${idx}" aria-label="刪除 ${escapeHtml(item.productNameSnapshot)}">刪除</button>
+            <button type="button" class="js-remove-item request-item__remove" data-remove-idx="${idx}" aria-label="刪除 ${escapeHtml(item.productNameSnapshot)}" title="刪除">
+              <svg class="request-item__remove-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>
+              <span class="request-item__remove-text">刪除</span>
+            </button>
           </div>
         </div>
       </article>
