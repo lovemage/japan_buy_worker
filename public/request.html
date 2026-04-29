@@ -32,9 +32,26 @@
 
     <main class="container">
       <section id="request-error" class="notice hidden" role="alert" aria-live="assertive"></section>
+
+      <!-- Step indicator -->
+      <ol class="request-steps" id="request-steps" aria-label="訂單流程">
+        <li class="request-steps__item is-active" data-step="1"><span class="request-steps__num">1</span>檢視購物車</li>
+        <li class="request-steps__item" data-step="2"><span class="request-steps__num">2</span>填寫資料</li>
+      </ol>
+
       <section id="request-items" class="request-items" role="list" aria-label="訂單商品列表"></section>
 
-      <form id="request-form" class="request-form">
+      <!-- Step 1: review-only summary + next CTA -->
+      <section id="cart-review" class="cart-review">
+        <p class="meta cart-review__summary" id="cart-review-summary"></p>
+        <button id="next-step-btn" class="button" type="button">下一步：填寫資料</button>
+      </section>
+
+      <form id="request-form" class="request-form" hidden>
+        <button type="button" id="prev-step-btn" class="prev-step-btn" aria-label="返回購物車">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          返回購物車
+        </button>
         <p class="trust-signal" aria-label="隱私保護說明">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>您的資料僅用於本次代購配送，不會用於其他用途
         </p>

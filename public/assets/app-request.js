@@ -231,6 +231,8 @@ function renderDraftItems() {
 }
 
 function renderTotals() {
+  // Keep step-1 summary in sync with the live draft
+  updateCartReviewSummary();
   const draft = getDraft();
   const itemsTotalJpy = draft.items.reduce(
     (sum, item) => sum + Number(item.priceJpyTaxIn || 0) * Number(item.quantity || 1),
@@ -780,6 +782,75 @@ async function bootstrap() {
   if (form) {
     form.addEventListener("submit", onSubmit);
   }
+  initStepFlow();
+}
+
+// ── Two-step UX: cart review → fill info ──
+function updateCartReviewSummary() {
+  const summary = document.getElementById("cart-review-summary");
+  if (!summary) return;
+  const draft = getDraft();
+  const itemCount = draft.items.reduce((n, it) => n + Number(it.quantity || 1), 0);
+  const itemsTotalTwd = draft.items.reduce(
+    (sum, it) => sum + Number(it.unitPriceTwd || 0) * Number(it.quantity || 1),
+    0
+  );
+  if (itemCount === 0) {
+    summary.innerHTML = `<span>購物車是空的</span>`;
+    return;
+  }
+  summary.innerHTML = `<span>共 ${itemCount} 件商品</span><strong>NT$${itemsTotalTwd.toLocaleString("en-US")}</strong>`;
+}
+
+function setStep(step) {
+  const cartReview = document.getElementById("cart-review");
+  const form = document.getElementById("request-form");
+  const items = document.querySelectorAll(".request-steps__item");
+  if (step === 1) {
+    if (cartReview) cartReview.hidden = false;
+    if (form) form.hidden = true;
+  } else {
+    if (cartReview) cartReview.hidden = true;
+    if (form) form.hidden = false;
+  }
+  items.forEach((node) => {
+    const n = Number(node.getAttribute("data-step"));
+    node.classList.toggle("is-active", n === step);
+    node.classList.toggle("is-done", n < step);
+  });
+  // Smooth scroll to top so users see step change context
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function initStepFlow() {
+  updateCartReviewSummary();
+  const nextBtn = document.getElementById("next-step-btn");
+  const prevBtn = document.getElementById("prev-step-btn");
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      const draft = getDraft();
+      if (!draft.items || draft.items.length === 0) {
+        showError("購物車是空的，請先加入商品");
+        return;
+      }
+      setStep(2);
+    });
+  }
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      updateCartReviewSummary();
+      setStep(1);
+    });
+  }
+  // When draft updates (item add/remove/quantity change), refresh summary
+  const wrapper = document.getElementById("request-items");
+  if (wrapper) {
+    new MutationObserver(updateCartReviewSummary).observe(wrapper, {
+      childList: true,
+      subtree: true,
+    });
+  }
+  setStep(1);
 }
 
 bootstrap();

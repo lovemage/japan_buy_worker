@@ -789,6 +789,116 @@ body {
 }
 
 /* Request & Form Styles */
+/* Step indicator (request page) */
+.request-steps {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.request-steps__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  flex: 1;
+  position: relative;
+}
+.request-steps__item:not(:last-child)::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  margin: 0 4px;
+}
+.request-steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.request-steps__item.is-active {
+  color: var(--text-color);
+  font-weight: 600;
+}
+.request-steps__item.is-active .request-steps__num {
+  background: var(--accent-warm);
+  color: #fff;
+}
+.request-steps__item.is-done .request-steps__num {
+  background: var(--accent-warm);
+  color: #fff;
+}
+
+/* Step 1: cart review summary + next button */
+.cart-review {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cart-review[hidden] { display: none; }
+.cart-review__summary {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cart-review__summary strong {
+  font-size: 18px;
+  color: var(--accent-warm);
+  font-variant-numeric: tabular-nums;
+}
+.cart-review #next-step-btn {
+  width: 100%;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Step 2: prev step button */
+.prev-step-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--muted-brand);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-bottom: 8px;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.prev-step-btn:hover {
+  background: var(--accent-warm-subtle);
+  color: var(--accent-warm);
+  border-color: var(--accent-warm);
+}
+
 .request-items {
   display: grid;
   gap: 12px;
