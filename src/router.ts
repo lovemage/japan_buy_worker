@@ -8,6 +8,7 @@ import {
   handlePublicProductBrands,
   handlePublicProductCategories,
   handlePublicProductDetail,
+  handlePublicProductRecommendations,
   handlePublicProducts,
 } from "./routes/public/products";
 import {
@@ -203,6 +204,64 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     html = html.replace("</head>", ogTags + "\n</head>");
   }
 
+  // Inject product-specific OG meta tags so social shares show product image
+  if (filename === "product.html") {
+    const requestUrl = new URL(request.url);
+    const origin = requestUrl.origin;
+    const code = requestUrl.searchParams.get("code") || "";
+    let ogImage = `${origin}/assets/images/logo-3.png`;
+    let ogTitle = storeName;
+    let ogDesc = storeDesc || `${storeName} — vovosnap 商店`;
+
+    if (code) {
+      const productRow = await ctx.db
+        .prepare(
+          "SELECT name_zh_tw, name_ja, brand, image_url, source_payload_json FROM products WHERE store_id = ? AND is_active = 1 AND source_product_code = ? LIMIT 1"
+        )
+        .bind(ctx.storeId, code)
+        .first<{ name_zh_tw: string | null; name_ja: string | null; brand: string | null; image_url: string | null; source_payload_json: string | null }>();
+
+      if (productRow) {
+        // Pick first image: gallery[0] from payload, else image_url column
+        let firstImage = productRow.image_url || "";
+        try {
+          const payload = JSON.parse(productRow.source_payload_json || "{}");
+          if (Array.isArray(payload.gallery) && payload.gallery.length > 0 && typeof payload.gallery[0] === "string" && payload.gallery[0].trim()) {
+            firstImage = payload.gallery[0];
+          }
+        } catch {}
+
+        if (firstImage) {
+          if (firstImage.startsWith("/api/images/")) {
+            ogImage = `${origin}${ctx.basePath}${firstImage}`;
+          } else if (/^https?:\/\//i.test(firstImage)) {
+            ogImage = firstImage;
+          }
+        }
+
+        const productName = productRow.name_zh_tw || productRow.name_ja || "";
+        if (productName) {
+          ogTitle = `${productName} — ${storeName}`;
+          ogDesc = productRow.brand ? `${productRow.brand}｜${productName}` : productName;
+        }
+      }
+    }
+
+    const ogTitleEsc = escapeHtmlAttr(ogTitle);
+    const ogDescEsc = escapeHtmlAttr(ogDesc);
+    const ogImageEsc = escapeHtmlAttr(ogImage);
+    const ogTags = `<meta name="description" content="${ogDescEsc}" />
+<meta property="og:title" content="${ogTitleEsc}" />
+<meta property="og:description" content="${ogDescEsc}" />
+<meta property="og:image" content="${ogImageEsc}" />
+<meta property="og:type" content="product" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${ogTitleEsc}" />
+<meta name="twitter:description" content="${ogDescEsc}" />
+<meta name="twitter:image" content="${ogImageEsc}" />`;
+    html = html.replace("</head>", ogTags + "\n</head>");
+  }
+
   if (!/<link\s+rel=["']canonical["']/i.test(html)) {
     html = html.replace("</head>", `${canonicalTag}\n${robotsTag}\n</head>`);
   } else if (!/<meta\s+name=["']robots["']/i.test(html)) {
@@ -254,6 +313,7 @@ export async function routeTenantRequest(
   if (subPath === "/api/product-categories") return handlePublicProductCategories(request, ctx);
   if (subPath === "/api/product-brands") return handlePublicProductBrands(request, ctx);
   if (subPath === "/api/product") return handlePublicProductDetail(request, ctx);
+  if (subPath === "/api/product-recommendations") return handlePublicProductRecommendations(request, ctx);
   if (subPath === "/api/requirements") return handlePublicRequirements(request, ctx);
   if (subPath === "/api/requirement") return handlePublicRequirementDetail(request, ctx);
   if (subPath === "/api/pricing") return handlePublicPricing(request, ctx);

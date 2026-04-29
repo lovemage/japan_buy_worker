@@ -46,23 +46,23 @@
         </button>
       </div>
       <div class="drawer-body">
+        <div class="drawer-section" id="promo-drawer-section" data-promo-section="mobile" style="display:none;">
+          <h3 class="drawer-section-title">價格篩選</h3>
+          <div id="promo-switch" class="view-switch" aria-label="價格篩選切換" data-promo-switch="mobile" style="flex-wrap:wrap;gap:6px;"></div>
+        </div>
         <div class="drawer-section drawer-section--collapsible is-collapsed" data-drawer-section>
           <button class="drawer-section-toggle" type="button" data-drawer-toggle aria-expanded="false" aria-controls="brand-filters">
             <span class="drawer-section-title">品牌</span>
-            <span class="drawer-section-chevron" aria-hidden="true">⌄</span>
+            <svg class="drawer-section-chevron" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2 4 L6 9 L10 4 Z" fill="currentColor"/></svg>
           </button>
           <div id="brand-filters" class="drawer-filter-list" data-drawer-panel hidden></div>
         </div>
         <div class="drawer-section drawer-section--collapsible" data-drawer-section>
           <button class="drawer-section-toggle" type="button" data-drawer-toggle aria-expanded="true" aria-controls="category-filters">
             <span class="drawer-section-title">種類</span>
-            <span class="drawer-section-chevron" aria-hidden="true">⌄</span>
+            <svg class="drawer-section-chevron" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2 4 L6 9 L10 4 Z" fill="currentColor"/></svg>
           </button>
           <div id="category-filters" class="drawer-filter-list" data-drawer-panel></div>
-        </div>
-        <div class="drawer-section" id="promo-drawer-section" data-promo-section="mobile" style="display:none;">
-          <h3 class="drawer-section-title">價格篩選</h3>
-          <div id="promo-switch" class="view-switch" aria-label="價格篩選切換" data-promo-switch="mobile" style="flex-wrap:wrap;gap:6px;"></div>
         </div>
       </div>
     </aside>

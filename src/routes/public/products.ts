@@ -289,6 +289,70 @@ ORDER BY total DESC, p.brand ASC
   });
 }
 
+export async function handlePublicProductRecommendations(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+      status: 405,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  const url = new URL(request.url);
+  const category = (url.searchParams.get("category") || "").trim();
+  const excludeCode = (url.searchParams.get("excludeCode") || "").trim();
+  const limit = Math.max(1, Math.min(Number(url.searchParams.get("limit") || 6), 12));
+
+  const SELECT = `SELECT id, source_product_code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in, color_count, image_url, is_active, last_crawled_at, source_payload_json, tags FROM products`;
+
+  const collected: ProductRow[] = [];
+  const seenIds = new Set<number>();
+
+  // 1) Same category first
+  if (category) {
+    const result = await ctx.db
+      .prepare(
+        `${SELECT} WHERE store_id = ? AND is_active = 1 AND category = ? AND source_product_code != ? ORDER BY RANDOM() LIMIT ?`
+      )
+      .bind(ctx.storeId, category, excludeCode, limit)
+      .all<ProductRow>();
+    for (const row of result.results || []) {
+      if (!seenIds.has(row.id)) {
+        seenIds.add(row.id);
+        collected.push(row);
+      }
+    }
+  }
+
+  // 2) Fall back to random across the whole store
+  if (collected.length < limit) {
+    const remaining = limit - collected.length;
+    const excludeIds = Array.from(seenIds).filter((id) => Number.isInteger(id));
+    const idClause = excludeIds.length > 0 ? `AND id NOT IN (${excludeIds.join(",")})` : "";
+    const result = await ctx.db
+      .prepare(
+        `${SELECT} WHERE store_id = ? AND is_active = 1 AND source_product_code != ? ${idClause} ORDER BY RANDOM() LIMIT ?`
+      )
+      .bind(ctx.storeId, excludeCode, remaining)
+      .all<ProductRow>();
+    for (const row of result.results || []) {
+      if (!seenIds.has(row.id)) {
+        seenIds.add(row.id);
+        collected.push(row);
+      }
+    }
+  }
+
+  const products = collected.map(mapProduct);
+
+  return new Response(JSON.stringify({ ok: true, products }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
+}
+
 export async function handlePublicProductDetail(
   request: Request,
   ctx: RequestContext

@@ -301,6 +301,59 @@ async function renderProduct(item, pricing) {
   applyProductImageFallback();
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[ch] || ch));
+}
+
+async function loadRecommendations(currentItem, pricing) {
+  const section = document.getElementById("recommendations-section");
+  const list = document.getElementById("recommendations-list");
+  if (!section || !list) return;
+
+  const params = new URLSearchParams({ excludeCode: currentItem.code || "", limit: "6" });
+  if (currentItem.category) params.set("category", currentItem.category);
+
+  let products = [];
+  try {
+    const res = await apiFetch(`/api/product-recommendations?${params.toString()}`);
+    if (!res.ok) return;
+    const body = await res.json();
+    if (!body.ok) return;
+    products = Array.isArray(body.products) ? body.products : [];
+  } catch {
+    return;
+  }
+  if (products.length === 0) return;
+
+  const baseHref = window.__API_BASE || "";
+  list.innerHTML = products
+    .map((p) => {
+      const title = p.nameZhTw || p.nameJa || "未命名";
+      const adjusted = calcAdjustedPrices(p.priceJpyTaxIn, pricing);
+      const priceStr = adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "-";
+      const firstImg = (Array.isArray(p.gallery) && p.gallery[0]) || p.displayImageUrl || p.imageUrl || "";
+      const imgUrl = withProductImageFallback(firstImg);
+      const safeTitle = escapeHtml(title);
+      return `<a class="rec-card" href="${baseHref}/product?code=${encodeURIComponent(p.code)}" role="listitem">
+        <div class="rec-card__media"><img src="${imgUrl}" alt="${safeTitle}" loading="lazy" data-fallback="product" /></div>
+        <div class="rec-card__body">
+          <p class="rec-card__title">${safeTitle}</p>
+          <p class="rec-card__price">${priceStr}</p>
+        </div>
+      </a>`;
+    })
+    .join("");
+
+  applyProductImageFallback(list);
+  section.hidden = false;
+}
+
 function initQuantityStepper() {
   const input = document.getElementById("detail-quantity");
   const minus = document.getElementById("qty-minus");
@@ -367,6 +420,8 @@ async function bootstrap() {
     return;
   }
   await renderProduct(body.product, pricing);
+  // Fire-and-forget: recommendations are optional, don't block main rendering
+  loadRecommendations(body.product, pricing).catch(() => {});
 }
 
 bootstrap();

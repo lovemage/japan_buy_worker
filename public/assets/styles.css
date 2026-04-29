@@ -1450,6 +1450,104 @@ select:disabled {
   font-size: 14px;
 }
 
+/* --- Recommendations (product detail bottom) --- */
+.recommendations {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.recommendations[hidden] { display: none; }
+.recommendations__title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--text-color);
+  letter-spacing: 0.02em;
+}
+.recommendations__scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 12px;
+  margin: 0 -2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.recommendations__scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.recommendations__scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+.rec-card {
+  flex: 0 0 150px;
+  scroll-snap-align: start;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card-bg);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+.rec-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent-warm);
+}
+.rec-card__media {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--accent-warm-subtle);
+  overflow: hidden;
+}
+.rec-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition-normal);
+}
+.rec-card:hover .rec-card__media img {
+  transform: scale(1.05);
+}
+.rec-card__body {
+  padding: 8px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.rec-card__title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-color);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 32px;
+}
+.rec-card__price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-warm);
+  margin: 0;
+  margin-top: auto;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 768px) {
+  .rec-card { flex: 0 0 180px; }
+  .recommendations__title { font-size: 17px; }
+}
+
 /* --- Quantity Stepper & Add Button Bar --- */
 .detail-actions {
   display: flex;
