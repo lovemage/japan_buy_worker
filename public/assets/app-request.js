@@ -385,17 +385,17 @@ function refreshCaptcha() {
   }
   const lines = Array.from({ length: 5 })
     .map(() => {
-      const x1 = Math.floor(Math.random() * 160);
-      const x2 = Math.floor(Math.random() * 160);
+      const x1 = Math.floor(Math.random() * 110);
+      const x2 = Math.floor(Math.random() * 110);
       const y1 = Math.floor(Math.random() * 50);
       const y2 = Math.floor(Math.random() * 50);
       return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#9ca8b8" stroke-width="1" />`;
     })
     .join("");
   svg.innerHTML = `
-    <rect x="0" y="0" width="160" height="50" fill="#f3f6fb" />
+    <rect x="0" y="0" width="110" height="50" fill="#f3f6fb" />
     ${lines}
-    <text x="16" y="34" font-size="28" font-family="monospace" fill="#1a355a">${currentCaptchaCode}</text>
+    <text x="10" y="34" font-size="22" font-family="monospace" fill="#1a355a" letter-spacing="2">${currentCaptchaCode}</text>
   `;
 }
 

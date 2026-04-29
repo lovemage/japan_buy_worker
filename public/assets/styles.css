@@ -1067,7 +1067,7 @@ body {
 }
 
 .captcha-svg {
-  width: 160px;
+  width: 110px;
   height: 50px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -1075,22 +1075,23 @@ body {
 
 .captcha-row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 8px;
 }
 
 .captcha-row .input-cute {
   flex: 1;
   min-width: 0;
+  margin-top: 0;
 }
 
 .captcha-refresh-btn {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--card-bg);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
   color: var(--muted-brand);
   cursor: pointer;
   display: inline-flex;
@@ -1098,12 +1099,11 @@ body {
   justify-content: center;
   font-family: inherit;
   padding: 0;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
 .captcha-refresh-btn:hover {
   background: var(--accent-warm-subtle);
   color: var(--accent-warm);
-  border-color: var(--accent-warm);
 }
 .captcha-refresh-btn:active {
   transform: scale(0.92);
@@ -1114,6 +1114,21 @@ body {
 @keyframes captcha-spin {
   from { transform: rotate(0); }
   to { transform: rotate(360deg); }
+}
+
+/* Remove native dropdown arrow on storefront selects */
+select.input-cute,
+select.request-item__field-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  cursor: pointer;
+  padding-right: 14px;
+}
+select.input-cute::-ms-expand,
+select.request-item__field-input::-ms-expand {
+  display: none;
 }
 
 input,
