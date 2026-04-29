@@ -200,7 +200,6 @@
 }
 [data-template="sand"] .detail-price-block {
   background: #F0EAFA;
-  border-left: 3px solid #7C5CBF;
 }
 [data-template="sand"] .detail-price-twd {
   color: #6B4FA0;
@@ -295,7 +294,6 @@
 }
 [data-template="moss"] .detail-price-block {
   background: #FCF0F3;
-  border-left: 3px solid #C76B8A;
 }
 [data-template="moss"] .detail-price-twd {
   color: #B05670;
@@ -518,7 +516,6 @@
 }
 [data-template="bold-gold"] .detail-price-block {
   background: #FFF9E0;
-  border-left: 3px solid #C8A415;
   border-radius: 2px;
 }
 [data-template="bold-gold"] .detail-price-twd {
@@ -630,7 +627,6 @@
 }
 [data-template="bold-ocean"] .detail-price-block {
   background: #EFF6FF;
-  border-left: 3px solid #2563EB;
 }
 [data-template="bold-ocean"] .detail-price-twd {
   color: #1D4ED8;
@@ -743,7 +739,6 @@
 }
 [data-template="lilac"] .detail-price-block {
   background: #F3EDFB;
-  border-left: 3px solid #B19CD9;
   border-radius: 8px;
 }
 [data-template="lilac"] .detail-price-twd {
@@ -853,7 +848,6 @@
 }
 [data-template="matcha"] .detail-price-block {
   background: #EAF0DD;
-  border-left: 3px solid #87A96B;
   border-radius: 12px;
 }
 [data-template="matcha"] .detail-price-twd {

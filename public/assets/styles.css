@@ -1357,7 +1357,6 @@ select:disabled {
   padding: 14px 16px 12px;
   background: var(--accent-warm-subtle);
   border-radius: 12px;
-  border-left: 3px solid var(--accent-warm);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
@@ -1464,16 +1463,16 @@ select:disabled {
 .qty-stepper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-  background: #fff;
+  gap: 2px;
+  background: transparent;
+  border: 0;
 }
 
 .qty-stepper__btn {
   width: 40px;
   height: 40px;
   border: 0;
+  border-radius: 999px;
   background: transparent;
   font-size: 18px;
   font-weight: 600;
@@ -1499,15 +1498,14 @@ select:disabled {
   width: 44px;
   text-align: center;
   border: 0;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   font-family: inherit;
   padding: 8px 0;
   -moz-appearance: textfield;
   color: var(--text-color);
-  background: #fff;
+  background: transparent;
+  outline: none;
 }
 
 .qty-stepper__input::-webkit-inner-spin-button,

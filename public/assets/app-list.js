@@ -125,6 +125,11 @@ function fmtSrcPrice(val) {
   return `${sym}${val.toLocaleString("en-US")}`;
 }
 
+function isTwdSource() {
+  const cc = window.__COUNTRY_CONFIG || _cc || {};
+  return String(cc.currency || "").toUpperCase() === "TWD";
+}
+
 function setError(message) {
   const node = document.getElementById("list-error");
   if (!node) {
@@ -232,7 +237,7 @@ function renderProducts(products, pricing, promoMaxTwd) {
         </div>
         <div class="product-card__body">
           <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
-          <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${adjusted.src !== null ? ` <span class="meta" style="font-weight:400">(${fmtSrcPrice(adjusted.src)})</span>` : ""}</p>
+          <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${(adjusted.src !== null && !isTwdSource()) ? ` <span class="meta" style="font-weight:400">(${fmtSrcPrice(adjusted.src)})</span>` : ""}</p>
           <p class="product-card__category">${escapeHtml(translateCategoryLabel(item.category))}${item.colorCount ? ` · ${item.colorCount} 色` : ""}</p>
           <a class="button" data-product-detail-link="1" href="${window.__API_BASE || ""}/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">詳情</a>
         </div>
