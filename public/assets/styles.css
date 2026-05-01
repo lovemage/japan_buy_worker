@@ -2132,6 +2132,39 @@ select:disabled {
   color: var(--text-color);
 }
 
+.pagination .page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-num-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.page-num-btn:hover {
+  background: var(--line);
+}
+
+.page-num-btn.is-active {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+  cursor: default;
+}
+
 /* Admin & order styles moved to admin.css */
 
 /* Floating Buttons */

@@ -486,11 +486,35 @@ function renderPagination(paging) {
 
   wrapper.classList.remove("hidden");
   wrapper.style.display = "flex";
-  indicator.textContent = `第 ${paging.page} 頁 / 共 ${paging.totalPages} 頁`;
-  prev.disabled = paging.page <= 1;
-  next.disabled = paging.page >= paging.totalPages;
-  prev.onclick = () => goPage(paging.page - 1);
-  next.onclick = () => goPage(paging.page + 1);
+
+  const totalPages = Math.max(1, paging.totalPages || 1);
+  const current = Math.min(Math.max(1, paging.page || 1), totalPages);
+
+  // Sliding window of at most 5 page numbers, centered on current when possible
+  const max = 5;
+  let start = Math.max(1, current - Math.floor(max / 2));
+  let end = Math.min(totalPages, start + max - 1);
+  start = Math.max(1, end - max + 1);
+
+  const buttons = [];
+  for (let p = start; p <= end; p++) {
+    const isActive = p === current;
+    buttons.push(
+      `<button type="button" class="page-num-btn${isActive ? " is-active" : ""}" data-page="${p}" aria-label="第 ${p} 頁"${isActive ? ' aria-current="page"' : ""}>${p}</button>`
+    );
+  }
+  indicator.innerHTML = buttons.join("");
+  indicator.querySelectorAll(".page-num-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = Number(btn.getAttribute("data-page"));
+      if (target && target !== current) goPage(target);
+    });
+  });
+
+  prev.disabled = current <= 1;
+  next.disabled = current >= totalPages;
+  prev.onclick = () => goPage(current - 1);
+  next.onclick = () => goPage(current + 1);
 }
 
 function renderFloatingPagination(paging) {
