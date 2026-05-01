@@ -2120,7 +2120,8 @@ select:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  flex-wrap: nowrap;
+  gap: 8px;
   padding: 14px;
   background: var(--card-bg);
   border-radius: 12px;
@@ -2132,37 +2133,61 @@ select:disabled {
   color: var(--text-color);
 }
 
+.pagination .btn-pill {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
 .pagination .page-numbers {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .page-num-btn {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  background: var(--card-bg);
+  min-width: 28px;
+  padding: 4px 6px;
+  border: none;
+  background: transparent;
   color: var(--text-color);
-  border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: color 0.15s;
+  line-height: 1.2;
 }
 
 .page-num-btn:hover {
-  background: var(--line);
+  color: var(--primary-color);
 }
 
 .page-num-btn.is-active {
-  background: #222;
-  color: #fff;
-  border-color: #222;
+  color: var(--primary-color);
+  font-weight: 700;
   cursor: default;
+}
+
+@media (max-width: 480px) {
+  .pagination {
+    gap: 6px;
+    padding: 10px;
+  }
+  .pagination .btn-pill {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  .page-num-btn {
+    min-width: 24px;
+    padding: 4px;
+    font-size: 13px;
+  }
 }
 
 /* Admin & order styles moved to admin.css */
