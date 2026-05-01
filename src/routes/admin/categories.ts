@@ -3,6 +3,7 @@ import { getOpenRouterApiKey, getOpenRouterModel } from "./settings";
 
 const AI_MERGE_PLANS = ["pro", "proplus"] as const;
 const AI_MERGE_API_TYPE = "ai_merge_categories";
+const AI_MERGE_DAILY_LIMIT = 3;
 
 function jsonRes(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -140,21 +141,23 @@ async function handleAiMergeSuggest(ctx: RequestContext): Promise<Response> {
   }
 
   const now = new Date();
-  const monthKey = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}`;
+  // Reuse api_usage_logs but use a per-day key (YYYY_MM_DD) so call_count = today's usage.
+  const dayKey = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, "0")}_${String(now.getDate()).padStart(2, "0")}`;
   const usageRow = await ctx.db
     .prepare(
-      `SELECT call_count, last_called_at FROM api_usage_logs
+      `SELECT call_count FROM api_usage_logs
        WHERE store_id = ? AND api_type = ? AND month_key = ?`
     )
-    .bind(ctx.storeId, AI_MERGE_API_TYPE, monthKey)
-    .first<{ call_count: number; last_called_at: string }>();
+    .bind(ctx.storeId, AI_MERGE_API_TYPE, dayKey)
+    .first<{ call_count: number }>();
 
-  if (usageRow?.last_called_at) {
-    const lastDay = usageRow.last_called_at.slice(0, 10);
-    const todayStr = now.toISOString().slice(0, 10);
-    if (lastDay === todayStr) {
-      return jsonRes({ ok: false, error: "AI 自動分類每日限用 1 次，請明天再試。", rateLimited: true }, 429);
-    }
+  const usedToday = usageRow?.call_count || 0;
+  if (usedToday >= AI_MERGE_DAILY_LIMIT) {
+    return jsonRes({
+      ok: false,
+      error: `AI 自動分類每日限用 ${AI_MERGE_DAILY_LIMIT} 次，今日已用完，請明天再試。`,
+      rateLimited: true,
+    }, 429);
   }
 
   const apiKey = await getOpenRouterApiKey(ctx.db);
@@ -182,7 +185,7 @@ async function handleAiMergeSuggest(ctx: RequestContext): Promise<Response> {
     const cat = (r.category || "").trim();
     if (!cat) continue;
     if (!grouped[cat]) grouped[cat] = [];
-    if (grouped[cat].length < 5) {
+    if (grouped[cat].length < 10) {
       const t = (r.title_zh_tw || r.title_ja || "").trim();
       if (t) grouped[cat].push(t);
     }
@@ -193,7 +196,7 @@ async function handleAiMergeSuggest(ctx: RequestContext): Promise<Response> {
     return jsonRes({ ok: false, error: "目前分類數量不足以執行合併（至少需要 2 個分類）。" }, 400);
   }
 
-  const prompt = `你是商品分類整理專家。以下是一個電商店家目前的商品分類清單，每個分類附上最近 5 個商品標題作為內容參考。
+  const prompt = `你是商品分類整理專家。以下是一個電商店家目前的商品分類清單，每個分類附上最近 10 個商品標題作為內容參考。
 
 請分析這些分類，找出語意上重複或高度相似（例如「零食」「日式餅乾」「點心」這類同義或包含關係）、應該被合併的分類群組。
 
@@ -267,7 +270,7 @@ ${categoryNames.map((c) => `- 「${c}」（範例：${grouped[c].join("、") || 
     }))
     .filter((g) => g.canonicalName && g.members.length >= 2);
 
-  // record usage (1 per day per store)
+  // record usage (per-day key, so call_count = today's calls; cap = AI_MERGE_DAILY_LIMIT)
   await ctx.db
     .prepare(
       `INSERT INTO api_usage_logs (store_id, api_type, month_key, call_count, last_called_at)
@@ -275,7 +278,7 @@ ${categoryNames.map((c) => `- 「${c}」（範例：${grouped[c].join("、") || 
        ON CONFLICT(store_id, api_type, month_key) DO UPDATE
          SET call_count = call_count + 1, last_called_at = datetime('now')`
     )
-    .bind(ctx.storeId, AI_MERGE_API_TYPE, monthKey)
+    .bind(ctx.storeId, AI_MERGE_API_TYPE, dayKey)
     .run()
     .catch(() => {});
 

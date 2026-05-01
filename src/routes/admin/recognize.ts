@@ -80,7 +80,7 @@ async function buildCategoryHints(db: D1DatabaseLike, storeId: number): Promise<
     const cat = (r.category || "").trim();
     if (!cat) continue;
     if (!grouped[cat]) grouped[cat] = [];
-    if (grouped[cat].length < 5) {
+    if (grouped[cat].length < 10) {
       const title = (r.title_zh_tw || r.title_ja || "").trim();
       if (title) grouped[cat].push(title);
     }
