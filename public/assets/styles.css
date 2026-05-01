@@ -2174,6 +2174,13 @@ select:disabled {
   cursor: default;
 }
 
+.page-ellipsis {
+  color: #999;
+  font-size: 14px;
+  padding: 0 2px;
+  user-select: none;
+}
+
 @media (max-width: 480px) {
   .pagination {
     gap: 6px;

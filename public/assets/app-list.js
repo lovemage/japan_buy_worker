@@ -490,18 +490,23 @@ function renderPagination(paging) {
   const totalPages = Math.max(1, paging.totalPages || 1);
   const current = Math.min(Math.max(1, paging.page || 1), totalPages);
 
-  // Sliding window of at most 5 page numbers, centered on current when possible
+  // Sliding window of at most 5 page numbers, centered on current when possible.
+  // Always append the last page (with optional ellipsis) when it falls outside the window.
   const max = 5;
   let start = Math.max(1, current - Math.floor(max / 2));
   let end = Math.min(totalPages, start + max - 1);
   start = Math.max(1, end - max + 1);
 
-  const buttons = [];
-  for (let p = start; p <= end; p++) {
+  const numBtn = (p) => {
     const isActive = p === current;
-    buttons.push(
-      `<button type="button" class="page-num-btn${isActive ? " is-active" : ""}" data-page="${p}" aria-label="第 ${p} 頁"${isActive ? ' aria-current="page"' : ""}>${p}</button>`
-    );
+    return `<button type="button" class="page-num-btn${isActive ? " is-active" : ""}" data-page="${p}" aria-label="第 ${p} 頁"${isActive ? ' aria-current="page"' : ""}>${p}</button>`;
+  };
+
+  const buttons = [];
+  for (let p = start; p <= end; p++) buttons.push(numBtn(p));
+  if (end < totalPages) {
+    if (end < totalPages - 1) buttons.push('<span class="page-ellipsis" aria-hidden="true">…</span>');
+    buttons.push(numBtn(totalPages));
   }
   indicator.innerHTML = buttons.join("");
   indicator.querySelectorAll(".page-num-btn").forEach((btn) => {
