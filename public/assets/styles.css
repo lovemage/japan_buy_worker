@@ -2345,6 +2345,13 @@ select:disabled {
   border: 1px solid #d9e0cc;
 }
 
+/* Drawer (hamburger menu) version: drop the hardcoded pill backdrop */
+.drawer .view-switch {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
 .view-switch__btn {
   padding: 6px 12px;
   font-size: 12px;
