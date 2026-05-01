@@ -1328,6 +1328,162 @@ async function addCategory() {
   await loadCategoryFilter();
 }
 
+let aiMergeSuggestions = [];
+
+function isProOrProPlus() {
+  const plan = window.__STORE_PLAN || "free";
+  return plan === "pro" || plan === "proplus";
+}
+
+function showAiMergeModal() {
+  const modal = document.getElementById("category-ai-merge-modal");
+  if (modal) modal.style.display = "flex";
+}
+
+function hideAiMergeModal() {
+  const modal = document.getElementById("category-ai-merge-modal");
+  if (modal) modal.style.display = "none";
+  aiMergeSuggestions = [];
+}
+
+function setAiMergeBody(html) {
+  const body = document.getElementById("category-ai-merge-body");
+  if (body) body.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+  })[c]);
+}
+
+function renderAiMergeSuggestions() {
+  if (!aiMergeSuggestions || aiMergeSuggestions.length === 0) {
+    setAiMergeBody('<p class="meta" style="text-align:center;padding:24px 0;color:#5c8b5c;">沒有偵測到需要合併的分類，您的分類已經很整齊了！</p>');
+    const saveBtn = document.getElementById("category-ai-merge-save");
+    if (saveBtn) saveBtn.disabled = true;
+    return;
+  }
+
+  const html = aiMergeSuggestions.map((g, idx) => {
+    const membersHtml = g.members.map((m) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f7f7f5;border-radius:6px;margin-top:4px;font-size:13px;">
+        <span>「${escapeHtml(m.name)}」</span>
+        <span class="meta" style="font-size:11px;">${m.total} 件</span>
+      </div>`).join("");
+    return `
+      <div data-merge-idx="${idx}" style="border:1px solid var(--admin-border-light);border-radius:10px;padding:12px;margin-bottom:12px;${g._enabled === false ? "opacity:0.5;" : ""}">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;">
+          <input type="checkbox" class="js-merge-toggle" data-idx="${idx}" ${g._enabled === false ? "" : "checked"} style="width:16px;height:16px;cursor:pointer;" />
+          <span style="font-size:12px;color:#888;">啟用此合併</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:12px;color:#666;flex:0 0 auto;">合併為：</span>
+          <input type="text" class="input-cute js-merge-name" data-idx="${idx}" value="${escapeHtml(g.canonicalName)}" style="flex:1;font-size:13px;padding:6px 8px;" />
+          <span style="font-size:18px;color:#888;cursor:default;" title="可編輯名稱">✎</span>
+        </div>
+        ${g.reason ? `<p class="meta" style="font-size:11px;color:#888;margin:0 0 6px;">${escapeHtml(g.reason)}</p>` : ""}
+        ${membersHtml}
+      </div>`;
+  }).join("");
+  setAiMergeBody(html);
+
+  const saveBtn = document.getElementById("category-ai-merge-save");
+  if (saveBtn) saveBtn.disabled = false;
+
+  // wire toggles
+  document.querySelectorAll(".js-merge-toggle").forEach((cb) => {
+    cb.addEventListener("change", (ev) => {
+      const idx = Number(ev.target.getAttribute("data-idx"));
+      if (aiMergeSuggestions[idx]) {
+        aiMergeSuggestions[idx]._enabled = ev.target.checked;
+        renderAiMergeSuggestions();
+      }
+    });
+  });
+  document.querySelectorAll(".js-merge-name").forEach((inp) => {
+    inp.addEventListener("input", (ev) => {
+      const idx = Number(ev.target.getAttribute("data-idx"));
+      if (aiMergeSuggestions[idx]) {
+        aiMergeSuggestions[idx].canonicalName = ev.target.value;
+      }
+    });
+  });
+}
+
+async function startAiMerge() {
+  if (!isProOrProPlus()) {
+    alert("AI 自動分類僅限 Pro / Pro+ 方案使用，請至「方案」頁面升級以解鎖此功能。");
+    return;
+  }
+  showAiMergeModal();
+  setAiMergeBody('<p class="meta" style="text-align:center;padding:24px 0;">AI 分析中，請稍候...</p>');
+  const saveBtn = document.getElementById("category-ai-merge-save");
+  if (saveBtn) saveBtn.disabled = true;
+
+  let res;
+  try {
+    res = await apiFetch("/api/admin/categories?action=ai-merge-suggest", { method: "POST" });
+  } catch (err) {
+    setAiMergeBody(`<p class="meta" style="text-align:center;padding:24px 0;color:#c43c3c;">連線失敗：${escapeHtml(String(err))}</p>`);
+    return;
+  }
+  if (handleUnauthorized(res)) return;
+
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) {
+    setAiMergeBody(`<p class="meta" style="text-align:center;padding:24px 0;color:#c43c3c;">${escapeHtml(data.error || "分析失敗")}</p>`);
+    return;
+  }
+
+  aiMergeSuggestions = (data.merges || []).map((g) => ({ ...g, _enabled: true }));
+  renderAiMergeSuggestions();
+}
+
+async function applyAiMerge() {
+  const enabled = aiMergeSuggestions
+    .filter((g) => g._enabled !== false)
+    .map((g) => ({
+      canonicalName: (g.canonicalName || "").trim(),
+      members: g.members.map((m) => m.name),
+    }))
+    .filter((g) => g.canonicalName && g.members.length >= 2);
+
+  if (enabled.length === 0) {
+    alert("沒有任何啟用的合併動作可儲存");
+    return;
+  }
+
+  const saveBtn = document.getElementById("category-ai-merge-save");
+  if (saveBtn) saveBtn.disabled = true;
+
+  const res = await apiFetch("/api/admin/categories?action=ai-merge-apply", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ merges: enabled }),
+  });
+  if (handleUnauthorized(res)) return;
+
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) {
+    if (saveBtn) saveBtn.disabled = false;
+    alert(`合併失敗：${data.error || "未知錯誤"}`);
+    return;
+  }
+
+  const lines = data.applied.map((a) =>
+    `「${a.canonicalName}」← ${a.members.filter((m) => m !== a.canonicalName).map((m) => `「${m}」`).join("、") || "(無變動)"} （${a.productsUpdated} 件商品）`
+  );
+  const failedLines = (data.failed || []).map((f) => `${f.canonicalName}: ${f.error}`);
+  let msg = `已完成 ${data.applied.length} 組合併：\n\n${lines.join("\n")}`;
+  if (failedLines.length > 0) msg += `\n\n失敗：\n${failedLines.join("\n")}`;
+  alert(msg);
+
+  hideAiMergeModal();
+  await loadCategories();
+  await loadCategoryFilter();
+}
+
 export function initProducts() {
   // Product management
   initManageSearch();
@@ -1343,5 +1499,12 @@ export function initProducts() {
 
   // Categories
   document.getElementById("category-add-btn")?.addEventListener("click", addCategory);
+  document.getElementById("category-ai-merge-btn")?.addEventListener("click", startAiMerge);
+  document.getElementById("category-ai-merge-close")?.addEventListener("click", hideAiMergeModal);
+  document.getElementById("category-ai-merge-cancel")?.addEventListener("click", hideAiMergeModal);
+  document.getElementById("category-ai-merge-save")?.addEventListener("click", applyAiMerge);
+  document.getElementById("category-ai-merge-modal")?.addEventListener("click", (ev) => {
+    if (ev.target.id === "category-ai-merge-modal") hideAiMergeModal();
+  });
   loadCategories();
 }

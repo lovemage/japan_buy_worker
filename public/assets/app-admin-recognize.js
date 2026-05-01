@@ -313,7 +313,51 @@ function fillDraft(result) {
   set("draft-title-ja", result.titleJa);
   set("draft-title-zh", result.titleZhTw);
   set("draft-brand", result.brand);
-  set("draft-category", result.category);
+
+  // 分類欄位：依信心分數決定顯示方式
+  // - matchedCategory + confidence >= 0.75：自動填入既有分類
+  // - matchedCategory + confidence < 0.75：填入但提示「請確認」
+  // - suggestedNewCategory：填入新建議名稱並提示
+  // - 都沒有：fallback 到舊的 result.category
+  const matched = (result.matchedCategory || "").trim();
+  const suggested = (result.suggestedNewCategory || "").trim();
+  const confidence = typeof result.confidence === "number" ? result.confidence : null;
+  let chosenCategory = "";
+  let categoryHint = "";
+  if (matched && confidence !== null && confidence >= 0.75) {
+    chosenCategory = matched;
+    categoryHint = "";
+  } else if (matched && confidence !== null && confidence < 0.75) {
+    chosenCategory = matched;
+    categoryHint = `信心 ${(confidence * 100).toFixed(0)}%，請確認分類是否正確`;
+  } else if (suggested) {
+    chosenCategory = suggested;
+    categoryHint = "AI 建議新增此分類，請確認名稱";
+  } else {
+    chosenCategory = (result.category || "").trim();
+  }
+  set("draft-category", chosenCategory);
+
+  // 顯示提示（如果有）— 使用既有的 hint 元素，沒有則動態建立在 draft-category 旁
+  const catEl = document.getElementById("draft-category");
+  if (catEl) {
+    let hintEl = document.getElementById("draft-category-hint");
+    if (!hintEl) {
+      hintEl = document.createElement("p");
+      hintEl.id = "draft-category-hint";
+      hintEl.className = "meta";
+      hintEl.style.cssText = "font-size:11px;color:#c47a00;margin-top:4px;";
+      catEl.insertAdjacentElement("afterend", hintEl);
+    }
+    if (categoryHint) {
+      hintEl.textContent = categoryHint;
+      hintEl.style.display = "";
+    } else {
+      hintEl.textContent = "";
+      hintEl.style.display = "none";
+    }
+  }
+
   set("draft-price", result.priceJpy);
   draftVariants = [];
   renderVariantEditor("draft");
