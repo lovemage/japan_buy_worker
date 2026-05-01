@@ -2271,6 +2271,14 @@ select:disabled {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.floating-nav-buttons.is-hidden,
+.floating-request-btn.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
 }
 
 .floating-nav-btn {

@@ -745,4 +745,25 @@ function dismissLoading() {
   }, { once: true });
 }
 
+// Hide floating nav / cart buttons when the pagination row is in view, so
+// they don't overlap the page-number buttons at the bottom of the storefront.
+function initFloatingButtonsAutoHide() {
+  const pagination = document.getElementById("pagination");
+  const floatNav = document.querySelector(".floating-nav-buttons");
+  const floatCart = document.querySelector(".floating-request-btn");
+  if (!pagination || !("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.some((e) => e.isIntersecting);
+      if (floatNav) floatNav.classList.toggle("is-hidden", visible);
+      if (floatCart) floatCart.classList.toggle("is-hidden", visible);
+    },
+    // trigger as soon as the pagination row peeks into the viewport bottom
+    { rootMargin: "0px 0px -40px 0px", threshold: 0.01 }
+  );
+  observer.observe(pagination);
+}
+
 bootstrap();
+initFloatingButtonsAutoHide();
