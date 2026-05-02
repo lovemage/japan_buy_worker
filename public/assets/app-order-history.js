@@ -1,3 +1,5 @@
+import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -24,6 +26,12 @@ function statusText(status) {
   return map[status] || status || "待確認";
 }
 
+function productDetailUrl(code) {
+  const value = String(code || "").trim();
+  if (!value) return "";
+  return `${window.__API_BASE || ""}/product?code=${encodeURIComponent(value)}`;
+}
+
 function setError(message) {
   const node = document.getElementById("history-error");
   if (!node) return;
@@ -44,10 +52,16 @@ function renderOrders(orders) {
     const items = Array.isArray(order.items) ? order.items : [];
     const itemsHtml = items.map((item) => {
       const spec = item.variantName || [item.desiredSize, item.desiredColor].filter(Boolean).join(" / ");
+      const detailUrl = productDetailUrl(item.code);
+      const imageUrl = withProductImageFallback(item.selectedImageUrl || item.imageUrl || "");
+      const title = escapeHtml(item.productNameSnapshot || "商品");
+      const imageHtml = `<img class="order-item-thumb" src="${escapeHtml(imageUrl)}" alt="${title}" data-fallback="product" />`;
+      const nameHtml = `<div class="name">${title}<div class="spec">${escapeHtml(spec || "未選規格")} × ${Number(item.quantity || 1)}</div></div>`;
+      const productHtml = detailUrl
+        ? `<a class="order-item-product-link" href="${escapeHtml(detailUrl)}">${imageHtml}${nameHtml}</a>`
+        : `<div class="order-item-product-link">${imageHtml}${nameHtml}</div>`;
       return `<div class="order-item">
-        <div class="name">${escapeHtml(item.productNameSnapshot || "商品")}
-          <div class="spec">${escapeHtml(spec || "未選規格")} × ${Number(item.quantity || 1)}</div>
-        </div>
+        ${productHtml}
         <div class="price">NT$${formatMoney(item.subtotalTwd)}</div>
       </div>`;
     }).join("");
@@ -69,6 +83,7 @@ function renderOrders(orders) {
       </div>
     </article>`;
   }).join("");
+  applyProductImageFallback(results);
 }
 
 async function loadHistory(phone) {

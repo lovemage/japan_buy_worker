@@ -73,6 +73,21 @@ test("member order history renders status and adjusted amount label", () => {
   assert.ok(js.includes("amountAdjusted"), "Expected member order history to use adjusted amount flag from API");
 });
 
+test("member order history renders product thumbnails linked to store detail pages", () => {
+  const js = readFileSync(new URL("../public/assets/app-order-history.js", import.meta.url), "utf8");
+
+  assert.ok(js.includes("selectedImageUrl"), "Expected order history to render saved item thumbnails");
+  assert.ok(js.includes("/product?code="), "Expected order history items to link to in-store product detail pages");
+  assert.ok(js.includes("order-item-thumb"), "Expected order history to style item thumbnails");
+});
+
+test("admin stats helper renders product thumbnails linked to store detail pages", () => {
+  assert.ok(adminOrdersJs.includes("selectedImageUrl"), "Expected stats helper to retain item image URLs");
+  assert.ok(adminOrdersJs.includes("code"), "Expected stats helper to retain product codes");
+  assert.ok(adminOrdersJs.includes("stats-thumb"), "Expected stats helper to render thumbnails");
+  assert.ok(adminOrdersJs.includes("/product?code="), "Expected stats helper rows to link to in-store product details");
+});
+
 test("admin order API and UI support adjusted item and shipping amounts", () => {
   assert.ok(adminRequirementsTs.includes("adjusted_items_total_twd"), "Expected admin API to persist adjusted item total");
   assert.ok(adminRequirementsTs.includes("adjusted_shipping_total_twd"), "Expected admin API to persist adjusted shipping total");

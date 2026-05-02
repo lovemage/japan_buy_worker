@@ -49,6 +49,12 @@ function adjustedValue(value) {
   return value === null || value === undefined ? "" : String(value);
 }
 
+function productDetailUrl(code) {
+  const value = String(code || "").trim();
+  if (!value) return "";
+  return `${window.__API_BASE || ""}/product?code=${encodeURIComponent(value)}`;
+}
+
 function renderFilterTabs() {
   const tabsEl = document.getElementById("order-filter-tabs");
   if (!tabsEl) return;
@@ -212,20 +218,39 @@ const STATS_STATUS_OPTIONS = [
 
 function computeStats(statusFilter) {
   const forms = statusFilter === "all" ? allForms : allForms.filter((f) => f.status === statusFilter);
-  const counts = {};
+  const counts = new Map();
   for (const form of forms) {
     if (!Array.isArray(form.items)) continue;
     for (const item of form.items) {
       const name = item.productNameSnapshot || "未知商品";
       const qty = Number(item.quantity) || 1;
-      counts[name] = (counts[name] || 0) + qty;
+      const current = counts.get(name) || { name, qty: 0, imageUrl: "", code: "" };
+      current.qty += qty;
+      if (!current.imageUrl) current.imageUrl = item.selectedImageUrl || item.imageUrl || "";
+      if (!current.code) current.code = item.code || "";
+      counts.set(name, current);
     }
   }
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  return Array.from(counts.values()).sort((a, b) => b.qty - a.qty);
 }
 
 function formatStatsText(stats) {
-  return stats.map(([name, qty]) => `${name} x ${qty}`).join("\n");
+  return stats.map((entry) => {
+    const item = normalizeStatsEntry(entry);
+    return `${item.name} x ${item.qty}`;
+  }).join("\n");
+}
+
+function normalizeStatsEntry(entry) {
+  if (Array.isArray(entry)) {
+    return { name: entry[0] || "未知商品", qty: Number(entry[1] || 0), imageUrl: "", code: "" };
+  }
+  return {
+    name: entry?.name || "未知商品",
+    qty: Number(entry?.qty || 0),
+    imageUrl: entry?.imageUrl || "",
+    code: entry?.code || "",
+  };
 }
 
 function renderStatsPanel() {
@@ -254,12 +279,14 @@ function renderStatsPanel() {
       <div id="stats-result">${statsHtml}</div>
     </div>
   `;
+  applyProductImageFallback(wrapper);
 
   document.getElementById("btn-run-stats").addEventListener("click", () => {
     const filter = document.getElementById("stats-status-filter").value;
     const stats = computeStats(filter);
     localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify({ filter, data: stats }));
     document.getElementById("stats-result").innerHTML = buildStatsHtml(stats);
+    applyProductImageFallback(document.getElementById("stats-result"));
     const copyBtn = document.getElementById("btn-copy-stats");
     if (copyBtn) copyBtn.disabled = false;
   });
@@ -280,12 +307,19 @@ function renderStatsPanel() {
 
 function buildStatsHtml(stats) {
   if (!stats || stats.length === 0) return `<p class="meta">沒有任何商品資料。</p>`;
-  const totalItems = stats.reduce((sum, [, qty]) => sum + qty, 0);
-  const rows = stats.map(([name, qty], i) =>
-    `<tr><td class="stats-rank">${i + 1}</td><td>${name}</td><td class="stats-qty">x ${qty}</td></tr>`
-  ).join("");
+  const entries = stats.map(normalizeStatsEntry);
+  const totalItems = entries.reduce((sum, item) => sum + item.qty, 0);
+  const rows = entries.map((item, i) => {
+    const imageUrl = withProductImageFallback(item.imageUrl);
+    const detailUrl = productDetailUrl(item.code);
+    const imageHtml = `<img class="stats-thumb" src="${imageUrl}" alt="${item.name}" data-fallback="product" />`;
+    const nameHtml = detailUrl
+      ? `<a class="stats-product-link" href="${detailUrl}">${imageHtml}<span>${item.name}</span></a>`
+      : `<span class="stats-product-link">${imageHtml}<span>${item.name}</span></span>`;
+    return `<tr><td class="stats-rank">${i + 1}</td><td class="stats-product-cell">${nameHtml}</td><td class="stats-qty">x ${item.qty}</td></tr>`;
+  }).join("");
   return `
-    <p class="stats-summary">共 <strong>${stats.length}</strong> 種商品，合計 <strong>${totalItems}</strong> 件</p>
+    <p class="stats-summary">共 <strong>${entries.length}</strong> 種商品，合計 <strong>${totalItems}</strong> 件</p>
     <table class="stats-table">
       <thead><tr><th>#</th><th>商品名稱</th><th>數量</th></tr></thead>
       <tbody>${rows}</tbody>

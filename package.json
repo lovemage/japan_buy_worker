@@ -10,6 +10,6 @@
     "d1:migrate:remote": "wrangler d1 migrations apply japan_buy --remote"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.87.0"
   }
 }

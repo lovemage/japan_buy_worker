@@ -1649,6 +1649,32 @@
   color: #999;
 }
 
+.stats-product-cell {
+  min-width: 0;
+}
+
+.stats-product-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--admin-text);
+  text-decoration: none;
+}
+
+.stats-product-link:hover span {
+  text-decoration: underline;
+}
+
+.stats-thumb {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f7f7f7;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
 .stats-qty {
   font-weight: 600;
   white-space: nowrap;
