@@ -45,6 +45,10 @@ function statusSelectHtml(formId, current) {
   return `<select class="js-status-select" data-form-id="${formId}">${options}</select>`;
 }
 
+function adjustedValue(value) {
+  return value === null || value === undefined ? "" : String(value);
+}
+
 function renderFilterTabs() {
   const tabsEl = document.getElementById("order-filter-tabs");
   if (!tabsEl) return;
@@ -108,7 +112,12 @@ function renderForms(forms) {
       <p class="meta">Line ID：${form.lineId || "無"}</p>
       <p class="meta">收件：${form.recipientCity || ""} ${form.recipientAddress || ""}</p>
       <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
-      <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)}</p>
+      <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)} ${totals.amountAdjusted ? '<span class="order-adjusted-badge">已調整金額</span>' : ""}</p>
+      <div class="admin-adjust-box">
+        <label>調整後商品金額 NT$<input class="input-cute js-adjusted-items-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedItemsTotalTwd)}" data-form-id="${form.id}" /></label>
+        <label>調整後運費 NT$<input class="input-cute js-adjusted-shipping-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedShippingTotalTwd)}" data-form-id="${form.id}" /></label>
+        <button class="button secondary js-save-adjustment" type="button" data-form-id="${form.id}">儲存金額</button>
+      </div>
       <p class="meta">整單備註：${form.notes || "無"}</p>
       ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此訂單</button>` : ""}
       <ul class="admin-form-items">${itemsHtml}</ul>
@@ -131,6 +140,34 @@ function renderForms(forms) {
       const target = allForms.find((f) => f.id === formId);
       if (target) target.status = select.value;
       renderFilterTabs();
+      renderForms(allForms);
+    });
+  });
+
+  wrapper.querySelectorAll(".js-save-adjustment").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const formId = Number(button.getAttribute("data-form-id"));
+      const card = button.closest(".admin-form-card");
+      const target = allForms.find((f) => f.id === formId);
+      if (!target || !card) return;
+      const itemsInput = card.querySelector(".js-adjusted-items-total");
+      const shippingInput = card.querySelector(".js-adjusted-shipping-total");
+      hideError();
+      const res = await apiFetch("/api/admin/requirements", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          id: formId,
+          status: target.status,
+          adjustedItemsTotalTwd: itemsInput?.value || null,
+          adjustedShippingTotalTwd: shippingInput?.value || null,
+        }),
+      });
+      if (handleUnauthorized(res)) return;
+      if (!res.ok) { showError(`金額更新失敗：${res.status}`); return; }
+      const body = await res.json();
+      target.adjustedItemsTotalTwd = body.adjustedItemsTotalTwd;
+      target.adjustedShippingTotalTwd = body.adjustedShippingTotalTwd;
       renderForms(allForms);
     });
   });

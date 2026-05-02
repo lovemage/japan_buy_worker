@@ -59,8 +59,11 @@ type RequirementFormRow = {
   shipping_international_jpy: number | null;
   shipping_domestic_twd: number | null;
   shipping_total_twd: number | null;
+  adjusted_items_total_twd: number | null;
+  adjusted_shipping_total_twd: number | null;
   requires_ezway: number | null;
   notes: string | null;
+  status?: string | null;
   created_at: string;
 };
 
@@ -102,6 +105,32 @@ type RequirementItemRow = {
   note: string | null;
   product_code: string | null;
 };
+
+function mapRequirementItem(item: RequirementItemRow) {
+  return {
+    id: item.id,
+    productId: item.product_id,
+    productNameSnapshot: item.product_name_snapshot,
+    selectedImageUrl: item.selected_image_url || "",
+    code: item.product_code || "",
+    productUrl: item.product_code
+      ? `https://fo-online.jp/items/${encodeURIComponent(item.product_code)}`
+      : "",
+    quantity: item.quantity,
+    unitPriceJpy: Number(item.unit_price_jpy || 0),
+    unitPriceTwd: Number(item.unit_price_twd || 0),
+    subtotalJpy: Number(item.subtotal_jpy || 0),
+    subtotalTwd: Number(item.subtotal_twd || 0),
+    variantName: item.desired_size || "",
+    desiredSize: item.desired_size || "",
+    desiredColor: item.desired_color || "",
+    note: item.note || "",
+  };
+}
+
+function hasAdjustedValue(value: number | null | undefined): value is number {
+  return value !== null && value !== undefined && Number.isFinite(Number(value));
+}
 
 function normalizeVariantName(item: RequirementItemInput): string {
   return (item.variantName || item.desiredSize || "").trim();
@@ -314,6 +343,7 @@ SELECT
   shipping_total_twd,
   requires_ezway,
   notes,
+  status,
   created_at
 FROM requirement_forms
 WHERE id = ? AND store_id = ?
@@ -334,6 +364,7 @@ LIMIT 1
       `
 SELECT
   ri.id,
+  ri.requirement_form_id,
   ri.product_id,
   ri.product_name_snapshot,
   ri.selected_image_url,
@@ -357,8 +388,11 @@ ORDER BY ri.id ASC
   const items = Array.isArray(itemsRes?.results) ? itemsRes.results : [];
 
   const itemsTotalJpy = items.reduce((sum, item) => sum + Number(item.subtotal_jpy || 0), 0);
-  const itemsTotalTwd = items.reduce((sum, item) => sum + Number(item.subtotal_twd || 0), 0);
-  const shippingTwd = Number(form.shipping_total_twd || 0);
+  const originalItemsTotalTwd = items.reduce((sum, item) => sum + Number(item.subtotal_twd || 0), 0);
+  const originalShippingTwd = Number(form.shipping_total_twd || 0);
+  const amountAdjusted = hasAdjustedValue(form.adjusted_items_total_twd) || hasAdjustedValue(form.adjusted_shipping_total_twd);
+  const itemsTotalTwd = hasAdjustedValue(form.adjusted_items_total_twd) ? Number(form.adjusted_items_total_twd) : originalItemsTotalTwd;
+  const shippingTwd = hasAdjustedValue(form.adjusted_shipping_total_twd) ? Number(form.adjusted_shipping_total_twd) : originalShippingTwd;
   const grandTotalTwd = itemsTotalTwd + shippingTwd;
 
   return new Response(
@@ -379,9 +413,14 @@ ORDER BY ri.id ASC
         shippingTotalTwd: shippingTwd,
         requiresEzway: Number(form.requires_ezway || 0) === 1,
         notes: form.notes || "",
+        status: form.status || "pending",
         itemsTotalJpy,
         itemsTotalTwd,
+        originalItemsTotalTwd,
+        originalShippingTotalTwd: originalShippingTwd,
+        originalGrandTotalTwd: originalItemsTotalTwd + originalShippingTwd,
         grandTotalTwd,
+        amountAdjusted,
         items: items.map((item) => ({
           id: item.id,
           productId: item.product_id,
@@ -402,6 +441,143 @@ ORDER BY ri.id ASC
           note: item.note || "",
         })),
       },
+    }),
+    {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }
+  );
+}
+
+export async function handlePublicRequirementHistory(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return new Response(JSON.stringify({ ok: false, error: "Method Not Allowed" }), {
+      status: 405,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  const url = new URL(request.url);
+  const phone = (url.searchParams.get("phone") || "").trim();
+  if (!phone) {
+    return badRequest("phone is required");
+  }
+
+  const formsResult = await ctx.db
+    .prepare(
+      `
+SELECT
+  id,
+  order_code,
+  customer_name,
+  member_phone,
+  recipient_city,
+  recipient_address,
+  line_id,
+  shipping_method,
+  shipping_international_jpy,
+  shipping_domestic_twd,
+  shipping_total_twd,
+  adjusted_items_total_twd,
+  adjusted_shipping_total_twd,
+  requires_ezway,
+  notes,
+  status,
+  created_at
+FROM requirement_forms
+WHERE store_id = ? AND member_phone = ?
+ORDER BY created_at DESC, id DESC
+LIMIT 50
+`
+    )
+    .bind(ctx.storeId, phone)
+    .all<RequirementFormRow>();
+  const forms = Array.isArray(formsResult?.results) ? formsResult.results : [];
+
+  if (forms.length === 0) {
+    return new Response(JSON.stringify({ ok: true, orders: [] }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  const ids = forms.map((form) => form.id);
+  const placeholders = ids.map(() => "?").join(",");
+  const itemsResult = await ctx.db
+    .prepare(
+      `
+SELECT
+  ri.id,
+  ri.requirement_form_id,
+  ri.product_id,
+  ri.product_name_snapshot,
+  ri.selected_image_url,
+  ri.quantity,
+  ri.unit_price_jpy,
+  ri.unit_price_twd,
+  ri.subtotal_jpy,
+  ri.subtotal_twd,
+  ri.desired_size,
+  ri.desired_color,
+  ri.note,
+  p.source_product_code as product_code
+FROM requirement_items ri
+LEFT JOIN products p ON p.id = ri.product_id
+WHERE ri.requirement_form_id IN (${placeholders})
+ORDER BY ri.id ASC
+`
+    )
+    .bind(...ids)
+    .all<RequirementItemRow & { requirement_form_id: number }>();
+  const items = Array.isArray(itemsResult?.results) ? itemsResult.results : [];
+  const itemMap = new Map<number, RequirementItemRow[]>();
+  for (const item of items) {
+    if (!itemMap.has(item.requirement_form_id)) {
+      itemMap.set(item.requirement_form_id, []);
+    }
+    itemMap.get(item.requirement_form_id)?.push(item);
+  }
+
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      orders: forms.map((form) => {
+        const orderItems = itemMap.get(form.id) || [];
+        const itemsTotalJpy = orderItems.reduce((sum, item) => sum + Number(item.subtotal_jpy || 0), 0);
+        const originalItemsTotalTwd = orderItems.reduce((sum, item) => sum + Number(item.subtotal_twd || 0), 0);
+        const originalShippingTwd = Number(form.shipping_total_twd || 0);
+        const amountAdjusted = hasAdjustedValue(form.adjusted_items_total_twd) || hasAdjustedValue(form.adjusted_shipping_total_twd);
+        const itemsTotalTwd = hasAdjustedValue(form.adjusted_items_total_twd) ? Number(form.adjusted_items_total_twd) : originalItemsTotalTwd;
+        const shippingTwd = hasAdjustedValue(form.adjusted_shipping_total_twd) ? Number(form.adjusted_shipping_total_twd) : originalShippingTwd;
+        return {
+          id: form.id,
+          orderCode: form.order_code || String(form.id),
+          createdAt: form.created_at,
+          memberName: form.customer_name,
+          memberPhone: form.member_phone || "",
+          recipientCity: form.recipient_city || "",
+          recipientAddress: form.recipient_address || "",
+          lineId: form.line_id || "",
+          shippingMethod: form.shipping_method || "consolidated_tw",
+          shippingInternationalTwd: Number(form.shipping_international_jpy || 0),
+          shippingDomesticTwd: Number(form.shipping_domestic_twd || 0),
+          shippingTotalTwd: shippingTwd,
+          requiresEzway: Number(form.requires_ezway || 0) === 1,
+          notes: form.notes || "",
+          status: form.status || "pending",
+          itemsTotalJpy,
+          itemsTotalTwd,
+          originalItemsTotalTwd,
+          originalShippingTotalTwd: originalShippingTwd,
+          originalGrandTotalTwd: originalItemsTotalTwd + originalShippingTwd,
+          grandTotalTwd: itemsTotalTwd + shippingTwd,
+          amountAdjusted,
+          items: orderItems.map(mapRequirementItem),
+        };
+      }),
     }),
     {
       status: 200,

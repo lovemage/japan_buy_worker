@@ -16,6 +16,8 @@ type FormRow = {
   shipping_international_jpy: number | null;
   shipping_domestic_twd: number | null;
   shipping_total_twd: number | null;
+  adjusted_items_total_twd: number | null;
+  adjusted_shipping_total_twd: number | null;
   requires_ezway: number | null;
   notes: string | null;
   status: string;
@@ -44,9 +46,9 @@ export async function handleAdminRequirements(
   ctx: RequestContext
 ): Promise<Response> {
   if (request.method === "PATCH") {
-    let body: { id?: number; status?: string };
+    let body: { id?: number; status?: string; adjustedItemsTotalTwd?: number | string | null; adjustedShippingTotalTwd?: number | string | null };
     try {
-      body = (await request.json()) as { id?: number; status?: string };
+      body = (await request.json()) as { id?: number; status?: string; adjustedItemsTotalTwd?: number | string | null; adjustedShippingTotalTwd?: number | string | null };
     } catch {
       return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
         status: 400,
@@ -67,6 +69,34 @@ export async function handleAdminRequirements(
         { status: 400, headers: { "content-type": "application/json" } }
       );
     }
+
+    const hasAdjustmentPatch = Object.prototype.hasOwnProperty.call(body, "adjustedItemsTotalTwd") || Object.prototype.hasOwnProperty.call(body, "adjustedShippingTotalTwd");
+    const normalizeAdjustedAmount = (value: number | string | null | undefined) => {
+      if (value === null || value === undefined || value === "") return null;
+      const num = Number(value);
+      return Number.isFinite(num) && num >= 0 ? Math.round(num) : NaN;
+    };
+    if (hasAdjustmentPatch) {
+      const adjustedItemsTotalTwd = normalizeAdjustedAmount(body.adjustedItemsTotalTwd);
+      const adjustedShippingTotalTwd = normalizeAdjustedAmount(body.adjustedShippingTotalTwd);
+      if (Number.isNaN(adjustedItemsTotalTwd) || Number.isNaN(adjustedShippingTotalTwd)) {
+        return new Response(JSON.stringify({ ok: false, error: "adjusted amounts must be non-negative numbers" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      await ctx.db
+        .prepare(
+          "UPDATE requirement_forms SET status = ?, adjusted_items_total_twd = ?, adjusted_shipping_total_twd = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?"
+        )
+        .bind(status, adjustedItemsTotalTwd, adjustedShippingTotalTwd, id, ctx.storeId)
+        .run();
+      return new Response(JSON.stringify({ ok: true, id, status, adjustedItemsTotalTwd, adjustedShippingTotalTwd }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     await ctx.db
       .prepare(
         "UPDATE requirement_forms SET status = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?"
@@ -127,6 +157,8 @@ SELECT
   shipping_international_jpy,
   shipping_domestic_twd,
   shipping_total_twd,
+  adjusted_items_total_twd,
+  adjusted_shipping_total_twd,
   requires_ezway,
   notes,
   status,
@@ -201,6 +233,8 @@ ORDER BY ri.id DESC
         shippingInternationalTwd: form.shipping_international_jpy,
         shippingDomesticTwd: form.shipping_domestic_twd,
         shippingTotalTwd: form.shipping_total_twd,
+        adjustedItemsTotalTwd: form.adjusted_items_total_twd,
+        adjustedShippingTotalTwd: form.adjusted_shipping_total_twd,
         requiresEzway: Number(form.requires_ezway || 0) === 1,
         notes: form.notes || "",
         status: form.status,

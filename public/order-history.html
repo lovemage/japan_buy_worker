@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>歷史訂單</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="stylesheet" href="/assets/templates.css" />
+    <script>if (!window.apiFetch) window.apiFetch = function(p, o) { return fetch((window.__API_BASE || '') + p, o); };</script>
+  </head>
+  <body>
+    <main class="success-wrap">
+      <header class="success-header">
+        <h1>歷史訂單</h1>
+        <p class="order-code">輸入下單時填寫的會員電話，就能查看自己的訂單。</p>
+      </header>
+
+      <form id="history-form" class="success-msg">
+        <label for="history-phone"><strong>會員電話</strong></label>
+        <input id="history-phone" class="input-cute" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="例如 0912345678" required />
+        <button id="history-submit" class="btn-pill" type="submit" style="width:100%;margin-top:12px;">查詢歷史訂單</button>
+      </form>
+
+      <section id="history-error" class="notice hidden"></section>
+      <section id="history-results" aria-live="polite"></section>
+
+      <div class="success-actions">
+        <a class="btn-pill secondary" id="back-to-store" href="/store.html">返回商店</a>
+      </div>
+    </main>
+
+    <script type="module" src="/assets/app-order-history.js"></script>
+  </body>
+</html>

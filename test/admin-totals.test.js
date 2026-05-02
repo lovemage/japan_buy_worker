@@ -31,3 +31,26 @@ test("calculateAdminFormTotals handles missing values safely", () => {
     grandTotalTwd: 0,
   });
 });
+
+test("calculateAdminFormTotals uses adjusted TWD totals when admin changes amount", () => {
+  const totals = calculateAdminFormTotals({
+    shippingTotalTwd: 200,
+    adjustedItemsTotalTwd: 820,
+    adjustedShippingTotalTwd: 160,
+    items: [
+      { subtotalJpy: 1500, subtotalTwd: 320 },
+      { subtotalJpy: 2000, subtotalTwd: 430 },
+    ],
+  });
+
+  assert.deepEqual(totals, {
+    itemsTotalJpy: 3500,
+    itemsTotalTwd: 820,
+    originalItemsTotalTwd: 750,
+    shippingTotalTwd: 160,
+    originalShippingTotalTwd: 200,
+    grandTotalTwd: 980,
+    originalGrandTotalTwd: 950,
+    amountAdjusted: true,
+  });
+});

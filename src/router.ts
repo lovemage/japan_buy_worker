@@ -13,6 +13,7 @@ import {
 } from "./routes/public/products";
 import {
   handlePublicRequirementDetail,
+  handlePublicRequirementHistory,
   handlePublicRequirements,
 } from "./routes/public/requirements";
 import { handleAdminPricing, handlePublicPricing } from "./routes/pricing";
@@ -109,7 +110,7 @@ async function serveTenantHtml(
   canonicalUrl.search = "";
   canonicalUrl.hash = "";
   const canonicalTag = `<link rel="canonical" href="${escapeHtmlAttr(canonicalUrl.toString())}" />`;
-  const noIndexPages = new Set(["request.html", "success.html", "admin.html", "admin-login.html"]);
+  const noIndexPages = new Set(["request.html", "success.html", "order-history.html", "admin.html", "admin-login.html"]);
   const robotsTag = noIndexPages.has(filename)
     ? '<meta name="robots" content="noindex, nofollow" />'
     : '<meta name="robots" content="index, follow" />';
@@ -273,6 +274,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     html = html.replace(/href="\/index\.html"/g, `href="${ctx.basePath}/"`);
     html = html.replace(/href="\/store\.html"/g, `href="${ctx.basePath}/"`);
     html = html.replace(/href="\/request\.html"/g, `href="${ctx.basePath}/request.html"`);
+    html = html.replace(/href="\/order-history\.html"/g, `href="${ctx.basePath}/order-history.html"`);
     html = html.replace(/href="\/product\.html/g, `href="${ctx.basePath}/product.html`);
     html = html.replace(/href="\/admin-login\.html"/g, `href="${ctx.basePath}/admin-login.html"`);
     html = html.replace(/href="\/admin\.html"/g, `href="${ctx.basePath}/admin"`);
@@ -316,6 +318,7 @@ export async function routeTenantRequest(
   if (subPath === "/api/product-recommendations") return handlePublicProductRecommendations(request, ctx);
   if (subPath === "/api/requirements") return handlePublicRequirements(request, ctx);
   if (subPath === "/api/requirement") return handlePublicRequirementDetail(request, ctx);
+  if (subPath === "/api/requirement-history") return handlePublicRequirementHistory(request, ctx);
   if (subPath === "/api/pricing") return handlePublicPricing(request, ctx);
 
   // ── R2 image proxy ──
@@ -503,6 +506,9 @@ export async function routeTenantRequest(
   }
   if (subPath === "/success.html" || subPath === "/success") {
     return serveTenantHtml(request, ctx, "success.html", assets);
+  }
+  if (subPath === "/order-history.html" || subPath === "/order-history") {
+    return serveTenantHtml(request, ctx, "order-history.html", assets);
   }
 
   // ── Static assets (CSS, JS, images) ──
