@@ -102,6 +102,7 @@ type RequirementItemRow = {
   subtotal_twd: number | null;
   desired_size: string | null;
   desired_color: string | null;
+  item_status: string | null;
   note: string | null;
   product_code: string | null;
 };
@@ -124,6 +125,7 @@ function mapRequirementItem(item: RequirementItemRow) {
     variantName: item.desired_size || "",
     desiredSize: item.desired_size || "",
     desiredColor: item.desired_color || "",
+    itemStatus: item.item_status || "pending",
     note: item.note || "",
   };
 }
@@ -375,6 +377,7 @@ SELECT
   ri.subtotal_twd,
   ri.desired_size,
   ri.desired_color,
+  ri.status AS item_status,
   ri.note,
   p.source_product_code as product_code
 FROM requirement_items ri
@@ -438,6 +441,7 @@ ORDER BY ri.id ASC
           variantName: item.desired_size || "",
           desiredSize: item.desired_size || "",
           desiredColor: item.desired_color || "",
+          itemStatus: item.item_status || "pending",
           note: item.note || "",
         })),
       },
@@ -522,6 +526,7 @@ SELECT
   ri.subtotal_twd,
   ri.desired_size,
   ri.desired_color,
+  ri.status AS item_status,
   ri.note,
   p.source_product_code as product_code
 FROM requirement_items ri

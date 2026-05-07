@@ -26,6 +26,15 @@ function statusText(status) {
   return map[status] || status || "待確認";
 }
 
+function itemStatusText(status) {
+  const map = {
+    pending: "待處理",
+    processed: "已處理",
+    cancelled: "已取消",
+  };
+  return map[status] || "待處理";
+}
+
 function productDetailUrl(code) {
   const value = String(code || "").trim();
   if (!value) return "";
@@ -62,7 +71,7 @@ function renderOrders(orders) {
         : `<div class="order-item-product-link">${imageHtml}${nameHtml}</div>`;
       return `<div class="order-item">
         ${productHtml}
-        <div class="price">NT$${formatMoney(item.subtotalTwd)}</div>
+        <div class="price"><span class="order-item-status">${escapeHtml(itemStatusText(item.itemStatus))}</span>NT$${formatMoney(item.subtotalTwd)}</div>
       </div>`;
     }).join("");
     const created = order.createdAt ? new Date(order.createdAt.replace(" ", "T")).toLocaleString("zh-TW") : "";

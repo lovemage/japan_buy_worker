@@ -1740,6 +1740,25 @@
 
 .admin-item-info p { margin: 2px 0; }
 
+.admin-item-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+}
+
+.admin-item-status select {
+  padding: 5px 8px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font: inherit;
+}
+
 .admin-form-items:has(.admin-item-row) { padding-left: 0; }
 
 /* ── Octopus animation ── */

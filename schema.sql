@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS requirement_items (
   selected_image_url TEXT,
   desired_size TEXT,
   desired_color TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
   note TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   FOREIGN KEY (requirement_form_id) REFERENCES requirement_forms(id) ON DELETE CASCADE,

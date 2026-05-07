@@ -105,3 +105,18 @@ test("public order history API returns adjusted totals to members", () => {
   assert.ok(requirementsTs.includes("amountAdjusted"), "Expected public API to expose adjusted amount flag");
   assert.ok(requirementsTs.includes("originalItemsTotalTwd"), "Expected public API to expose original item total");
 });
+
+test("admin can update per-order-item status and members can see it", () => {
+  const migration = readFileSync(new URL("../migrations/0019_requirement_item_status.sql", import.meta.url), "utf8");
+  const publicHistoryJs = readFileSync(new URL("../public/assets/app-order-history.js", import.meta.url), "utf8");
+
+  assert.match(migration, /ALTER TABLE requirement_items ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'/);
+  assert.ok(adminRequirementsTs.includes("VALID_ITEM_STATUSES"), "Expected admin API to define item status options");
+  assert.ok(adminRequirementsTs.includes("itemId"), "Expected admin API to accept an item id");
+  assert.match(adminRequirementsTs, /UPDATE requirement_items\s+SET status = \?/s, "Expected admin API to update item status");
+  assert.ok(adminOrdersJs.includes("js-item-status-select"), "Expected admin UI to render an item status selector");
+  assert.ok(adminOrdersJs.includes("itemStatusSelectHtml"), "Expected admin UI to render item status options");
+  assert.ok(requirementsTs.includes("ri.status AS item_status"), "Expected member history API to read item status");
+  assert.ok(requirementsTs.includes("itemStatus"), "Expected member history API to expose item status");
+  assert.ok(publicHistoryJs.includes("itemStatusText(item.itemStatus)"), "Expected member order history to display item status");
+});

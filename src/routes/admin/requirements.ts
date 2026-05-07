@@ -2,6 +2,8 @@ import type { RequestContext } from "../../context";
 
 const VALID_STATUSES = ["pending", "paid", "preparing", "ordered", "shipped", "completed", "cancelled"] as const;
 type RequirementStatus = (typeof VALID_STATUSES)[number];
+const VALID_ITEM_STATUSES = ["pending", "processed", "cancelled"] as const;
+type RequirementItemStatus = (typeof VALID_ITEM_STATUSES)[number];
 
 type FormRow = {
   id: number;
@@ -37,6 +39,7 @@ type ItemRow = {
   subtotal_twd: number | null;
   desired_size: string | null;
   desired_color: string | null;
+  item_status: string | null;
   note: string | null;
   product_code: string | null;
 };
@@ -46,12 +49,50 @@ export async function handleAdminRequirements(
   ctx: RequestContext
 ): Promise<Response> {
   if (request.method === "PATCH") {
-    let body: { id?: number; status?: string; adjustedItemsTotalTwd?: number | string | null; adjustedShippingTotalTwd?: number | string | null };
+    let body: {
+      id?: number;
+      status?: string;
+      itemId?: number;
+      itemStatus?: string;
+      adjustedItemsTotalTwd?: number | string | null;
+      adjustedShippingTotalTwd?: number | string | null;
+    };
     try {
-      body = (await request.json()) as { id?: number; status?: string; adjustedItemsTotalTwd?: number | string | null; adjustedShippingTotalTwd?: number | string | null };
+      body = (await request.json()) as typeof body;
     } catch {
       return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
         status: 400,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    if (Object.prototype.hasOwnProperty.call(body, "itemId") || Object.prototype.hasOwnProperty.call(body, "itemStatus")) {
+      const itemId = Number(body?.itemId);
+      const itemStatus = (body?.itemStatus || "") as RequirementItemStatus;
+      if (!Number.isInteger(itemId) || itemId <= 0) {
+        return new Response(JSON.stringify({ ok: false, error: "itemId is required" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      if (!VALID_ITEM_STATUSES.includes(itemStatus)) {
+        return new Response(
+          JSON.stringify({ ok: false, error: `itemStatus must be one of: ${VALID_ITEM_STATUSES.join(", ")}` }),
+          { status: 400, headers: { "content-type": "application/json" } }
+        );
+      }
+      await ctx.db
+        .prepare(
+          `
+UPDATE requirement_items
+SET status = ?
+WHERE id = ?
+  AND requirement_form_id IN (SELECT id FROM requirement_forms WHERE store_id = ?)
+`
+        )
+        .bind(itemStatus, itemId, ctx.storeId)
+        .run();
+      return new Response(JSON.stringify({ ok: true, itemId, itemStatus }), {
+        status: 200,
         headers: { "content-type": "application/json" },
       });
     }
@@ -196,6 +237,7 @@ SELECT
   ri.subtotal_twd,
   ri.desired_size,
   ri.desired_color,
+  ri.status AS item_status,
   ri.note,
   p.source_product_code AS product_code
 FROM requirement_items ri
@@ -256,6 +298,7 @@ ORDER BY ri.id DESC
           variantName: item.desired_size || "",
           desiredSize: item.desired_size || "",
           desiredColor: item.desired_color || "",
+          itemStatus: item.item_status || "pending",
           note: item.note || "",
         })),
       })),

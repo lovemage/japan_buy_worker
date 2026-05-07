@@ -1606,6 +1606,20 @@ select:disabled {
   color: var(--text-color);
 }
 
+.order-item-status {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  margin-bottom: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--bg-color);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .order-totals {
   padding: 12px 14px;
   background: var(--bg-color);

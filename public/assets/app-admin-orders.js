@@ -35,6 +35,12 @@ const FILTER_TABS = [
   { value: "cancelled", label: "已取消" },
 ];
 
+const ITEM_STATUS_OPTIONS = [
+  { value: "pending", label: "待處理" },
+  { value: "processed", label: "已處理" },
+  { value: "cancelled", label: "已取消" },
+];
+
 let allForms = [];
 let activeFilter = "pending";
 
@@ -43,6 +49,14 @@ function statusSelectHtml(formId, current) {
     (o) => `<option value="${o.value}"${o.value === current ? " selected" : ""}>${o.label}</option>`
   ).join("");
   return `<select class="js-status-select" data-form-id="${formId}">${options}</select>`;
+}
+
+function itemStatusSelectHtml(itemId, current) {
+  const value = current || "pending";
+  const options = ITEM_STATUS_OPTIONS.map(
+    (o) => `<option value="${o.value}"${o.value === value ? " selected" : ""}>${o.label}</option>`
+  ).join("");
+  return `<label class="admin-item-status">商品狀態<select class="js-item-status-select" data-item-id="${itemId}">${options}</select></label>`;
 }
 
 function adjustedValue(value) {
@@ -102,6 +116,7 @@ function renderForms(forms) {
               <p class="meta">單價 &yen;${formatCurrency(item.unitPriceJpy)} / NT$${formatCurrency(item.unitPriceTwd)}，小計 &yen;${formatCurrency(item.subtotalJpy)} / NT$${formatCurrency(item.subtotalTwd)}</p>
               ${item.note ? `<p class="meta">備註：${item.note}</p>` : ""}
               ${item.productUrl ? `<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer" class="meta">原商品頁</a>` : ""}
+              ${itemStatusSelectHtml(item.id, item.itemStatus)}
             </div>
           </li>`;
         }).join("")
@@ -147,6 +162,27 @@ function renderForms(forms) {
       if (target) target.status = select.value;
       renderFilterTabs();
       renderForms(allForms);
+    });
+  });
+
+  wrapper.querySelectorAll(".js-item-status-select").forEach((select) => {
+    select.addEventListener("change", async () => {
+      const itemId = Number(select.getAttribute("data-item-id"));
+      hideError();
+      const res = await apiFetch("/api/admin/requirements", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ itemId, itemStatus: select.value }),
+      });
+      if (handleUnauthorized(res)) return;
+      if (!res.ok) { showError(`商品狀態更新失敗：${res.status}`); return; }
+      for (const form of allForms) {
+        const target = Array.isArray(form.items) ? form.items.find((item) => item.id === itemId) : null;
+        if (target) {
+          target.itemStatus = select.value;
+          break;
+        }
+      }
     });
   });
 
