@@ -45,10 +45,13 @@ let allForms = [];
 let activeFilter = "pending";
 
 function statusSelectHtml(formId, current) {
+  const value = String(current || "");
+  const hasSelectedValue = STATUS_OPTIONS.some((o) => o.value === value);
+  const placeholder = `<option value="" disabled${hasSelectedValue ? "" : " selected"}>訂單狀態</option>`;
   const options = STATUS_OPTIONS.map(
-    (o) => `<option value="${o.value}"${o.value === current ? " selected" : ""}>${o.label}</option>`
+    (o) => `<option value="${o.value}"${o.value === value ? " selected" : ""}>${o.label}</option>`
   ).join("");
-  return `<label class="admin-form-status-label">訂單狀態：<select class="js-status-select" data-form-id="${formId}">${options}</select></label>`;
+  return `<label class="admin-form-status-label"><select class="js-status-select" data-form-id="${formId}">${placeholder}${options}</select></label>`;
 }
 
 function itemStatusSelectHtml(itemId, current) {

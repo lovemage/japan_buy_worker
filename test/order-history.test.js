@@ -99,7 +99,7 @@ test("admin order API supports adjusted item and shipping amounts while UI expos
   assert.ok(adminOrdersJs.includes("js-adjusted-items-total"), "Expected admin UI input for adjusted item total");
   assert.ok(!adminOrdersJs.includes("js-adjusted-shipping-total"), "Expected admin UI to hide adjusted shipping total");
   assert.ok(adminOrdersJs.includes("已調整金額"), "Expected admin UI to show adjusted amount label");
-  assert.ok(adminOrdersJs.includes("訂單狀態："), "Expected admin UI to show order status label text");
+  assert.ok(adminOrdersJs.includes(">訂單狀態</option>"), "Expected admin UI to show order status placeholder text");
 });
 
 test("admin adjusted amount controls stay on one compact mobile row", () => {
