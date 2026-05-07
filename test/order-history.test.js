@@ -104,12 +104,13 @@ test("admin order API supports adjusted item and shipping amounts while UI expos
 
 test("admin adjusted amount controls stay on one compact mobile row", () => {
   assert.match(stylesCss, /\.admin-adjust-box\s*\{[^}]*display:\s*grid/s, "Expected adjusted amount controls to use a single grid row");
-  assert.match(stylesCss, /\.admin-adjust-box\s*\{[^}]*grid-template-columns:\s*max-content 180px max-content/s, "Expected adjusted amount controls to stay in three columns");
-  assert.match(stylesCss, /\.admin-adjust-box\s+\.input-cute\s*\{[^}]*width:\s*180px/s, "Expected adjusted order amount input to be 180px wide");
-  assert.match(adminCss, /\.admin-body\s+\.admin-adjust-box\s+\.input-cute\s*\{[^}]*width:\s*180px/s, "Expected admin stylesheet to override input width to 180px");
-  assert.ok(adminOrdersJs.includes('class="admin-adjust-label"'), "Expected adjusted amount text to be a standalone inline label");
+  assert.match(stylesCss, /\.admin-adjust-box\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)/s, "Expected adjusted amount controls to use equal two-column layout");
+  assert.match(stylesCss, /\.admin-adjust-box\s+\.input-cute\s*\{[^}]*width:\s*100%/s, "Expected adjusted order amount input to fill its column");
+  assert.match(stylesCss, /\.admin-adjust-box\s+\.button\s*\{[^}]*width:\s*100%/s, "Expected save button to match input width");
+  assert.match(adminCss, /\.admin-body\s+\.admin-adjust-box\s+\.input-cute\s*\{[^}]*width:\s*100%/s, "Expected admin stylesheet to keep amount input full width");
+  assert.ok(!adminOrdersJs.includes('class="admin-adjust-label"'), "Expected adjusted amount standalone label to be removed");
   assert.ok(!adminOrdersJs.includes("調整訂單金額 NT$<input"), "Expected input not to be nested inside the text label");
-  assert.ok(adminOrdersJs.includes("調整訂單金額 NT$"), "Expected admin UI to show a single adjusted order amount label");
+  assert.ok(adminOrdersJs.includes('placeholder="調整訂單金額"'), "Expected input to carry adjusted amount placeholder text");
   assert.ok(!adminOrdersJs.includes("調整後運費 NT$"), "Expected admin UI not to show an adjusted shipping amount field");
   assert.ok(adminOrdersJs.includes('noteText ? `<p class="meta">整單備註：${noteText}</p>` : ""'), "Expected empty order notes not to render");
 });

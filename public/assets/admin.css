@@ -1711,11 +1711,11 @@
   white-space: nowrap;
 }
 
-/* Override global .admin-body .input-cute width:100% for order amount controls. */
+/* Keep amount input aligned with save button width. */
 .admin-body .admin-adjust-box .input-cute {
-  width: 180px;
-  min-width: 180px;
-  flex: 0 0 180px;
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .admin-form-items {
@@ -1759,8 +1759,7 @@
 
 .admin-item-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: 8px;
 }
 
@@ -1788,6 +1787,22 @@
   background: var(--admin-surface);
   color: var(--admin-text);
   font: inherit;
+}
+
+.admin-item-meta-actions {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .admin-item-meta-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
 }
 
 .admin-form-items:has(.admin-item-row) { padding-left: 0; }

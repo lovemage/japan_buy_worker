@@ -37,7 +37,7 @@ const FILTER_TABS = [
 
 const ITEM_STATUS_OPTIONS = [
   { value: "pending", label: "待處理" },
-  { value: "processed", label: "已處理" },
+  { value: "processed", label: "已完成" },
   { value: "cancelled", label: "已取消" },
 ];
 
@@ -52,11 +52,13 @@ function statusSelectHtml(formId, current) {
 }
 
 function itemStatusSelectHtml(itemId, current) {
-  const value = current || "pending";
+  const value = String(current || "");
+  const hasSelectedValue = ITEM_STATUS_OPTIONS.some((o) => o.value === value);
+  const placeholder = `<option value="" disabled${hasSelectedValue ? "" : " selected"}>商品狀態</option>`;
   const options = ITEM_STATUS_OPTIONS.map(
     (o) => `<option value="${o.value}"${o.value === value ? " selected" : ""}>${o.label}</option>`
   ).join("");
-  return `<label class="admin-item-status">商品狀態：<select class="js-item-status-select" data-item-id="${itemId}">${options}</select></label>`;
+  return `<label class="admin-item-status"><select class="js-item-status-select" data-item-id="${itemId}">${placeholder}${options}</select></label>`;
 }
 
 function adjustedValue(value) {
@@ -114,12 +116,14 @@ function renderForms(forms) {
             <div class="admin-item-info">
               <div class="admin-item-head">
                 <p><strong>${item.productNameSnapshot}</strong>（${item.code || "無代碼"}）x ${item.quantity}</p>
-                ${itemStatusSelectHtml(item.id, item.itemStatus)}
               </div>
               <p class="meta">規格：${variantText || "未選"}</p>
               <p class="meta">單價 &yen;${formatCurrency(item.unitPriceJpy)} / NT$${formatCurrency(item.unitPriceTwd)}，小計 &yen;${formatCurrency(item.subtotalJpy)} / NT$${formatCurrency(item.subtotalTwd)}</p>
               ${item.note ? `<p class="meta">備註：${item.note}</p>` : ""}
-              ${item.productUrl ? `<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer" class="meta">原商品頁</a>` : ""}
+              <div class="admin-item-meta-actions">
+                ${item.productUrl ? `<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer" class="meta">原商品頁</a>` : "<span></span>"}
+                ${itemStatusSelectHtml(item.id, item.itemStatus)}
+              </div>
             </div>
           </li>`;
         }).join("")
@@ -138,8 +142,7 @@ function renderForms(forms) {
       <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
       <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)} ${totals.amountAdjusted ? '<span class="order-adjusted-badge">已調整金額</span>' : ""}</p>
       <div class="admin-adjust-box">
-        <span class="admin-adjust-label">調整訂單金額 NT$</span>
-        <input class="input-cute js-adjusted-items-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedItemsTotalTwd)}" data-form-id="${form.id}" />
+        <input class="input-cute js-adjusted-items-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedItemsTotalTwd)}" placeholder="調整訂單金額" aria-label="調整訂單金額" data-form-id="${form.id}" />
         <button class="button secondary js-save-adjustment" type="button" data-form-id="${form.id}">儲存金額</button>
       </div>
       ${noteText ? `<p class="meta">整單備註：${noteText}</p>` : ""}
