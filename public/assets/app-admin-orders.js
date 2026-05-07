@@ -121,7 +121,7 @@ function renderForms(forms) {
                 <p><strong>${item.productNameSnapshot}</strong>（${item.code || "無代碼"}）x ${item.quantity}</p>
               </div>
               <p class="meta">規格：${variantText || "未選"}</p>
-              <p class="meta">單價 &yen;${formatCurrency(item.unitPriceJpy)} / NT$${formatCurrency(item.unitPriceTwd)}，小計 &yen;${formatCurrency(item.subtotalJpy)} / NT$${formatCurrency(item.subtotalTwd)}</p>
+              <p class="meta">小計 &yen;${formatCurrency(item.subtotalJpy)} / NT$${formatCurrency(item.subtotalTwd)}</p>
               ${item.note ? `<p class="meta">備註：${item.note}</p>` : ""}
               <div class="admin-item-meta-actions">
                 ${item.productUrl ? `<a href="${item.productUrl}" target="_blank" rel="noopener noreferrer" class="meta">原商品頁</a>` : "<span></span>"}

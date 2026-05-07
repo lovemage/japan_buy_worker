@@ -382,6 +382,7 @@ body {
   padding: 0 10px;
   border-width: 1px;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .admin-adjust-box .button {
