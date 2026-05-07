@@ -367,22 +367,42 @@ body {
 }
 
 .admin-adjust-box {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
   align-items: end;
   margin: 10px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.admin-adjust-box::-webkit-scrollbar {
+  display: none;
 }
 
 .admin-adjust-box label {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .admin-adjust-box .input-cute {
-  margin-top: 4px;
-  padding: 8px 10px;
+  width: 72px;
+  min-width: 0;
+  margin-top: 0;
+  padding: 6px 7px;
   border-width: 1px;
+}
+
+.admin-adjust-box .button {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  white-space: nowrap;
 }
 .drawer-section-toggle {
   width: 100%;
