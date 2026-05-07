@@ -1701,6 +1701,16 @@
   min-width: 120px;
 }
 
+.admin-form-status-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  white-space: nowrap;
+}
+
 .admin-form-items {
   margin: 8px 0 0;
   padding-left: 18px;
@@ -1740,14 +1750,28 @@
 
 .admin-item-info p { margin: 2px 0; }
 
+.admin-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-item-head p {
+  margin: 0;
+  min-width: 0;
+}
+
 .admin-item-status {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
   gap: 8px;
-  margin-top: 8px;
   font-size: 12px;
   font-weight: 600;
   color: var(--admin-text-muted);
+  white-space: nowrap;
 }
 
 .admin-item-status select {

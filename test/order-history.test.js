@@ -98,12 +98,15 @@ test("admin order API supports adjusted item and shipping amounts while UI expos
   assert.ok(adminOrdersJs.includes("js-adjusted-items-total"), "Expected admin UI input for adjusted item total");
   assert.ok(!adminOrdersJs.includes("js-adjusted-shipping-total"), "Expected admin UI to hide adjusted shipping total");
   assert.ok(adminOrdersJs.includes("已調整金額"), "Expected admin UI to show adjusted amount label");
+  assert.ok(adminOrdersJs.includes("訂單狀態："), "Expected admin UI to show order status label text");
 });
 
 test("admin adjusted amount controls stay on one compact mobile row", () => {
   assert.match(stylesCss, /\.admin-adjust-box\s*\{[^}]*display:\s*flex/s, "Expected adjusted amount controls to use a single flex row");
   assert.match(stylesCss, /\.admin-adjust-box\s*\{[^}]*flex-wrap:\s*nowrap/s, "Expected adjusted amount controls not to wrap");
   assert.match(stylesCss, /\.admin-adjust-box\s+\.input-cute\s*\{[^}]*width:\s*180px/s, "Expected adjusted order amount input to be 180px wide");
+  assert.ok(adminOrdersJs.includes('class="admin-adjust-label"'), "Expected adjusted amount text to be a standalone inline label");
+  assert.ok(!adminOrdersJs.includes("調整訂單金額 NT$<input"), "Expected input not to be nested inside the text label");
   assert.ok(adminOrdersJs.includes("調整訂單金額 NT$"), "Expected admin UI to show a single adjusted order amount label");
   assert.ok(!adminOrdersJs.includes("調整後運費 NT$"), "Expected admin UI not to show an adjusted shipping amount field");
 });

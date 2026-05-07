@@ -370,7 +370,7 @@ body {
   display: flex;
   flex-wrap: nowrap;
   gap: 6px;
-  align-items: end;
+  align-items: center;
   margin: 10px 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -381,11 +381,8 @@ body {
   display: none;
 }
 
-.admin-adjust-box label {
-  display: inline-flex;
+.admin-adjust-label {
   flex: 0 0 auto;
-  align-items: center;
-  gap: 4px;
   font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
