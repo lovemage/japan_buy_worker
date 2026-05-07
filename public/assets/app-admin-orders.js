@@ -135,8 +135,7 @@ function renderForms(forms) {
       <p class="meta">配送：${shippingMethodText(form.shippingMethod)}</p>
       <p class="meta">商品合計：&yen;${formatCurrency(totals.itemsTotalJpy)} / NT$${formatCurrency(totals.itemsTotalTwd)}；總金額：NT$${formatCurrency(totals.grandTotalTwd)} ${totals.amountAdjusted ? '<span class="order-adjusted-badge">已調整金額</span>' : ""}</p>
       <div class="admin-adjust-box">
-        <label>調整後商品金額 NT$<input class="input-cute js-adjusted-items-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedItemsTotalTwd)}" data-form-id="${form.id}" /></label>
-        <label>調整後運費 NT$<input class="input-cute js-adjusted-shipping-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedShippingTotalTwd)}" data-form-id="${form.id}" /></label>
+        <label>調整訂單金額 NT$<input class="input-cute js-adjusted-items-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedItemsTotalTwd)}" data-form-id="${form.id}" /></label>
         <button class="button secondary js-save-adjustment" type="button" data-form-id="${form.id}">儲存金額</button>
       </div>
       <p class="meta">整單備註：${form.notes || "無"}</p>
@@ -193,7 +192,6 @@ function renderForms(forms) {
       const target = allForms.find((f) => f.id === formId);
       if (!target || !card) return;
       const itemsInput = card.querySelector(".js-adjusted-items-total");
-      const shippingInput = card.querySelector(".js-adjusted-shipping-total");
       hideError();
       const res = await apiFetch("/api/admin/requirements", {
         method: "PATCH",
@@ -202,7 +200,7 @@ function renderForms(forms) {
           id: formId,
           status: target.status,
           adjustedItemsTotalTwd: itemsInput?.value || null,
-          adjustedShippingTotalTwd: shippingInput?.value || null,
+          adjustedShippingTotalTwd: null,
         }),
       });
       if (handleUnauthorized(res)) return;
