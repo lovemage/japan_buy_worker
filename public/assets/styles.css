@@ -367,9 +367,9 @@ body {
 }
 
 .admin-adjust-box {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: max-content 180px max-content;
+  column-gap: 6px;
   align-items: center;
   margin: 10px 0;
   overflow-x: auto;

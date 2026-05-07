@@ -1711,6 +1711,13 @@
   white-space: nowrap;
 }
 
+/* Override global .admin-body .input-cute width:100% for order amount controls. */
+.admin-body .admin-adjust-box .input-cute {
+  width: 180px;
+  min-width: 180px;
+  flex: 0 0 180px;
+}
+
 .admin-form-items {
   margin: 8px 0 0;
   padding-left: 18px;

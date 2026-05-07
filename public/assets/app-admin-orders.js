@@ -104,6 +104,7 @@ function renderForms(forms) {
 
   wrapper.innerHTML = filtered.map((form) => {
     const totals = calculateAdminFormTotals(form);
+    const noteText = String(form.notes || "").trim();
     const itemsHtml = Array.isArray(form.items)
       ? form.items.map((item) => {
           const imageUrl = withProductImageFallback(item.selectedImageUrl || item.imageUrl || "");
@@ -141,7 +142,7 @@ function renderForms(forms) {
         <input class="input-cute js-adjusted-items-total" type="number" min="0" step="1" value="${adjustedValue(form.adjustedItemsTotalTwd)}" data-form-id="${form.id}" />
         <button class="button secondary js-save-adjustment" type="button" data-form-id="${form.id}">儲存金額</button>
       </div>
-      <p class="meta">整單備註：${form.notes || "無"}</p>
+      ${noteText ? `<p class="meta">整單備註：${noteText}</p>` : ""}
       ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此訂單</button>` : ""}
       <ul class="admin-form-items">${itemsHtml}</ul>
     </article>`;
