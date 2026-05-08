@@ -249,6 +249,7 @@ export async function handleAdminProductUpdate(
     brand?: string;
     category?: string;
     priceJpyTaxIn?: number | null;
+    wholesalePriceTwd?: number | null;
     description?: string;
     variants?: Array<{ name?: string; stock?: number | null; price?: number | null }>;
     gallery?: string[];
@@ -284,6 +285,13 @@ export async function handleAdminProductUpdate(
   if (body.brand !== undefined) { sets.push("brand = ?"); params.push((body.brand || "").trim() || null); }
   if (body.category !== undefined) { sets.push("category = ?"); params.push((body.category || "").trim() || null); }
   if (body.priceJpyTaxIn !== undefined) { sets.push("price_jpy_tax_in = ?"); params.push(body.priceJpyTaxIn ?? null); }
+  if (body.wholesalePriceTwd !== undefined) {
+    const wholesale = body.wholesalePriceTwd === null || body.wholesalePriceTwd === undefined
+      ? null
+      : Math.max(0, Math.round(Number(body.wholesalePriceTwd)));
+    sets.push("wholesale_price_twd = ?");
+    params.push(Number.isFinite(wholesale as number) ? wholesale : null);
+  }
   if (body.tags !== undefined) {
     const validTags = ["hot", "limited", "popular", "instock", "preorder"];
     const filtered = (body.tags || []).filter(t => validTags.includes(t));

@@ -343,7 +343,7 @@ function renderProductGrid(products, paging) {
         <p class="manage-card__price">${formatSellingPrice(p.priceJpyTaxIn, adminPricing)}${adminPricing?.pricingMode !== "manual" ? ` <span style="font-size:11px;color:var(--admin-text-muted);font-weight:400;">(${formatPrice(p.priceJpyTaxIn)})</span>` : ""}</p>
         <p class="manage-card__meta">${p.brand || ""}</p>
         <div class="manage-card__actions">
-          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
+          <button class="button js-product-edit" data-id="${p.id}" data-code="${p.code}" data-active="${p.isActive}" data-name-ja="${(p.nameJa || "").replace(/"/g, "&quot;")}" data-name-zh="${(p.nameZhTw || "").replace(/"/g, "&quot;")}" data-brand="${(p.brand || "").replace(/"/g, "&quot;")}" data-category="${(p.category || "").replace(/"/g, "&quot;")}" data-price="${p.priceJpyTaxIn ?? ""}" data-wholesale-price="${p.wholesalePriceTwd ?? ""}" data-tags="${(p.tags || []).join(",")}">編輯</button>
           <button class="button secondary js-copy-url" data-code="${p.code}" title="複製商品網址">網址</button>
         </div>
       </div>
@@ -668,6 +668,11 @@ async function openEditModal(btn) {
   document.getElementById("edit-brand").value = btn.getAttribute("data-brand") || "";
   document.getElementById("edit-category").value = btn.getAttribute("data-category") || "";
   document.getElementById("edit-price").value = btn.getAttribute("data-price") || "";
+  const wholesaleInput = document.getElementById("edit-wholesale-price");
+  const wholesaleWrap = document.getElementById("edit-wholesale-price-wrap");
+  if (wholesaleInput) wholesaleInput.value = btn.getAttribute("data-wholesale-price") || "";
+  const wholesaleEnabled = !!(window.__WHOLESALE_ENABLED || (window.__DISPLAY_SETTINGS && window.__DISPLAY_SETTINGS.wholesalePriceEnabled));
+  if (wholesaleWrap) wholesaleWrap.style.display = wholesaleEnabled ? "" : "none";
   const priceLabel = document.getElementById("edit-price-label");
   if (priceLabel) {
     priceLabel.innerHTML = adminPricing?.pricingMode === "manual"
@@ -897,6 +902,12 @@ async function saveEdit() {
     brand: document.getElementById("edit-brand")?.value?.trim() || "",
     category: document.getElementById("edit-category")?.value?.trim() || "",
     priceJpyTaxIn: document.getElementById("edit-price")?.value ? Number(document.getElementById("edit-price").value) : null,
+    wholesalePriceTwd: (() => {
+      const raw = document.getElementById("edit-wholesale-price")?.value;
+      if (raw === undefined || raw === null || String(raw).trim() === "") return null;
+      const num = Number(raw);
+      return Number.isFinite(num) && num >= 0 ? Math.round(num) : null;
+    })(),
     variants: normalizeVariantRows(editVariants, document.getElementById("edit-price")?.value),
     description: document.getElementById("edit-description")?.value?.trim() || "",
     // Keep exact visual order: existing URLs + new images as data URLs.

@@ -11,6 +11,7 @@ type ProductRow = {
   brand: string | null;
   category: string | null;
   price_jpy_tax_in: number | null;
+  wholesale_price_twd: number | null;
   color_count: number | null;
   image_url: string | null;
   is_active: number;
@@ -47,6 +48,7 @@ function mapProduct(item: ProductRow) {
     brand: item.brand,
     category: item.category,
     priceJpyTaxIn: item.price_jpy_tax_in,
+    wholesalePriceTwd: item.wholesale_price_twd,
     colorCount: item.color_count,
     imageUrl: item.image_url,
     isActive: item.is_active ?? 1,
@@ -125,6 +127,7 @@ SELECT
   p.brand,
   p.category,
   p.price_jpy_tax_in,
+  p.wholesale_price_twd,
   p.color_count,
   p.image_url,
   p.is_active,
@@ -305,7 +308,7 @@ export async function handlePublicProductRecommendations(
   const excludeCode = (url.searchParams.get("excludeCode") || "").trim();
   const limit = Math.max(1, Math.min(Number(url.searchParams.get("limit") || 6), 12));
 
-  const SELECT = `SELECT id, source_product_code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in, color_count, image_url, is_active, last_crawled_at, source_payload_json, tags FROM products`;
+  const SELECT = `SELECT id, source_product_code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in, wholesale_price_twd, color_count, image_url, is_active, last_crawled_at, source_payload_json, tags FROM products`;
 
   const collected: ProductRow[] = [];
   const seenIds = new Set<number>();
@@ -384,6 +387,7 @@ SELECT
   brand,
   category,
   price_jpy_tax_in,
+  wholesale_price_twd,
   color_count,
   image_url,
   last_crawled_at,

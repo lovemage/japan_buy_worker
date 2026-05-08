@@ -56,6 +56,7 @@ export async function handleAdminRequirements(
       itemStatus?: string;
       adjustedItemsTotalTwd?: number | string | null;
       adjustedShippingTotalTwd?: number | string | null;
+      applyWholesale?: boolean;
     };
     try {
       body = (await request.json()) as typeof body;
@@ -64,6 +65,67 @@ export async function handleAdminRequirements(
         status: 400,
         headers: { "content-type": "application/json" },
       });
+    }
+
+    if (body?.applyWholesale === true) {
+      const formId = Number(body?.id);
+      if (!Number.isInteger(formId) || formId <= 0) {
+        return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      const formExists = await ctx.db
+        .prepare("SELECT id FROM requirement_forms WHERE id = ? AND store_id = ?")
+        .bind(formId, ctx.storeId)
+        .first<{ id: number }>();
+      if (!formExists?.id) {
+        return new Response(JSON.stringify({ ok: false, error: "Requirement not found" }), {
+          status: 404,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      const itemsRes = await ctx.db
+        .prepare(
+          `SELECT ri.id, ri.quantity, ri.subtotal_twd, p.wholesale_price_twd
+             FROM requirement_items ri
+             LEFT JOIN products p ON p.id = ri.product_id
+            WHERE ri.requirement_form_id = ?`
+        )
+        .bind(formId)
+        .all<{ id: number; quantity: number; subtotal_twd: number | null; wholesale_price_twd: number | null }>();
+      const items = Array.isArray(itemsRes?.results) ? itemsRes.results : [];
+      let total = 0;
+      let appliedCount = 0;
+      for (const item of items) {
+        const qty = Number(item.quantity || 0);
+        const wp = item.wholesale_price_twd === null || item.wholesale_price_twd === undefined
+          ? null
+          : Number(item.wholesale_price_twd);
+        if (wp !== null && Number.isFinite(wp) && wp >= 0) {
+          total += wp * qty;
+          appliedCount += 1;
+        } else {
+          total += Number(item.subtotal_twd || 0);
+        }
+      }
+      if (appliedCount === 0) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "訂單中沒有商品設定批發價，無法套用。" }),
+          { status: 400, headers: { "content-type": "application/json" } }
+        );
+      }
+      const adjusted = Math.round(total);
+      await ctx.db
+        .prepare(
+          "UPDATE requirement_forms SET adjusted_items_total_twd = ?, updated_at = datetime('now') WHERE id = ? AND store_id = ?"
+        )
+        .bind(adjusted, formId, ctx.storeId)
+        .run();
+      return new Response(
+        JSON.stringify({ ok: true, id: formId, adjustedItemsTotalTwd: adjusted, appliedCount }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
     }
     if (Object.prototype.hasOwnProperty.call(body, "itemId") || Object.prototype.hasOwnProperty.call(body, "itemStatus")) {
       const itemId = Number(body?.itemId);

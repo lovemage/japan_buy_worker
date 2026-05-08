@@ -87,6 +87,7 @@
             </label>
             <label><span id="edit-price-label">價格（<span class="src-currency">JPY</span>）</span><input id="edit-price" type="number" min="0" class="input-cute" /></label>
             <div id="edit-price-info" style="margin:-4px 0 8px;padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12px;color:var(--admin-text-secondary);line-height:1.8;display:none;"></div>
+            <label id="edit-wholesale-price-wrap" style="display:none;">批發價（NT$）<input id="edit-wholesale-price" type="number" min="0" class="input-cute" placeholder="未設定則沿用原價" /></label>
             <div class="variant-editor">
               <div class="variant-editor__head">
                 <label>商品規格</label>
@@ -876,6 +877,18 @@
           </div>
         </div>
 
+        <div class="settings-group">
+          <h3 class="settings-group__title">批發價格</h3>
+          <p class="meta" style="margin-bottom:8px;">開啟後可在商品編輯頁設定批發價，訂單列表會出現「套用批發價」按鈕，一鍵將訂單金額改為批發價。</p>
+          <label class="toggle-label">
+            <label class="toggle-switch">
+              <input type="checkbox" id="wholesale-toggle" onchange="onWholesaleToggle()" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="wholesale-toggle-label">關閉</span>
+          </label>
+        </div>
+
         <button class="button" type="button" style="margin-top:4px;" onclick="savePricingAll()">儲存</button>
         <p id="shipping-methods-status" class="admin-status">已儲存</p>
       </div>
@@ -1133,6 +1146,10 @@
       if (dlToggle) { dlToggle.checked = !!d.deadlineEnabled; onDeadlineToggle(); }
       var dlInput = document.getElementById("deadline-input");
       if (dlInput && d.deadlineTime) dlInput.value = d.deadlineTime;
+      // Wholesale
+      var wsToggle = document.getElementById("wholesale-toggle");
+      if (wsToggle) { wsToggle.checked = !!d.wholesalePriceEnabled; onWholesaleToggle(); }
+      window.__WHOLESALE_ENABLED = !!d.wholesalePriceEnabled;
     });
   }
 
@@ -1175,6 +1192,16 @@
     if (label) label.textContent = on ? "開啟" : "關閉";
     if (wrap) wrap.style.display = on ? "" : "none";
   }
+
+  function onWholesaleToggle() {
+    var on = document.getElementById("wholesale-toggle").checked;
+    var label = document.getElementById("wholesale-toggle-label");
+    if (label) {
+      label.textContent = on ? "開啟" : "關閉";
+      label.style.color = on ? "var(--admin-success)" : "var(--admin-text-muted)";
+    }
+  }
+  window.onWholesaleToggle = onWholesaleToggle;
 
   function saveDisplaySettings() {
     var mode = "2card";
@@ -1700,13 +1727,14 @@
     if (statusEl) { statusEl.style.display = "block"; statusEl.textContent = "儲存中..."; }
     savePricing();
     saveShippingMethods();
-    // Save deadline to display-settings
+    // Save deadline + wholesale to display-settings
     var deadlineOn = document.getElementById("deadline-toggle").checked;
     var deadlineVal = (document.getElementById("deadline-input") || {}).value || "";
+    var wholesaleOn = (document.getElementById("wholesale-toggle") || {}).checked || false;
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ deadlineEnabled: deadlineOn, deadlineTime: deadlineVal }),
+      body: JSON.stringify({ deadlineEnabled: deadlineOn, deadlineTime: deadlineVal, wholesalePriceEnabled: wholesaleOn }),
     }).then(function() {
       if (statusEl) statusEl.textContent = "已儲存，重新載入中...";
       setTimeout(function() { location.reload(); }, 800);

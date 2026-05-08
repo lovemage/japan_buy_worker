@@ -45,6 +45,12 @@ let allForms = [];
 let activeFilter = "pending";
 let searchQuery = "";
 
+function isWholesaleEnabled() {
+  if (typeof window === "undefined") return false;
+  if (window.__WHOLESALE_ENABLED) return true;
+  return !!(window.__DISPLAY_SETTINGS && window.__DISPLAY_SETTINGS.wholesalePriceEnabled);
+}
+
 function matchesSearch(form, query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return true;
@@ -174,6 +180,7 @@ function renderForms(forms) {
         <button class="button secondary js-save-adjustment" type="button" data-form-id="${form.id}">儲存金額</button>
       </div>
       ${noteText ? `<p class="meta">整單備註：${noteText}</p>` : ""}
+      ${isWholesaleEnabled() ? `<button class="button secondary js-apply-wholesale" type="button" data-form-id="${form.id}">套用批發價</button>` : ""}
       ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此訂單</button>` : ""}
       <ul class="admin-form-items">${itemsHtml}</ul>
     </article>`;
@@ -243,6 +250,32 @@ function renderForms(forms) {
       const body = await res.json();
       target.adjustedItemsTotalTwd = body.adjustedItemsTotalTwd;
       target.adjustedShippingTotalTwd = body.adjustedShippingTotalTwd;
+      renderForms(allForms);
+    });
+  });
+
+  wrapper.querySelectorAll(".js-apply-wholesale").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const formId = Number(button.getAttribute("data-form-id"));
+      if (!Number.isInteger(formId) || formId <= 0) return;
+      if (!confirm("確定將此訂單金額改為批發價？將以商品批發價重新計算訂單總金額。")) return;
+      hideError();
+      button.disabled = true;
+      const res = await apiFetch("/api/admin/requirements", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: formId, applyWholesale: true }),
+      });
+      if (handleUnauthorized(res)) return;
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showError(data?.error || `套用批發價失敗：${res.status}`);
+        button.disabled = false;
+        return;
+      }
+      const body = await res.json();
+      const target = allForms.find((f) => f.id === formId);
+      if (target) target.adjustedItemsTotalTwd = body.adjustedItemsTotalTwd;
       renderForms(allForms);
     });
   });

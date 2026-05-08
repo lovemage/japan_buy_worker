@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS products (
   last_crawled_at TEXT,
   source_payload_json TEXT,
   status_badges_json TEXT,
+  wholesale_price_twd INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(source_site, source_product_code)

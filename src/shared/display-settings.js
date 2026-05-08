@@ -2,6 +2,7 @@ export const DEFAULT_DISPLAY_SETTINGS = {
   viewMode: "2card",
   promoEnabled: true,
   promoFilters: ["all", "350", "450", "550"],
+  wholesalePriceEnabled: false,
 };
 
 export function canManageStoreLogo(plan) {
