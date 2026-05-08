@@ -190,6 +190,31 @@
   transform: translateY(0);
 }
 
+.admin-sheet--fullscreen {
+  top: 0;
+  max-height: 100vh;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.admin-sheet--fullscreen .admin-sheet__handle {
+  display: none;
+}
+
+.admin-sheet--fullscreen .admin-sheet__header {
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+  border-bottom: 1px solid var(--admin-border-light);
+}
+
+.order-search-wrap {
+  margin-bottom: 8px;
+}
+
+.order-search-input {
+  width: 100%;
+  font-size: 14px;
+}
+
 .admin-sheet__handle {
   display: flex;
   justify-content: center;

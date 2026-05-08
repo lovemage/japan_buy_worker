@@ -43,6 +43,24 @@ const ITEM_STATUS_OPTIONS = [
 
 let allForms = [];
 let activeFilter = "pending";
+let searchQuery = "";
+
+function matchesSearch(form, query) {
+  const q = String(query || "").trim().toLowerCase();
+  if (!q) return true;
+  const fields = [
+    form.customerName,
+    form.memberPhone,
+    form.lineId,
+    form.orderCode,
+    form.id,
+  ];
+  return fields.some((v) => String(v ?? "").toLowerCase().includes(q));
+}
+
+function getSearchFiltered() {
+  return allForms.filter((f) => matchesSearch(f, searchQuery));
+}
 
 function statusSelectHtml(formId, current) {
   const value = String(current || "");
@@ -77,9 +95,10 @@ function productDetailUrl(code) {
 function renderFilterTabs() {
   const tabsEl = document.getElementById("order-filter-tabs");
   if (!tabsEl) return;
+  const searchFiltered = getSearchFiltered();
   const counts = {};
-  let total = allForms.length;
-  for (const f of allForms) {
+  let total = searchFiltered.length;
+  for (const f of searchFiltered) {
     counts[f.status] = (counts[f.status] || 0) + 1;
   }
   tabsEl.innerHTML = FILTER_TABS.map((t) => {
@@ -100,10 +119,16 @@ function renderForms(forms) {
   const wrapper = document.getElementById("admin-forms");
   if (!wrapper) return;
 
-  const filtered = activeFilter === "all" ? forms : forms.filter((f) => f.status === activeFilter);
+  const searchFiltered = forms.filter((f) => matchesSearch(f, searchQuery));
+  const filtered = activeFilter === "all" ? searchFiltered : searchFiltered.filter((f) => f.status === activeFilter);
 
   if (!Array.isArray(filtered) || filtered.length === 0) {
-    wrapper.innerHTML = `<p class="notice notice--info">目前沒有${activeFilter === "all" ? "" : FILTER_TABS.find((t) => t.value === activeFilter)?.label || ""}訂單。</p>`;
+    const filterLabel = activeFilter === "all" ? "" : FILTER_TABS.find((t) => t.value === activeFilter)?.label || "";
+    const trimmedQuery = String(searchQuery || "").trim();
+    const message = trimmedQuery
+      ? `沒有符合「${trimmedQuery}」的${filterLabel}訂單。`
+      : `目前沒有${filterLabel}訂單。`;
+    wrapper.innerHTML = `<p class="notice notice--info">${message}</p>`;
     return;
   }
 
@@ -379,6 +404,16 @@ let statsInitialized = false;
 
 export function initOrders() {
   loadForms();
+
+  const searchInput = document.getElementById("order-search-input");
+  if (searchInput) {
+    searchInput.value = searchQuery;
+    searchInput.addEventListener("input", () => {
+      searchQuery = searchInput.value;
+      renderFilterTabs();
+      renderForms(allForms);
+    });
+  }
 
   const toggle = document.getElementById("orders-stats-toggle");
   const label = document.getElementById("orders-mode-label");

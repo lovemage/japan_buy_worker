@@ -37,6 +37,8 @@ function openSheet(tab) {
 
   sheetTitle.textContent = TAB_TITLES[tab] || "";
 
+  sheet.classList.toggle("admin-sheet--fullscreen", tab === "orders");
+
   // Move panel content into sheet body
   sheetBody.innerHTML = "";
   sheetBody.appendChild(panel);
@@ -70,6 +72,7 @@ function closeSheet() {
   if (!sheet || !sheetOpen) return;
 
   sheet.classList.remove("is-open");
+  sheet.classList.remove("admin-sheet--fullscreen");
   sheetBackdrop.classList.remove("is-open");
   document.body.style.overflow = "";
   sheetOpen = false;
