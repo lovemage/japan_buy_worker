@@ -948,6 +948,11 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
       <div class="plan-dots" id="plan-dots" aria-label="方案選擇"></div>
     </div>
 
+    <!-- Plan explanation link -->
+    <p style="text-align:center;margin-top:18px;">
+      <button type="button" onclick="document.getElementById('plan-info-popup').style.display='flex';" style="background:none;border:none;padding:0;font:inherit;font-size:13px;color:var(--accent);text-decoration:underline;cursor:pointer;">方案說明</button>
+    </p>
+
     <!-- Comparison table -->
     <div class="compare-table">
       <table>
@@ -996,6 +1001,49 @@ body { font-family: 'Zen Maru Gothic', "Noto Sans TC", sans-serif; color: var(--
         <tr id="upgrade-detail-pro_proplus" style="display:none;"><td colspan="3" style="padding:10px 12px;background:#f9f9f9;font-size:12px;line-height:1.8;" id="upgrade-detail-body-pro_proplus"></td></tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Plan explanation popup -->
+<div id="plan-info-popup" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:8px;padding:24px 20px 20px;max-width:480px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,0.18);max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h3 style="margin:0;font-size:16px;font-weight:700;">方案說明</h3>
+      <button onclick="document.getElementById('plan-info-popup').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1;">×</button>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:14px;">挑選最適合你經營階段的方案，隨時都能升級。</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#f5f5f5;">
+          <th style="padding:8px 10px;text-align:left;border:1px solid #e5e5e5;white-space:nowrap;">方案</th>
+          <th style="padding:8px 10px;text-align:left;border:1px solid #e5e5e5;white-space:nowrap;">適合對象</th>
+          <th style="padding:8px 10px;text-align:left;border:1px solid #e5e5e5;">說明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;font-weight:700;">Free</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;">偶爾代購、賣二手</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;line-height:1.7;">零成本開始，每月可上架 10 件商品，適合分享商品網址給朋友或在社群媒體販售。</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;font-weight:700;">Plus</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;">輕量付費入門</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;line-height:1.7;">解鎖商品標籤與商店模板＋Logo，適合已有穩定少量訂單、想要更完整門面的賣家。</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;font-weight:700;">Pro</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;">認真經營代購</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;line-height:1.7;">AI 辨識無限次、AI 商店招牌，最多 60 件商品，適合每月穩定出國採購的代購者。</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;font-weight:700;">Pro+</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;">全職代購</td>
+          <td style="padding:8px 10px;border:1px solid #e5e5e5;line-height:1.7;">不限商品數量、自訂子網域、可切換 vovociAI v2 模型，適合把代購當主業的賣家。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#999;margin-top:14px;">所有方案皆可免費開始，付費方案請聯繫客服開啟。</p>
   </div>
 </div>
 
