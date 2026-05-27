@@ -110,7 +110,13 @@ export async function sendSMSViaRelay(
     body: JSON.stringify({ phone, message }),
   });
 
-  const data = (await resp.json()) as { ok: boolean; credit?: number; batchId?: string; error?: string };
+  const raw = await resp.text();
+  let data: { ok: boolean; credit?: number; batchId?: string; error?: string };
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error(`Every8D relay returned invalid JSON (HTTP ${resp.status}): ${raw.slice(0, 200)}`);
+  }
 
   if (!data.ok) {
     throw new Error(`Every8D relay failed: ${data.error || `HTTP ${resp.status}`}`);

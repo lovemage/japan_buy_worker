@@ -14,6 +14,7 @@ CRAWL_MAX_PAGES = "100"
 CRAWL_TIMEOUT_MS = "120000"
 APP_URL = "https://vovosnap.com"
 MAIN_DOMAIN = "vovosnap.com"
+SMS_RELAY_URL = "https://relay.vovosnap.com/send"
 
 # Secrets (set via: wrangler secret put <KEY>):
 # GOOGLE_CLIENT_ID
