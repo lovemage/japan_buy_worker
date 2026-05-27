@@ -24,6 +24,8 @@ MAIN_DOMAIN = "vovosnap.com"
 # PLATFORM_ADMIN_PASSWORD
 # EVERY8D_UID
 # EVERY8D_PWD
+# SMS_RELAY_URL (optional — relay URL when Cloudflare Worker → Every8D gets 403)
+# SMS_RELAY_TOKEN (optional — Bearer token for relay auth)
 
 [[d1_databases]]
 binding = "DB"

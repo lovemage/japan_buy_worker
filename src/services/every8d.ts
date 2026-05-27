@@ -10,7 +10,7 @@ type Every8DConfig = {
   siteUrl: string;
 };
 
-const EVERY8D_FIXED_SITE_URL = "api.e8d.tw";
+const EVERY8D_FIXED_SITE_URL = "new.e8d.tw";
 
 function summarizeHttpFailure(resp: Response, text: string): string {
   const server = resp.headers.get("server") || "";
@@ -85,6 +85,38 @@ export async function sendSMS(
   const raw = await resp.text();
   if (!resp.ok) throw new Error(`Every8D SMS failed: ${summarizeHttpFailure(resp, raw)} (${baseUrl})`);
   return parseSendSMSRawResponse(raw);
+}
+
+/**
+ * Send SMS via relay (workaround for Cloudflare Worker → Every8D 403)
+ * Used when SMS_RELAY_URL is configured.
+ */
+export async function sendSMSViaRelay(
+  relayUrl: string,
+  relayToken: string | undefined,
+  phone: string,
+  message: string
+): Promise<{ batchId: string; credit: number }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (relayToken) {
+    headers["Authorization"] = `Bearer ${relayToken}`;
+  }
+
+  const resp = await fetch(relayUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ phone, message }),
+  });
+
+  const data = (await resp.json()) as { ok: boolean; credit?: number; batchId?: string; error?: string };
+
+  if (!data.ok) {
+    throw new Error(`Every8D relay failed: ${data.error || `HTTP ${resp.status}`}`);
+  }
+
+  return { batchId: data.batchId || "", credit: data.credit || 0 };
 }
 
 /**

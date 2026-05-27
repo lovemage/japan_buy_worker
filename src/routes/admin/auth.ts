@@ -126,6 +126,8 @@ type AuthEnv = {
   RESEND_API_KEY: string;
   EVERY8D_UID: string;
   EVERY8D_PWD: string;
+  SMS_RELAY_URL?: string;
+  SMS_RELAY_TOKEN?: string;
   APP_URL: string; // e.g. "https://vovosnap.com"
 };
 
@@ -691,6 +693,7 @@ export async function handleResendVerificationEmail(
 
 import {
   sendSMS,
+  sendSMSViaRelay,
   generateVerificationCode,
   createEvery8DConfig,
 } from "../../services/every8d.js";
@@ -787,19 +790,30 @@ export async function handleSendPhoneCode(
   }
 
   try {
-    const config = createEvery8DConfig({
-      EVERY8D_UID: authEnv.EVERY8D_UID,
-      EVERY8D_PWD: authEnv.EVERY8D_PWD,
-    });
-
     const message = `您的 vovosnap 驗證碼為 ${code}，有效期 10 分鐘。如非本人操作請忽略此簡訊。`;
-    console.log("Sending SMS via Every8D to:", cleanPhone, "site:", config.siteUrl);
-    const result = await sendSMS(config, cleanPhone, message);
-    console.log("Every8D SMS result:", result);
+
+    if (authEnv.SMS_RELAY_URL) {
+      console.log("Sending SMS via relay to:", cleanPhone, "relay:", authEnv.SMS_RELAY_URL);
+      const result = await sendSMSViaRelay(
+        authEnv.SMS_RELAY_URL,
+        authEnv.SMS_RELAY_TOKEN,
+        cleanPhone,
+        message
+      );
+      console.log("SMS relay result:", result);
+    } else {
+      const config = createEvery8DConfig({
+        EVERY8D_UID: authEnv.EVERY8D_UID,
+        EVERY8D_PWD: authEnv.EVERY8D_PWD,
+      });
+      console.log("Sending SMS via Every8D to:", cleanPhone, "site:", config.siteUrl);
+      const result = await sendSMS(config, cleanPhone, message);
+      console.log("Every8D SMS result:", result);
+    }
 
     return json({ ok: true, message: "驗證碼已發送" });
   } catch (e) {
-    console.error("Every8D SMS error:", e);
+    console.error("SMS error:", e);
     return json({ ok: false, error: "發送簡訊失敗: " + (e instanceof Error ? e.message : String(e)) }, 500);
   }
 }
