@@ -116,6 +116,27 @@ section.alt { background: var(--bg-alt); }
   .demo-scanline, .demo-flash { animation: none !important; }
   .demo-shot, .demo-scan, .demo-card { transition: none; }
 }
+/* 痛點對比 */
+.compare-grid { display: grid; grid-template-columns: 1fr 56px 1fr; gap: 18px; align-items: stretch;
+                max-width: 880px; margin: 40px auto 0; text-align: left; }
+.compare-col { background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+               padding: 28px 26px; box-shadow: var(--shadow); }
+.compare-col h3 { font-size: 18px; font-weight: 900; margin-bottom: 16px; }
+.compare-col li { list-style: none; padding: 9px 0; font-size: 15px; border-bottom: 1px dashed var(--line); }
+.compare-col li:last-child { border-bottom: none; }
+.compare-old { opacity: .85; }
+.compare-old h3 { color: var(--faint); }
+.compare-new { border: 2px solid var(--orange); position: relative; }
+.compare-new h3 { color: var(--orange); }
+.compare-vs { align-self: center; text-align: center; font-weight: 900; color: var(--faint); }
+.compare-cost { margin-top: 16px; font-size: 14px; color: var(--muted); }
+.compare-cost strong { font-size: 18px; color: var(--ink); }
+.compare-cost.good strong { color: var(--orange); }
+.compare-punch { margin-top: 32px; font-size: clamp(18px, 2.6vw, 24px); font-weight: 900; }
+@media (max-width: 760px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-vs { padding: 4px 0; }
+}
 /* ── Nav ─────────────────────────────────── */
 .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92);
        backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
@@ -200,7 +221,38 @@ section.alt { background: var(--bg-alt); }
     </div>
   </div>
 </section>
-<!-- TASK 4: PAIN COMPARE -->
+<!-- ── 痛點對比 ────────────────────────────── -->
+<section class="alt" id="compare">
+  <div class="wrap center">
+    <span class="sec-kicker">你的時間不該花在排版</span>
+    <h2 class="sec-title">還在這樣上架商品嗎？</h2>
+    <div class="compare-grid">
+      <div class="compare-col compare-old">
+        <h3>手動上架</h3>
+        <ul>
+          <li>🔍 上網查商品資料、翻規格</li>
+          <li>✍️ 自己想文案、一句一句打</li>
+          <li>🖼️ 修圖、去背、排版</li>
+          <li>🧮 查匯率、按計算機算售價</li>
+          <li>💬 LINE 訊息一個一個報價</li>
+        </ul>
+        <p class="compare-cost">一件商品 <strong>1～2 小時</strong></p>
+      </div>
+      <div class="compare-vs">VS</div>
+      <div class="compare-col compare-new">
+        <h3>用 我拍</h3>
+        <ul>
+          <li>📸 拍一張照</li>
+          <li>🤖 AI 自動辨識、寫文案、抓規格</li>
+          <li>💱 匯率自動換算、售價自動算好</li>
+          <li>🔗 連結丟到 LINE 群，客人自己下單</li>
+        </ul>
+        <p class="compare-cost good">一件商品 <strong>60 秒</strong></p>
+      </div>
+    </div>
+    <p class="compare-punch">一天上架 30 件，時間還給你自己。</p>
+  </div>
+</section>
 <!-- TASK 5: STEPS / FEATURES / PROOF -->
 <!-- TASK 6: PRICING / FAQ / FINAL CTA -->
 
