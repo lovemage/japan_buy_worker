@@ -45,7 +45,7 @@ const PLATFORM_ADMIN_EMAILS = [
   "aistorm0910@gmail.com",
 ];
 
-async function ensureLogTable(db: D1DatabaseLike): Promise<void> {
+export async function ensureLogTable(db: D1DatabaseLike): Promise<void> {
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS plan_change_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +62,7 @@ async function ensureLogTable(db: D1DatabaseLike): Promise<void> {
   `).run();
 }
 
-async function getTestStoreIds(db: D1DatabaseLike): Promise<number[]> {
+export async function getTestStoreIds(db: D1DatabaseLike): Promise<number[]> {
   const row = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'test_store_ids'")
     .first<{ value: string }>();

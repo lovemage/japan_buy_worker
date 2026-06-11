@@ -23,6 +23,13 @@ import {
 } from "./routes/admin/auth";
 import { handlePlatformAdmin } from "./routes/platform-admin";
 import { DEFAULT_PLAN_OFFERS } from "./shared/plan-offers.js";
+import {
+  handleBillingCheckout,
+  handleBillingNotify,
+  handleBillingReturn,
+  handleBillingOrderStatus,
+  handleBillingOrders,
+} from "./routes/billing";
 
 type Env = {
   DB: D1DatabaseLike;
@@ -47,6 +54,11 @@ type Env = {
   PLATFORM_ADMIN_PASSWORD?: string;
   // Multi-tenant domain
   MAIN_DOMAIN?: string; // e.g. "vovosnap.com"
+  // PAYUNi billing
+  PAYUNI_MER_ID?: string;
+  PAYUNI_HASH_KEY?: string;
+  PAYUNI_HASH_IV?: string;
+  PAYUNI_SANDBOX?: string;
 };
 
 function normalizeMainDomain(raw: string | undefined): string {
@@ -267,6 +279,22 @@ export default {
     }
     if (url.pathname === "/api/plan-offers") {
       return json({ ok: true, offers: DEFAULT_PLAN_OFFERS });
+    }
+    // ── PAYUNi billing（主網域） ──
+    if (url.pathname === "/api/billing/checkout") {
+      return handleBillingCheckout(request, env);
+    }
+    if (url.pathname === "/api/billing/notify") {
+      return handleBillingNotify(request, env);
+    }
+    if (url.pathname === "/api/billing/return") {
+      return handleBillingReturn(request, env);
+    }
+    if (url.pathname === "/api/billing/order-status") {
+      return handleBillingOrderStatus(request, env);
+    }
+    if (url.pathname === "/api/billing/orders") {
+      return handleBillingOrders(request, env);
     }
 
     // ── Auth routes (platform-level, not tenant-scoped) ──
