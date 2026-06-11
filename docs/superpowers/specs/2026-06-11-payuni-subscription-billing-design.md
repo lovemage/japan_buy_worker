@@ -34,7 +34,7 @@
 
 ```
 賣家在首頁/後台點「立即開通」並選 方案+期數
-  → POST /api/admin/billing/checkout（需登入 session）
+  → POST /api/billing/checkout（主網域；以 store_sessions cookie 驗證登入）
       以 src/shared/plan-offers.js 在伺服器端決定金額（不信任前端價格）
       建立 payment_orders（status=pending，MerTradeNo=唯一含隨機碼）
       回傳 { action: UPP URL, fields: {MerID, Version, EncryptInfo, HashInfo} }
@@ -72,9 +72,9 @@ CREATE TABLE payment_orders (
 CREATE INDEX idx_payment_orders_store ON payment_orders(store_id);
 ```
 
-### `src/services/payuni.ts`
+### `src/shared/payuni.js`
 
-純函式模組（可單測、不碰 D1）：
+純函式模組（可單測、不碰 D1）。放 `src/shared/`（比照 `plan-offers.js`）而非 TS service：repo 的 `node:test` 測試只能直接 import 純 JS 模組，協議層放 JS 才能被 `test/payuni.test.js` 完整單測；另把開通決策抽成 `src/shared/billing-logic.js` 一併單測。
 
 - `encryptInfo(params, key, iv): Promise<string>` — WebCrypto AES-GCM。注意 WebCrypto 輸出為 ciphertext‖tag 連體，須切出最後 16 bytes 當 tag，再組 PHP 相容格式
 - `decryptInfo(hex, key, iv): Promise<Record<string,string>>` — 反向流程＋query string parse；tag 驗證失敗即 throw
@@ -84,25 +84,27 @@ CREATE INDEX idx_payment_orders_store ON payment_orders(store_id);
 
 ### `src/routes/billing.ts`
 
-- `POST /api/admin/billing/checkout`（router 既有 admin 區段，自帶 auth）：body `{ plan, months }`；查 `getPlanOfferByMonths` 不存在即 400；free 方案不可購買；建立訂單、回 UPP 欄位
+所有端點掛**主網域**（`src/index.ts`，與 `/auth/me`、`/api/plan-offers` 同區段）。session cookie 為 host-only、首頁定價 CTA 也在主網域，故不走 tenant router：
+
+- `POST /api/billing/checkout`（查 `store_sessions` cookie 驗證登入）：body `{ plan, months }`；查 `getPlanOfferByMonths` 不存在即 400；free 方案不可購買；建立訂單、回 UPP 欄位
 - `POST /api/billing/notify`（公開）：驗證解密失敗回 400；以 `MerTradeNo` 查訂單，查無回 404；**冪等**——訂單已是 paid 直接回 200 OK 不重複開通；`TradeStatus=1` → 標記 paid＋開通；ATM 取號通知（未入帳）→ 回填 atm_* 欄位、維持 pending；回應純文字 `OK`（PAYUNi 要求）
 - `POST /api/billing/return`：同樣驗證，302 至 `/billing-result.html?status=...&order=...`
-- `GET /api/admin/billing/orders`：本店訂單列表（後台顯示用）
-- `GET /api/admin/billing/order-status?merTradeNo=`：結果頁輪詢用（ATM pending / paid）
+- `GET /api/billing/orders`（需登入）：本店訂單列表（後台顯示用）
+- `GET /api/billing/order-status?order={merTradeNo}`（需登入，僅限本店訂單）：結果頁輪詢用（ATM pending / paid）
 
-### 方案開通邏輯（notify 內）
+### 方案開通邏輯（notify 內，抽至 `src/shared/billing-logic.js`）
 
 ```
 同方案續購：新到期日 = max(now, 現有 plan_expires_at) + days
-跨方案購買：plan = 新方案，plan_started_at = now，plan_expires_at = now + days
+跨方案購買：plan = 新方案，plan_expires_at = now + days
             （v1 不自動折算舊方案餘額；platform-admin 人工 proration 仍可用）
-plan_paid_amount = amount
+兩種情況皆更新：plan_started_at = now、plan_paid_amount = amount
+成功開通後寫入 plan_change_logs（重用 platform-admin 的 ensureLogTable / getTestStoreIds，改為 export）
 ```
 
-### Router 掛載（`src/router.ts`）
+### 掛載（`src/index.ts` 主網域區段）
 
-- admin 區段加 `/api/admin/billing/checkout`、`/api/admin/billing/orders`、`/api/admin/billing/order-status`
-- 公開區段（主網域）加 `/api/billing/notify`、`/api/billing/return`
+- `/api/billing/checkout`、`/api/billing/notify`、`/api/billing/return`、`/api/billing/orders`、`/api/billing/order-status`
 
 ### 前端
 
