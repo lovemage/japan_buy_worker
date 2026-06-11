@@ -15,6 +15,7 @@ CRAWL_TIMEOUT_MS = "120000"
 APP_URL = "https://vovosnap.com"
 MAIN_DOMAIN = "vovosnap.com"
 SMS_RELAY_URL = "https://relay.vovosnap.com/send"
+PAYUNI_SANDBOX = "1"  # 先走 sandbox 驗流程；切正式改 "0" 並換正式金鑰
 
 # Secrets (set via: wrangler secret put <KEY>):
 # GOOGLE_CLIENT_ID
@@ -27,6 +28,9 @@ SMS_RELAY_URL = "https://relay.vovosnap.com/send"
 # EVERY8D_PWD
 # SMS_RELAY_URL (optional — relay URL when Cloudflare Worker → Every8D gets 403)
 # SMS_RELAY_TOKEN (optional — Bearer token for relay auth)
+# PAYUNI_MER_ID
+# PAYUNI_HASH_KEY
+# PAYUNI_HASH_IV
 
 [[d1_databases]]
 binding = "DB"
