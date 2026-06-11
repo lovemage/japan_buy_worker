@@ -598,9 +598,8 @@ fetch("/api/plan-limits").then(function(r) { return r.json(); }).then(function(d
 }).catch(function() {});
 
 // Auth state — 自舊檔 1498-1520 移植；適配新 nav (#nav-auth-btn / #nav-cta-btn)
-var AUTH_STATE = { loggedIn: false };
-(function() {
-  fetch("/auth/me").then(function(r) { return r.json(); }).then(function(d) {
+var AUTH_STATE = { loggedIn: false, ready: null };
+AUTH_STATE.ready = fetch("/auth/me").then(function(r) { return r.json(); }).then(function(d) {
     if (!d.ok || !d.store) return;
     AUTH_STATE.loggedIn = true;
     var btn = document.getElementById("nav-auth-btn");
@@ -627,7 +626,6 @@ var AUTH_STATE = { loggedIn: false };
       ctaBtn.removeAttribute("onclick");
     }
   }).catch(function() {});
-})();
 
 // ── FAQ accordion ──────────────────────────────────────────────────────────
 function toggleFaq(btn) {
@@ -829,18 +827,21 @@ function scrollPlan(idx) {
 // ── Checkout modal — Step 2 from plan ─────────────────────────────────────
 // AUTH_STATE is declared above in the auth/me section
 function openCheckoutModal(plan) {
-  if (!AUTH_STATE.loggedIn) { window.location.href = "/login.html"; return; }
-  var offers = (PLAN_OFFERS || fallbackOffers())[plan] || [];
-  var box = document.getElementById("checkout-options");
-  var labels = { plus: "Plus", pro: "Pro", proplus: "Pro+" };
-  document.getElementById("checkout-title").textContent = "開通 " + (labels[plan] || plan) + " 方案";
-  box.innerHTML = offers.map(function(o) {
-    var bonus = o.bonusDays > 0 ? "＋送 " + o.bonusDays + " 天" : "";
-    return '<button class="checkout-opt" onclick="startPlanCheckout(\'' + plan + "', " + o.months + ')">' +
-      "<span>" + o.months + " 個月" + (bonus ? "（" + bonus + "）" : "") + "</span>" +
-      "<strong>NT$ " + Number(o.amount).toLocaleString() + "</strong></button>";
-  }).join("");
-  document.getElementById("checkout-backdrop").classList.add("is-open");
+  var go = function () {
+    if (!AUTH_STATE.loggedIn) { window.location.href = "/login.html"; return; }
+    var offers = (PLAN_OFFERS || fallbackOffers())[plan] || [];
+    var box = document.getElementById("checkout-options");
+    var labels = { plus: "Plus", pro: "Pro", proplus: "Pro+" };
+    document.getElementById("checkout-title").textContent = "開通 " + (labels[plan] || plan) + " 方案";
+    box.innerHTML = offers.map(function(o) {
+      var bonus = o.bonusDays > 0 ? "＋送 " + o.bonusDays + " 天" : "";
+      return '<button class="checkout-opt" onclick="startPlanCheckout(\'' + plan + "', " + o.months + ')">' +
+        "<span>" + o.months + " 個月" + (bonus ? "（" + bonus + "）" : "") + "</span>" +
+        "<strong>NT$ " + Number(o.amount).toLocaleString() + "</strong></button>";
+    }).join("");
+    document.getElementById("checkout-backdrop").classList.add("is-open");
+  };
+  (AUTH_STATE.ready || Promise.resolve()).then(go, go);
 }
 function closeCheckoutModal() {
   document.getElementById("checkout-backdrop").classList.remove("is-open");

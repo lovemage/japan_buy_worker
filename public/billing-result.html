@@ -80,7 +80,13 @@
         }
         if (o.atm) { renderAtm(o); }
         tries++;
-        if (tries < 36) setTimeout(poll, 5000); // 輪詢最多 3 分鐘
+        if (tries < 36) {
+          setTimeout(poll, 5000); // 輪詢最多 3 分鐘
+        } else if (!o.atm) {
+          render('<div class="icon">⏳</div><h1>尚未收到付款結果</h1>' +
+            '<p>若你已完成付款，方案會在系統收到金流通知後自動開通。<br>可重新整理此頁查看，或聯繫客服。</p>' +
+            '<a class="btn" href="">重新整理</a>');
+        }
       })
       .catch(renderError);
   }
