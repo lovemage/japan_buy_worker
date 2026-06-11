@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>付款結果｜我拍開店平台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Noto Sans TC", sans-serif; background: #f7f8fa; color: #1a1d21;
+         min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #fff; border: 1px solid #e6e8eb; border-radius: 16px; padding: 40px 32px;
+          max-width: 480px; width: 100%; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .icon { font-size: 56px; line-height: 1; margin-bottom: 16px; }
+  h1 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  p { font-size: 15px; color: #5c636e; line-height: 1.8; }
+  .atm-box { margin: 20px 0 4px; padding: 16px; background: #f7f8fa; border-radius: 12px; text-align: left; }
+  .atm-box dt { font-size: 12px; color: #8a919c; margin-top: 10px; }
+  .atm-box dt:first-child { margin-top: 0; }
+  .atm-box dd { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .btn { display: inline-block; margin-top: 24px; padding: 13px 32px; border-radius: 10px;
+         background: #f26b1d; color: #fff; font-weight: 700; text-decoration: none; font-size: 15px; }
+  .muted { font-size: 13px; color: #8a919c; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon">⏳</div>
+  <h1>正在確認付款狀態…</h1>
+  <p>請稍候，正在向金流系統確認你的訂單。</p>
+</div>
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var order = params.get("order") || "";
+  var card = document.getElementById("card");
+  var tries = 0;
+
+  function render(html) { card.innerHTML = html; }
+
+  function renderError() {
+    render('<div class="icon">⚠️</div><h1>付款狀態確認失敗</h1>' +
+      '<p>若你已完成付款，方案會在系統收到通知後自動開通。<br>有問題請聯繫客服。</p>' +
+      '<a class="btn" href="/">回首頁</a>');
+  }
+
+  function renderPaid(o) {
+    render('<div class="icon">🎉</div><h1>付款成功，方案已開通！</h1>' +
+      '<p>' + o.plan.toUpperCase() + ' 方案 ' + o.months + ' 個月已生效，現在就開始上架商品吧。</p>' +
+      '<a class="btn" href="/login.html">進入我的商店後台</a>');
+  }
+
+  function renderAtm(o) {
+    var atm = o.atm || {};
+    render('<div class="icon">🏦</div><h1>請完成 ATM 轉帳</h1>' +
+      '<p>轉帳入帳後方案會自動開通，無需再操作。</p>' +
+      '<dl class="atm-box">' +
+      '<dt>銀行代碼</dt><dd>' + (atm.bankCode || "—") + '</dd>' +
+      '<dt>虛擬帳號</dt><dd>' + (atm.account || "—") + '</dd>' +
+      '<dt>繳費期限</dt><dd>' + (atm.expireAt || "—") + '</dd>' +
+      '<dt>金額</dt><dd>NT$ ' + Number(o.amount).toLocaleString() + '</dd>' +
+      '</dl>' +
+      '<p class="muted">這個頁面會自動更新付款狀態。</p>' +
+      '<a class="btn" href="/">回首頁</a>');
+  }
+
+  function poll() {
+    if (!order) { renderError(); return; }
+    fetch("/api/billing/order-status?order=" + encodeURIComponent(order))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) { renderError(); return; }
+        var o = d.order;
+        if (o.status === "paid") { renderPaid(o); return; }
+        if (o.status === "failed") {
+          render('<div class="icon">❌</div><h1>付款未完成</h1>' +
+            '<p>這筆訂單未成功，未扣款或將自動退刷。<br>請重新選購方案，或聯繫客服。</p>' +
+            '<a class="btn" href="/#pricing">重新選購</a>');
+          return;
+        }
+        if (o.atm) { renderAtm(o); }
+        tries++;
+        if (tries < 36) setTimeout(poll, 5000); // 輪詢最多 3 分鐘
+      })
+      .catch(renderError);
+  }
+  poll();
+})();
+</script>
+</body>
+</html>
