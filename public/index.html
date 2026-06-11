@@ -182,7 +182,6 @@ section.alt { background: var(--bg-alt); }
 .plan-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 26px 4px 18px; cursor: grab; }
 .plan-track::-webkit-scrollbar { display: none; }
 .plan-track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
-.plan-track.is-dragging .plan { pointer-events: none; }
 .plan-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
 .plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; transition: all 0.2s; }
 .plan-dot.active { background: var(--orange); width: 20px; border-radius: 4px; }
@@ -426,7 +425,7 @@ section.alt { background: var(--bg-alt); }
             <li>商店 SSL 證書</li>
             <li>訂單統計小助手</li>
           </ul>
-          <button class="btn btn-primary plan-buy" data-plan="plus" onclick="trackCta('pricing'); openCheckoutModal(this.dataset.plan)">立即開通</button>
+          <button type="button" class="btn btn-primary plan-buy" data-plan="plus">立即開通</button>
         </div>
         <!-- Pro (popular) -->
         <div class="plan pop" data-plan="pro">
@@ -447,7 +446,7 @@ section.alt { background: var(--bg-alt); }
             <li>商店 SSL 證書</li>
             <li>訂單統計小助手</li>
           </ul>
-          <button class="btn btn-primary plan-buy" data-plan="pro" onclick="trackCta('pricing'); openCheckoutModal(this.dataset.plan)">立即開通</button>
+          <button type="button" class="btn btn-primary plan-buy" data-plan="pro">立即開通</button>
         </div>
         <!-- Pro+ -->
         <div class="plan" data-plan="proplus">
@@ -470,7 +469,7 @@ section.alt { background: var(--bg-alt); }
             <li>商店 SSL 證書</li>
             <li>訂單統計小助手</li>
           </ul>
-          <button class="btn btn-primary plan-buy" data-plan="proplus" onclick="trackCta('pricing'); openCheckoutModal(this.dataset.plan)">立即開通</button>
+          <button type="button" class="btn btn-primary plan-buy" data-plan="proplus">立即開通</button>
         </div>
       </div>
       <div class="plan-dots" id="plan-dots" aria-label="方案選擇"></div>
@@ -794,19 +793,36 @@ function scrollPlan(idx) {
     document.querySelectorAll("#plan-dots .plan-dot").forEach(function(d, i) { d.classList.toggle("active", i === closest); });
   });
   // PC drag scroll
-  var isDown = false, startX = 0, scrollStart = 0;
+  var isDown = false, startX = 0, scrollStart = 0, didDrag = false;
   planTrack.addEventListener("mousedown", function(e) {
-    isDown = true; startX = e.pageX; scrollStart = planTrack.scrollLeft;
+    isDown = true; didDrag = false; startX = e.pageX; scrollStart = planTrack.scrollLeft;
     planTrack.classList.add("is-dragging");
   });
-  planTrack.addEventListener("mouseleave", function() { isDown = false; planTrack.classList.remove("is-dragging"); });
-  planTrack.addEventListener("mouseup", function() { isDown = false; planTrack.classList.remove("is-dragging"); });
+  function endDrag() { isDown = false; planTrack.classList.remove("is-dragging"); }
+  planTrack.addEventListener("mouseleave", endDrag);
+  planTrack.addEventListener("mouseup", endDrag);
+  window.addEventListener("mouseup", endDrag);
+  window.addEventListener("blur", endDrag);
   planTrack.addEventListener("mousemove", function(e) {
     if (!isDown) return;
+    if (Math.abs(e.pageX - startX) > 6) didDrag = true;
     e.preventDefault();
     planTrack.scrollLeft = scrollStart - (e.pageX - startX);
   });
+  planTrack.addEventListener("click", function(e) {
+    if (!didDrag) return;
+    e.preventDefault();
+    e.stopPropagation();
+    didDrag = false;
+  }, true);
 })();
+
+document.querySelectorAll(".plan-buy").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    trackCta("pricing");
+    openCheckoutModal(this.dataset.plan);
+  });
+});
 
 // ── Checkout modal — Step 2 from plan ─────────────────────────────────────
 // AUTH_STATE is declared above in the auth/me section
