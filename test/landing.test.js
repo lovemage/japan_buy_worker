@@ -19,6 +19,10 @@ test("landing page carries the SaaS redesign without dropping critical behaviors
     'id="ai-demo"',
     "免費開店",
     "查看範例店舖",
+    "creator-avatar-01.webp",
+    "creator-avatar-02.webp",
+    "creator-avatar-03.webp",
+    "creator-avatar-04.webp",
     // 痛點對比區
     "還在這樣上架商品嗎",
     "一天上架 30 件",
