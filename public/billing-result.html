@@ -11,7 +11,8 @@
          min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .card { background: #fff; border: 1px solid #e6e8eb; border-radius: 16px; padding: 40px 32px;
           max-width: 480px; width: 100%; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-  .icon { font-size: 56px; line-height: 1; margin-bottom: 16px; }
+  .icon { line-height: 0; margin-bottom: 16px; display: flex; justify-content: center; }
+  .icon svg { width: 56px; height: 56px; }
   h1 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
   p { font-size: 15px; color: #5c636e; line-height: 1.8; }
   .atm-box { margin: 20px 0 4px; padding: 16px; background: #f7f8fa; border-radius: 12px; text-align: left; }
@@ -25,7 +26,7 @@
 </head>
 <body>
 <div class="card" id="card">
-  <div class="icon">⏳</div>
+  <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f26b1d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
   <h1>正在確認付款狀態…</h1>
   <p>請稍候，正在向金流系統確認你的訂單。</p>
 </div>
@@ -39,20 +40,20 @@
   function render(html) { card.innerHTML = html; }
 
   function renderError() {
-    render('<div class="icon">⚠️</div><h1>付款狀態確認失敗</h1>' +
+    render('<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#e0a800" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><h1>付款狀態確認失敗</h1>' +
       '<p>若你已完成付款，方案會在系統收到通知後自動開通。<br>有問題請聯繫客服。</p>' +
       '<a class="btn" href="/">回首頁</a>');
   }
 
   function renderPaid(o) {
-    render('<div class="icon">🎉</div><h1>付款成功，方案已開通！</h1>' +
+    render('<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a9e6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div><h1>付款成功，方案已開通！</h1>' +
       '<p>' + o.plan.toUpperCase() + ' 方案 ' + o.months + ' 個月已生效，現在就開始上架商品吧。</p>' +
       '<a class="btn" href="/login.html">進入我的商店後台</a>');
   }
 
   function renderAtm(o) {
     var atm = o.atm || {};
-    render('<div class="icon">🏦</div><h1>請完成 ATM 轉帳</h1>' +
+    render('<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f26b1d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></div><h1>請完成 ATM 轉帳</h1>' +
       '<p>轉帳入帳後方案會自動開通，無需再操作。</p>' +
       '<dl class="atm-box">' +
       '<dt>銀行代碼</dt><dd>' + (atm.bankCode || "—") + '</dd>' +
@@ -73,7 +74,7 @@
         var o = d.order;
         if (o.status === "paid") { renderPaid(o); return; }
         if (o.status === "failed") {
-          render('<div class="icon">❌</div><h1>付款未完成</h1>' +
+          render('<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#d93636" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div><h1>付款未完成</h1>' +
             '<p>這筆訂單未成功，未扣款或將自動退刷。<br>請重新選購方案，或聯繫客服。</p>' +
             '<a class="btn" href="/#pricing">重新選購</a>');
           return;
@@ -83,7 +84,7 @@
         if (tries < 36) {
           setTimeout(poll, 5000); // 輪詢最多 3 分鐘
         } else if (!o.atm) {
-          render('<div class="icon">⏳</div><h1>尚未收到付款結果</h1>' +
+          render('<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#8a919c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><h1>尚未收到付款結果</h1>' +
             '<p>若你已完成付款，方案會在系統收到金流通知後自動開通。<br>可重新整理此頁查看，或聯繫客服。</p>' +
             '<a class="btn" href="">重新整理</a>');
         }
