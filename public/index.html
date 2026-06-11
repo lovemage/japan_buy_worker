@@ -64,6 +64,58 @@ section.alt { background: var(--bg-alt); }
 .btn-lg { padding: 16px 34px; font-size: 17px; }
 .btn-sm { padding: 9px 20px; font-size: 14px; }
 /* 各 section 專屬樣式由 Task 3-6 加在這之後 */
+/* ── Hero ─────────────────────────────────── */
+.hero { padding: 96px 0 80px; background: linear-gradient(180deg, var(--orange-soft) 0%, #fff 55%); }
+.hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
+.hero h1 { font-size: clamp(34px, 5.4vw, 56px); font-weight: 900; line-height: 1.25; letter-spacing: .01em; }
+.hero h1 em { font-style: normal; color: var(--orange); }
+.hero-sub { font-size: 17px; color: var(--muted); margin: 18px 0 28px; max-width: 460px; }
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero-proof { margin-top: 20px; font-size: 14px; color: var(--faint); }
+.hero-proof strong { color: var(--ink); }
+/* demo：三幕輪播，由 JS 切 data-phase */
+.hero-demo { position: relative; }
+.demo-phone { background: #fff; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow);
+              padding: 18px; min-height: 360px; position: relative; overflow: hidden; }
+.demo-shot, .demo-scan, .demo-card { position: absolute; inset: 18px; opacity: 0; transition: opacity .45s ease; }
+.hero-demo[data-phase="0"] .demo-shot,
+.hero-demo[data-phase="1"] .demo-scan,
+.hero-demo[data-phase="2"] .demo-card { opacity: 1; }
+.demo-photo { height: 100%; display: flex; align-items: center; justify-content: center;
+              background: var(--bg-alt); border-radius: 14px; color: var(--muted); font-weight: 700; }
+.demo-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.hero-demo[data-phase="0"] .demo-flash { animation: flash 1.2s ease 1; }
+@keyframes flash { 0%,100% { opacity: 0; } 12% { opacity: .9; } 30% { opacity: 0; } }
+.demo-scanline { height: 3px; background: var(--orange); border-radius: 2px; box-shadow: 0 0 12px var(--orange);
+                 animation: scan 1.6s ease-in-out infinite; }
+@keyframes scan { 0%,100% { transform: translateY(0); } 50% { transform: translateY(220px); } }
+.demo-scan-label { font-weight: 700; color: var(--orange); margin: 14px 0 10px; }
+.demo-found li { list-style: none; font-size: 14px; color: var(--ink); background: var(--bg-alt);
+                 border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; opacity: 0; transform: translateY(6px); }
+.hero-demo[data-phase="1"] .demo-found li { animation: rise .4s ease forwards; }
+.hero-demo[data-phase="1"] .demo-found li:nth-child(2) { animation-delay: .5s; }
+.hero-demo[data-phase="1"] .demo-found li:nth-child(3) { animation-delay: 1s; }
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+.demo-card { display: flex; flex-direction: column; gap: 6px; }
+.demo-card-img { font-size: 64px; text-align: center; background: var(--bg-alt); border-radius: 14px; padding: 26px 0; }
+.demo-card-name { font-weight: 900; font-size: 18px; }
+.demo-card-desc { font-size: 13px; color: var(--muted); }
+.demo-card-price { font-weight: 900; color: var(--orange); font-size: 20px; }
+.demo-card-btn { background: var(--orange); color: #fff; text-align: center; border-radius: 8px;
+                 padding: 9px 0; font-size: 14px; font-weight: 700; }
+.demo-card-done { font-size: 13px; color: var(--green); font-weight: 700; }
+.demo-steps { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+.demo-step { font-size: 13px; color: var(--faint); background: #fff; border: 1px solid var(--line);
+             border-radius: 999px; padding: 5px 14px; transition: all .3s; }
+.demo-step.active { color: #fff; background: var(--orange); border-color: var(--orange); }
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+  .hero { padding: 56px 0 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-scanline, .demo-flash { animation: none !important; }
+  .demo-shot, .demo-scan, .demo-card { transition: none; }
+}
 /* ── Nav ─────────────────────────────────── */
 .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92);
        backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
@@ -103,7 +155,51 @@ section.alt { background: var(--bg-alt); }
   </div>
 </header>
 
-<!-- TASK 3: HERO -->
+<!-- ── Hero ────────────────────────────────── -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="sec-kicker">AI 自動辨識・自動上架</span>
+      <h1>拍一張照，<br /><em>商品就上架了</em></h1>
+      <p class="hero-sub">AI 自動辨識商品、寫文案、抓規格、換算匯率定價——60 秒生成可以直接下單的商品頁。不用學電商系統，不用排版。</p>
+      <div class="hero-cta">
+        <a href="/login.html" class="btn btn-primary btn-lg" onclick="trackCta('hero')">免費開店</a>
+        <a href="https://japan.vovosnap.com/" class="btn btn-ghost btn-lg" target="_blank" rel="noopener">查看範例店舖</a>
+      </div>
+      <p class="hero-proof">已有 <strong>10,000+</strong> 位創作者與代購賣家使用・平台<strong>不抽成</strong></p>
+    </div>
+    <div class="hero-demo" id="ai-demo" aria-label="AI 上架流程演示">
+      <div class="demo-phone">
+        <div class="demo-shot">
+          <div class="demo-flash"></div>
+          <div class="demo-photo">📷 拍下商品照片</div>
+        </div>
+        <div class="demo-scan">
+          <div class="demo-scanline"></div>
+          <p class="demo-scan-label">AI 辨識中…</p>
+          <ul class="demo-found">
+            <li>✓ 商品名稱：橙楓陶瓷花瓶組</li>
+            <li>✓ 規格：高 18cm／一組兩入</li>
+            <li>✓ 建議售價：NT$ 1,280（含匯率換算）</li>
+          </ul>
+        </div>
+        <div class="demo-card">
+          <div class="demo-card-img">🏺</div>
+          <p class="demo-card-name">橙楓陶瓷花瓶組</p>
+          <p class="demo-card-desc">日本職人手作，秋季限定釉色，一組兩入。</p>
+          <p class="demo-card-price">NT$ 1,280</p>
+          <span class="demo-card-btn">加入購物車</span>
+          <p class="demo-card-done">✓ 已上架到你的商店</p>
+        </div>
+      </div>
+      <div class="demo-steps">
+        <span class="demo-step" data-step="0">1. 拍照</span>
+        <span class="demo-step" data-step="1">2. AI 辨識</span>
+        <span class="demo-step" data-step="2">3. 上架完成</span>
+      </div>
+    </div>
+  </div>
+</section>
 <!-- TASK 4: PAIN COMPARE -->
 <!-- TASK 5: STEPS / FEATURES / PROOF -->
 <!-- TASK 6: PRICING / FAQ / FINAL CTA -->
@@ -132,6 +228,30 @@ function trackCta(section) {
     gtag("event", "cta_click", { section: section });
   }
 }
+// AI 上架演示：三幕輪播（reduced-motion 時固定停在完成態）
+(function () {
+  var demo = document.getElementById("ai-demo");
+  if (!demo) return;
+  var steps = demo.querySelectorAll(".demo-step");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function setPhase(p) {
+    demo.setAttribute("data-phase", String(p));
+    steps.forEach(function (el) {
+      el.classList.toggle("active", Number(el.getAttribute("data-step")) === p);
+    });
+  }
+  if (reduced) { setPhase(2); return; }
+  var phase = 0;
+  var durations = [1800, 2600, 3200];
+  setPhase(0);
+  (function next() {
+    setTimeout(function () {
+      phase = (phase + 1) % 3;
+      setPhase(phase);
+      next();
+    }, durations[phase]);
+  })();
+})();
 /* TASK 3-6 的 JS 加在這之後；
    舊檔 1192-1430（faq/plan-limits/plan-offers/carousel）與 1498-1520（auth/me）
    於 Task 5、6 搬入並適配新 DOM */
