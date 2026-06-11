@@ -175,6 +175,75 @@ section.alt { background: var(--bg-alt); }
 .proof-grid { display: flex; justify-content: center; gap: 56px; margin: 36px 0 32px; flex-wrap: wrap; }
 .proof-stat strong { display: block; font-size: clamp(30px, 4vw, 44px); font-weight: 900; color: var(--orange); }
 .proof-stat span { font-size: 14px; color: var(--muted); }
+/* ── 定價 ─────────────────────────────────────── */
+#pricing { padding-bottom: 60px; }
+.billing-toggle { display: flex; justify-content: center; margin-bottom: 28px; }
+.billing-toggle-inner { display: inline-flex; background: var(--bg-alt); border-radius: 10px; padding: 3px; border: 1px solid var(--line); }
+.billing-toggle-btn { padding: 9px 22px; border-radius: 8px; border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; position: relative; }
+.billing-toggle-btn.active { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.billing-toggle-btn .toggle-save { display: none; position: absolute; top: -8px; right: -6px; background: var(--orange); color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+.billing-toggle-btn.has-save .toggle-save { display: block; }
+.plan-carousel { position: relative; overflow: hidden; margin: 0 -20px; padding: 0 20px; }
+.plan-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 26px 4px 18px; cursor: grab; }
+.plan-track::-webkit-scrollbar { display: none; }
+.plan-track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+.plan-track.is-dragging .plan { pointer-events: none; }
+.plan-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; transition: all 0.2s; }
+.plan-dot.active { background: var(--orange); width: 20px; border-radius: 4px; }
+.plan { position: relative; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 22px 24px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; box-shadow: var(--shadow); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.plan:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(20,24,31,0.1); }
+.plan.pop { border: 2px solid var(--orange); box-shadow: 0 12px 36px rgba(242,107,29,0.15); }
+.plan.pop::before { content: "推薦"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--orange); color: #fff; padding: 4px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.plan-name { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
+.plan.pop .plan-name { color: var(--orange); }
+.plan-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.plan-price { font-size: 38px; font-weight: 900; letter-spacing: 0; }
+.plan-price .cur { font-size: 16px; font-weight: 600; vertical-align: top; margin-top: 6px; display: inline-block; }
+.plan-price .per { font-size: 13px; font-weight: 400; color: var(--muted); }
+.plan-period-note { font-size: 11px; color: var(--muted); margin-top: 2px; min-height: 16px; }
+.plan-line { height: 1px; background: var(--line); margin: 14px 0; }
+.plan-list { list-style: none; flex: 1; margin-bottom: 18px; }
+.plan-list li { padding: 5px 0; font-size: 13px; color: var(--muted); display: flex; align-items: flex-start; gap: 7px; }
+.plan-list li::before { content: "✓"; color: var(--orange); font-weight: 700; flex-shrink: 0; }
+.plan-list li.off { opacity: 0.45; }
+.plan-list li.off::before { content: "—"; color: var(--faint); }
+.plan .btn { display: block; width: 100%; text-align: center; padding: 12px 0; font-size: 14px; margin-top: auto; }
+.plan-buy { width: 100%; display: block; padding: 12px 0; font-size: 14px; margin-top: auto; }
+/* ── Offer popup ─────────────────────────────── */
+.offer-backdrop { position: fixed; inset: 0; background: rgba(20,24,31,.45); display: none; align-items: center; justify-content: center; z-index: 120; padding: 20px; }
+.offer-backdrop.is-open { display: flex; }
+.offer-modal { width: min(560px, 92vw); max-height: 80vh; overflow: auto; background: #fff; border-radius: var(--radius); padding: 24px; border: 1px solid var(--line); }
+.offer-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.offer-head h3 { font-size: 17px; font-weight: 900; }
+.offer-close { background: var(--bg-alt); border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 14px; font-family: inherit; }
+.offer-note { font-size: 12px; color: var(--faint); margin-top: 12px; }
+.offer-plan { margin-bottom: 20px; }
+.offer-plan h4 { font-size: 15px; font-weight: 900; margin-bottom: 8px; }
+.offer-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.offer-table th, .offer-table td { padding: 8px 10px; border: 1px solid var(--line); text-align: left; }
+.offer-table th { background: var(--bg-alt); }
+.bonus-highlight { color: var(--orange); font-weight: 700; }
+.offer-hot { background: var(--orange-soft); color: var(--orange); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; }
+/* ── Checkout modal ──────────────────────────── */
+.checkout-backdrop { position: fixed; inset: 0; background: rgba(20,24,31,.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.checkout-backdrop.is-open { display: flex; }
+.checkout-modal { background: #fff; border-radius: 16px; padding: 28px 26px; max-width: 420px; width: 100%; }
+.checkout-modal h3 { font-size: 18px; font-weight: 900; margin-bottom: 16px; }
+.checkout-opt { display: flex; justify-content: space-between; align-items: center; width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; background: #fff; cursor: pointer; font-size: 15px; font-family: inherit; }
+.checkout-opt:hover { border-color: var(--orange); }
+.checkout-opt strong { color: var(--orange); }
+.checkout-close { width: 100%; padding: 11px 0; border: none; background: var(--bg-alt); border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 4px; font-family: inherit; font-size: 14px; }
+/* ── FAQ ─────────────────────────────────────── */
+.faq-list { max-width: 720px; margin: 36px auto 0; text-align: left; }
+.faq-item { background: #fff; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.faq-item .faq-q { padding: 16px 20px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; background: none; border: none; font-family: inherit; font-size: 15px; text-align: left; color: var(--ink); }
+.faq-item .faq-q::after { content: "+"; font-size: 18px; color: var(--faint); flex-shrink: 0; }
+.faq-item.open .faq-q::after { content: "−"; color: var(--orange); }
+.faq-item .faq-a { display: none; padding: 0 20px 16px; color: var(--muted); font-size: 15px; }
+.faq-item.open .faq-a { display: block; }
+/* ── Final CTA ───────────────────────────────── */
+.final-cta { background: linear-gradient(180deg, #fff 0%, var(--orange-soft) 100%); padding: 88px 0; }
 </style>
 </head>
 <body>
@@ -316,7 +385,152 @@ section.alt { background: var(--bg-alt); }
   </div>
 </section>
 
-<!-- TASK 6: PRICING / FAQ / FINAL CTA -->
+<!-- ── 定價 ────────────────────────────────── -->
+<section id="pricing">
+  <div class="wrap center">
+    <span class="sec-kicker">透明定價，不抽成</span>
+    <h2 class="sec-title">選擇最適合你的方案</h2>
+    <p class="sec-sub">所有方案免費開始，隨時升級</p>
+    <!-- Billing period toggle -->
+    <div class="billing-toggle">
+      <div class="billing-toggle-inner">
+        <button class="billing-toggle-btn" data-period="1" onclick="switchBilling(1)">月繳</button>
+        <button class="billing-toggle-btn has-save" data-period="6" onclick="switchBilling(6)">半年<span class="toggle-save">省11%</span></button>
+        <button class="billing-toggle-btn has-save active" data-period="12" onclick="switchBilling(12)">一年<span class="toggle-save">省23%</span></button>
+      </div>
+    </div>
+    <!-- Swipeable plan carousel -->
+    <div class="plan-carousel">
+      <div class="plan-track" id="plan-track">
+        <!-- Free -->
+        <div class="plan" data-plan="free">
+          <div class="plan-name">Free</div>
+          <div class="plan-desc">零成本開始你的第一次代購</div>
+          <div class="plan-price" id="price-free"><span class="cur">NT$</span>0</div>
+          <div class="plan-period-note" id="note-free"></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-free-display">最多 10 件商品/月</li>
+            <li>AI 辨識 10 次/月</li>
+            <li>AI 圖片優化 10 次/月</li>
+            <li>AI 行銷文案 2 次/月</li>
+            <li>自訂運輸方式</li>
+            <li class="off">商品標籤</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
+          </ul>
+          <a href="/login.html" class="btn btn-primary" onclick="trackCta('pricing')">免費註冊</a>
+        </div>
+        <!-- Plus -->
+        <div class="plan" data-plan="plus">
+          <div class="plan-name">Plus</div>
+          <div class="plan-desc">輕量付費入門</div>
+          <div class="plan-price" id="price-plus"><span class="cur">NT$</span>490<span class="per">/月</span></div>
+          <div class="plan-period-note" id="note-plus"></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-plus-display">最多 25 件商品</li>
+            <li>AI 辨識 25 次/月</li>
+            <li>AI 圖片優化 25 次/月</li>
+            <li>AI 行銷文案 5 次/月</li>
+            <li>自訂運輸方式</li>
+            <li>商品標籤</li>
+            <li>1 款商店模板 + Logo</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
+          </ul>
+          <button class="btn btn-primary plan-buy" data-plan="plus" onclick="trackCta('pricing'); openCheckoutModal(this.dataset.plan)">立即開通</button>
+        </div>
+        <!-- Pro (popular) -->
+        <div class="plan pop" data-plan="pro">
+          <div class="plan-name">Pro</div>
+          <div class="plan-desc">認真經營代購</div>
+          <div class="plan-price" id="price-pro"><span class="cur">NT$</span>880<span class="per">/月</span></div>
+          <div class="plan-period-note" id="note-pro"></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-pro-display">最多 60 件商品</li>
+            <li>AI 辨識無限次</li>
+            <li>AI 圖片優化 60 次/月</li>
+            <li>AI 行銷文案 10 次/月</li>
+            <li>AI 商店招牌 5 次/月</li>
+            <li>自訂運輸方式</li>
+            <li>商品標籤</li>
+            <li>2 款商店模板 + Logo</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
+          </ul>
+          <button class="btn btn-primary plan-buy" data-plan="pro" onclick="trackCta('pricing'); openCheckoutModal(this.dataset.plan)">立即開通</button>
+        </div>
+        <!-- Pro+ -->
+        <div class="plan" data-plan="proplus">
+          <div class="plan-name">Pro+</div>
+          <div class="plan-desc">全職代購</div>
+          <div class="plan-price" id="price-proplus"><span class="cur">NT$</span>1,280<span class="per">/月</span></div>
+          <div class="plan-period-note" id="note-proplus"></div>
+          <div class="plan-line"></div>
+          <ul class="plan-list">
+            <li id="limit-proplus-display">不限商品數量</li>
+            <li>AI 辨識無限次</li>
+            <li>AI 圖片優化無限次</li>
+            <li>AI 行銷文案 20 次/月</li>
+            <li>AI 商店招牌無限次</li>
+            <li>可選 vovociAI v2 模型</li>
+            <li>自訂運輸方式</li>
+            <li>自訂標籤名稱</li>
+            <li>7 款商店模板 + Logo</li>
+            <li>自訂子網域</li>
+            <li>商店 SSL 證書</li>
+            <li>訂單統計小助手</li>
+          </ul>
+          <button class="btn btn-primary plan-buy" data-plan="proplus" onclick="trackCta('pricing'); openCheckoutModal(this.dataset.plan)">立即開通</button>
+        </div>
+      </div>
+      <div class="plan-dots" id="plan-dots" aria-label="方案選擇"></div>
+    </div>
+    <p style="text-align:center;margin-top:18px;">
+      <button type="button" onclick="openPlanOfferPopup()" style="background:none;border:none;padding:0;font:inherit;font-size:13px;color:var(--orange);text-decoration:underline;cursor:pointer;">方案說明 &amp; 優惠詳情</button>
+    </p>
+  </div>
+</section>
+
+<!-- Offer popup -->
+<div class="offer-backdrop" id="offer-backdrop" onclick="if(event.target===this)closePlanOfferPopup()">
+  <div class="offer-modal">
+    <div class="offer-head">
+      <h3>方案優惠說明</h3>
+      <button class="offer-close" type="button" onclick="closePlanOfferPopup()">關閉</button>
+    </div>
+    <div id="offer-content"></div>
+    <p class="offer-note">Pro 12 個月方案贈送 +30 天。Pro+ 6 個月贈送 +30 天，12 個月贈送 +60 天。</p>
+  </div>
+</div>
+
+<!-- Checkout modal -->
+<div class="checkout-backdrop" id="checkout-backdrop">
+  <div class="checkout-modal">
+    <h3 id="checkout-title">選擇開通期數</h3>
+    <div id="checkout-options"></div>
+    <button class="checkout-close" onclick="closeCheckoutModal()">取消</button>
+  </div>
+</div>
+
+<!-- ── FAQ ───────────────────────────────── -->
+<section class="alt" id="faq">
+  <div class="wrap center">
+    <h2 class="sec-title">常見問題</h2>
+    <div id="faq-list" class="faq-list"></div>
+  </div>
+</section>
+
+<!-- ── Final CTA ─────────────────────────── -->
+<section class="final-cta">
+  <div class="wrap center">
+    <h2 class="sec-title">下一趟出國，試試 60 秒上架</h2>
+    <p class="sec-sub">免費方案不用信用卡，拍一張照就知道值不值得。</p>
+    <a href="/login.html" class="btn btn-primary btn-lg" onclick="trackCta('footer')">免費開店</a>
+  </div>
+</section>
 
 <!-- ── Footer ──────────────────────────────── -->
 <footer class="footer">
@@ -412,7 +626,222 @@ var AUTH_STATE = { loggedIn: false };
   }).catch(function() {});
 })();
 
-/* TASK 6 的 JS 加在這之後（plan-offers/carousel/faq/checkout modal） */
+// ── FAQ accordion ──────────────────────────────────────────────────────────
+function toggleFaq(btn) {
+  var item = btn.parentElement;
+  var wasOpen = item.classList.contains("open");
+  document.querySelectorAll(".faq-item.open").forEach(function(el) {
+    el.classList.remove("open");
+    el.querySelector(".faq-q").setAttribute("aria-expanded", "false");
+  });
+  if (!wasOpen) {
+    item.classList.add("open");
+    btn.setAttribute("aria-expanded", "true");
+  }
+}
+
+// Dynamic FAQ — 自舊檔 1192-1203 移植；容器改用 id="faq-list"
+fetch("/api/faq").then(function(r) { return r.json(); }).then(function(d) {
+  if (!d.ok || !Array.isArray(d.items) || d.items.length === 0) return;
+  var list = document.getElementById("faq-list");
+  if (!list) return;
+  list.innerHTML = d.items.map(function(item) {
+    return '<div class="faq-item">' +
+      '<button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">' + item.q.replace(/</g, "&lt;") + '</button>' +
+      '<div class="faq-a"><p>' + item.a.replace(/</g, "&lt;") + '</p></div>' +
+      '</div>';
+  }).join("");
+}).catch(function() {});
+
+// ── Plan offers (PLAN_OFFERS) — 自舊檔 1237-1430 移植 ──────────────────────
+var PLAN_OFFERS = null;
+function fallbackOffers() {
+  return {
+    plus: [
+      { months: 1, days: 30, amount: 490, monthlyPrice: 490, bonusDays: 0 }
+    ],
+    pro: [
+      { months: 1, days: 30, amount: 880, monthlyPrice: 880, bonusDays: 0 },
+      { months: 6, days: 180, amount: 4680, monthlyPrice: 780, bonusDays: 0 },
+      { months: 12, days: 390, amount: 8160, monthlyPrice: 680, bonusDays: 30 }
+    ],
+    proplus: [
+      { months: 1, days: 30, amount: 1280, monthlyPrice: 1280, bonusDays: 0 },
+      { months: 6, days: 210, amount: 7680, monthlyPrice: 1280, bonusDays: 30 },
+      { months: 12, days: 420, amount: 15360, monthlyPrice: 1280, bonusDays: 60 }
+    ]
+  };
+}
+
+fetch("/api/plan-offers").then(function(r) { return r.json(); }).then(function(d) {
+  if (d && d.ok && d.offers) PLAN_OFFERS = d.offers;
+}).catch(function() {}).then(function() {
+  switchBilling(12);
+});
+
+function openPlanOfferPopup(focusPlan) {
+  var offers = PLAN_OFFERS || fallbackOffers();
+  var content = document.getElementById("offer-content");
+  if (!content) return;
+  var plans = [
+    { key: "plus", title: "Plus" },
+    { key: "pro", title: "Pro" },
+    { key: "proplus", title: "Pro+" }
+  ];
+  content.innerHTML = plans.map(function(p) {
+    var rows = Array.isArray(offers[p.key]) ? offers[p.key] : [];
+    return '<div class="offer-plan" id="offer-' + p.key + '">' +
+      '<h4>' + p.title + '</h4>' +
+      '<table class="offer-table"><thead><tr><th>方案</th><th>月費</th><th>總價</th></tr></thead><tbody>' +
+      rows.map(function(o) {
+        var extra = o.bonusDays > 0 ? '<span class="bonus-highlight">＋' + o.bonusDays + ' 天</span>' : '';
+        var hot = o.months === 12 ? ' <span class="offer-hot">最熱門</span>' : '';
+        var period = o.months + ' 個月・' + o.days + ' 天' + (extra ? '（' + extra + '）' : '') + hot;
+        return '<tr><td>' + period + '</td><td>$' + Number(o.monthlyPrice).toLocaleString() + '/月</td><td>$' + Number(o.amount).toLocaleString() + '</td></tr>';
+      }).join("") +
+      '</tbody></table></div>';
+  }).join("");
+  var back = document.getElementById("offer-backdrop");
+  if (back) back.classList.add("is-open");
+  if (focusPlan) {
+    setTimeout(function() {
+      var node = document.getElementById("offer-" + focusPlan);
+      if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }
+}
+
+function closePlanOfferPopup() {
+  var back = document.getElementById("offer-backdrop");
+  if (back) back.classList.remove("is-open");
+}
+
+// Billing period toggle
+var currentBillingPeriod = 12;
+function switchBilling(months) {
+  currentBillingPeriod = months;
+  document.querySelectorAll(".billing-toggle-btn").forEach(function(btn) {
+    btn.classList.toggle("active", Number(btn.getAttribute("data-period")) === months);
+  });
+  var offers = PLAN_OFFERS || fallbackOffers();
+  // Plus is monthly-only: hide when 6 or 12 months selected
+  var plusCard = document.querySelector('.plan[data-plan="plus"]');
+  if (plusCard) {
+    plusCard.style.display = months !== 1 ? "none" : "";
+  }
+  updatePlanPrice("plus", months, offers);
+  updatePlanPrice("pro", months, offers);
+  updatePlanPrice("proplus", months, offers);
+  var freePrice = document.getElementById("price-free");
+  var freeNote = document.getElementById("note-free");
+  if (freePrice) freePrice.innerHTML = '<span class="cur">NT$</span>0';
+  if (freeNote) freeNote.textContent = "永久免費";
+  rebuildPlanDots();
+}
+
+function getVisiblePlans() {
+  var track = document.getElementById("plan-track");
+  if (!track) return [];
+  return Array.prototype.filter.call(track.querySelectorAll(".plan"), function(card) {
+    return card.offsetParent !== null;
+  });
+}
+
+function rebuildPlanDots() {
+  var dotsHost = document.getElementById("plan-dots");
+  if (!dotsHost) return;
+  var plans = getVisiblePlans();
+  dotsHost.innerHTML = "";
+  plans.forEach(function(card, idx) {
+    var dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "plan-dot";
+    var name = card.querySelector(".plan-name");
+    dot.setAttribute("aria-label", name ? name.textContent : ("方案 " + (idx + 1)));
+    if (card.classList.contains("pop")) dot.classList.add("active");
+    dot.addEventListener("click", function() { scrollPlan(idx); });
+    dotsHost.appendChild(dot);
+  });
+}
+
+function updatePlanPrice(plan, months, offers) {
+  var rows = Array.isArray(offers[plan]) ? offers[plan] : [];
+  var match = null;
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].months === months) { match = rows[i]; break; }
+  }
+  if (!match && rows.length > 0) match = rows[0];
+  var priceEl = document.getElementById("price-" + plan);
+  var noteEl = document.getElementById("note-" + plan);
+  if (!priceEl || !match) return;
+  var monthly = Number(match.monthlyPrice);
+  priceEl.innerHTML = '<span class="cur">NT$</span>' + monthly.toLocaleString() + '<span class="per">/月</span>';
+  if (noteEl) {
+    if (months === 1) {
+      noteEl.textContent = "";
+    } else {
+      var total = Number(match.amount);
+      var bonus = match.bonusDays > 0 ? ' <span class="bonus-highlight">含贈送 ' + match.bonusDays + ' 天</span>' : "";
+      noteEl.innerHTML = months + " 個月共 NT$" + total.toLocaleString() + bonus;
+    }
+  }
+}
+
+// Plan carousel scroll + dots
+function scrollPlan(idx) {
+  var plans = getVisiblePlans();
+  if (!plans.length) return;
+  var clamped = Math.max(0, Math.min(idx, plans.length - 1));
+  plans[clamped].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  document.querySelectorAll("#plan-dots .plan-dot").forEach(function(d, i) { d.classList.toggle("active", i === clamped); });
+}
+(function() {
+  var planTrack = document.getElementById("plan-track");
+  if (!planTrack) return;
+  planTrack.addEventListener("scroll", function() {
+    var plans = getVisiblePlans();
+    if (!plans.length) return;
+    var center = planTrack.scrollLeft + planTrack.clientWidth / 2;
+    var closest = 0;
+    plans.forEach(function(c, i) {
+      if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - center) < Math.abs(plans[closest].offsetLeft + plans[closest].offsetWidth / 2 - center)) closest = i;
+    });
+    document.querySelectorAll("#plan-dots .plan-dot").forEach(function(d, i) { d.classList.toggle("active", i === closest); });
+  });
+  // PC drag scroll
+  var isDown = false, startX = 0, scrollStart = 0;
+  planTrack.addEventListener("mousedown", function(e) {
+    isDown = true; startX = e.pageX; scrollStart = planTrack.scrollLeft;
+    planTrack.classList.add("is-dragging");
+  });
+  planTrack.addEventListener("mouseleave", function() { isDown = false; planTrack.classList.remove("is-dragging"); });
+  planTrack.addEventListener("mouseup", function() { isDown = false; planTrack.classList.remove("is-dragging"); });
+  planTrack.addEventListener("mousemove", function(e) {
+    if (!isDown) return;
+    e.preventDefault();
+    planTrack.scrollLeft = scrollStart - (e.pageX - startX);
+  });
+})();
+
+// ── Checkout modal — Step 2 from plan ─────────────────────────────────────
+// AUTH_STATE is declared above in the auth/me section
+function openCheckoutModal(plan) {
+  if (!AUTH_STATE.loggedIn) { window.location.href = "/login.html"; return; }
+  var offers = (PLAN_OFFERS || fallbackOffers())[plan] || [];
+  var box = document.getElementById("checkout-options");
+  var labels = { plus: "Plus", pro: "Pro", proplus: "Pro+" };
+  document.getElementById("checkout-title").textContent = "開通 " + (labels[plan] || plan) + " 方案";
+  box.innerHTML = offers.map(function(o) {
+    var bonus = o.bonusDays > 0 ? "＋送 " + o.bonusDays + " 天" : "";
+    return '<button class="checkout-opt" onclick="startPlanCheckout(\'' + plan + "', " + o.months + ')">' +
+      "<span>" + o.months + " 個月" + (bonus ? "（" + bonus + "）" : "") + "</span>" +
+      "<strong>NT$ " + Number(o.amount).toLocaleString() + "</strong></button>";
+  }).join("");
+  document.getElementById("checkout-backdrop").classList.add("is-open");
+}
+function closeCheckoutModal() {
+  document.getElementById("checkout-backdrop").classList.remove("is-open");
+}
 </script>
 </body>
 </html>
