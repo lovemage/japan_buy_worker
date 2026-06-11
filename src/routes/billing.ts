@@ -122,10 +122,26 @@ export async function handleBillingCheckout(request: Request, env: BillingEnv): 
 }
 
 async function applyActivation(db: D1DatabaseLike, order: OrderRow, data: Record<string, string>) {
+  // Claim the order first so that two concurrent PAYUNi notifies for the same
+  // order cannot both proceed to extend the plan (double-extension).  Only the
+  // notify that atomically flips status → 'paid' continues; the other returns
+  // here.  Accepted crash window: if this process dies after the claim but
+  // before the UPDATE stores below, the order is marked paid but the plan is
+  // not yet extended — preferable to double-extension; a platform-admin can
+  // remedy manually.
+  const claim = await db
+    .prepare(
+      "UPDATE payment_orders SET status = 'paid', paid_at = datetime('now'), pay_type = ?, payuni_trade_no = ?, raw_notify = ? WHERE id = ? AND status != 'paid'"
+    )
+    .bind(data.PaymentType || null, data.TradeNo || null, JSON.stringify(data), order.id)
+    .run();
+  if (!claim?.meta || claim.meta.changes !== 1) return; // 另一個 notify 已搶先開通
+
+  // Merge both stores SELECTs into one to reduce round-trips.
   const storeRow = await db
-    .prepare("SELECT plan, plan_expires_at FROM stores WHERE id = ?")
+    .prepare("SELECT plan, plan_expires_at, name, owner_email FROM stores WHERE id = ?")
     .bind(order.store_id)
-    .first<{ plan: string; plan_expires_at: string | null }>();
+    .first<{ plan: string; plan_expires_at: string | null; name: string; owner_email: string }>();
   const activation = computeActivation({
     currentPlan: storeRow?.plan || "free",
     currentExpiresAt: storeRow?.plan_expires_at || null,
@@ -139,26 +155,16 @@ async function applyActivation(db: D1DatabaseLike, order: OrderRow, data: Record
     )
     .bind(activation.plan, activation.expiresAt, order.amount, new Date().toISOString(), order.store_id)
     .run();
-  await db
-    .prepare(
-      "UPDATE payment_orders SET status = 'paid', paid_at = datetime('now'), pay_type = ?, payuni_trade_no = ?, raw_notify = ? WHERE id = ? AND status != 'paid'"
-    )
-    .bind(data.PaymentType || null, data.TradeNo || null, JSON.stringify(data), order.id)
-    .run();
 
   // 與 platform-admin 人工開通一致：記錄營收（排除測試店）
   const testIds = await getTestStoreIds(db);
   if (!testIds.includes(order.store_id)) {
     await ensureLogTable(db);
-    const s = await db
-      .prepare("SELECT name, owner_email FROM stores WHERE id = ?")
-      .bind(order.store_id)
-      .first<{ name: string; owner_email: string }>();
     await db
       .prepare(
         "INSERT INTO plan_change_logs (store_id, store_name, store_email, plan, days, amount) VALUES (?, ?, ?, ?, ?, ?)"
       )
-      .bind(order.store_id, s?.name || "", s?.owner_email || "", order.plan, order.days, order.amount)
+      .bind(order.store_id, storeRow?.name || "", storeRow?.owner_email || "", order.plan, order.days, order.amount)
       .run();
   }
 }

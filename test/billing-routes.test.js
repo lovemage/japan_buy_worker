@@ -31,3 +31,18 @@ test("notify is idempotent and guards against amount mismatch", () => {
 test("order-status only exposes the session store's own orders", () => {
   assert.ok(billing.includes("WHERE mer_trade_no = ? AND store_id = ?"));
 });
+
+test("applyActivation claims the order before extending the store plan (prevents double-notify race)", () => {
+  const claimIdx = billing.indexOf("WHERE id = ? AND status != 'paid'");
+  const extendIdx = billing.indexOf("UPDATE stores SET plan");
+  assert.ok(claimIdx !== -1, "guarded claim string not found in billing.ts");
+  assert.ok(extendIdx !== -1, "UPDATE stores SET plan not found in billing.ts");
+  assert.ok(
+    claimIdx < extendIdx,
+    `claim (index ${claimIdx}) must precede store plan extension (index ${extendIdx})`
+  );
+});
+
+test("handleBillingOrders scopes queries to the session store", () => {
+  assert.ok(billing.includes("WHERE store_id = ?"), "handleBillingOrders must scope by WHERE store_id = ?");
+});
