@@ -155,6 +155,26 @@ section.alt { background: var(--bg-alt); }
 .footer-inner nav a { font-size: 14px; color: var(--muted); text-decoration: none; }
 .footer-copy { text-align: center; color: var(--faint); font-size: 12px; margin-top: 32px; }
 @media (max-width: 760px) { .nav-links { display: none; } }
+/* ── 四步驟 ──────────────────────────────────── */
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 40px; text-align: left; }
+.step-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 22px; box-shadow: var(--shadow); }
+.step-no { font-size: 13px; font-weight: 900; color: var(--orange); }
+.step-card h3 { font-size: 17px; font-weight: 900; margin: 8px 0 6px; }
+.step-card p { font-size: 14px; color: var(--muted); }
+@media (max-width: 860px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .steps-grid { grid-template-columns: 1fr; } }
+/* ── 功能網格 ─────────────────────────────────── */
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 40px; text-align: left; }
+.feat-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 24px; box-shadow: var(--shadow); }
+.feat-card span { font-size: 30px; }
+.feat-card h3 { font-size: 17px; font-weight: 900; margin: 10px 0 6px; }
+.feat-card p { font-size: 14px; color: var(--muted); }
+@media (max-width: 860px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .feat-grid { grid-template-columns: 1fr; } }
+/* ── 社會證明 ─────────────────────────────────── */
+.proof-grid { display: flex; justify-content: center; gap: 56px; margin: 36px 0 32px; flex-wrap: wrap; }
+.proof-stat strong { display: block; font-size: clamp(30px, 4vw, 44px); font-weight: 900; color: var(--orange); }
+.proof-stat span { font-size: 14px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -253,7 +273,49 @@ section.alt { background: var(--bg-alt); }
     <p class="compare-punch">一天上架 30 件，時間還給你自己。</p>
   </div>
 </section>
-<!-- TASK 5: STEPS / FEATURES / PROOF -->
+<!-- ── 四步驟 ─────────────────────────────── -->
+<section id="how">
+  <div class="wrap center">
+    <span class="sec-kicker">出國前設定一次就好</span>
+    <h2 class="sec-title">開店只要 4 步驟</h2>
+    <div class="steps-grid">
+      <div class="step-card"><span class="step-no">01</span><h3>拍照上傳</h3><p>拍下商品或上傳圖片，AI 自動辨識品名與規格。</p></div>
+      <div class="step-card"><span class="step-no">02</span><h3>AI 生成</h3><p>文案、售價、匯率換算一次到位，商品頁直接生成。</p></div>
+      <div class="step-card"><span class="step-no">03</span><h3>分享導購</h3><p>連結丟到 LINE 群或社群，客人自己逛、自己下單。</p></div>
+      <div class="step-card"><span class="step-no">04</span><h3>成交收款</h3><p>訂單自動彙整成清單，照單採買、收款、出貨不漏單。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 功能 ───────────────────────────────── -->
+<section class="alt" id="features">
+  <div class="wrap center">
+    <span class="sec-kicker">AI 全程代勞</span>
+    <h2 class="sec-title">上架的每個麻煩，都有 AI 接手</h2>
+    <div class="feat-grid">
+      <div class="feat-card"><span>🤖</span><h3>AI 商品辨識</h3><p>一張照片自動辨識品名、品牌、規格。</p></div>
+      <div class="feat-card"><span>✍️</span><h3>AI 文案生成</h3><p>商品描述與社群貼文自動寫好，照貼即用。</p></div>
+      <div class="feat-card"><span>💱</span><h3>匯率自動定價</h3><p>日幣自動換台幣，加價規則一次設定。</p></div>
+      <div class="feat-card"><span>📲</span><h3>LINE 導購分享</h3><p>商品連結一鍵分享，不再一對一報價。</p></div>
+      <div class="feat-card"><span>📦</span><h3>訂單自動彙整</h3><p>誰訂了什麼自動成清單，採買出貨不漏單。</p></div>
+      <div class="feat-card"><span>🏪</span><h3>專屬商店</h3><p>自己的網址、自己的品牌，SSL 安全收單。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 社會證明 ────────────────────────────── -->
+<section id="proof">
+  <div class="wrap center">
+    <h2 class="sec-title">創作者與代購賣家，已經用起來了</h2>
+    <div class="proof-grid">
+      <div class="proof-stat"><strong>10,000+</strong><span>使用中的賣家</span></div>
+      <div class="proof-stat"><strong>60 秒</strong><span>平均一件商品上架</span></div>
+      <div class="proof-stat"><strong>0%</strong><span>交易抽成</span></div>
+    </div>
+    <a href="https://japan.vovosnap.com/" class="btn btn-ghost btn-lg" target="_blank" rel="noopener">看看真實商店長什麼樣 →</a>
+  </div>
+</section>
+
 <!-- TASK 6: PRICING / FAQ / FINAL CTA -->
 
 <!-- ── Footer ──────────────────────────────── -->
@@ -304,9 +366,53 @@ function trackCta(section) {
     }, durations[phase]);
   })();
 })();
-/* TASK 3-6 的 JS 加在這之後；
-   舊檔 1192-1430（faq/plan-limits/plan-offers/carousel）與 1498-1520（auth/me）
-   於 Task 5、6 搬入並適配新 DOM */
+// Plan limits — 自舊檔 1205-1235 移植；DOM 元素由 Task 6 定價卡加入，此處 null-safe
+fetch("/api/plan-limits").then(function(r) { return r.json(); }).then(function(d) {
+  if (!d.ok) return;
+  var l = d.limits;
+  var f = document.getElementById("limit-free-display");
+  var pl = document.getElementById("limit-plus-display");
+  var p = document.getElementById("limit-pro-display");
+  var pp = document.getElementById("limit-proplus-display");
+  if (f && l.free > 0) f.textContent = "最多 " + l.free + " 件商品/月";
+  if (pl && l.plus > 0) pl.textContent = "最多 " + l.plus + " 件商品";
+  if (p && l.pro > 0) p.textContent = "最多 " + l.pro + " 件商品";
+  if (pp) pp.textContent = (l.proplus && l.proplus > 0) ? "最多 " + l.proplus + " 件商品" : "不限商品數量";
+}).catch(function() {});
+
+// Auth state — 自舊檔 1498-1520 移植；適配新 nav (#nav-auth-btn / #nav-cta-btn)
+var AUTH_STATE = { loggedIn: false };
+(function() {
+  fetch("/auth/me").then(function(r) { return r.json(); }).then(function(d) {
+    if (!d.ok || !d.store) return;
+    AUTH_STATE.loggedIn = true;
+    var btn = document.getElementById("nav-auth-btn");
+    if (btn) {
+      btn.textContent = "登出";
+      btn.removeAttribute("href");
+      btn.setAttribute("role", "button");
+      btn.setAttribute("tabindex", "0");
+      var logout = function(e) {
+        if (e) e.preventDefault();
+        fetch("/api/admin/logout", { method: "POST" }).then(function() {
+          location.reload();
+        });
+      };
+      btn.addEventListener("click", logout);
+      btn.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" || e.key === " ") logout(e);
+      });
+    }
+    var ctaBtn = document.getElementById("nav-cta-btn");
+    if (ctaBtn && d.store.slug) {
+      ctaBtn.textContent = "進入後台";
+      ctaBtn.href = "/s/" + d.store.slug + "/admin";
+      ctaBtn.removeAttribute("onclick");
+    }
+  }).catch(function() {});
+})();
+
+/* TASK 6 的 JS 加在這之後（plan-offers/carousel/faq/checkout modal） */
 </script>
 </body>
 </html>
