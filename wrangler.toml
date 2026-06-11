@@ -15,7 +15,7 @@ CRAWL_TIMEOUT_MS = "120000"
 APP_URL = "https://vovosnap.com"
 MAIN_DOMAIN = "vovosnap.com"
 SMS_RELAY_URL = "https://relay.vovosnap.com/send"
-PAYUNI_SANDBOX = "1"  # 先走 sandbox 驗流程；切正式改 "0" 並換正式金鑰
+PAYUNI_SANDBOX = "0"  # 正式環境（業主僅有正式金鑰；sandbox 需獨立測試商店帳號）
 
 # Secrets (set via: wrangler secret put <KEY>):
 # GOOGLE_CLIENT_ID
