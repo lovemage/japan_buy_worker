@@ -212,10 +212,27 @@ section.alt { background: var(--bg-alt); }
 @media (max-width: 480px) { .steps-grid { grid-template-columns: 1fr; } }
 /* ── 功能網格 ─────────────────────────────── */
 .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; text-align: left; }
-.feat-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+.feat-card { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
              padding: 28px 26px; box-shadow: var(--shadow);
              transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out); }
 .feat-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(86,62,36,.12); }
+/* AI sparkle 徽章（Claude Code 風：四角星旋轉脈動，雙色交錯放置） */
+.ai-badge { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; pointer-events: none; overflow: visible; }
+.ai-badge path { fill: currentColor; transform-box: fill-box; transform-origin: center; }
+.ai-spark-lg { animation: ai-spark-lg 3.2s ease-in-out infinite; }
+.ai-spark-sm { animation: ai-spark-sm 2.4s ease-in-out .5s infinite; }
+.feat-card:nth-child(odd)  .ai-badge { color: var(--orange); }
+.feat-card:nth-child(even) .ai-badge { color: var(--green); }
+.feat-card:hover .ai-spark-lg { animation-duration: 1.5s; }
+.feat-card:hover .ai-spark-sm { animation-duration: 1.1s; }
+@keyframes ai-spark-lg {
+  0%, 100% { transform: scale(1)    rotate(0deg);   opacity: .85; }
+  50%      { transform: scale(1.16) rotate(45deg);  opacity: 1; }
+}
+@keyframes ai-spark-sm {
+  0%, 100% { transform: scale(.6)  rotate(0deg);   opacity: .5; }
+  50%      { transform: scale(1)   rotate(-45deg); opacity: 1; }
+}
 .feat-card .feat-ico { display: inline-flex; align-items: center; justify-content: center;
                        width: 54px; height: 54px; border-radius: 50%; background: var(--orange-soft); color: var(--orange); }
 .feat-card .feat-ico svg { width: 26px; height: 26px; }
@@ -325,6 +342,7 @@ section.alt { background: var(--bg-alt); }
   .u-flourish path { animation: none; stroke-dashoffset: 0; }
   .will-reveal { opacity: 1; transform: none; transition: none; }
   .btn, .plan, .feat-card { transition: none; }
+  .ai-spark-lg, .ai-spark-sm { animation: none; opacity: .9; }
 }
 </style>
 </head>
@@ -447,12 +465,12 @@ section.alt { background: var(--bg-alt); }
     <span class="sec-kicker">AI 全程代勞</span>
     <h2 class="sec-title">上架的每個麻煩，都有 AI 接手</h2>
     <div class="feat-grid">
-      <div class="feat-card" data-reveal><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></svg></span><h3>AI 商品辨識</h3><p>一張照片自動辨識品名、品牌、規格。</p></div>
-      <div class="feat-card" data-reveal><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><h3>AI 文案生成</h3><p>商品描述與社群貼文自動寫好，照貼即用。</p></div>
-      <div class="feat-card" data-reveal><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span><h3>匯率自動定價</h3><p>日幣自動換台幣，加價規則一次設定。</p></div>
-      <div class="feat-card" data-reveal><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></span><h3>LINE 導購分享</h3><p>商品連結一鍵分享，不再一對一報價。</p></div>
-      <div class="feat-card" data-reveal><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><h3>訂單自動彙整</h3><p>誰訂了什麼自動成清單，採買出貨不漏單。</p></div>
-      <div class="feat-card" data-reveal><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><h3>專屬商店</h3><p>自己的網址、自己的品牌，SSL 安全收單。</p></div>
+      <div class="feat-card" data-reveal><svg class="ai-badge" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path class="ai-spark-lg" d="M12 6 Q12 16 22 16 Q12 16 12 26 Q12 16 2 16 Q12 16 12 6 Z"/><path class="ai-spark-sm" d="M21 2 Q21 7 26 7 Q21 7 21 12 Q21 7 16 7 Q21 7 21 2 Z"/></svg><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></svg></span><h3>AI 商品辨識</h3><p>一張照片自動辨識品名、品牌、規格。</p></div>
+      <div class="feat-card" data-reveal><svg class="ai-badge" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path class="ai-spark-lg" d="M12 6 Q12 16 22 16 Q12 16 12 26 Q12 16 2 16 Q12 16 12 6 Z"/><path class="ai-spark-sm" d="M21 2 Q21 7 26 7 Q21 7 21 12 Q21 7 16 7 Q21 7 21 2 Z"/></svg><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><h3>AI 文案生成</h3><p>商品描述與社群貼文自動寫好，照貼即用。</p></div>
+      <div class="feat-card" data-reveal><svg class="ai-badge" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path class="ai-spark-lg" d="M12 6 Q12 16 22 16 Q12 16 12 26 Q12 16 2 16 Q12 16 12 6 Z"/><path class="ai-spark-sm" d="M21 2 Q21 7 26 7 Q21 7 21 12 Q21 7 16 7 Q21 7 21 2 Z"/></svg><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span><h3>匯率自動定價</h3><p>日幣自動換台幣，加價規則一次設定。</p></div>
+      <div class="feat-card" data-reveal><svg class="ai-badge" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path class="ai-spark-lg" d="M12 6 Q12 16 22 16 Q12 16 12 26 Q12 16 2 16 Q12 16 12 6 Z"/><path class="ai-spark-sm" d="M21 2 Q21 7 26 7 Q21 7 21 12 Q21 7 16 7 Q21 7 21 2 Z"/></svg><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></span><h3>LINE 導購分享</h3><p>商品連結一鍵分享，不再一對一報價。</p></div>
+      <div class="feat-card" data-reveal><svg class="ai-badge" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path class="ai-spark-lg" d="M12 6 Q12 16 22 16 Q12 16 12 26 Q12 16 2 16 Q12 16 12 6 Z"/><path class="ai-spark-sm" d="M21 2 Q21 7 26 7 Q21 7 21 12 Q21 7 16 7 Q21 7 21 2 Z"/></svg><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><h3>訂單自動彙整</h3><p>誰訂了什麼自動成清單，採買出貨不漏單。</p></div>
+      <div class="feat-card" data-reveal><svg class="ai-badge" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path class="ai-spark-lg" d="M12 6 Q12 16 22 16 Q12 16 12 26 Q12 16 2 16 Q12 16 12 6 Z"/><path class="ai-spark-sm" d="M21 2 Q21 7 26 7 Q21 7 21 12 Q21 7 16 7 Q21 7 21 2 Z"/></svg><span class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><h3>專屬商店</h3><p>自己的網址、自己的品牌，SSL 安全收單。</p></div>
     </div>
   </div>
 </section>
