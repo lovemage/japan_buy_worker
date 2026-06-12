@@ -6,10 +6,16 @@ Disallow: /admin.html
 Disallow: /admin-login.html
 Disallow: /platform-admin.html
 Disallow: /onboarding.html
+Disallow: /login.html
+Disallow: /billing-result.html
+Disallow: /order-history.html
+Disallow: /success.html
+Disallow: /request.html
 Disallow: /auth/
+Disallow: /api/
 Disallow: /s/*/admin
 Disallow: /s/*/admin.html
 Disallow: /s/*/admin-login.html
-Disallow: /api/
+Disallow: /s/*/order-history
 
 Sitemap: https://vovosnap.com/sitemap.xml

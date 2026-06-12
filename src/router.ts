@@ -78,6 +78,14 @@ function escapeHtmlAttr(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/**
+ * Serialise an object to JSON safe for embedding inside <script> tags.
+ * Replaces "<" with < so "</script>" can never appear in the output.
+ */
+function buildJsonLd(obj: unknown): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
 // Serve tenant HTML pages with __API_BASE and __STORE_SLUG injection
 async function serveTenantHtml(
   request: Request,
@@ -165,7 +173,7 @@ window.__TUTORIAL_AVATAR="${tutorialAvatar.replace(/"/g, '\\"')}";
 window.__BANNER_SETTINGS=${bannerSettings};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 </script>`;
-  html = html.replace("</head>", inject + "\n</head>");
+  html = html.replace("</head>", () => inject + "\n</head>");
 
   // Inject template data attribute on <body>
   if (template && template !== "default") {
@@ -180,8 +188,8 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     let displayData: { storeRules?: string; storeLogo?: string } = {};
     try { displayData = JSON.parse(displaySettings); } catch {}
 
-    // OG description: store description > store rules > default
-    const ogDesc = escapeHtmlAttr(storeDesc || displayData.storeRules || `${storeName} — vovosnap 商店`);
+    // OG description: store description > store rules > sensible zh-Hant default
+    const ogDesc = escapeHtmlAttr(storeDesc || displayData.storeRules || `歡迎光臨 ${storeName}，精選日本商品代購服務`);
 
     // OG image: first hero/banner image if enabled, else member logo, else default logo
     const requestUrl = new URL(request.url);
@@ -202,7 +210,19 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 <meta name="twitter:title" content="${escapeHtmlAttr(storeName)}" />
 <meta name="twitter:description" content="${ogDesc}" />
 <meta name="twitter:image" content="${escapeHtmlAttr(ogImage)}" />`;
-    html = html.replace("</head>", ogTags + "\n</head>");
+    html = html.replace("</head>", () => ogTags + "\n</head>");
+
+    // JSON-LD: BreadcrumbList for the store root
+    const storeRootUrl = `${origin}${ctx.basePath}/`;
+    const storeBreadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: storeName, item: storeRootUrl },
+      ],
+    };
+    const jsonLdStoreBreadcrumb = buildJsonLd(storeBreadcrumb);
+    html = html.replace("</head>", () => `<script type="application/ld+json">${jsonLdStoreBreadcrumb}</script>\n</head>`);
   }
 
   // Inject product-specific OG meta tags so social shares show product image
@@ -212,7 +232,12 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     const code = requestUrl.searchParams.get("code") || "";
     let ogImage = `${origin}/assets/images/logo-3.png`;
     let ogTitle = storeName;
-    let ogDesc = storeDesc || `${storeName} — vovosnap 商店`;
+    let ogDesc = storeDesc || `${storeName} 代購商店 — 商品詳情`;
+
+    // track resolved product data for JSON-LD reuse below
+    let jsonLdProductName = "";
+    let jsonLdProductImage = "";
+    let jsonLdProductDesc = "";
 
     if (code) {
       const productRow = await ctx.db
@@ -220,7 +245,13 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
           "SELECT title_zh_tw, title_ja, brand, image_url, source_payload_json FROM products WHERE store_id = ? AND is_active = 1 AND source_product_code = ? LIMIT 1"
         )
         .bind(ctx.storeId, code)
-        .first<{ title_zh_tw: string | null; title_ja: string | null; brand: string | null; image_url: string | null; source_payload_json: string | null }>();
+        .first<{
+          title_zh_tw: string | null;
+          title_ja: string | null;
+          brand: string | null;
+          image_url: string | null;
+          source_payload_json: string | null;
+        }>();
 
       if (productRow) {
         // Pick first image: gallery[0] from payload, else image_url column
@@ -243,8 +274,13 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
         const productName = productRow.title_zh_tw || productRow.title_ja || "";
         if (productName) {
           ogTitle = `${productName} — ${storeName}`;
-          ogDesc = productRow.brand ? `${productRow.brand}｜${productName}` : productName;
+          ogDesc = [productRow.brand, productName].filter(Boolean).join("｜");
         }
+
+        // Capture values for JSON-LD (raw, not HTML-escaped)
+        jsonLdProductName = productName || storeName;
+        jsonLdProductImage = ogImage;
+        jsonLdProductDesc = [productRow.brand, productName].filter(Boolean).join("｜");
       }
     }
 
@@ -260,13 +296,46 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 <meta name="twitter:title" content="${ogTitleEsc}" />
 <meta name="twitter:description" content="${ogDescEsc}" />
 <meta name="twitter:image" content="${ogImageEsc}" />`;
-    html = html.replace("</head>", ogTags + "\n</head>");
+    html = html.replace("</head>", () => ogTags + "\n</head>");
+
+    // JSON-LD: Product schema + BreadcrumbList
+    const storeRootUrl = `${origin}${ctx.basePath}/`;
+    const productPageUrl = canonicalUrl.toString();
+
+    // Product schema — only inject when we have an actual product
+    if (jsonLdProductName) {
+      const productSchema: Record<string, unknown> = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: jsonLdProductName,
+        image: jsonLdProductImage,
+      };
+      if (jsonLdProductDesc) productSchema.description = jsonLdProductDesc;
+      const jsonLdProduct = buildJsonLd(productSchema);
+      html = html.replace("</head>", () => `<script type="application/ld+json">${jsonLdProduct}</script>\n</head>`);
+    }
+
+    // BreadcrumbList: Home → Store → Product
+    const breadcrumbItems: Array<Record<string, unknown>> = [
+      { "@type": "ListItem", position: 1, name: storeName, item: storeRootUrl },
+    ];
+    if (jsonLdProductName) {
+      const productItemUrl = code ? `${productPageUrl}?code=${encodeURIComponent(code)}` : productPageUrl;
+      breadcrumbItems.push({ "@type": "ListItem", position: 2, name: jsonLdProductName, item: productItemUrl });
+    }
+    const productBreadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbItems,
+    };
+    const jsonLdBreadcrumb = buildJsonLd(productBreadcrumb);
+    html = html.replace("</head>", () => `<script type="application/ld+json">${jsonLdBreadcrumb}</script>\n</head>`);
   }
 
   if (!/<link\s+rel=["']canonical["']/i.test(html)) {
-    html = html.replace("</head>", `${canonicalTag}\n${robotsTag}\n</head>`);
+    html = html.replace("</head>", () => `${canonicalTag}\n${robotsTag}\n</head>`);
   } else if (!/<meta\s+name=["']robots["']/i.test(html)) {
-    html = html.replace("</head>", `${robotsTag}\n</head>`);
+    html = html.replace("</head>", () => `${robotsTag}\n</head>`);
   }
 
   // Rewrite internal navigation links to be store-scoped
