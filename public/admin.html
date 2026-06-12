@@ -553,6 +553,7 @@
             <p class="value"><span id="member-email">載入中...</span></p>
             <p class="value" id="plan-expires" style="font-size:12px;color:var(--admin-text-muted);font-weight:400;"></p>
           </div>
+          <div id="plan-upgrade-box"></div>
           <label>網站名稱<input id="store-display-name" type="text" class="input-cute" placeholder="我的代購店" maxlength="100" /></label>
           <p class="meta">顯示在商店首頁的名稱</p>
           <label style="margin-top:10px;">網站介紹<input id="store-description" type="text" class="input-cute" placeholder="日韓代購，品質保證" maxlength="200" /></label>
@@ -927,6 +928,76 @@
   </nav>
 
   <script>
+  // ── 升級方案：開新視窗前往方案頁（landing #pricing，主網域） ──
+  function openUpgrade(reason) {
+    try { if (typeof gtag === "function") gtag("event", "upgrade_click", { reason: reason || "admin" }); } catch (e) {}
+    var domain = window.__MAIN_DOMAIN || location.host;
+    var url = location.protocol + "//" + domain + "/#pricing";
+    window.open(url, "_blank", "noopener");
+  }
+  window.openUpgrade = openUpgrade;
+
+  // 帳號資訊：依方案狀態顯示升級提示（free / 到期 / 付費可升級 / 已最高方案）
+  function renderPlanUpgrade(store) {
+    var box = document.getElementById("plan-upgrade-box");
+    if (!box) return;
+    var eff = (store && store.effective_plan) || "free";
+    var raw = (store && store.plan) || "free";
+    var expired = raw !== "free" && eff === "free"; // 付費但已到期降級
+    var names = { free: "免費", plus: "Plus", pro: "Pro", proplus: "Pro+" };
+    box.innerHTML = "";
+
+    if (eff === "proplus") {
+      box.innerHTML = '<div class="upgrade-card upgrade-card--max"><div class="upgrade-card__text">' +
+        '<strong>感謝支持，您已是 Pro+ 最高方案</strong></div></div>';
+      return;
+    }
+
+    var title, sub, btnLabel, cls;
+    if (expired) {
+      cls = "upgrade-card--expired";
+      title = "方案已到期";
+      sub = "您的付費方案已到期，目前功能已降為免費方案。重新升級即可恢復進階功能。";
+      btnLabel = "重新升級";
+    } else if (eff === "free") {
+      cls = "";
+      title = "升級解鎖更多功能";
+      sub = "免費方案功能有限，升級可獲得更多商品數、AI 用量與品牌設定。";
+      btnLabel = "升級方案";
+    } else {
+      cls = "upgrade-card--paid";
+      title = "升級更高方案";
+      sub = "目前為 " + (names[eff] || eff) + " 方案，升級可獲得更多商品數與進階功能。";
+      btnLabel = "升級方案";
+    }
+
+    var card = document.createElement("div");
+    card.className = "upgrade-card " + cls;
+    card.innerHTML = '<div class="upgrade-card__text"><strong>' + title + '</strong><span>' + sub + '</span></div>' +
+      '<button type="button" class="upgrade-btn">' + btnLabel + '</button>';
+    card.querySelector(".upgrade-btn").addEventListener("click", function () { openUpgrade(expired ? "expired" : eff); });
+    box.appendChild(card);
+  }
+
+  // 鎖定功能：以「點擊升級」提示取代直接隱藏
+  function showLockedNotice(section, featureName, requiredPlan) {
+    if (!section) return;
+    section.style.display = "none";
+    var prev = section.previousElementSibling;
+    if (prev && prev.classList && prev.classList.contains("locked-feature")) return; // 避免重複插入
+    var n = document.createElement("div");
+    n.className = "locked-feature";
+    n.setAttribute("role", "button");
+    n.tabIndex = 0;
+    n.innerHTML = '<span class="locked-feature__lock">🔒</span>' +
+      '<span class="locked-feature__text"><strong>' + featureName + '</strong>升級至 ' + requiredPlan + ' 方案即可使用</span>' +
+      '<span class="locked-feature__cta">升級解鎖</span>';
+    function go() { openUpgrade("locked:" + featureName); }
+    n.addEventListener("click", go);
+    n.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    section.parentNode.insertBefore(n, section);
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
     var plan = window.__STORE_PLAN || "free";
     var country = window.__STORE_COUNTRY || "jp";
@@ -1016,7 +1087,7 @@
   function initAiModelToggle() {
     var plan = window.__STORE_PLAN || "free";
     var section = document.getElementById("ai-model-section");
-    if (plan !== "pro") { if (section) section.style.display = "none"; return; }
+    if (plan !== "pro") { showLockedNotice(section, "AI 模型選擇", "Pro"); return; }
     if (section) section.style.display = "";
 
     // Load current model
@@ -1247,6 +1318,7 @@
         } else if (expiresEl && d.store.plan === "free") {
           expiresEl.textContent = "（免費方案）";
         }
+        renderPlanUpgrade(d.store);
         loadPopupAds(d.store);
         loadBannerSettings();
       }
@@ -1373,7 +1445,7 @@
   function loadBannerSettings() {
     var plan = window.__STORE_PLAN || "free";
     var section = document.getElementById("banner-section");
-    if (plan !== "pro" && plan !== "proplus") { if (section) section.style.display = "none"; return; }
+    if (plan !== "pro" && plan !== "proplus") { showLockedNotice(section, "首頁輪播 Banner", "Pro"); return; }
     if (section) section.style.display = "";
     apiFetch("/api/admin/banner").then(function(r){return r.json()}).then(function(d) {
       if (d.ok) {

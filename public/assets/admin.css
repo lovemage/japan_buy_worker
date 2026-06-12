@@ -852,6 +852,72 @@
   color: #fff;
 }
 
+/* ── 升級方案 CTA ── */
+:root {
+  --upgrade-orange: #e86b2c;
+  --upgrade-orange-dark: #c9531a;
+  --upgrade-soft: #fbeadc;
+}
+.upgrade-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  background: var(--upgrade-soft);
+  border: 1px solid #f3d8c2;
+  border-radius: 10px;
+}
+.upgrade-card__text { flex: 1; min-width: 0; }
+.upgrade-card__text strong { display: block; font-size: 14px; color: #7a3a12; }
+.upgrade-card__text span { display: block; font-size: 12px; color: #9a5a34; line-height: 1.55; margin-top: 2px; }
+.upgrade-card--expired { background: #fef2e7; border-color: #f6c89a; }
+.upgrade-card--expired .upgrade-card__text strong { color: #b54d15; }
+.upgrade-card--max { background: var(--admin-hover); border-color: var(--admin-border); }
+.upgrade-card--max .upgrade-card__text strong { color: var(--admin-text-secondary); }
+.upgrade-btn {
+  flex-shrink: 0;
+  background: var(--upgrade-orange);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--admin-transition);
+}
+.upgrade-btn:hover { background: var(--upgrade-orange-dark); }
+
+/* 鎖定功能 — 可點擊升級 */
+.locked-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  background: var(--admin-hover);
+  border: 1px dashed var(--admin-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color var(--admin-transition), background var(--admin-transition);
+}
+.locked-feature:hover { border-color: var(--upgrade-orange); background: var(--upgrade-soft); }
+.locked-feature__lock { font-size: 16px; line-height: 1; }
+.locked-feature__text { flex: 1; min-width: 0; font-size: 13px; color: var(--admin-text-secondary); line-height: 1.5; }
+.locked-feature__text strong { display: block; color: var(--admin-text); font-size: 14px; }
+.locked-feature__cta {
+  flex-shrink: 0;
+  background: var(--upgrade-orange);
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* ── Category list ── */
 .category-list {
   display: grid;
