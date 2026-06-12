@@ -883,16 +883,36 @@ export async function handleVerifyPhone(
     return json({ ok: false, error: "驗證碼錯誤" }, 400);
   }
 
-  // Code is correct - update store with verified phone
-  await db
-    .prepare(
-      `UPDATE stores SET phone_number = ?, phone_verified = 1,
-       onboarding_step = CASE WHEN onboarding_step = 'phone_pending' THEN 'store_setup' ELSE onboarding_step END,
-       updated_at = datetime('now')
-       WHERE id = ?`
-    )
+  // Code is correct — guard against the phone already belonging to another store.
+  // send-phone-code skips the duplicate check for test numbers, and a race can
+  // assign the same number between send and verify; without this guard the UNIQUE
+  // index on stores.phone_number throws on UPDATE and surfaces as a 500.
+  const phoneOwner = await db
+    .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
     .bind(storedCode.phone_number, session.store_id)
-    .run();
+    .first<{ id: number }>();
+  if (phoneOwner) {
+    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
+    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+  }
+
+  // Code is correct - update store with verified phone
+  try {
+    await db
+      .prepare(
+        `UPDATE stores SET phone_number = ?, phone_verified = 1,
+         onboarding_step = CASE WHEN onboarding_step = 'phone_pending' THEN 'store_setup' ELSE onboarding_step END,
+         updated_at = datetime('now')
+         WHERE id = ?`
+      )
+      .bind(storedCode.phone_number, session.store_id)
+      .run();
+  } catch (e) {
+    // Most likely the UNIQUE index on stores.phone_number (race with another store).
+    console.error("verify-phone UPDATE failed:", e);
+    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
+    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
+  }
 
   // Delete used verification code
   await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
