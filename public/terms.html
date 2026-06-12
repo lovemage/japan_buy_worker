@@ -5,56 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>vovosnap — 服務條款</title>
 <link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
 <style>
 :root {
-  --brand: #8A9A5B;
-  --brand-light: #EEF1E6;
-  --brand-dark: #768a4a;
-  --text: #3D3A35;
-  --text-secondary: #7A756D;
-  --text-muted: #A09A90;
-  --bg: #F9F7F1;
-  --bg-alt: #F3F0E8;
-  --bg-card: #FFFEFA;
-  --border: #E5E0D6;
-  --radius: 12px;
+  --ink: #322d27;
+  --muted: #6f655a;
+  --faint: #a3978a;
+  --bg: #faf6ef;
+  --bg-alt: #f4ecdf;
+  --card: #fffdf9;
+  --line: #e9ddcb;
+  --orange: #e86b2c;
+  --orange-dark: #c9531a;
+  --orange-text: #b54d15;
+  --orange-soft: #fbeadc;
+  --radius: 16px;
+  --shadow: 0 10px 30px rgba(86,62,36,.08);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; line-height: 1.8; }
 
 /* ── Nav ── */
-.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(250,246,239,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .nav-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
 .nav-actions { display: flex; gap: 8px; align-items: center; }
-.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
-.nav-link:hover { background: var(--bg-alt); color: var(--text); }
-.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
-.btn-fill { background: var(--brand); color: #fff; }
-.btn-fill:hover { background: var(--brand-dark); }
+.nav-link { font-size: 13px; color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: 999px; transition: all 0.15s; }
+.nav-link:hover { background: var(--bg-alt); color: var(--ink); }
+.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-fill { background: var(--orange); color: #fff; }
+.btn-fill:hover { background: var(--orange-dark); }
 
 /* ── Content ── */
 .container { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-.content { padding: 48px 0 80px; }
-.content h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-.content .updated { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
-.content h2 { font-size: 18px; font-weight: 700; margin-top: 32px; margin-bottom: 12px; color: var(--text); }
-.content h3 { font-size: 16px; font-weight: 700; margin-top: 20px; margin-bottom: 8px; color: var(--text); }
-.content p, .content li { font-size: 15px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.8; }
+.content { padding: 52px 0 96px; }
+.content h1 { font-family: "Noto Serif TC", serif; font-size: 30px; font-weight: 700; letter-spacing: .06em; margin-bottom: 8px; color: var(--ink); }
+.content .updated { font-size: 13px; color: var(--faint); margin-bottom: 36px; }
+.content h2 { font-family: "Noto Serif TC", serif; font-size: 18px; font-weight: 700; letter-spacing: .04em; margin-top: 36px; margin-bottom: 12px; color: var(--ink); }
+.content h3 { font-family: "Noto Serif TC", serif; font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 8px; color: var(--ink); }
+.content p, .content li { font-size: 15px; color: var(--muted); margin-bottom: 12px; line-height: 1.85; }
 .content ul { padding-left: 20px; }
 .content li { margin-bottom: 6px; }
-.content a { color: var(--brand); text-decoration: none; }
-.content a:hover { color: var(--brand-dark); text-decoration: underline; }
-.content strong { color: var(--text); }
-.content hr { border: none; border-top: 2px solid var(--border); margin: 48px 0; }
-.callout-warning { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 16px 0; }
+.content a { color: var(--orange-text); text-decoration: none; }
+.content a:hover { color: var(--orange); text-decoration: underline; }
+.content strong { color: var(--ink); }
+.content hr { border: none; border-top: 1px solid var(--line); margin: 52px 0; }
+.callout-warning { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius); padding: 18px 20px; margin: 20px 0; }
 .callout-warning p { margin: 0; color: #991b1b; font-size: 14px; }
-.callout-info { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 32px 0; }
-.callout-info p { margin: 0; color: var(--text-muted); font-size: 13px; }
+.callout-info { background: var(--bg-alt); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin: 36px 0; }
+.callout-info p { margin: 0; color: var(--muted); font-size: 13px; }
 
 /* ── Footer ── */
-.footer { padding: 24px 20px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text-muted); }
-.footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
-.footer a:hover { color: var(--brand); }
+.footer { padding: 28px 20px; border-top: 1px solid var(--line); text-align: center; font-size: 12px; color: var(--faint); }
+.footer a { color: var(--faint); text-decoration: none; margin: 0 8px; }
+.footer a:hover { color: var(--orange-text); }
 </style>
 </head>
 <body>
