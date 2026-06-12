@@ -4,63 +4,87 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>vovosnap — 設定你的店面</title>
-<link rel="icon" type="image/png" href="/assets/images/logo-3.png" />
+<link rel="icon" type="image/png" href="/assets/images/logo-icon-64.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
 <style>
 :root {
-  --brand: #8A9A5B;
-  --brand-dark: #768a4a;
-  --text: #3D3A35;
-  --text-secondary: #7A756D;
-  --text-muted: #A09A90;
-  --bg: #F9F7F1;
-  --bg-card: #FFFEFA;
-  --border: #E5E0D6;
+  --ink: #322d27;
+  --muted: #6f655a;
+  --faint: #a3978a;
+  --bg: #faf6ef;
+  --bg-alt: #f4ecdf;
+  --card: #fffdf9;
+  --blush: #f7e7da;
+  --line: #e9ddcb;
+  --orange: #e86b2c;
+  --orange-dark: #c9531a;
+  --orange-text: #b54d15;
+  --orange-soft: #fbeadc;
+  --green: #4c7e5b;
+  --radius: 16px;
+  --shadow: 0 10px 30px rgba(86,62,36,.08);
+  --ease-out: cubic-bezier(.22,1,.36,1);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); min-height: 100vh; }
-.container { max-width: 480px; margin: 0 auto; padding: 40px 20px; }
-.logo { text-align: center; margin-bottom: 32px; }
-.logo img { height: 36px; }
-.card { background: var(--bg-card); border-radius: 12px; padding: 32px 24px; border: 1px solid var(--border); margin-bottom: 16px; }
-.card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-.card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: var(--bg);
+       background-image: radial-gradient(120% 60% at 50% -10%, var(--blush) 0%, transparent 60%);
+       min-height: 100vh; -webkit-font-smoothing: antialiased; line-height: 1.7; }
+.container { max-width: 460px; margin: 0 auto; padding: 44px 20px 64px; }
+.logo { text-align: center; margin-bottom: 30px; }
+.logo img { width: 150px; height: auto; }
+.card { background: var(--card); border-radius: var(--radius); padding: 32px 26px; border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 16px; }
+.card h2 { font-family: "Noto Serif TC", serif; font-size: 22px; font-weight: 700; letter-spacing: .05em; margin-bottom: 10px; color: var(--ink); }
+.card p { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 18px; }
+.card p strong { color: var(--ink); }
 
 /* Steps indicator */
-.steps { display: flex; gap: 4px; margin-bottom: 32px; }
-.steps .dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
-.steps .dot.active { background: var(--brand); }
-.steps .dot.done { background: #22c55e; }
+.steps { display: flex; gap: 6px; margin-bottom: 30px; }
+.steps .dot { flex: 1; height: 5px; border-radius: 999px; background: var(--line); transition: background .3s var(--ease-out); }
+.steps .dot.active { background: var(--orange); }
+.steps .dot.done { background: var(--green); }
 
 /* Forms */
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-.form-group input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; background: #fff; color: var(--text); }
-.form-group input:focus { outline: none; border-color: var(--brand); }
-.form-group .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-.form-group .error { font-size: 12px; color: #ef4444; margin-top: 4px; display: none; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 7px; }
+.form-group input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 15px; background: #fff; color: var(--ink); transition: border-color .2s, box-shadow .2s; }
+.form-group input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-soft); }
+.form-group .hint { font-size: 12px; color: var(--faint); margin-top: 5px; }
+.form-group .error { font-size: 12px; color: #d4380d; margin-top: 5px; display: none; }
 
-.btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; width: 100%; text-align: center; }
-.btn-primary { background: var(--brand); color: #fff; }
-.btn-primary:hover { background: var(--brand-dark); }
-.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-.btn-secondary { background: var(--bg); color: var(--text); margin-top: 8px; border: 1px solid var(--border); }
-.btn-secondary:hover { background: #eee; }
+.btn { display: inline-block; padding: 13px 24px; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 600; letter-spacing: .02em; cursor: pointer; border: none; width: 100%; text-align: center; transition: background .2s, transform .15s var(--ease-out), opacity .2s; }
+.btn-primary { background: var(--orange); color: #fff; box-shadow: 0 8px 20px rgba(232,107,44,.22); }
+.btn-primary:hover { background: var(--orange-dark); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { background: #e6d8c6; color: #fff; box-shadow: none; cursor: not-allowed; }
+.btn-secondary { background: transparent; color: var(--orange-text); margin-top: 10px; border: 1.5px solid var(--line); box-shadow: none; }
+.btn-secondary:hover { border-color: var(--orange); background: var(--orange-soft); }
 
-.status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-.status-pending { background: #fef3c7; color: #92400e; }
-.status-done { background: #dcfce7; color: #166534; }
+.status-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.status-pending { background: var(--orange-soft); color: var(--orange-text); }
+.status-done { background: #e3efe6; color: var(--green); }
 
 .hidden { display: none !important; }
-.loading { text-align: center; padding: 20px; color: var(--text-muted); }
+.loading { text-align: center; padding: 24px; color: var(--faint); }
 
 /* Phone input */
 #phone-container { min-height: 50px; }
+.phone-prefix { padding: 12px 14px; background: var(--bg-alt); border: 1.5px solid var(--line); border-radius: 10px; font-size: 15px; color: var(--muted); white-space: nowrap; }
+
+/* OTP code input — auto-advances on 6 digits */
+#code-input { text-align: center; font-family: "Noto Serif TC", serif; font-size: 26px; font-weight: 700; letter-spacing: .5em; text-indent: .5em; padding: 14px; }
+.code-verifying { font-size: 13px; color: var(--orange-text); margin-top: 10px; display: none; align-items: center; gap: 8px; justify-content: center; }
+.code-verifying.show { display: flex; }
+.code-spinner { width: 15px; height: 15px; border: 2px solid var(--orange-soft); border-top-color: var(--orange); border-radius: 50%; animation: code-spin .7s linear infinite; }
+@keyframes code-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .code-spinner { animation: none; } .btn-primary:active { transform: none; } }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="logo"><a href="/"><img src="/assets/images/logo-3.png" alt="VOVOSnap" /></a></div>
+  <div class="logo"><a href="/"><img src="/assets/images/logo-full.webp" alt="我拍｜開店平台 vovosnap.com" /></a></div>
 
   <div class="steps">
     <div class="dot" id="dot-1"></div>
@@ -99,8 +123,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <p>輸入你的手機號碼，我們會發送簡訊驗證碼。</p>
     <div class="form-group">
       <label>手機號碼</label>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <span style="padding:10px 12px;background:#f5f5f5;border:1.5px solid #ddd;border-radius:8px;font-size:14px;color:#555;white-space:nowrap;">+886</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="phone-prefix">+886</span>
         <input type="tel" id="phone-input" placeholder="912345678" style="flex:1;" />
       </div>
       <div class="hint">首位 0 會自動移除</div>
@@ -109,10 +133,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
     <div class="hidden" id="verify-code-section" style="margin-top:16px;">
       <div class="form-group">
-        <label>驗證碼</label>
-        <input type="text" id="code-input" placeholder="123456" maxlength="6" />
+        <label>驗證碼（輸入 6 碼自動驗證）</label>
+        <input type="text" id="code-input" placeholder="······" maxlength="6" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" />
       </div>
-      <button class="btn btn-primary" onclick="verifyPhoneCode()">驗證</button>
+      <div class="code-verifying" id="code-verifying"><span class="code-spinner"></span>驗證中…</div>
+      <button class="btn btn-secondary" id="manual-verify-btn" onclick="verifyPhoneCode()">手動驗證</button>
     </div>
     <p id="phone-error" class="error"></p>
   </div>
@@ -354,12 +379,20 @@ function startPhoneCooldown(btn) {
   }, 1000);
 }
 
+let verifying = false;
 async function verifyPhoneCode() {
-  const code = document.getElementById("code-input").value.trim();
-  if (!code) return;
+  const codeEl = document.getElementById("code-input");
+  const code = codeEl.value.trim();
+  if (verifying || code.length < 6) return;
+  verifying = true;
 
   const errEl = document.getElementById("phone-error");
+  const spin = document.getElementById("code-verifying");
+  const manualBtn = document.getElementById("manual-verify-btn");
   errEl.style.display = "none";
+  if (spin) spin.classList.add("show");
+  if (manualBtn) manualBtn.disabled = true;
+  codeEl.disabled = true;
 
   try {
     const resp = await fetch("/auth/verify-phone", {
@@ -371,15 +404,30 @@ async function verifyPhoneCode() {
     const data = await resp.json();
     if (data.ok) {
       window.location.reload();
-    } else {
-      errEl.textContent = data.error || "驗證失敗";
-      errEl.style.display = "block";
+      return; // success: keep UI locked while the page reloads
     }
+    errEl.textContent = data.error || "驗證失敗";
+    errEl.style.display = "block";
   } catch (e) {
     errEl.textContent = "驗證碼錯誤";
     errEl.style.display = "block";
   }
+
+  // Failure path: unlock and clear so the user can retype (auto-verifies again at 6 digits)
+  verifying = false;
+  codeEl.disabled = false;
+  codeEl.value = "";
+  codeEl.focus();
+  if (spin) spin.classList.remove("show");
+  if (manualBtn) manualBtn.disabled = false;
 }
+
+// Auto-advance: keep digits only and verify automatically once 6 digits entered
+document.getElementById("code-input")?.addEventListener("input", function () {
+  const digits = this.value.replace(/\D/g, "").slice(0, 6);
+  if (digits !== this.value) this.value = digits;
+  if (digits.length === 6) verifyPhoneCode();
+});
 
 // Store setup
 document.getElementById("store-slug")?.addEventListener("input", function() {

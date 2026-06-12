@@ -1,4 +1,4 @@
-export const DEFAULT_FAVICON_HREF = "/assets/images/logo-3.png";
+export const DEFAULT_FAVICON_HREF = "/assets/images/logo-icon-64.png";
 
 export function getStorefrontFaviconHref({ displaySettings, apiBase, fallbackHref = DEFAULT_FAVICON_HREF } = {}) {
   const logoKey = typeof displaySettings?.storeLogo === "string" ? displaySettings.storeLogo.trim() : "";
