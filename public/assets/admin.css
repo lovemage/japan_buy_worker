@@ -918,6 +918,20 @@
   white-space: nowrap;
 }
 
+/* Mobile: upgrade/locked cards wrap */
+@media (max-width: 480px) {
+  .upgrade-card,
+  .locked-feature {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .upgrade-btn,
+  .locked-feature__cta {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 /* ── Category list ── */
 .category-list {
   display: grid;
