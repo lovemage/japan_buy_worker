@@ -1,4 +1,4 @@
-import { getDraft } from "./draft-store.js";
+import { addItem, getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 import { buildListQueryParams } from "./list-query.js";
 import { getNormalizedPromoMax, nextSingleBrandSelection } from "./list-state.js";
@@ -12,6 +12,8 @@ const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
 const PROMO_FILTER_VALUES = ["all", 350, 450, 550];
 const DEFAULT_PROMO_FILTER = "all";
+const DETAIL_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M4.038 4.038a5.25 5.25 0 0 0 0 7.424a.75.75 0 0 1-1.06 1.061A6.75 6.75 0 1 1 14.5 7.75a.75.75 0 1 1-1.5 0a5.25 5.25 0 0 0-8.962-3.712"/><path d="M7.712 7.136a.75.75 0 0 1 .814.302l2.984 4.377a.75.75 0 0 1-.726 1.164l-.76-.109l.289 1.075a.75.75 0 0 1-1.45.388l-.287-1.075l-.602.474a.75.75 0 0 1-1.212-.645l.396-5.283a.75.75 0 0 1 .554-.668"/><path d="M5.805 9.695A2.75 2.75 0 1 1 10.5 7.75a.75.75 0 0 0 1.5 0a4.25 4.25 0 1 0-7.255 3.005a.75.75 0 1 0 1.06-1.06"/></svg>';
+const CART_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M1.75 1.002a.75.75 0 1 0 0 1.5h1.835l1.24 5.113A3.75 3.75 0 0 0 2 11.25c0 .414.336.75.75.75h10.5a.75.75 0 0 0 0-1.5H3.628A2.25 2.25 0 0 1 5.75 9h6.5a.75.75 0 0 0 .73-.578l.846-3.595a.75.75 0 0 0-.578-.906a44 44 0 0 0-7.996-.91l-.348-1.436a.75.75 0 0 0-.73-.573zM5 14a1 1 0 1 1-2 0a1 1 0 0 1 2 0m8 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"/></svg>';
 
 // Tag labels from display settings or defaults
 const TAG_DEFAULTS = { hot: "熱門商品", limited: "限時發售", popular: "人氣特賣", instock: "現貨", preorder: "預購" };
@@ -192,13 +194,63 @@ function bindProductNavigationState() {
   });
 }
 
+function bumpFloatingCartButton() {
+  const btn = document.querySelector(".floating-request-btn");
+  if (!btn) return;
+  btn.classList.remove("is-bumped");
+  void btn.offsetWidth;
+  btn.classList.add("is-bumped");
+  btn.addEventListener("animationend", () => {
+    btn.classList.remove("is-bumped");
+  }, { once: true });
+}
+
+function bindListCartButtons() {
+  document.querySelectorAll("[data-card-cart]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const raw = button.getAttribute("data-cart-payload") || "";
+      let payload = null;
+      try {
+        payload = JSON.parse(decodeURIComponent(raw));
+      } catch {
+        payload = null;
+      }
+      if (!payload) return;
+      addItem(payload);
+      renderDraftCount();
+      bumpFloatingCartButton();
+      button.classList.add("is-added");
+      button.setAttribute("aria-label", "已加入購物車");
+      window.setTimeout(() => {
+        button.classList.remove("is-added");
+        button.setAttribute("aria-label", "加入購物車");
+      }, 900);
+    });
+  });
+}
+
 function initOverlayToggle() {
   document.querySelectorAll("[data-card-overlay]").forEach((overlay) => {
     const media = overlay.closest(".product-card__media");
     if (!media) return;
+    const detailLink = overlay.querySelector("[data-product-detail-link]");
+    if (detailLink) {
+      detailLink.tabIndex = -1;
+    }
+    const setVisible = (visible) => {
+      overlay.classList.toggle("is-visible", visible);
+      overlay.setAttribute("aria-hidden", visible ? "false" : "true");
+      if (detailLink) {
+        detailLink.tabIndex = visible ? 0 : -1;
+      }
+    };
+    overlay.setAttribute("aria-hidden", "true");
     media.addEventListener("click", (e) => {
       if (e.target.closest(".product-card__nav")) return;
-      overlay.classList.toggle("is-visible");
+      if (e.target.closest("[data-product-detail-link]")) return;
+      setVisible(!overlay.classList.contains("is-visible"));
     });
   });
 }
@@ -223,6 +275,20 @@ function renderProducts(products, pricing, promoMaxTwd) {
       const gallery = buildProductGallery(item);
       const firstImage = withProductImageFallback(gallery[0] || "");
       const galleryPayload = encodeURIComponent(JSON.stringify(gallery));
+      const detailHref = `${window.__API_BASE || ""}/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}`;
+      const cartPayload = encodeURIComponent(JSON.stringify({
+        productId: item.id,
+        code: item.code || "",
+        productNameSnapshot: title,
+        quantity: 1,
+        imageUrl: firstImage,
+        selectedImageUrl: firstImage,
+        priceJpyTaxIn: adjusted.src,
+        unitPriceTwd: adjusted.twd,
+        sizeOptions: Array.isArray(item.sizeOptions) ? item.sizeOptions : [],
+        colorOptions: Array.isArray(item.colorOptions) ? item.colorOptions : [],
+        variantOptions: Array.isArray(item.variants) ? item.variants : [],
+      }));
       return `
       <article class="product-card ${gallery.length > 1 ? "has-gallery" : ""}" data-product-card data-gallery="${galleryPayload}">
         <div class="product-card__media image-loading" data-image-loading-wrap>
@@ -232,20 +298,24 @@ function renderProducts(products, pricing, promoMaxTwd) {
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
           <div class="product-card__overlay" data-card-overlay>
+            <a class="product-card__detail-link" data-product-detail-link="1" href="${detailHref}" aria-label="查看商品詳情">${DETAIL_ICON_SVG}</a>
             <h2 class="product-card__title">${escapeHtml(title)}</h2>
           </div>
         </div>
         <div class="product-card__body">
-          <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
+          <div class="product-card__brand-row">
+            <p class="meta">${escapeHtml(item.brand || "品牌未提供")}</p>
+            <button type="button" class="product-card__cart-btn" data-card-cart data-cart-payload="${cartPayload}" aria-label="加入購物車">${CART_ICON_SVG}</button>
+          </div>
           <p class="product-card__price">${adjusted.twd !== null ? `NT$${adjusted.twd.toLocaleString("en-US")}` : "價格未提供"}${(adjusted.src !== null && !isTwdSource()) ? ` <span class="meta" style="font-weight:400">(${fmtSrcPrice(adjusted.src)})</span>` : ""}</p>
           <p class="product-card__category">${escapeHtml(translateCategoryLabel(item.category))}${item.colorCount ? ` · ${item.colorCount} 色` : ""}</p>
-          <a class="button" data-product-detail-link="1" href="${window.__API_BASE || ""}/product?code=${encodeURIComponent(item.code)}&returnTo=${encodeURIComponent(getCurrentListUrl())}">詳情</a>
         </div>
       </article>
       `;
     })
     .join("");
   bindProductNavigationState();
+  bindListCartButtons();
 }
 
 function initProductCardGalleries() {
@@ -524,14 +594,11 @@ function renderPagination(paging) {
 
 function renderFloatingPagination(paging) {
   const prev = document.getElementById("float-page-prev");
-  const next = document.getElementById("float-page-next");
-  if (!prev || !next || !paging) {
+  if (!prev || !paging) {
     return;
   }
   prev.disabled = paging.page <= 1;
-  next.disabled = paging.page >= paging.totalPages;
   prev.onclick = () => goPage(paging.page - 1);
-  next.onclick = () => goPage(paging.page + 1);
 }
 
 function closeDrawer() {
