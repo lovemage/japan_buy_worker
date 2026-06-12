@@ -20,12 +20,20 @@ test("parseDisplaySettings falls back to defaults on invalid input", () => {
   assert.deepEqual(parseDisplaySettings("{"), DEFAULT_DISPLAY_SETTINGS);
 });
 
+test("parseDisplaySettings strips legacy promo filter values", () => {
+  assert.deepEqual(parseDisplaySettings('{"promoEnabled":false,"promoFilters":["350"]}'), {
+    ...DEFAULT_DISPLAY_SETTINGS,
+    promoEnabled: false,
+  });
+});
+
 test("sanitizeDisplaySettingsPatch keeps storeLogo for plus but still strips tagNames", () => {
   const sanitized = sanitizeDisplaySettingsPatch(
     {
       storeLogo: "logos/store.webp",
       tagNames: { hot: "人氣商品" },
       promoEnabled: false,
+      promoFilters: ["350"],
     },
     "plus"
   );

@@ -128,7 +128,7 @@ async function serveTenantHtml(
     .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
     .bind(ctx.storeId)
     .first<{ value: string }>();
-  const displaySettings = displayRow?.value || '{"viewMode":"2card","promoFilters":["all","350","450","550"]}';
+  const displaySettings = displayRow?.value || '{"viewMode":"2card","promoEnabled":true}';
 
   // Tutorial state + avatar
   const tutorialRow = await ctx.db

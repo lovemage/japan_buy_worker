@@ -2,18 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  getNormalizedPromoMax,
+  getNormalizedQuickSort,
   nextSingleBrandSelection,
 } from '../public/assets/list-state.js';
 
-test('getNormalizedPromoMax defaults missing promo to all', () => {
-  assert.equal(getNormalizedPromoMax(null), 'all');
-  assert.equal(getNormalizedPromoMax(''), 'all');
+test('getNormalizedQuickSort defaults missing sort to latest', () => {
+  assert.equal(getNormalizedQuickSort(null), 'latest');
+  assert.equal(getNormalizedQuickSort(''), 'latest');
 });
 
-test('getNormalizedPromoMax keeps supported numeric promo filters', () => {
-  assert.equal(getNormalizedPromoMax('350'), 350);
-  assert.equal(getNormalizedPromoMax('450'), 450);
+test('getNormalizedQuickSort keeps supported sort filters', () => {
+  assert.equal(getNormalizedQuickSort('price_desc'), 'price_desc');
+  assert.equal(getNormalizedQuickSort('price_asc'), 'price_asc');
+  assert.equal(getNormalizedQuickSort('unknown'), 'latest');
 });
 
 test('nextSingleBrandSelection selects one brand at a time', () => {

@@ -486,6 +486,10 @@ body {
   flex: 1 1 calc(50% - 6px);
 }
 
+.store-sidebar__promo-switch .quick-filter-btn {
+  flex: 0 0 40px;
+}
+
 .button {
   display: inline-block;
   border: 0;
@@ -2549,6 +2553,19 @@ select:disabled {
   background: var(--brand);
   color: #fff;
   box-shadow: 0 2px 8px var(--brand-shadow-md);
+}
+
+.quick-filter-switch {
+  align-items: center;
+}
+
+.quick-filter-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Promo Modal */

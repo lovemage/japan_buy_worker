@@ -94,7 +94,7 @@ export async function handleStoreInfo(
   return json({ ok: false, error: "Method Not Allowed" }, 405);
 }
 
-// Display settings (view mode, promo filters)
+// Display settings (view mode, quick filters)
 export async function handleDisplaySettings(
   request: Request,
   ctx: RequestContext

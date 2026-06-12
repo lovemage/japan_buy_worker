@@ -1,5 +1,4 @@
 import type { RequestContext } from "../../context";
-import { getPricingConfig } from "../pricing";
 import { buildProductWhereClause, parseBrandFilters } from "./product-filters";
 import { parseStoredProductPayload } from "../../jobs/product-records";
 
@@ -29,6 +28,22 @@ type BrandRow = {
   brand: string | null;
   total: number;
 };
+
+type ProductSort = "latest" | "price_desc" | "price_asc";
+
+function normalizeProductSort(raw: string | null): ProductSort {
+  return raw === "price_desc" || raw === "price_asc" ? raw : "latest";
+}
+
+function getProductOrderBy(sort: ProductSort): string {
+  if (sort === "price_desc") {
+    return "ORDER BY p.is_active DESC, p.price_jpy_tax_in IS NULL ASC, p.price_jpy_tax_in DESC, p.created_at DESC, p.id DESC";
+  }
+  if (sort === "price_asc") {
+    return "ORDER BY p.is_active DESC, p.price_jpy_tax_in IS NULL ASC, p.price_jpy_tax_in ASC, p.created_at DESC, p.id DESC";
+  }
+  return "ORDER BY p.is_active DESC, p.created_at DESC, p.id DESC";
+}
 
 function toDisplayImageUrl(imageUrl: string | null): string | null {
   if (!imageUrl) {
@@ -79,39 +94,12 @@ export async function handlePublicProducts(
   const search = (url.searchParams.get("search") || "").trim();
   const includeInactive = url.searchParams.get("includeInactive") === "1";
   const onlyInactive = url.searchParams.get("onlyInactive") === "1";
-  const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
+  const sort = normalizeProductSort(url.searchParams.get("sort"));
   const hasCategory = category.length > 0;
-  const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
-  const pricing = await getPricingConfig(ctx.db, ctx.storeId);
-  const markup = Number(pricing.markupJpy);
-  const markupMode = pricing.markupMode || "flat";
-  const markupPercent = Number(pricing.markupPercent);
-  const rate = Number(pricing.jpyToTwd);
-  const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
-  const maxBaseJpy = (() => {
-    if (!Number.isFinite(promoThreshold) || promoThreshold < 0) {
-      return Number.MAX_SAFE_INTEGER;
-    }
-    // manual mode: price IS the TWD selling price directly
-    if (pricing.pricingMode === "manual") {
-      return promoThreshold;
-    }
-    if (!Number.isFinite(rate) || rate <= 0) {
-      return Number.MAX_SAFE_INTEGER;
-    }
-    if (markupMode === "percent" && Number.isFinite(markupPercent)) {
-      // percent mode: twd = base * rate * (1 + pct/100), so base = twd / rate / (1 + pct/100)
-      return Math.max(0, Math.floor(promoThreshold / rate / (1 + markupPercent / 100)));
-    }
-    // flat mode: twd = (base + markup) * rate, so base = twd / rate - markup
-    return Number.isFinite(markup)
-      ? Math.max(0, Math.floor(promoThreshold / rate - markup))
-      : Number.MAX_SAFE_INTEGER;
-  })();
   const where = buildProductWhereClause({
     storeId: ctx.storeId,
     category,
-    maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
+    maxBaseJpy: null,
     brands,
     search,
     includeInactive,
@@ -136,7 +124,7 @@ SELECT
   p.tags
 FROM products p
 ${where.whereSql}
-ORDER BY p.is_active DESC, updated_at DESC
+${getProductOrderBy(sort)}
 LIMIT ? OFFSET ?
 `;
   const rows = await ctx.db
@@ -186,7 +174,7 @@ ${where.whereSql}
       filters: {
         category: hasCategory ? category : "",
         brands,
-        promoMaxTwd: hasPromoFilter ? promoMaxTwd : null,
+        sort,
       },
       paging: { limit, offset, page, total, totalPages, totalSku },
     }),
@@ -242,29 +230,10 @@ export async function handlePublicProductBrands(
 
   const url = new URL(request.url);
   const category = (url.searchParams.get("category") || "").trim();
-  const promoMaxTwd = Number(url.searchParams.get("promoMaxTwd") || "");
-  const hasPromoFilter = Number.isFinite(promoMaxTwd) && promoMaxTwd > 0;
-  const pricing = await getPricingConfig(ctx.db, ctx.storeId);
-  const markup = Number(pricing.markupJpy);
-  const markupMode2 = pricing.markupMode || "flat";
-  const markupPercent2 = Number(pricing.markupPercent);
-  const rate = Number(pricing.jpyToTwd);
-  const promoThreshold = hasPromoFilter ? promoMaxTwd : Number(pricing.promoTagMaxTwd);
-  const maxBaseJpy = (() => {
-    if (!Number.isFinite(rate) || rate <= 0 || !Number.isFinite(promoThreshold) || promoThreshold < 0) {
-      return Number.MAX_SAFE_INTEGER;
-    }
-    if (markupMode2 === "percent" && Number.isFinite(markupPercent2)) {
-      return Math.max(0, Math.floor(promoThreshold / rate / (1 + markupPercent2 / 100)));
-    }
-    return Number.isFinite(markup)
-      ? Math.max(0, Math.floor(promoThreshold / rate - markup))
-      : Number.MAX_SAFE_INTEGER;
-  })();
   const where = buildProductWhereClause({
     storeId: ctx.storeId,
     category,
-    maxBaseJpy: hasPromoFilter ? maxBaseJpy : null,
+    maxBaseJpy: null,
     brands: [],
   });
 

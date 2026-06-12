@@ -1,7 +1,7 @@
 import { addItem, getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 import { buildListQueryParams } from "./list-query.js";
-import { getNormalizedPromoMax, nextSingleBrandSelection } from "./list-state.js";
+import { getNormalizedQuickSort, nextSingleBrandSelection } from "./list-state.js";
 
 const PAGE_SIZE = 30;
 const _cc = window.__COUNTRY_CONFIG || {};
@@ -10,8 +10,7 @@ const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
 const LIST_RETURN_STATE_KEY = "japan-buy-list-return-v1";
 const VIEW_MODE_STORAGE_KEY = "product-view-mode-v1";
 const VIEW_MODES = ["list", "card", "2card"];
-const PROMO_FILTER_VALUES = ["all", 350, 450, 550];
-const DEFAULT_PROMO_FILTER = "all";
+const DEFAULT_QUICK_SORT = "latest";
 const DETAIL_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M4.038 4.038a5.25 5.25 0 0 0 0 7.424a.75.75 0 0 1-1.06 1.061A6.75 6.75 0 1 1 14.5 7.75a.75.75 0 1 1-1.5 0a5.25 5.25 0 0 0-8.962-3.712"/><path d="M7.712 7.136a.75.75 0 0 1 .814.302l2.984 4.377a.75.75 0 0 1-.726 1.164l-.76-.109l.289 1.075a.75.75 0 0 1-1.45.388l-.287-1.075l-.602.474a.75.75 0 0 1-1.212-.645l.396-5.283a.75.75 0 0 1 .554-.668"/><path d="M5.805 9.695A2.75 2.75 0 1 1 10.5 7.75a.75.75 0 0 0 1.5 0a4.25 4.25 0 1 0-7.255 3.005a.75.75 0 1 0 1.06-1.06"/></svg>';
 const CART_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M1.75 1.002a.75.75 0 1 0 0 1.5h1.835l1.24 5.113A3.75 3.75 0 0 0 2 11.25c0 .414.336.75.75.75h10.5a.75.75 0 0 0 0-1.5H3.628A2.25 2.25 0 0 1 5.75 9h6.5a.75.75 0 0 0 .73-.578l.846-3.595a.75.75 0 0 0-.578-.906a44 44 0 0 0-7.996-.91l-.348-1.436a.75.75 0 0 0-.73-.573zM5 14a1 1 0 1 1-2 0a1 1 0 0 1 2 0m8 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"/></svg>';
 
@@ -255,14 +254,12 @@ function initOverlayToggle() {
   });
 }
 
-function renderProducts(products, pricing, promoMaxTwd) {
+function renderProducts(products, pricing) {
   const grid = document.getElementById("product-grid");
   if (!grid) {
     return;
   }
-  const promoThreshold = Number.isFinite(promoMaxTwd)
-    ? promoMaxTwd
-    : Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
+  const promoThreshold = Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
   grid.innerHTML = products
     .map((item) => {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
@@ -399,26 +396,22 @@ function initProductCardGalleries() {
   applyProductImageFallback();
 }
 
-function getPromoMaxTwd() {
+function getQuickSort() {
   const url = new URL(location.href);
-  return getNormalizedPromoMax(url.searchParams.get("promoMaxTwd") || DEFAULT_PROMO_FILTER);
+  return getNormalizedQuickSort(url.searchParams.get("sort") || DEFAULT_QUICK_SORT);
 }
 
 function initPromoSwitch() {
-  const selected = getPromoMaxTwd();
-  document.querySelectorAll(".view-switch__btn[data-promo-max]").forEach((btn) => {
-    const raw = (btn.getAttribute("data-promo-max") || "").trim();
-    const value = raw === "all" ? "all" : Number(raw);
+  const selected = getQuickSort();
+  document.querySelectorAll(".view-switch__btn[data-quick-sort]").forEach((btn) => {
+    const value = getNormalizedQuickSort(btn.getAttribute("data-quick-sort") || DEFAULT_QUICK_SORT);
     btn.classList.toggle("is-active", value === selected);
     btn.addEventListener("click", () => {
-      if (!PROMO_FILTER_VALUES.includes(value)) {
-        return;
-      }
       const url = new URL(location.href);
-      if (value === "all") {
-        url.searchParams.delete("promoMaxTwd");
+      if (value === DEFAULT_QUICK_SORT) {
+        url.searchParams.delete("sort");
       } else {
-        url.searchParams.set("promoMaxTwd", String(value));
+        url.searchParams.set("sort", value);
       }
       url.searchParams.set("page", "1");
       location.href = url.toString();
@@ -521,7 +514,7 @@ function getSelectedBrands() {
 function goPage(
   page,
   category = getCategory(),
-  promoMaxTwd = getPromoMaxTwd(),
+  sort = getQuickSort(),
   brands = getSelectedBrands()
 ) {
   const target = Math.max(1, page);
@@ -532,10 +525,10 @@ function goPage(
   } else {
     url.searchParams.delete("category");
   }
-  if (promoMaxTwd === "all") {
-    url.searchParams.delete("promoMaxTwd");
-  } else if (PROMO_FILTER_VALUES.includes(Number(promoMaxTwd))) {
-    url.searchParams.set("promoMaxTwd", String(promoMaxTwd));
+  if (sort === DEFAULT_QUICK_SORT) {
+    url.searchParams.delete("sort");
+  } else {
+    url.searchParams.set("sort", getNormalizedQuickSort(sort));
   }
   if (brands.length > 0) {
     url.searchParams.set("brands", brands.join(","));
@@ -694,10 +687,10 @@ function renderBrandFilters(brands) {
         const brand = (button.getAttribute("data-brand") || "").trim();
         closeDrawer();
         if (!brand) {
-          goPage(1, getCategory(), getPromoMaxTwd(), []);
+          goPage(1, getCategory(), getQuickSort(), []);
           return;
         }
-        goPage(1, getCategory(), getPromoMaxTwd(), nextSingleBrandSelection(getSelectedBrands(), brand));
+        goPage(1, getCategory(), getQuickSort(), nextSingleBrandSelection(getSelectedBrands(), brand));
       });
     });
   });
@@ -746,9 +739,8 @@ async function bootstrap() {
   initPromoSwitch();
   try {
     const category = getCategory();
-    const promoMaxTwd = getPromoMaxTwd();
+    const quickSort = getQuickSort();
     const brandParams = buildListQueryParams({
-      promoMaxTwd,
       category,
     });
     const [categoryRes, brandRes] = await Promise.all([
@@ -771,7 +763,7 @@ async function bootstrap() {
     const params = buildListQueryParams({
       limit: PAGE_SIZE,
       offset,
-      promoMaxTwd,
+      sort: quickSort,
       category,
       brands: selectedBrands,
     });
@@ -788,7 +780,7 @@ async function bootstrap() {
       const dateText = last ? formatDateOnly(last) : "未知";
       lastNode.textContent = `最後更新：${dateText}｜商品數量：${totalProducts.toLocaleString("en-US")}`;
     }
-    renderProducts(products, pricing, promoMaxTwd);
+    renderProducts(products, pricing);
     initProductCardGalleries();
     initOverlayToggle();
     renderPagination(body.paging || null);

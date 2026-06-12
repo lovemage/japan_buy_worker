@@ -1,13 +1,9 @@
-const PROMO_FILTER_VALUES = ['all', 350, 450, 550];
-const DEFAULT_PROMO_FILTER = 'all';
+const QUICK_SORT_VALUES = ['latest', 'price_desc', 'price_asc'];
+const DEFAULT_QUICK_SORT = 'latest';
 
-export function getNormalizedPromoMax(raw) {
+export function getNormalizedQuickSort(raw) {
   const input = String(raw ?? '').trim();
-  if (!input || input === 'all') {
-    return DEFAULT_PROMO_FILTER;
-  }
-  const value = Number(input);
-  return PROMO_FILTER_VALUES.includes(value) ? value : DEFAULT_PROMO_FILTER;
+  return QUICK_SORT_VALUES.includes(input) ? input : DEFAULT_QUICK_SORT;
 }
 
 export function nextSingleBrandSelection(currentBrands, clickedBrand) {

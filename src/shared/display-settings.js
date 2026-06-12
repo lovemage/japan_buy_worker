@@ -1,7 +1,6 @@
 export const DEFAULT_DISPLAY_SETTINGS = {
   viewMode: "2card",
   promoEnabled: true,
-  promoFilters: ["all", "350", "450", "550"],
   wholesalePriceEnabled: false,
 };
 
@@ -15,9 +14,11 @@ export function parseDisplaySettings(rawValue) {
   }
 
   try {
+    const parsed = JSON.parse(rawValue);
+    delete parsed.promoFilters;
     return {
       ...DEFAULT_DISPLAY_SETTINGS,
-      ...JSON.parse(rawValue),
+      ...parsed,
     };
   } catch {
     return { ...DEFAULT_DISPLAY_SETTINGS };
@@ -26,6 +27,7 @@ export function parseDisplaySettings(rawValue) {
 
 export function sanitizeDisplaySettingsPatch(input, storePlan) {
   const next = { ...(input || {}) };
+  delete next.promoFilters;
 
   if (!canManageStoreLogo(storePlan)) {
     delete next.storeLogo;

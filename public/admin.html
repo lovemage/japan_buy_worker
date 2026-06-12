@@ -755,16 +755,14 @@
 
         <div class="settings-group">
           <div class="toggle-row">
-            <h3 class="settings-group__title" style="margin:0;">價格篩選按鈕</h3>
+            <h3 class="settings-group__title" style="margin:0;">快速篩選</h3>
             <label class="toggle-label">
               <span id="promo-toggle-label" style="color:var(--admin-text-muted);">開啟</span>
               <input type="checkbox" id="promo-toggle" onchange="onPromoToggle()" />
             </label>
           </div>
           <div id="promo-editor-wrap">
-            <p class="meta" style="margin-bottom:10px;">自訂價格篩選器的數值和顯示標籤。</p>
-            <div id="promo-filter-editor" style="display:flex;flex-direction:column;gap:8px;"></div>
-            <button class="button secondary" type="button" style="margin-top:8px;font-size:12px;" onclick="addPromoFilter()">+ 新增篩選項</button>
+            <p class="meta" style="margin-bottom:10px;">前台顯示固定排序按鈕：最新上架、價格高到低、價格低到高。</p>
           </div>
         </div>
 
@@ -1213,7 +1211,6 @@
   loadTemplates();
 
   // Display settings
-  var promoItems = [];
   var promoEnabled = false;
 
   function loadDisplaySettings() {
@@ -1227,18 +1224,6 @@
       var toggle = document.getElementById("promo-toggle");
       if (toggle) toggle.checked = promoEnabled;
       updatePromoToggleUI();
-      promoItems = d.promoFilters || [
-        { value: "all", label: "一般", enabled: true },
-        { value: "350", label: "<350", enabled: true },
-        { value: "450", label: "<450", enabled: true },
-        { value: "550", label: "<550", enabled: true }
-      ];
-      if (promoItems.length > 0 && typeof promoItems[0] === "string") {
-        promoItems = promoItems.map(function(v) {
-          return { value: v, label: v === "all" ? "一般" : "<" + v, enabled: true };
-        });
-      }
-      renderPromoEditor();
       // Checkout message
       var msgInput = document.getElementById("checkout-message-input");
       if (msgInput && d.checkoutMessage) msgInput.value = d.checkoutMessage;
@@ -1268,20 +1253,6 @@
     if (wrap) wrap.style.display = promoEnabled ? "" : "none";
     if (label) { label.textContent = promoEnabled ? "開啟" : "關閉"; label.style.color = promoEnabled ? "var(--admin-success)" : "var(--admin-text-muted)"; }
   }
-
-  function renderPromoEditor() {
-    var el = document.getElementById("promo-filter-editor");
-    if (!el) return;
-    el.innerHTML = promoItems.map(function(item, i) {
-      return '<div class="promo-row">' +
-        '<input type="text" class="val" value="' + (item.value || '') + '" placeholder="數值" onchange="promoItems[' + i + '].value=this.value">' +
-        '<input type="text" class="lbl" value="' + (item.label || '').replace(/"/g, '&quot;') + '" placeholder="標籤" onchange="promoItems[' + i + '].label=this.value">' +
-        '<button type="button" class="del" onclick="promoItems.splice(' + i + ',1);renderPromoEditor()">✕</button>' +
-      '</div>';
-    }).join("");
-  }
-
-  function addPromoFilter() { promoItems.push({ value: "", label: "", enabled: true }); renderPromoEditor(); }
 
   function setViewMode(mode) {
     document.querySelectorAll(".view-mode-opt").forEach(function(b) {
@@ -1317,7 +1288,7 @@
     apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, promoFilters: promoItems, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
+      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
     }).then(function(r){return r.json()}).then(function(d) {
       if (d.ok) { var st = document.getElementById("display-status"); if (st) { st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); } }
     });
@@ -1727,7 +1698,6 @@
         body: JSON.stringify({
           viewMode: settings.viewMode || mode,
           promoEnabled: settings.promoEnabled !== false,
-          promoFilters: settings.promoFilters || promoItems,
           checkoutMessage: settings.checkoutMessage || checkoutMsg,
           shippingMethods: shippingMethods
         }),
