@@ -1,114 +1,107 @@
 # Design
 
-> 我拍｜開店平台 — 拼貼風 SaaS landing 視覺系統。
-> 對應 product 脈絡見 [PRODUCT.md](./PRODUCT.md)。
-> 完整 spec 與驗收標準見 [docs/plans/2026-04-24-collage-landing-redesign.md](./docs/plans/2026-04-24-collage-landing-redesign.md)。
+> 我拍｜開店平台 — 設計系統文件（2026 年 6 月，優雅暖調改版）。
+> 對應策略脈絡見 [PRODUCT.md](./PRODUCT.md)。
+>
+> **注意**：此文件以 `public/index.html`（landing page）為基準。
+> 其他頁面（onboarding、store、admin）設計系統仍待對齊。
 
 ## Aesthetic Concept
 
-**手作旅行剪貼簿（Handmade Travel Scrapbook）。**
+**優雅暖調（Elegant Warmth）— 明朝體 + 米杏 + 蜜橘。**
 
-頁面像桌上一張拼貼紙：撕紙橫幅、紙膠帶、拍立得、復古相機、便條紙，搭配嚴謹的 SaaS dashboard mockup。**親近的手作 + 可靠的工具** 是兩條需要同時成立的視覺訊號。
+參考「優雅獨立站」式的女性向質感 landing：米杏色底、明朝體（Noto Serif TC）寬字距標題、
+蜜橘色決策點、柔和的 quiet-luxury 攝影素材（gpt-image-2 生成）、櫻花元素貫穿。
+整體感受：親切、有質感、不像「另一個 SaaS」。
 
 ## Color Tokens
 
-主要 token 都在 `public/index.html` inline `<style>` 中，定義在 `:root`：
+Token 定義在 `public/index.html` inline `<style>` 的 `:root`：
 
-| Token | Hex | Role |
+| Token | Value | Role |
 |---|---|---|
-| `--paper` | `#f6efe2` | 主背景、紙張底 |
-| `--paper-deep` | `#eadcc4` | 深一階紙張、表頭 |
-| `--paper-warm` | `#fffaf2` | 卡片內溫白 |
-| `--ink` | `#101316` | 主要文字 |
-| `--navy` | `#08264a` | 品牌深藍：footer、why-band 撕紙、文字 |
-| `--orange` | `#f26b1d` | CTA、強調、icon |
-| `--orange-dark` | `#c94f13` | CTA hover、強調文字 |
-| `--mustard` | `#e7ad32` | 紙膠帶、便條 highlight |
-| `--muted` | `#6f665d` | 次要文字 |
-| `--line` | `rgba(16,19,22,0.16)` | 紙卡邊線 |
+| `--ink` | `#322d27` | 主文字（暖深棕灰） |
+| `--muted` | `#6f655a` | 次要文字 |
+| `--faint` | `#a3978a` | 弱文字、裝飾 |
+| `--bg` | `#faf6ef` | 米杏主底 |
+| `--bg-alt` | `#f4ecdf` | 深一階米杏，交替分區 |
+| `--card` | `#fffdf9` | 暖白卡片 |
+| `--blush` | `#f7e7da` | 蜜桃粉底面（hero radial、final CTA） |
+| `--line` | `#e9ddcb` | 邊線 |
+| `--orange` | `#e86b2c` | 品牌蜜橘：CTA、active、強調 |
+| `--orange-dark` | `#c9531a` | CTA hover |
+| `--orange-text` | `#b54d15` | 小字級橘（對米杏底 ≥4.5:1） |
+| `--orange-soft` | `#fbeadc` | 橘色淡底（icon 圓底） |
+| `--radius` | `16px` | 卡片圓角 |
+| `--shadow` | `0 10px 30px rgba(86,62,36,.08)` | 暖調卡片陰影 |
+| `--ease-out` | `cubic-bezier(.22,1,.36,1)` | 全站 easing |
 
 **配色原則**：
-- 橘 + 深藍必須出現在每個 hero / CTA / 撕紙橫幅，不能只剩米白底加小面積點綴。
-- 米白紙張 (`--paper`) 是頁面整體底色，所有 section 默認延續這個底，避免一塊深藍接一塊純白導致拼貼感斷裂。
+- 橘色是決策訊號：CTA、active 狀態、價格、推薦 badge。小字級一律用 `--orange-text` 保對比。
+- 底色節奏：`--bg` ↔ `--bg-alt` 交替；hero 用 blush radial、final CTA 用 bg→blush 漸層。
 
 ## Typography
 
-- **主字體**：[`Zen Maru Gothic`](https://fonts.google.com/specimen/Zen+Maru+Gothic) (weight 400/700/900)，中文親切感、圓潤但仍有結構。
-- **手寫字體**：[`Caveat`](https://fonts.google.com/specimen/Caveat) (weight 600/700)，**只用在英文便條 / scribble note**（例：Hero 的「Create / Build / Sell」）。中文不能用 Caveat（沒 CJK glyph 會 fallback 變奇怪），中文便條用 Zen Maru Gothic + 較小 size 即可。
-- **Hero 大標**：`font-weight: 900`、`letter-spacing: 0`、桌機 52px、手機 38px 上下。
-- **Section title**：`font-weight: 900`、桌機 30px、手機 22-24px，`em` 變色橘 (`var(--orange)`)。
-- **內文**：weight 600-700、size 13-16px、line-height 1.5-1.9，多行內文要 `overflow-wrap: anywhere` 避免中文長字串爆版。
+- **標題字體**：`Noto Serif TC`（明朝體）600/700/900。所有 h1/h2/h3、plan 名稱、價格、VS 圓章、step 編號。
+- **標題字距**：`.06em`–`.08em` 寬字距（參考圖的優雅關鍵）；kicker 用 `.28em`。
+- **內文字體**：`Noto Sans TC` 400/500/700，16px，line-height 1.8。
+- **Hero h1**：`clamp(34px, 5vw, 52px)`、weight 700、line-height 1.45；`em` = `--orange-text` + SVG 底線描畫。
+- **Section title**：`clamp(25px, 3.6vw, 36px)`、weight 700。
+- **Kicker**：襯線 14px + 兩側 28px 細橘線（取代膠囊 badge）。
 
-## Shape, Texture, Elevation
+## Shape & Elevation
 
-- **紙卡圓角**：`4px` ~ `8px`。**禁用 12px+ 圓角**（會立刻退化成普通 SaaS 卡片）。
-- **撕紙邊**：用 `clip-path: polygon(...)` 製作不規則邊緣（範例：[Hero 撕紙底](public/index.html#L168-L170)、[Why-band](public/index.html) torn-band、[Final CTA](public/index.html) clip-path）。
-- **紙膠帶**：半透明芥末黃 `linear-gradient` + `::before/::after` 鋸齒邊 clip-path 模擬撕邊質感。class `.tape`。
-- **便條紙旋轉**：`transform: rotate()` 角度落在 ±2°~ ±8°，不要超過 ±10°（會看起來歪到擠到其他元素）。每張便條/卡片 tilt 角度應該打散，不能全部同方向。
-- **陰影**：偏柔短，模擬桌面紙張陰影，不要 SaaS card 的長陰影：
-  ```css
-  --paper-shadow: 0 4px 14px rgba(31, 22, 12, 0.08);
-  ```
-- **不要使用**：玻璃擬態、模糊光暈、霓虹邊框、藍紫漸層、巨大圓形 hero blob。
+- **卡片**：16px 圓角、1px `--line` 邊、暖調柔陰影。
+- **按鈕**：全部 pill（`border-radius: 999px`）。primary = 橘底白字 + 橘暈陰影；ghost = 橘細框透明底。
+- **Hero demo**：瀏覽器窗框卡（白底 12px padding、三個小圓點 bar、20px 圓角），內含 1:1 三幕 crossfade。
+- **推薦方案卡**：1.5px 橘框 + 頂部「推薦」pill badge。
 
-## Asset System
+## Asset Inventory（gpt-image-2 生成，2026-06）
 
-實體素材放在 `public/assets/images/` 跟 `public/assets/images/landing-collage/`：
-
-| Asset | 路徑 | 用法 |
+| Asset | 路徑 | 用途 |
 |---|---|---|
-| Logo | `logo_new01.png` | Nav / Footer / Favicon |
-| Hero camera sticker | `landing-collage/collage-camera.webp` | Hero 左下 + Final CTA 左側（透明 PNG sticker） |
-| Hero flower sticker | `landing-collage/collage-flower.webp` | Hero 右上點綴（透明 PNG sticker） |
-| Creator avatars | `creator-avatar-01~04.webp` | Hero proof row + dashboard floating avatar |
-| Before-After collage | `new_sale.webp` | Before-After section 主視覺 + OG image |
-| Hero phone product | `hero.webp` | Hero dashboard 旁手機商品卡 |
-| AI demo video | `videos/ai-demo.mp4` | Feature section 紙框內影片 |
+| Hero step 1-3 | `assets/images/hero/step1-capture / step2-recognize / step3-listing.webp` | 三幕輪播：拍照→AI 辨識→上架完成（同場景連續，quiet-luxury 暖調） |
+| 櫻花枝 | `assets/images/hero/sakura-branch.webp` | hero 右上裝飾（透明背景，mobile 縮 150-200px 保留） |
+| Final CTA 場景 | `assets/images/hero/cta-scene.webp` | 牛皮紙包裹 + 緞帶 + 櫻花，final CTA 右欄 |
+| Creator avatars | `assets/images/creator-avatar-01~04.webp` | hero proof 頭像（沿用） |
+| 原始 PNG | `tmp/gen/*.png` | 生成原檔（未進版控） |
 
-**素材調性**：scrapbook handmade craft style、warm orange + navy + mustard + cream 調色、所有 sticker 元素必須有撕紙邊或紙張背景，避開「flat vector AI startup illustration」。
+再生成素材時的調性 prompt 關鍵詞：quiet luxury, feminine, warm ivory / cream / blush pink / muted apricot orange, soft window light, premium product-photography realism。
+
+## Motion（優雅 SVG 動畫）
+
+- **櫻花瓣飄落**：hero 內 6 片 SVG 花瓣，13–19s linear loop、交錯 delay、旋轉+左右擺，`pointer-events:none`。
+- **標題底線描畫**：h1 em 下 SVG path，`stroke-dashoffset` 1.1s 描畫，延遲 0.5s。
+- **Scroll reveal**：`data-reveal` + IntersectionObserver，同容器 70ms stagger；JS 啟用才隱藏（無 JS 預設可見），另有 4s 全部顯示的保險 timer。
+- **三幕 crossfade**：0.6s opacity（沿用既有 JS 輪播）。
+- **Reduced motion**：花瓣隱藏、描畫直接完成、reveal 直接顯示、crossfade 停在完成態。所有新動畫都在 guard 內。
+- **禁止**：parallax、scroll hijack、bounce/elastic。
 
 ## Layout Patterns
 
-- **Section padding**：桌機 64-96px，手機 56-72px；section 之間靠米白 `--paper` 底連續。
-- **Hero**：左文案 + 右 dashboard mockup（`grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.1fr)`），手機改單欄。
-- **4 步驟**：桌機四欄 dashed arrow 連接、手機改單欄 + grid `38px 1fr` 把 step badge 鎖左欄、標題+內文堆右欄。
-- **Why-band**：深藍撕紙橫幅，5 個賣點 grid，icon 用 inline SVG。
-- **Before-After**：桌機 `grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr)`（圖大 + 紙條小），手機改單欄 + 紙條橫排。
-- **AI Demo**：桌機 `grid-template-columns: minmax(0, 1fr) 280px`（紙框影片 + 4 張紙條），手機紙框在上、紙條垂直排在下。
-- **Pricing**：horizontal carousel + plan-dot 導覽、billing toggle 動態更新價格。
-- **FAQ**：桌機兩欄、手機單欄，紙條 accordion 微旋轉。
+- 容器 `--maxw: 1080px`；section padding 桌機 96px。
+- **Hero**：`1.02fr / 0.98fr` 雙欄，≤860px 單欄；櫻花枝絕對定位右上（z-index 1，內容 z-index 2）。
+- **痛點對比**：`1fr 120px 1fr`，中央 96px 圓形 VS 章（虛線橘框、襯線字）；mobile 縱向堆疊、圓章置中。
+- **FAQ**：`#faq-list` 兩欄 grid（`align-items:start`），≤720px 單欄。
+- **Final CTA**：`1.05fr / 0.95fr` 文字+圖片雙欄，圖片微旋轉 1.2°；mobile 堆疊置中。
+- **Pricing**：carousel 機制不變（scroll-snap + dots + drag），样式改暖卡 + pill toggle。
 
-## Motion
+## Mobile（≤480px）Rules
 
-- **基本動畫**：fade-up + paper-shadow lift on hover（短 0.3s ease）。
-- **限制**：所有動畫一律加 `@media (prefers-reduced-motion: reduce)` guard。
-- **禁止**：parallax 漂浮、長 Lottie、整頁滾動 hijack。
+- 櫻花枝縮至 150px 保留（不 `display:none`）；花瓣減 2 片。
+- 無水平 scroll（375/390/430 已驗證）。
+- CTA pill 堆疊全寬、觸控目標 ≥44px。
+- proof stats 改 3 欄 grid；steps/features 單欄。
 
-## Mobile（≤600px）Rules
+## Acceptance
 
-行動版必須維持紙感，這些是硬規則：
+- `node --test test/landing.test.js` — 文案、GA、pricing 行為、API 串接、reduced-motion 必須全過。
+- 視覺驗收：不看 logo 能否感受「優雅、溫暖、女性向質感」；橘色只出現在決策點；明朝體標題字距是否保持。
 
-- **不能用 `display: none` 隱藏拼貼便條 / dashboard 側欄 / hero decor 素材**。改用 `transform: scale()` + 重新定位。
-- **`.collage-step` 用 grid layout**：badge 在左 38px 欄、h3+p 在右 1fr 欄。不要 inline-flex hack。
-- **375 / 390 / 430px 都要實機檢查**，不能水平 scroll（除非是 dashboard-side 的 `overflow-x: auto` 內部）。
-- **Hero 三段必須可見**：橘色 Create/Build/Sell 便條（縮 0.7）、相機素材（縮到 100-110px）、葉子素材（縮到 80-90px）。
+## Anti-patterns（設計禁區）
 
-## Acceptance Tests
-
-驗收靠兩條：
-
-1. **自動 acceptance test**：[`test/landing-collage.test.js`](test/landing-collage.test.js)，跑 `node --test test/landing-collage.test.js`。確認關鍵 class、文案、SEO、不該存在的舊 class 都符合。
-2. **Visual Acceptance Criteria**：見 [docs/plans/2026-04-24-collage-landing-redesign.md#Visual-Acceptance-Criteria](docs/plans/2026-04-24-collage-landing-redesign.md)。三題不看 logo 也能識別品牌的 Review Questions：
-   - 不看文案、只看輪廓，能不能一眼感覺到「手作拼貼 + 開店平台」？
-   - 拿掉 logo 後，配色和版面還像同一個品牌嗎？
-   - 手機版是否仍然保有紙張層次，而不是退化成普通單欄卡片頁？
-
-## Anti-patterns
-
-新增 / 修改設計時，明確避開這幾種：
-
-- **「漸層 + 大圓 + 細線 icon」的 SaaS landing 美學** — 太通用、無記憶點。
-- **「玻璃卡 + 模糊光暈」的 AI startup 風** — 跟手作敘事完全矛盾。
-- **「全頁圓角 14-20px 卡片網格」** — 退化成 Notion / Linear lookalike，第一眼感受跟 PRODUCT.md 的 Brand Personality 衝突。
-- **「Mobile breakpoint 大量 `display: none`」** — 行動版不能掉成單欄白卡。
-- **「Caveat 套到中文」** — 沒 CJK glyph，fallback 醜。中文便條一律 Zen Maru Gothic。
+- **漸層紫藍 + 光暈 + 玻璃卡**：AI startup 審美，與暖調敘事矛盾。
+- **冷灰白 SaaS 卡網格**：上一版的滑坡方向，已被本次改版取代。
+- **明朝體用負字距或擠壓**：寬字距是這套系統的識別核心。
+- **橘色散佈裝飾**：橘色只在 CTA / active / 價格 / 強調。
+- **Mobile 隱藏裝飾素材**：縮放重定位，不 `display:none`（花瓣數量例外）。

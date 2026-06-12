@@ -3,7 +3,7 @@
 ## Register
 mixed — 拆兩線：
 - **marketing 頁面（`public/index.html`、`public/blog/*`、所有 landing / SEO 入口）= brand**
-  設計就是產品，必須撐住「手作拼貼 + 開店平台」的品牌承諾，能用實體素材就用，動畫與裝飾值得多花預算。
+  設計就是產品，品牌承諾是「60 秒完成開店」。每個畫面要同時傳達效率與親和感。
 - **app shell（`public/admin.html`、`public/onboarding.html`、`public/store.html`、`public/platform-admin.html`、`src/` 後台路由）= product**
   設計服務任務效率：資訊密度、CTA 清晰、極少裝飾、零模態優先、表單可達。
 
@@ -38,36 +38,36 @@ mixed — 拆兩線：
 
 ## Brand Personality
 
-- **三字定義**：親近、手作、可靠。
-- **聲音**：像一個有經驗的朋友幫你規劃出國代購流程，不像冷冰冰的 SaaS 系統。
-- **語氣**：直接、口語、舉具體例子（「拍張照」、「逛街的同時訂單已經排好」）。
-- **情緒目標**：第一眼讓人覺得「這個工具懂我」、「不像會很難」。
-- **不要的情緒**：科技優越感、「企業級」距離感、創投 deck 美學。
+- **三字定義**：聰明、快捷、現代感。
+- **聲音**：像一個懂科技的朋友幫你省去麻煩的流程，效率導向但不冷漠。
+- **語氣**：直接、口語、舉具體例子（「拍張照」、「60 秒上架」、「逛街同時訂單自動跑」）。
+- **情緒目標**：第一眼讓人覺得「這個工具很快，我馬上能上手」。
+- **不要的情緒**：科技優越感、「企業級」距離感、DIY / 手作的土氣感、電商後台的笨重感。
 
 ## Anti-references
 
 明確不要做成這幾種樣子：
 
-- **玻璃擬態 / Glassmorphism / 霓虹 / 藍紫科技漸層** — 太「AI startup」、太冷。
-- **大面積柔焦光暈 / 巨大圓形 hero 背景圖** — 通用 Notion / Linear lookalike，無記憶點。
-- **一致圓角白卡片網格** — 退化成「普通 SaaS landing page」就失去拼貼風的意義。
-- **創投 deck 風（漸層紫藍 + 大數字 + 灰白卡）** — 跟創作者 / 旅遊 / 拍照的情緒完全錯配。
-- **Apple-grade minimalism**（極簡 + 大量留白 + 無裝飾）— 沒有手作感、不適合代購工具。
-- **電商系統感**（Shopify / WooCommerce 後台 dashboard 美學） — 顯得門檻高，跟「拍照就能開始」的承諾矛盾。
+- **璀璨 AI startup（霓虹 / 漸層紫藍 + 光暈）** — 冷色調，跟創作者 / 旅遊情緒完全錯配。
+- **電商系統感（Shopify / WooCommerce 後台美學）** — 顯得門檻高，跟「60 秒開店」的承諾矛盾。
+- **Apple-grade 極簡（大量留白 + 零裝飾）** — 沒有個性，記憶點全靠文案，視覺過於平淡。
+- **通用 SaaS landing（Notion / Linear lookalike）** — 白底 + 一致灰卡 + 小面積橘 accent，這就是目前最危險的滑坡方向。
+- **大面積柔焦光暈 / 巨大圓形 hero blob** — 無記憶點的通用科技背景。
+- **創投 deck 風（漸層紫藍 + 大數字 + 灰白卡）** — 錯誤的受眾訊號。
 
 ## Design Principles
 
-1. **Handmade SaaS**：拼貼、撕紙、膠帶、便條紙是品牌記憶點，但底下仍是嚴謹的 web app。第一屏要同時透露「親近的手作感」+「可靠的工具」兩種訊號。
-2. **Camera shop, not a startup**：視覺世界觀是「桌面剪貼簿 + 旅行筆記」，不是「AI startup landing」。素材以相機、葉子、便條、拍立得為主，避開抽象幾何 / 漸層光暈。
-3. **Brand colors live in the foreground**：橘色 + 深藍必須出現在每屏的關鍵位置（CTA、撕紙橫幅、便條），不是只剩米白底加小面積點綴。
-4. **Mobile keeps the paper feel**：行動版不能退化成「單欄白卡 + 文字」。便條 / 紙紋 / 撕紙底都要 scale 保留，375 / 390 / 430px 都能看到拼貼層次。
-5. **Real assets over CSS imitation**：能用實體素材（相機 / 花葉 / Before-After 拼貼）就用；CSS clip-path 撕紙是輔助，不是主角。
+1. **速度是設計語言**：每個畫面應在 3 秒內傳達「這個工具很快」——不靠動畫技巧，靠決斷的視覺層次、清楚的 CTA 和具體的數字（60 秒、4 步驟）。
+2. **橘色在決策點出現**：品牌橘是行動訊號，用在 CTA、進度、關鍵數字。不裝飾性散佈，不用在次要文字。橘色現身 = 「這裡可以做什麼」。
+3. **微量手作感，不是風格**：一到兩個輕量的手作細節（informal 插圖、略微不規則的排版節奏）讓視覺有記憶點，但整體框架維持乾淨。手作感是調味料，不是菜系。
+4. **給創作者，不給電商系統用戶**：視覺語言應讓 IG / TikTok 賣家感覺「這和我在用的 app 是同一個世界」，不像 Shopify admin。
+5. **行動版是主要畫布**：產品在逛街途中使用，手機體驗是真正的產品。桌機是輔助。375 / 390 / 430px 不能降格為單欄白卡頁。
 
 ## Accessibility & Inclusion
 
-- **WCAG AA 文字對比**：橘色 / 深藍對 #fff8ec / #f6efe2 的對比都已驗過 4.5:1 以上。
-- **Reduced motion**：`@media (prefers-reduced-motion: reduce)` 已套在 marquee 跟 hero 動畫上。新增動畫一律加這個 guard。
-- **語意 HTML**：保留 `<section>` / `<h2>` / `<button>` / `aria-label` 等，不為了視覺擠壓 markup。
+- **WCAG AA 文字對比**：主文字 `#14181f` 對白底對比遠超 4.5:1。橘色 `#f26b1d` 只用在大型 CTA（≥18px bold），需確保對比達 3:1。
+- **Reduced motion**：`@media (prefers-reduced-motion: reduce)` 所有動畫都要加 guard。
+- **語意 HTML**：保留 `<section>` / `<h2>` / `<button>` / `aria-label`，不為了視覺擠壓 markup。
 - **鍵盤可達**：所有 CTA 按鈕、FAQ accordion、pricing carousel 都需要 tab focus 順暢。
-- **alt 文字**：所有 meaningful 圖片給有描述的 alt；裝飾性拼貼素材（相機 / 花葉）用 `alt="" aria-hidden="true"`。
+- **alt 文字**：meaningful 圖片給有描述的 alt；純裝飾元素用 `alt="" aria-hidden="true"`。
 - **手機觸控目標**：CTA 最低 44px 高、FAQ 問題列至少 44px。
