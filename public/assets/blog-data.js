@@ -5,6 +5,15 @@
  */
 var BLOG_ARTICLES = [
   {
+    href: "/blog/japan-cosmetics-daigou-guide.html",
+    tag: "實戰攻略",
+    title: "日本藥妝代購攻略：走進店裡拍照就上架",
+    desc: "第一人稱實戰記錄：從大阪松本清走道拍照，AI 60 秒辨識上架、LINE 群開團到出貨，完整流程親身示範給你看。",
+    thumb: "/assets/images/blog/hero-daigou.webp",
+    date: "2026-06-13",
+    readMin: 9,
+  },
+  {
     href: "/blog/sell-secondhand-items-fast.html",
     tag: "上架教學",
     title: "快速上架你的二手不用商品：拍照就能開賣，清空間還能賺一筆",
