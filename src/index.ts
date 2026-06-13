@@ -439,6 +439,34 @@ export default {
       return routeTenantRequest(request, ctx, subPath, getCrawlEnv(env), env.ASSETS);
     }
 
+    // ── Public store-pay pages (main domain only; no cache — transaction pages) ──
+    if (url.pathname === "/pay" || url.pathname === "/pay.html") {
+      if (env.ASSETS) {
+        const resp = await env.ASSETS.fetch(new Request(new URL("/pay.html", request.url).toString(), { method: "GET", headers: request.headers }));
+        if (resp.ok) {
+          const out = new Response(resp.body, resp);
+          out.headers.set("Cache-Control", "no-store, max-age=0");
+          out.headers.set("X-Robots-Tag", "noindex, nofollow");
+          return out;
+        }
+        return resp;
+      }
+      return json({ ok: false, error: "Not found" }, 404);
+    }
+    if (url.pathname === "/pay-result" || url.pathname === "/pay-result.html") {
+      if (env.ASSETS) {
+        const resp = await env.ASSETS.fetch(new Request(new URL("/pay-result.html", request.url).toString(), { method: "GET", headers: request.headers }));
+        if (resp.ok) {
+          const out = new Response(resp.body, resp);
+          out.headers.set("Cache-Control", "no-store, max-age=0");
+          out.headers.set("X-Robots-Tag", "noindex, nofollow");
+          return out;
+        }
+        return resp;
+      }
+      return json({ ok: false, error: "Not found" }, 404);
+    }
+
     // ── Onboarding page ──
     if (url.pathname === "/onboarding" || url.pathname === "/onboarding.html") {
       if (env.ASSETS) {
