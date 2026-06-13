@@ -2107,6 +2107,46 @@
     ivInput.autocomplete = "new-password";    ivLabel.appendChild(ivInput);
     group.appendChild(ivLabel);
 
+    // PAYUNi 介接網址（若 PAYUNi 後台要求設定 Notify/Return URL 或網域白名單時填入）
+    if (cfg.notifyUrl || cfg.returnUrl) {
+      var urlNote = document.createElement("p");
+      urlNote.className = "meta";
+      urlNote.style.marginTop = "14px";
+      urlNote.textContent = "PAYUNi 介接網址（多數情況我拍會自動帶入；若 PAYUNi 後台要求設定或網域白名單時，複製以下完整網址填入）：";
+      group.appendChild(urlNote);
+
+      [["Notify URL（幕後通知）", cfg.notifyUrl], ["Return URL（返回網址）", cfg.returnUrl]].forEach(function (pair) {
+        var urlLabel = document.createElement("label");
+        urlLabel.textContent = pair[0];
+        urlLabel.style.marginTop = "8px";
+        var urlRow = document.createElement("div");
+        urlRow.style.display = "flex";
+        urlRow.style.gap = "6px";
+        urlRow.style.alignItems = "center";
+        var urlInput = document.createElement("input");
+        urlInput.type = "text";
+        urlInput.className = "input-cute";
+        urlInput.readOnly = true;
+        urlInput.value = pair[1] || "";
+        urlInput.style.flex = "1";
+        urlInput.addEventListener("focus", function () { urlInput.select(); });
+        var copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "button secondary";
+        copyBtn.textContent = "複製";
+        copyBtn.addEventListener("click", function () {
+          var done = function () { copyBtn.textContent = "已複製"; setTimeout(function () { copyBtn.textContent = "複製"; }, 1500); };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(urlInput.value).then(done).catch(function () { urlInput.select(); });
+          } else { urlInput.select(); }
+        });
+        urlRow.appendChild(urlInput);
+        urlRow.appendChild(copyBtn);
+        urlLabel.appendChild(urlRow);
+        group.appendChild(urlLabel);
+      });
+    }
+
     // 測試連線按鈕
     var testBtn = document.createElement("button");
     testBtn.type = "button";

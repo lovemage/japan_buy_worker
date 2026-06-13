@@ -427,6 +427,42 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       </figcaption>
     </figure>
 
+    <h3 id="step2-callback">（進階）Notify URL／Return URL 怎麼填</h3>
+
+    <p>
+      Notify URL（幕後通知網址）與 Return URL（付款完成返回網址）是 PAYUNi 在交易後用來通知付款結果、並把買家導回的網址。<strong>我拍會在每筆交易自動帶入這兩個網址，多數情況你不需要手動設定。</strong>
+    </p>
+
+    <div class="callout">
+      <p><strong>小提醒：</strong>只有在你的 PAYUNi 後台<strong>要求填寫 Notify／Return URL 欄位</strong>，或有<strong>網域白名單／授權網址</strong>限制時，才需要依下列方式手動設定。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">從我拍後台複製你的專屬網址</span>
+      <p>在我拍後台「設定 → 收款」分頁，三組金鑰欄位下方會顯示你的專屬 <strong>Notify URL</strong> 與 <strong>Return URL</strong>（每家店各自不同，結尾帶有你的商店編號），點「複製」即可。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">貼到 PAYUNi 後台對應欄位</span>
+      <p>於 PAYUNi 後台分別貼上。格式如下（<code>s=</code> 後是你的商店編號，請<strong>直接從後台複製完整網址</strong>，不要自行更改或省略參數）：</p>
+      <ul>
+        <li>Notify URL：<code>https://vovosnap.com/api/store-pay/notify?s=你的商店編號</code></li>
+        <li>Return URL：<code>https://vovosnap.com/api/store-pay/return?s=你的商店編號</code></li>
+      </ul>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">網域白名單（若有此設定）</span>
+      <p>若 PAYUNi 後台只要求設定「網域白名單／授權網址」而非完整網址，把 <code>vovosnap.com</code> 加入允許清單即可。</p>
+    </div>
+
+    <div class="callout-warn callout">
+      <p><strong>注意：</strong>這兩個網址不是機密、可放心填寫，但<strong>務必從後台複製完整網址</strong>，確保結尾的商店編號正確；若編號錯誤或自行竄改，付款結果將無法正確回拋到你的店。</p>
+    </div>
+
     <h3 id="step2-sandbox">沙盒測試 vs 正式上線</h3>
 
     <p>

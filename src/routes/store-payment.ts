@@ -298,6 +298,13 @@ export async function handleGetStorePayConfig(
   const plan = effectivePlan(store.plan, store.plan_expires_at);
   if (!canUseStoreCollection(plan)) return json({ ok: false, error: "Forbidden: pro/proplus plan required" }, 403);
 
+  // Store-scoped callback URLs the merchant may need to register/whitelist in
+  // their PAYUNi backend (also sent automatically per transaction at checkout).
+  // Not secret — notify security is the per-store HashInfo signature check.
+  const appUrl = typeof env.APP_URL === "string" ? env.APP_URL : "";
+  const notifyUrl = `${appUrl}/api/store-pay/notify?s=${store.id}`;
+  const returnUrl = `${appUrl}/api/store-pay/return?s=${store.id}`;
+
   const cfg = await env.DB
     .prepare("SELECT * FROM store_payment_configs WHERE store_id = ?")
     .bind(store.id)
@@ -317,6 +324,8 @@ export async function handleGetStorePayConfig(
         hashIvSet: false,
         lastTestedAt: null,
         lastTestStatus: null,
+        notifyUrl,
+        returnUrl,
       },
     });
   }
@@ -342,6 +351,8 @@ export async function handleGetStorePayConfig(
       hashIvSet: Boolean(cfg.hash_iv_enc),
       lastTestedAt: cfg.last_tested_at,
       lastTestStatus: cfg.last_test_status,
+      notifyUrl,
+      returnUrl,
     },
   });
 }
