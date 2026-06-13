@@ -30,6 +30,19 @@ import {
   handleBillingOrderStatus,
   handleBillingOrders,
 } from "./routes/billing";
+import {
+  handleGetStorePayConfig,
+  handlePutStorePayConfig,
+  handleTestStorePayConfig,
+  handleEnableStorePayConfig,
+  handleCreateStorePayOrder,
+  handleListStorePayOrders,
+  handlePublicGetOrder,
+  handlePublicCheckout,
+  handlePublicOrderStatus,
+  handleStorePayNotify,
+  handleStorePayReturn,
+} from "./routes/store-payment";
 
 type Env = {
   DB: D1DatabaseLike;
@@ -318,6 +331,39 @@ export default {
     }
     if (url.pathname === "/api/billing/orders") {
       return handleBillingOrders(request, env);
+    }
+
+    // ── Store-owned PAYUNi collection（主網域） ──
+    if (url.pathname === "/api/store-pay/config") {
+      if (request.method === "GET") return handleGetStorePayConfig(request, env);
+      if (request.method === "PUT") return handlePutStorePayConfig(request, env);
+      return json({ ok: false, error: "Method Not Allowed" }, 405);
+    }
+    if (url.pathname === "/api/store-pay/config/test") {
+      return handleTestStorePayConfig(request, env);
+    }
+    if (url.pathname === "/api/store-pay/config/enable") {
+      return handleEnableStorePayConfig(request, env);
+    }
+    if (url.pathname === "/api/store-pay/orders") {
+      if (request.method === "POST") return handleCreateStorePayOrder(request, env);
+      if (request.method === "GET") return handleListStorePayOrders(request, env);
+      return json({ ok: false, error: "Method Not Allowed" }, 405);
+    }
+    if (url.pathname === "/api/store-pay/public/order") {
+      return handlePublicGetOrder(request, env);
+    }
+    if (url.pathname === "/api/store-pay/public/checkout") {
+      return handlePublicCheckout(request, env);
+    }
+    if (url.pathname === "/api/store-pay/public/order-status") {
+      return handlePublicOrderStatus(request, env);
+    }
+    if (url.pathname === "/api/store-pay/notify") {
+      return handleStorePayNotify(request, env, url);
+    }
+    if (url.pathname === "/api/store-pay/return") {
+      return handleStorePayReturn(request, env, url);
     }
 
     // ── Auth routes (platform-level, not tenant-scoped) ──
