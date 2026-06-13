@@ -98,6 +98,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .step-card .step-title { font-size: 17px; font-weight: 700; display: inline; }
 .step-card p { margin-top: 10px; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
 
+/* Screenshot figure: real <img> with graceful fallback to the dashed placeholder */
+.screenshot-figure { margin: 20px 0; }
+.screenshot-figure .screenshot-img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+.screenshot-figure .screenshot-placeholder { display: none; }
+.screenshot-figure.img-missing .screenshot-img { display: none; }
+.screenshot-figure.img-missing .screenshot-placeholder { display: block; }
 /* Screenshot placeholder */
 .screenshot-placeholder { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px 24px; margin: 20px 0; text-align: center; background: var(--bg-alt); }
 .screenshot-placeholder .placeholder-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
@@ -367,11 +373,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <p><strong>安全提醒：</strong>請勿將 Hash Key 與 Hash IV 截圖後傳給他人，也不要貼到公開頻道。這三組資訊等同你帳號的存取憑證，若外洩請立即在 PAYUNi 後台重新產生。</p>
     </div>
 
-    <figure class="screenshot-placeholder" aria-label="PAYUNi 串接設定頁面截圖佔位">
-      <div class="placeholder-label">截圖說明</div>
-      <div class="placeholder-desc">
-        PAYUNi 後台「串接設定」分頁畫面：顯示商店代號（MER_ID）、Hash Key、Hash IV 三欄位的位置與複製按鈕
-      </div>
+    <figure class="screenshot-figure" aria-label="PAYUNi 串接設定頁面截圖">
+      <img class="screenshot-img" src="/assets/images/guide/payuni-credentials.png" loading="lazy"
+           alt="PAYUNi 後台「串接設定」分頁，顯示商店代號（MER_ID）、Hash Key、Hash IV 三欄位與複製按鈕"
+           onerror="this.closest('.screenshot-figure').classList.add('img-missing')" />
+      <figcaption class="screenshot-placeholder">
+        <div class="placeholder-label">截圖說明</div>
+        <div class="placeholder-desc">
+          PAYUNi 後台「串接設定」分頁畫面：顯示商店代號（MER_ID）、Hash Key、Hash IV 三欄位的位置與複製按鈕
+        </div>
+      </figcaption>
     </figure>
 
     <h3 id="step2-activate">填入金鑰並啟用收款</h3>
@@ -404,11 +415,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <p>測試成功後，開啟「啟用收款」開關，儲存設定。完成後，商店結帳頁即會出現信用卡付款選項。</p>
     </div>
 
-    <figure class="screenshot-placeholder" aria-label="我拍後台收款設定頁面截圖佔位">
-      <div class="placeholder-label">截圖說明</div>
-      <div class="placeholder-desc">
-        我拍後台「設定 → 收款」分頁畫面：顯示 MER_ID、Hash Key、Hash IV 三個輸入欄位，以及「測試連線」按鈕與「啟用收款」開關的位置
-      </div>
+    <figure class="screenshot-figure" aria-label="我拍後台收款設定頁面截圖">
+      <img class="screenshot-img" src="/assets/images/guide/admin-payment-tab.png" loading="lazy"
+           alt="我拍後台「設定 → 收款」分頁，顯示 MER_ID、Hash Key、Hash IV 輸入欄位、測試連線按鈕與啟用收款開關"
+           onerror="this.closest('.screenshot-figure').classList.add('img-missing')" />
+      <figcaption class="screenshot-placeholder">
+        <div class="placeholder-label">截圖說明</div>
+        <div class="placeholder-desc">
+          我拍後台「設定 → 收款」分頁畫面：顯示 MER_ID、Hash Key、Hash IV 三個輸入欄位，以及「測試連線」按鈕與「啟用收款」開關的位置
+        </div>
+      </figcaption>
     </figure>
 
     <h3 id="step2-sandbox">沙盒測試 vs 正式上線</h3>
