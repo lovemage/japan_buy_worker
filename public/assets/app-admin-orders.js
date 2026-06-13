@@ -51,6 +51,12 @@ function isWholesaleEnabled() {
   return !!(window.__DISPLAY_SETTINGS && window.__DISPLAY_SETTINGS.wholesalePriceEnabled);
 }
 
+function isPaymentEnabled() {
+  if (typeof window === "undefined") return false;
+  var plan = (window.__STORE_PLAN || "free").toLowerCase();
+  return plan === "pro" || plan === "proplus";
+}
+
 function matchesSearch(form, query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return true;
@@ -181,6 +187,7 @@ function renderForms(forms) {
       </div>
       ${noteText ? `<p class="meta">整單備註：${noteText}</p>` : ""}
       ${isWholesaleEnabled() ? `<button class="button secondary js-apply-wholesale" type="button" data-form-id="${form.id}">套用批發價</button>` : ""}
+      ${isPaymentEnabled() ? `<button class="button secondary js-make-paylink" type="button" data-form-id="${Number(form.id) || 0}" data-amount="${Number(totals.grandTotalTwd) || 0}">產生收款連結</button>` : ""}
       ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此訂單</button>` : ""}
       <ul class="admin-form-items">${itemsHtml}</ul>
     </article>`;
@@ -290,6 +297,66 @@ function renderForms(forms) {
       if (handleUnauthorized(res)) return;
       if (!res.ok) { showError(`刪除失敗：${res.status}`); return; }
       await loadForms();
+    });
+  });
+
+  wrapper.querySelectorAll(".js-make-paylink").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const formId = Number(button.getAttribute("data-form-id") || "");
+      const defaultAmount = Number(button.getAttribute("data-amount") || "0");
+      if (!Number.isInteger(formId) || formId <= 0) return;
+
+      const defaultTitle = `訂單 #${formId} 收款`;
+      const inputTitle = prompt("收款說明（帳單名稱）", defaultTitle);
+      if (inputTitle === null) return; // 使用者取消
+
+      const inputAmount = prompt("收款金額（NT$，後端為準）", String(defaultAmount));
+      if (inputAmount === null) return;
+      const amount = parseInt(inputAmount, 10);
+      if (!Number.isInteger(amount) || amount < 1 || amount > 9999999) {
+        alert("金額必須為 1 到 9,999,999 之間的整數");
+        return;
+      }
+
+      hideError();
+      button.disabled = true;
+      try {
+        const res = await apiFetch("/api/store-pay/orders", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            title: inputTitle.trim() || defaultTitle,
+            amount,
+            expiresInHours: 168, // 7 天
+            requirementFormId: formId,
+          }),
+        });
+        if (handleUnauthorized(res)) return;
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          showError(data.error || `產生收款連結失敗：${res.status}`);
+          return;
+        }
+        // 顯示 payUrl 並提供複製，不 console.log
+        const payUrl = data.payUrl || "";
+        const copied = await navigator.clipboard.writeText(payUrl).then(() => true, () => false);
+        const msgEl = document.createElement("p");
+        msgEl.className = "meta";
+        msgEl.style.cssText = "word-break:break-all;margin-top:6px;color:var(--admin-text-muted);";
+        msgEl.textContent = payUrl;
+        const card = button.closest(".admin-form-card");
+        if (card) {
+          const old = card.querySelector(".js-paylink-result");
+          if (old) old.remove();
+          msgEl.classList.add("js-paylink-result");
+          button.insertAdjacentElement("afterend", msgEl);
+        }
+        alert(copied ? "收款連結已複製到剪貼簿！" : "收款連結：" + payUrl);
+      } catch (e) {
+        showError("產生收款連結失敗，請稍後重試");
+      } finally {
+        button.disabled = false;
+      }
     });
   });
 }
