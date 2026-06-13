@@ -124,6 +124,27 @@ function sitemapXml(entries: string[]): string {
   ].join("\n");
 }
 
+// Public, indexable HTML pages on the main domain — safe to cache at the edge
+// with stale-while-revalidate. Auth/transaction pages and fingerprinted assets
+// are deliberately excluded so their default headers are preserved.
+function withPublicHtmlCache(resp: Response, pathname: string): Response {
+  const isPublicHtml =
+    pathname === "/" ||
+    pathname === "/index.html" ||
+    pathname === "/privacy.html" ||
+    pathname === "/terms.html" ||
+    pathname === "/blog" ||
+    pathname === "/blog/" ||
+    pathname.startsWith("/blog/") ||
+    pathname.startsWith("/guide/");
+  if (!isPublicHtml) return resp;
+  if (!resp.ok) return resp;
+  if (!(resp.headers.get("content-type") || "").includes("text/html")) return resp;
+  const headers = new Headers(resp.headers);
+  headers.set("cache-control", "public, max-age=3600, stale-while-revalidate=86400");
+  return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers });
+}
+
 function getAuthEnv(env: Env) {
   return {
     GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
@@ -210,6 +231,8 @@ export default {
       add(`https://${mainDomain}/blog/daigou-profit-calculation.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/daigou-preparation-checklist.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/sell-secondhand-items-fast.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/japan-cosmetics-daigou-guide.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
 
       const storesRows = await env.DB
         .prepare("SELECT id, slug, plan, updated_at FROM stores WHERE is_active = 1")
@@ -384,7 +407,7 @@ export default {
     if (url.pathname === "/" || url.pathname === "/index.html") {
       // index.html IS the landing page now (renamed from landing.html)
       if (env.ASSETS) {
-        return env.ASSETS.fetch(request);
+        return withPublicHtmlCache(await env.ASSETS.fetch(request), url.pathname);
       }
       return json({ ok: false, error: "Not configured" }, 500);
     }
@@ -417,7 +440,7 @@ export default {
 
     // ── Static assets ──
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      return withPublicHtmlCache(await env.ASSETS.fetch(request), url.pathname);
     }
 
     return json({ ok: false, error: "Not Found" }, 404);
