@@ -13,6 +13,11 @@ const VIEW_MODES = ["list", "card", "2card"];
 const DEFAULT_QUICK_SORT = "latest";
 const DETAIL_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M4.038 4.038a5.25 5.25 0 0 0 0 7.424a.75.75 0 0 1-1.06 1.061A6.75 6.75 0 1 1 14.5 7.75a.75.75 0 1 1-1.5 0a5.25 5.25 0 0 0-8.962-3.712"/><path d="M7.712 7.136a.75.75 0 0 1 .814.302l2.984 4.377a.75.75 0 0 1-.726 1.164l-.76-.109l.289 1.075a.75.75 0 0 1-1.45.388l-.287-1.075l-.602.474a.75.75 0 0 1-1.212-.645l.396-5.283a.75.75 0 0 1 .554-.668"/><path d="M5.805 9.695A2.75 2.75 0 1 1 10.5 7.75a.75.75 0 0 0 1.5 0a4.25 4.25 0 1 0-7.255 3.005a.75.75 0 1 0 1.06-1.06"/></svg>';
 const CART_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M1.75 1.002a.75.75 0 1 0 0 1.5h1.835l1.24 5.113A3.75 3.75 0 0 0 2 11.25c0 .414.336.75.75.75h10.5a.75.75 0 0 0 0-1.5H3.628A2.25 2.25 0 0 1 5.75 9h6.5a.75.75 0 0 0 .73-.578l.846-3.595a.75.75 0 0 0-.578-.906a44 44 0 0 0-7.996-.91l-.348-1.436a.75.75 0 0 0-.73-.573zM5 14a1 1 0 1 1-2 0a1 1 0 0 1 2 0m8 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0"/></svg>';
+const QUICK_FILTER_HTML = [
+  '<button type="button" class="btn-pill secondary view-switch__btn quick-filter-btn" data-quick-sort="latest" aria-label="最新上架排序"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path fill="none" d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878m-12 0q.354-.126.75-.128h10.5q.396.002.75.128m-12 0A2.25 2.25 0 0 0 4.5 9v.878m13.5-3A2.25 2.25 0 0 1 19.5 9v.878m0 0a2.3 2.3 0 0 0-.75-.128H5.25q-.396.002-.75.128m15 0A2.25 2.25 0 0 1 21 12v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6c0-.98.626-1.813 1.5-2.122"/></svg></button>',
+  '<button type="button" class="btn-pill secondary view-switch__btn quick-filter-btn" data-quick-sort="price_desc" aria-label="價格由高至低排序"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m4-4l-4 4l-4-4"/><path d="M3 12a9 9 0 0 0 18 0"/></svg></button>',
+  '<button type="button" class="btn-pill secondary view-switch__btn quick-filter-btn" data-quick-sort="price_asc" aria-label="價格由低至高排序"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path fill="none" d="M12 15V3m4 4l-4-4l-4 4m-5 5a9 9 0 0 0 18 0"/></svg></button>',
+].join("");
 
 // Tag labels from display settings or defaults
 const TAG_DEFAULTS = { hot: "熱門商品", limited: "限時發售", popular: "人氣特賣", instock: "現貨", preorder: "預購" };
@@ -401,6 +406,22 @@ function getQuickSort() {
   return getNormalizedQuickSort(url.searchParams.get("sort") || DEFAULT_QUICK_SORT);
 }
 
+function renderQuickFilterControls() {
+  const ds = window.__DISPLAY_SETTINGS || {};
+  const targets = Array.from(document.querySelectorAll("[data-promo-switch]"));
+  const sections = Array.from(document.querySelectorAll("[data-promo-section]"));
+  if (targets.length === 0) return;
+
+  if (ds.promoEnabled === false) {
+    targets.forEach((el) => { el.innerHTML = ""; });
+    sections.forEach((el) => { el.style.display = "none"; });
+    return;
+  }
+
+  targets.forEach((el) => { el.innerHTML = QUICK_FILTER_HTML; });
+  sections.forEach((el) => { el.style.display = ""; });
+}
+
 function initPromoSwitch() {
   const selected = getQuickSort();
   document.querySelectorAll(".view-switch__btn[data-quick-sort]").forEach((btn) => {
@@ -736,6 +757,7 @@ async function bootstrap() {
   initDrawerSections();
   initPromoModal();
   initViewSwitch();
+  renderQuickFilterControls();
   initPromoSwitch();
   try {
     const category = getCategory();

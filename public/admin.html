@@ -1285,7 +1285,7 @@
     var storeRules = (document.getElementById("store-rules-input") || {}).value || "";
     var promoTagOn = document.getElementById("promo-tag-toggle").checked;
     var promoTagVal = Number(document.getElementById("promo-tag-threshold").value) || 500;
-    apiFetch("/api/admin/display-settings", {
+    return apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
@@ -1779,7 +1779,7 @@
       limited: document.getElementById("tag-name-limited").value.trim() || "限時發售",
       popular: document.getElementById("tag-name-popular").value.trim() || "人氣特賣",
     };
-    apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
+    return apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
       current.tagNames = data;
       return apiFetch("/api/admin/display-settings", {
         method: "POST",
@@ -1792,8 +1792,9 @@
   }
 
   function saveBrandingAll() {
-    saveTagNames();
-    saveDisplaySettings();
+    saveDisplaySettings().then(function() {
+      return saveTagNames();
+    });
   }
 
   function savePricingAll() {
