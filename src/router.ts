@@ -16,7 +16,7 @@ import {
   handlePublicRequirementHistory,
   handlePublicRequirements,
 } from "./routes/public/requirements";
-import { handleAdminPricing, handlePublicPricing } from "./routes/pricing";
+import { handleAdminPricing, handlePublicPricing, getPricingConfig } from "./routes/pricing";
 import {
   handleAdminProducts,
   handleAdminProductToggle,
@@ -86,6 +86,45 @@ function buildJsonLd(obj: unknown): string {
   return JSON.stringify(obj).replace(/</g, "\\u003c");
 }
 
+/**
+ * Serialise an arbitrary value to a complete JS string literal that is safe to
+ * embed inside an inline <script>: JSON.stringify quotes/escapes it, and "<" is
+ * neutralised so a "</script>" inside the value can't terminate the tag.
+ */
+function jsStringLiteral(value: string): string {
+  return JSON.stringify(String(value)).replace(/</g, "\\u003c");
+}
+
+/**
+ * Neutralise "</script>" breakouts in an already-serialised JSON string before
+ * it is embedded as a raw JS value inside an inline <script>. In valid JSON "<"
+ * only appears inside string values, where < is an equivalent escape.
+ */
+function safeInlineJson(json: string): string {
+  return json.replace(/</g, "\\u003c");
+}
+
+/**
+ * Server-side mirror of calcAdjustedPrices() in public/assets/app-product.js,
+ * returning the retail TWD price shoppers actually see, so structured-data
+ * prices never contradict the page (Google penalises price mismatches).
+ */
+function calcRetailTwd(
+  baseJpy: number,
+  pricing: { pricingMode: string; markupMode: string; markupPercent: number; markupJpy: number; jpyToTwd: number }
+): number | null {
+  const base = Number(baseJpy);
+  if (!Number.isFinite(base)) return null;
+  // Manual mode: the stored base price is already the TWD selling price.
+  if (pricing.pricingMode === "manual") return Math.round(base);
+  const rate = pricing.jpyToTwd;
+  if (pricing.markupMode === "percent") {
+    return Math.round(base * rate * (1 + pricing.markupPercent / 100));
+  }
+  const src = Math.round(base + pricing.markupJpy);
+  return Math.round(src * rate);
+}
+
 // Serve tenant HTML pages with __API_BASE and __STORE_SLUG injection
 async function serveTenantHtml(
   request: Request,
@@ -140,9 +179,10 @@ async function serveTenantHtml(
   // Replace page title: "原標題" → "商店名稱" or "原標題 — 商店名稱"
   html = html.replace(/<title>([^<]*)<\/title>/, (_, orig) => {
     const trimmed = orig.trim();
+    const nameEsc = escapeHtmlAttr(storeName);
     // If original title is generic/default, just use store name
-    if (!trimmed || trimmed === "vovosnap 商品列表") return `<title>${storeName}</title>`;
-    return `<title>${storeName} — ${trimmed}</title>`;
+    if (!trimmed || trimmed === "vovosnap 商品列表") return `<title>${nameEsc}</title>`;
+    return `<title>${nameEsc} — ${trimmed}</title>`;
   });
 
   // Fetch display settings for view mode injection
@@ -172,26 +212,26 @@ async function serveTenantHtml(
 
   // Inject store context before </head>
   const inject = `<script>
-window.__API_BASE="${ctx.basePath}";
-window.__STORE_SLUG="${ctx.storeSlug}";
-window.__STORE_PLAN="${ctx.storePlan}";
+window.__API_BASE=${jsStringLiteral(ctx.basePath)};
+window.__STORE_SLUG=${jsStringLiteral(ctx.storeSlug)};
+window.__STORE_PLAN=${jsStringLiteral(ctx.storePlan)};
 window.__MAX_IMAGES=${{ free: 4, plus: 6, pro: 8, proplus: 8 }[ctx.storePlan] || 3};
-window.__STORE_NAME="${storeName.replace(/"/g, '\\"')}";
-window.__STORE_DESC="${storeDesc.replace(/"/g, '\\"')}";
-window.__STORE_COUNTRY="${country}";
-window.__MAIN_DOMAIN="${ctx.mainDomain.replace(/"/g, '\\"')}";
-window.__COUNTRY_CONFIG=${JSON.stringify(countryConf)};
-window.__DISPLAY_SETTINGS=${displaySettings};
-window.__TUTORIAL_STATE=${tutorialState};
-window.__TUTORIAL_AVATAR="${tutorialAvatar.replace(/"/g, '\\"')}";
-window.__BANNER_SETTINGS=${bannerSettings};
+window.__STORE_NAME=${jsStringLiteral(storeName)};
+window.__STORE_DESC=${jsStringLiteral(storeDesc)};
+window.__STORE_COUNTRY=${jsStringLiteral(country)};
+window.__MAIN_DOMAIN=${jsStringLiteral(ctx.mainDomain)};
+window.__COUNTRY_CONFIG=${safeInlineJson(JSON.stringify(countryConf))};
+window.__DISPLAY_SETTINGS=${safeInlineJson(displaySettings)};
+window.__TUTORIAL_STATE=${safeInlineJson(tutorialState)};
+window.__TUTORIAL_AVATAR=${jsStringLiteral(tutorialAvatar)};
+window.__BANNER_SETTINGS=${safeInlineJson(bannerSettings)};
 window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 </script>`;
   html = html.replace("</head>", () => inject + "\n</head>");
 
   // Inject template data attribute on <body>
   if (template && template !== "default") {
-    html = html.replace("<body>", `<body data-template="${template}">`);
+    html = html.replace("<body>", `<body data-template="${escapeHtmlAttr(template)}">`);
   }
 
   // Inject OG meta tags for storefront pages
@@ -252,11 +292,12 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     let jsonLdProductName = "";
     let jsonLdProductImage = "";
     let jsonLdProductDesc = "";
+    let jsonLdPriceJpy: number | null = null;
 
     if (code) {
       const productRow = await ctx.db
         .prepare(
-          "SELECT title_zh_tw, title_ja, brand, image_url, source_payload_json FROM products WHERE store_id = ? AND is_active = 1 AND source_product_code = ? LIMIT 1"
+          "SELECT title_zh_tw, title_ja, brand, image_url, source_payload_json, price_jpy_tax_in FROM products WHERE store_id = ? AND is_active = 1 AND source_product_code = ? LIMIT 1"
         )
         .bind(ctx.storeId, code)
         .first<{
@@ -265,6 +306,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
           brand: string | null;
           image_url: string | null;
           source_payload_json: string | null;
+          price_jpy_tax_in: number | null;
         }>();
 
       if (productRow) {
@@ -295,6 +337,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
         jsonLdProductName = productName || storeName;
         jsonLdProductImage = ogImage;
         jsonLdProductDesc = [productRow.brand, productName].filter(Boolean).join("｜");
+        jsonLdPriceJpy = productRow.price_jpy_tax_in != null ? Number(productRow.price_jpy_tax_in) : null;
       }
     }
 
@@ -325,6 +368,22 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
         image: jsonLdProductImage,
       };
       if (jsonLdProductDesc) productSchema.description = jsonLdProductDesc;
+      // Offer with the retail TWD price shoppers actually see (server-side mirror
+      // of the client price calc), never the wholesale/source cost. Product is
+      // queried with is_active = 1, so it is in stock / for sale.
+      if (jsonLdPriceJpy != null) {
+        const pricing = await getPricingConfig(ctx.db, ctx.storeId);
+        const retailTwd = calcRetailTwd(jsonLdPriceJpy, pricing);
+        if (retailTwd != null && retailTwd > 0) {
+          productSchema.offers = {
+            "@type": "Offer",
+            price: String(retailTwd),
+            priceCurrency: "TWD",
+            availability: "https://schema.org/InStock",
+            url: productPageUrl,
+          };
+        }
+      }
       const jsonLdProduct = buildJsonLd(productSchema);
       html = html.replace("</head>", () => `<script type="application/ld+json">${jsonLdProduct}</script>\n</head>`);
     }
@@ -365,11 +424,18 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     html = html.replace(/href="\/success\.html/g, `href="${ctx.basePath}/success.html`);
   }
 
+  // Public storefront pages are identical for every visitor of a given URL
+  // (tenant content is keyed by host/path/query), so let the edge cache them.
+  // Auth/transaction pages (admin, login, request, success, order-history)
+  // must never be cached.
+  const publicCacheable = filename === "store.html" || filename === "product.html";
   return new Response(html, {
     status: 200,
     headers: {
       "content-type": "text/html; charset=UTF-8",
-      "cache-control": "no-cache",
+      "cache-control": publicCacheable
+        ? "public, max-age=3600, stale-while-revalidate=86400"
+        : "no-cache",
     },
   });
 }
