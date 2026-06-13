@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PAYUNi 金流申請教學：開通我拍線上收款｜vovosnap</title>
+<meta name="description" content="完整教學：如何向 PAYUNi 申請自有收款帳號，並在我拍後台啟用信用卡收款。涵蓋個人與公司申請差異、手續費說明、金鑰取得步驟與沙盒測試流程。" />
+<meta name="robots" content="index, follow" />
+<meta property="og:title" content="PAYUNi 金流申請教學：開通我拍線上收款" />
+<meta property="og:description" content="完整教學：如何向 PAYUNi 申請自有收款帳號，並在我拍後台啟用信用卡收款。涵蓋個人與公司申請差異、手續費說明、金鑰取得步驟與沙盒測試流程。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://vovosnap.com/guide/payuni-setup/" />
+<meta property="og:image" content="https://vovosnap.com/assets/images/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="PAYUNi 金流申請教學：開通我拍線上收款" />
+<meta name="twitter:description" content="完整教學：如何向 PAYUNi 申請自有收款帳號，並在我拍後台啟用信用卡收款。涵蓋個人與公司申請差異、手續費說明、金鑰取得步驟與沙盒測試流程。" />
+<meta name="twitter:image" content="https://vovosnap.com/assets/images/og-image.png" />
+<link rel="icon" type="image/png" href="/assets/images/logo-icon-64.png" />
+<link rel="canonical" href="https://vovosnap.com/guide/payuni-setup/" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap">
+<style>
+:root {
+  --brand: #8A9A5B;
+  --brand-light: #EEF1E6;
+  --brand-dark: #768a4a;
+  --accent: #9E5F38;
+  --text: #3D3A35;
+  --text-secondary: #7A756D;
+  --text-muted: #A09A90;
+  --bg: #F9F7F1;
+  --bg-alt: #F3F0E8;
+  --bg-card: #FFFEFA;
+  --border: #E5E0D6;
+  --success: #8A9A5B;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+
+/* Nav */
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
+.nav-logo span { color: var(--brand); }
+.nav-actions { display: flex; gap: 8px; align-items: center; }
+.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
+.nav-link:hover { background: var(--bg-alt); color: var(--text); }
+.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-fill { background: var(--brand); color: #fff; }
+.btn-fill:hover { background: var(--brand-dark); }
+
+/* Article */
+.article-wrapper { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+.article-meta { margin-bottom: 32px; }
+.article-breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.article-breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+.article-breadcrumb a:hover { color: var(--brand); }
+
+.article-header { margin-bottom: 40px; }
+.article-header h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--text); }
+.article-header .lead { font-size: 17px; line-height: 1.8; color: var(--text-secondary); }
+.article-date { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+
+/* Content */
+.article-content h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); color: var(--text); letter-spacing: -0.3px; }
+.article-content h3 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; color: var(--text); }
+.article-content p { font-size: 16px; line-height: 1.9; margin-bottom: 16px; color: var(--text); }
+.article-content ul, .article-content ol { margin: 12px 0 20px 24px; }
+.article-content li { font-size: 16px; line-height: 1.8; margin-bottom: 8px; color: var(--text); }
+.article-content strong { color: var(--text); font-weight: 700; }
+.article-content a { color: var(--brand-dark); text-decoration: underline; text-underline-offset: 2px; }
+.article-content a:hover { color: var(--brand); }
+
+/* Callout box */
+.callout { background: var(--brand-light); border-left: 4px solid var(--brand); border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 24px 0; }
+.callout p { margin-bottom: 0; font-size: 15px; }
+.callout strong { color: var(--brand-dark); }
+.callout-warn { background: #FFF8ED; border-left-color: var(--accent); }
+.callout-warn strong { color: var(--accent); }
+.callout-warn p { color: var(--text); }
+
+/* Checklist */
+.checklist { list-style: none; margin: 16px 0 24px 0; padding: 0; }
+.checklist li { padding: 8px 0 8px 28px; position: relative; font-size: 15px; line-height: 1.7; color: var(--text); }
+.checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--brand); font-weight: 700; }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; margin: 20px 0 32px; font-size: 14px; background: var(--bg-card); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.data-table th { background: var(--brand-light); color: var(--brand-dark); font-weight: 700; padding: 12px 14px; text-align: left; border-bottom: 2px solid var(--border); font-size: 13px; }
+.data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); line-height: 1.6; vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--brand-light); }
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 20px 0 32px; }
+
+/* Step card */
+.step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; }
+.step-card .step-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--brand); color: #fff; border-radius: 50%; font-size: 14px; font-weight: 700; margin-right: 10px; flex-shrink: 0; }
+.step-card .step-title { font-size: 17px; font-weight: 700; display: inline; }
+.step-card p { margin-top: 10px; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
+
+/* Screenshot placeholder */
+.screenshot-placeholder { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px 24px; margin: 20px 0; text-align: center; background: var(--bg-alt); }
+.screenshot-placeholder .placeholder-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+.screenshot-placeholder .placeholder-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+/* Fee table highlight */
+.fee-note { font-size: 13px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+
+/* CTA */
+.cta-box { background: linear-gradient(135deg, var(--brand-light) 0%, #F5F0E6 100%); border: 1.5px solid var(--brand); border-radius: var(--radius); padding: 32px; margin: 40px 0; text-align: center; }
+.cta-box h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 8px; color: var(--text); }
+.cta-box p { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
+.cta-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none; background: var(--brand); color: #fff; border: none; cursor: pointer; transition: all 0.2s; }
+.article-content .cta-btn { color: #fff; text-decoration: none; }
+.cta-btn:hover { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(138,154,91,0.3); }
+
+/* TOC */
+.toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 0 0 40px; }
+.toc h4 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { font-size: 14px; line-height: 1.8; }
+.toc a { color: var(--text-secondary); text-decoration: none; }
+.toc a:hover { color: var(--brand); }
+
+/* Legal disclaimer */
+.legal-box { background: #F7F5F0; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin: 40px 0; }
+.legal-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+.legal-box ul { margin: 0; padding-left: 20px; }
+.legal-box li { font-size: 14px; line-height: 1.8; color: var(--text-secondary); margin-bottom: 6px; }
+
+/* Related articles */
+.related { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.related h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.related-list a { font-size: 15px; color: var(--text); text-decoration: none; font-weight: 500; }
+.related-list a:hover { color: var(--brand); }
+
+/* Footer */
+.footer { text-align: center; padding: 24px 20px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
+.footer a { color: var(--text-secondary); text-decoration: none; }
+.footer a:hover { color: var(--brand); }
+</style>
+
+<!-- JSON-LD: HowTo -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "PAYUNi 金流申請教學：開通我拍線上收款",
+  "description": "向 PAYUNi 申請自有收款帳號，並在我拍（vovosnap）後台啟用信用卡收款的完整步驟教學。",
+  "inLanguage": "zh-Hant",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "position": 1,
+      "name": "前往 PAYUNi 官網完成會員申請",
+      "text": "開啟 PAYUNi 官方網站，選擇個人會員（自然人）或公司（商業會員）類型，填寫身分資料並上傳相關文件，送出申請後等候審核（實際審核天數以 PAYUNi 官方公告為準）。"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 2,
+      "name": "審核通過後建立商店並取得串接金鑰",
+      "text": "登入 PAYUNi 後台，進入「會員 → 商店清單 → 選商店 → 商店明細 → 串接設定」，複製商店代號（MER_ID）、Hash Key、Hash IV 三組金鑰。"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 3,
+      "name": "在我拍後台填入金鑰並啟用收款",
+      "text": "進入我拍後台「設定 → 收款」分頁，將 MER_ID、Hash Key、Hash IV 填入對應欄位，按「測試連線」確認串接成功後，開啟「啟用收款」開關。"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 4,
+      "name": "正式上線前進行小額真實交易測試",
+      "text": "沙盒環境需使用 PAYUNi 提供的獨立測試商店帳號。正式帳號上線前，建議先用小額真實金額完整走一次結帳流程，確認金流運作正常。"
+    }
+  ]
+}
+</script>
+
+<!-- JSON-LD: Article -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "PAYUNi 金流申請教學：開通我拍線上收款",
+  "description": "完整教學：如何向 PAYUNi 申請自有收款帳號，並在我拍後台啟用信用卡收款。涵蓋個人與公司申請差異、手續費說明、金鑰取得步驟與沙盒測試流程。",
+  "datePublished": "2026-06-14",
+  "dateModified": "2026-06-14",
+  "inLanguage": "zh-Hant",
+  "author": { "@type": "Organization", "name": "VOVOSnap", "url": "https://vovosnap.com" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "VOVOSnap",
+    "url": "https://vovosnap.com",
+    "logo": { "@type": "ImageObject", "url": "https://vovosnap.com/assets/images/logo-icon.webp" }
+  },
+  "image": { "@type": "ImageObject", "url": "https://vovosnap.com/assets/images/og-image.png", "width": 1200, "height": 630 },
+  "mainEntityOfPage": "https://vovosnap.com/guide/payuni-setup/"
+}
+</script>
+
+<!-- JSON-LD: BreadcrumbList -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "首頁", "item": "https://vovosnap.com/" },
+    { "@type": "ListItem", "position": 2, "name": "開店指南", "item": "https://vovosnap.com/guide/" },
+    { "@type": "ListItem", "position": 3, "name": "PAYUNi 金流申請教學", "item": "https://vovosnap.com/guide/payuni-setup/" }
+  ]
+}
+</script>
+</head>
+
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;"><img src="/assets/images/logo-icon.webp" alt="我拍 VOVOSnap" style="width:38px;height:38px;border-radius:50%;" /><span style="font-family:'Noto Serif TC',serif;font-weight:700;font-size:16px;letter-spacing:.04em;color:#322d27;">我拍｜開店平台</span></a>
+    <div class="nav-actions">
+      <a href="/blog/" class="nav-link">代購教學</a>
+      <a href="/" class="btn-sm btn-fill">免費開店</a>
+    </div>
+  </div>
+</nav>
+
+<article class="article-wrapper">
+
+  <!-- Breadcrumb -->
+  <div class="article-meta">
+    <div class="article-breadcrumb">
+      <a href="/">首頁</a> / <a href="/guide/">開店指南</a> / PAYUNi 金流申請教學
+    </div>
+  </div>
+
+  <!-- H1 -->
+  <header class="article-header">
+    <h1>PAYUNi 金流申請教學：開通我拍線上收款</h1>
+    <p class="lead">
+      我拍（vovosnap）本身不代收代付——店主直接向 PAYUNi 申請自己的收款帳號，消費者刷卡的款項會直接匯入你指定的銀行帳戶，平台不經手資金。這篇教學帶你從申請帳號到後台啟用，一步步完成設定。
+    </p>
+    <div class="article-date">2026 年 6 月 14 日 更新 ・ 閱讀時間約 6 分鐘</div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h4>本頁目錄</h4>
+    <ol>
+      <li><a href="#step1">步驟一：申請 PAYUNi 帳號</a></li>
+      <li><a href="#step1-types">個人會員 vs 公司會員</a></li>
+      <li><a href="#step1-fee">手續費說明</a></li>
+      <li><a href="#step2">步驟二：在我拍後台啟用收款</a></li>
+      <li><a href="#step2-keys">取得串接金鑰</a></li>
+      <li><a href="#step2-activate">填入金鑰並啟用</a></li>
+      <li><a href="#step2-sandbox">沙盒 vs 正式環境</a></li>
+      <li><a href="#legal">法遵聲明</a></li>
+    </ol>
+  </nav>
+
+  <div class="article-content">
+
+    <!-- ── 步驟一 ── -->
+    <h2 id="step1">步驟一：申請 PAYUNi 帳號</h2>
+
+    <h3>為什麼要自行申請？</h3>
+
+    <p>
+      我拍平台不提供代收代付服務，每位店主需要持有自己名下的 PAYUNi 商店帳號。這樣做的好處是：款項直接由 PAYUNi 結算至你指定的銀行帳戶，平台無法接觸你的收款資金，帳務清楚透明。
+    </p>
+
+    <ul class="checklist">
+      <li>款項直接進入你的帳戶，無平台中間人</li>
+      <li>帳號歸你所有，停用我拍後仍可繼續使用該帳號</li>
+      <li>收款記錄與對帳均在 PAYUNi 後台自行管理</li>
+    </ul>
+
+    <h3 id="step1-types">個人會員（自然人）vs 公司會員（商業會員）</h3>
+
+    <p>
+      PAYUNi 提供兩種申請類型，兩者均可與我拍串接，依你的需求選擇：
+    </p>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>個人會員（自然人）</th>
+            <th>公司會員（商業會員）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>適用對象</td>
+            <td>個人賣家、微型代購</td>
+            <td>有統一編號的公司或商號</td>
+          </tr>
+          <tr>
+            <td>信用卡收款額度</td>
+            <td>約 20 萬元</td>
+            <td>約 100 萬元</td>
+          </tr>
+          <tr>
+            <td>主要所需文件</td>
+            <td>身分證正反面、銀行帳戶</td>
+            <td>公司登記資料、負責人身分證</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout-warn callout">
+      <p><strong>小提醒：</strong>上表的額度數字僅供參考，實際信用卡收款額度與審核結果<strong>以 PAYUNi 官方公告及個案審核為準</strong>，平台不保證任何特定數值。</p>
+    </div>
+
+    <p>
+      申請送出後，審核所需時間因個案而異，<strong>以 PAYUNi 官方公告為準</strong>。請預留足夠的等待時間再規劃正式開賣日期。
+    </p>
+
+    <p>
+      申請入口請至 <a href="https://www.payuni.com.tw/" target="_blank" rel="noopener">PAYUNi 官方網站</a>，依頁面指引完成帳號建立與商店申請。
+    </p>
+
+    <h3 id="step1-fee">手續費說明</h3>
+
+    <p>
+      PAYUNi 信用卡收款的手續費率，依交易量級距而有所差異，約落在 <strong>2.0% – 2.2%</strong>（<strong>實際費率以 PAYUNi 官方公告為準</strong>，本頁不提供保證值）。
+    </p>
+
+    <div class="callout-warn callout">
+      <p><strong>重要規定：</strong>依 PAYUNi 相關規定，<strong>店主不得將手續費額外加收於買家</strong>。手續費屬於店主的收款成本，需由店主自行吸收，不可在結帳時向買家轉嫁。若商品定價需涵蓋手續費成本，請在訂價階段自行計入，而非結帳時另行收費。</p>
+    </div>
+
+
+    <!-- ── 步驟二 ── -->
+    <h2 id="step2">步驟二：在我拍後台啟用收款</h2>
+
+    <p>
+      PAYUNi 審核通過、商店帳號建立完成後，你需要取得三組金鑰，填入我拍後台，才能讓線上訂單的結帳頁正確導向 PAYUNi 收款。
+    </p>
+
+    <h3 id="step2-keys">取得串接金鑰</h3>
+
+    <p>
+      登入 PAYUNi 後台，依以下路徑找到串接資訊：
+    </p>
+
+    <p>
+      <strong>會員 → 商店清單 → 點選你的商店名稱 → 商店明細 → 串接設定</strong>（分頁）
+    </p>
+
+    <p>
+      在「串接設定」頁籤中，你會看到以下三組資訊，請依序複製：
+    </p>
+
+    <ul>
+      <li><strong>商店代號（MER_ID）</strong>：格式為一串英數字，用於識別你的商店身份</li>
+      <li><strong>Hash Key</strong>：加密用金鑰，格式為一串英數字</li>
+      <li><strong>Hash IV</strong>：加密初始向量，格式為一串英數字</li>
+    </ul>
+
+    <div class="callout-warn callout">
+      <p><strong>安全提醒：</strong>請勿將 Hash Key 與 Hash IV 截圖後傳給他人，也不要貼到公開頻道。這三組資訊等同你帳號的存取憑證，若外洩請立即在 PAYUNi 後台重新產生。</p>
+    </div>
+
+    <figure class="screenshot-placeholder" aria-label="PAYUNi 串接設定頁面截圖佔位">
+      <div class="placeholder-label">截圖說明</div>
+      <div class="placeholder-desc">
+        PAYUNi 後台「串接設定」分頁畫面：顯示商店代號（MER_ID）、Hash Key、Hash IV 三欄位的位置與複製按鈕
+      </div>
+    </figure>
+
+    <h3 id="step2-activate">填入金鑰並啟用收款</h3>
+
+    <p>
+      取得三組金鑰後，前往我拍後台完成設定：
+    </p>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">進入設定頁面</span>
+      <p>登入我拍後台，點選左側選單「設定」，切換到「收款」分頁。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">填入三組金鑰</span>
+      <p>依欄位標示，分別填入 MER_ID（商店代號）、Hash Key、Hash IV。欄位旁會有格式提示，請確認輸入無多餘空白或換行。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">按「測試連線」驗證</span>
+      <p>點擊「測試連線」按鈕，系統會向 PAYUNi 發送驗證請求。若顯示「連線成功」，代表金鑰填寫正確。若失敗，請回到 PAYUNi 後台確認金鑰是否完整複製。</p>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">開啟「啟用收款」</span>
+      <p>測試成功後，開啟「啟用收款」開關，儲存設定。完成後，商店結帳頁即會出現信用卡付款選項。</p>
+    </div>
+
+    <figure class="screenshot-placeholder" aria-label="我拍後台收款設定頁面截圖佔位">
+      <div class="placeholder-label">截圖說明</div>
+      <div class="placeholder-desc">
+        我拍後台「設定 → 收款」分頁畫面：顯示 MER_ID、Hash Key、Hash IV 三個輸入欄位，以及「測試連線」按鈕與「啟用收款」開關的位置
+      </div>
+    </figure>
+
+    <h3 id="step2-sandbox">沙盒測試 vs 正式上線</h3>
+
+    <p>
+      PAYUNi 提供沙盒（sandbox）測試環境，方便你在不產生真實交易的情況下測試金流串接。請注意以下差異：
+    </p>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>環境</th>
+            <th>用途</th>
+            <th>說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>沙盒環境</td>
+            <td>技術測試、串接驗證</td>
+            <td>需使用 PAYUNi 核發的獨立測試商店帳號（與正式帳號分開），測試信用卡號請使用 PAYUNi 文件提供的測試卡號，不會產生真實扣款</td>
+          </tr>
+          <tr>
+            <td>正式環境</td>
+            <td>實際向買家收款</td>
+            <td>使用正式商店帳號的 MER_ID、Hash Key、Hash IV；正式上線前建議先做一筆小額真實交易（自行下單），確認款項正確入帳後再全面開放</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p><strong>建議流程：</strong>沙盒測試完成 → 切換正式金鑰 → 自行下單一筆小額測試（建議 NT$1 至 NT$10）→ 確認 PAYUNi 後台有收款紀錄、款項無誤 → 正式對外開賣。</p>
+    </div>
+
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>還沒有我拍商店？免費開一間</h3>
+      <p>代購上架、線上收款、訂單管理，一站搞定。<br>申請免費，不需刷卡，今天就能開始。</p>
+      <a href="/" class="cta-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        免費開店
+      </a>
+    </div>
+
+
+    <!-- ── 法遵聲明 ── -->
+    <div class="legal-box" id="legal">
+      <h3>重要聲明</h3>
+      <ul>
+        <li><strong>收款主體為店主本人。</strong>店主以自己名義向 PAYUNi 申請帳號，並對交易款項及退款負全責。我拍平台（卉田國際有限公司）不是賣方，亦不是支付機構，不提供履約保證。</li>
+        <li><strong>退款與爭議由店主自行處理。</strong>買家申請退款時，店主需依自訂退換貨政策處理；爭議交易（chargeback）由店主與 PAYUNi 依其服務條款協商解決，平台不介入資金調度。</li>
+        <li><strong>個人資料處理。</strong>消費者於結帳時提供的姓名、連絡方式等資料，由店主依「個人資料保護法」規定妥善保存，僅用於該筆訂單的履約與售後聯繫；保存期限以完成交易目的為限，最長不超過法定期限。</li>
+        <li><strong>禁售品將停權。</strong>違禁品、仿冒品、管制藥品等我拍禁止上架商品，一經發現將立即下架並停用帳號，相關法律責任由店主自行承擔。</li>
+        <li><strong>手續費不可轉嫁買家。</strong>依 PAYUNi 規定，信用卡手續費由店主自行吸收，不得以任何名義向買家額外收取。</li>
+        <li><strong>金流條款以 PAYUNi 為準。</strong>費率、額度、審核規定等可能隨時調整，本頁所載數字僅供參考，一切以 PAYUNi 官方最新公告為準。</li>
+      </ul>
+    </div>
+
+
+    <!-- Related articles -->
+    <div class="related">
+      <h3>延伸閱讀</h3>
+      <ul class="related-list">
+        <li><a href="/blog/first-time-daigou-guide.html">第一次代購就上手：出國代購完整教學，拍照就能賺回機票錢</a></li>
+        <li><a href="/guide/japan-cosmetics/">日本藥妝代購完整指南：必買清單、定價公式、退稅規則</a></li>
+        <li><a href="/blog/daigou-profit-calculation.html">代購利潤怎麼算？定價、匯率、費用一次搞清楚</a></li>
+      </ul>
+    </div>
+
+  </div><!-- .article-content -->
+</article>
+
+<!-- Footer -->
+<footer class="footer">
+  <a href="/"><img src="/assets/images/logo-full.webp" alt="我拍｜開店平台 vovosnap.com" style="width:160px;height:auto;margin-bottom:10px;" /></a><br>
+  <a href="/privacy.html">隱私權政策</a>
+  &nbsp;
+  <a href="/terms.html">服務條款</a>
+  <p style="margin-top:8px;">聯絡信箱：<a href="mailto:info@vovosnap.com">info@vovosnap.com</a></p>
+  <p>卉田國際有限公司｜統一編號：91093506</p>
+  <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
+</footer>
+
+</body>
+</html>

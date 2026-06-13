@@ -246,6 +246,7 @@ export default {
       add(`https://${mainDomain}/blog/sell-secondhand-items-fast.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/japan-cosmetics-daigou-guide.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/guide/payuni-setup/`, today, "monthly", "0.7");
 
       const storesRows = await env.DB
         .prepare("SELECT id, slug, plan, updated_at FROM stores WHERE is_active = 1")
