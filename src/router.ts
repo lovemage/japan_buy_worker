@@ -117,6 +117,20 @@ async function serveTenantHtml(
   const canonicalUrl = new URL(request.url);
   canonicalUrl.search = "";
   canonicalUrl.hash = "";
+  // Normalise the canonical to match the URLs published in the sitemap so each
+  // tenant page declares a single, self-consistent canonical instead of many
+  // variants collapsing onto a shared one.
+  if (filename === "store.html") {
+    // Store root is listed as `${baseUrl}/`; both `/` and `/index.html` land here.
+    canonicalUrl.pathname = `${ctx.basePath}/`;
+  } else if (filename === "product.html") {
+    // Products are listed as `${baseUrl}/product?code=…`. Without the code every
+    // product would share one canonical and fail to index; also drop the optional
+    // `.html` so `/product` and `/product.html` don't compete as duplicates.
+    const code = new URL(request.url).searchParams.get("code") || "";
+    canonicalUrl.pathname = `${ctx.basePath}/product`;
+    if (code) canonicalUrl.searchParams.set("code", code);
+  }
   const canonicalTag = `<link rel="canonical" href="${escapeHtmlAttr(canonicalUrl.toString())}" />`;
   const noIndexPages = new Set(["request.html", "success.html", "order-history.html", "admin.html", "admin-login.html"]);
   const robotsTag = noIndexPages.has(filename)
@@ -320,8 +334,8 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
       { "@type": "ListItem", position: 1, name: storeName, item: storeRootUrl },
     ];
     if (jsonLdProductName) {
-      const productItemUrl = code ? `${productPageUrl}?code=${encodeURIComponent(code)}` : productPageUrl;
-      breadcrumbItems.push({ "@type": "ListItem", position: 2, name: jsonLdProductName, item: productItemUrl });
+      // productPageUrl is the normalised canonical, which already carries ?code=.
+      breadcrumbItems.push({ "@type": "ListItem", position: 2, name: jsonLdProductName, item: productPageUrl });
     }
     const productBreadcrumb = {
       "@context": "https://schema.org",
