@@ -1911,9 +1911,7 @@
 
   function initPaymentTab(store) {
     var eff = (store && store.effective_plan) || "free";
-    var raw = (store && store.plan) || "free";
     var isProOrAbove = eff === "pro" || eff === "proplus";
-    var isExpired = raw !== "free" && eff === "free";
     var panel = document.getElementById("payment-panel-content");
     if (!panel) return;
 
@@ -1961,13 +1959,13 @@
         return;
       }
       _storePayConfig = d.config || {};
-      renderPaymentForm(panel, _storePayConfig, isExpired);
+      renderPaymentForm(panel, _storePayConfig);
     }).catch(function () {
       panel.innerHTML = '<p class="meta" style="color:red;">網路錯誤，請重新整理。</p>';
     });
   }
 
-  function renderPaymentForm(panel, cfg, isExpired) {
+  function renderPaymentForm(panel, cfg) {
     cfg = cfg || {};
     var testOk = cfg.lastTestStatus === "ok";
     var effectiveEnabled = !!cfg.effectiveEnabled;
@@ -1976,31 +1974,7 @@
     var merIdPlaceholder = cfg.merIdLast4 ? "已設定（末四碼 " + escHtml(cfg.merIdLast4) + "）" : "未設定";
     var keyPlaceholder = cfg.hashKeySet ? "已設定" : "未設定";
     var ivPlaceholder = cfg.hashIvSet ? "已設定" : "未設定";
-    var disabled = isExpired ? " disabled" : "";
-
     panel.innerHTML = "";
-
-    // 到期提示
-    if (isExpired) {
-      var expiredDiv = document.createElement("div");
-      expiredDiv.className = "upgrade-card upgrade-card--expired";
-      var expiredText = document.createElement("div");
-      expiredText.className = "upgrade-card__text";
-      var expiredTitle = document.createElement("strong");
-      expiredTitle.textContent = "方案已到期";
-      var expiredDesc = document.createElement("span");
-      expiredDesc.textContent = "方案已到期，續約以繼續使用收款功能。";
-      expiredText.appendChild(expiredTitle);
-      expiredText.appendChild(expiredDesc);
-      expiredDiv.appendChild(expiredText);
-      var expiredBtn = document.createElement("button");
-      expiredBtn.type = "button";
-      expiredBtn.className = "upgrade-btn";
-      expiredBtn.textContent = "重新升級";
-      expiredBtn.addEventListener("click", function () { openUpgrade("expired"); });
-      expiredDiv.appendChild(expiredBtn);
-      panel.appendChild(expiredDiv);
-    }
 
     var group = document.createElement("div");
     group.className = "settings-group";
@@ -2021,7 +1995,7 @@
     enableChk.type = "checkbox";
     enableChk.id = "payment-enable-toggle";
     enableChk.checked = isEnabled;
-    if (!testOk || isExpired) enableChk.disabled = true;
+    if (!testOk) enableChk.disabled = true;
     var toggleSlider = document.createElement("span");
     toggleSlider.className = "toggle-slider";
     toggleLabel.appendChild(enableChk);
@@ -2085,9 +2059,7 @@
     var sandboxChk = document.createElement("input");
     sandboxChk.type = "checkbox";
     sandboxChk.id = "payment-sandbox-toggle";
-    sandboxChk.checked = isSandbox;
-    if (isExpired) sandboxChk.disabled = true;
-    var sandboxSlider = document.createElement("span");
+    sandboxChk.checked = isSandbox;    var sandboxSlider = document.createElement("span");
     sandboxSlider.className = "toggle-slider";
     sandboxToggleLabel.appendChild(sandboxChk);
     sandboxToggleLabel.appendChild(sandboxSlider);
@@ -2108,9 +2080,7 @@
     merInput.id = "payment-mer-id";
     merInput.className = "input-cute";
     merInput.placeholder = merIdPlaceholder;
-    merInput.autocomplete = "off";
-    if (isExpired) merInput.disabled = true;
-    merLabel.appendChild(merInput);
+    merInput.autocomplete = "off";    merLabel.appendChild(merInput);
     group.appendChild(merLabel);
 
     // Hash Key
@@ -2122,9 +2092,7 @@
     keyInput.id = "payment-hash-key";
     keyInput.className = "input-cute";
     keyInput.placeholder = keyPlaceholder;
-    keyInput.autocomplete = "new-password";
-    if (isExpired) keyInput.disabled = true;
-    keyLabel.appendChild(keyInput);
+    keyInput.autocomplete = "new-password";    keyLabel.appendChild(keyInput);
     group.appendChild(keyLabel);
 
     // Hash IV
@@ -2136,9 +2104,7 @@
     ivInput.id = "payment-hash-iv";
     ivInput.className = "input-cute";
     ivInput.placeholder = ivPlaceholder;
-    ivInput.autocomplete = "new-password";
-    if (isExpired) ivInput.disabled = true;
-    ivLabel.appendChild(ivInput);
+    ivInput.autocomplete = "new-password";    ivLabel.appendChild(ivInput);
     group.appendChild(ivLabel);
 
     // 測試連線按鈕
@@ -2146,9 +2112,7 @@
     testBtn.type = "button";
     testBtn.className = "button secondary";
     testBtn.style.marginTop = "10px";
-    testBtn.textContent = "測試連線";
-    if (isExpired) testBtn.disabled = true;
-    group.appendChild(testBtn);
+    testBtn.textContent = "測試連線";    group.appendChild(testBtn);
 
     // 測試狀態
     var testStatus = document.createElement("p");
@@ -2199,9 +2163,7 @@
     saveBtn.type = "button";
     saveBtn.className = "button";
     saveBtn.style.marginTop = "4px";
-    saveBtn.textContent = "儲存";
-    if (isExpired) saveBtn.disabled = true;
-    saveBtn.addEventListener("click", function () { saveStorePaymentSettings(saveStatus); });
+    saveBtn.textContent = "儲存";    saveBtn.addEventListener("click", function () { saveStorePaymentSettings(saveStatus); });
     group.appendChild(saveBtn);
 
     var saveStatus = document.createElement("p");
