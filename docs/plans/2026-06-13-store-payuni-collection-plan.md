@@ -215,17 +215,20 @@ ReturnURL handler 同樣 `verifyAndDecrypt`，再 302 到買家完成頁（新�
   **用 `getEffectivePlan`（已會把過期付費方案降為 free），不可用原始 `store.plan`，也不可沿用含 plus 的 `PAYABLE_PLANS`。**
 - **雙層 gate**：前端（UI 鎖定）+ 後端（每個 `/api/store-pay/*` 設定與請款 API 都先驗 `canUseStoreCollection`，回 403）。前端鎖定僅為體驗，安全靠後端。
 
-### 9.1 過期 / 降級處理方式
-方案到期 → `getEffectivePlan` 自動回 `free` → 收款功能即時關閉，具體行為：
+### 9.1 過期 / 降級處理方式【業主已拍板：強制有效期 + 只完成進行中】
+方案到期 → `getEffectivePlan` 自動回 `free` → 收款功能即時關閉。為避免「過期前預先囤大量長效連結繼續收款」的**付費授權繞過**（codex BLOCKER #2），採下列規則：
+
 | 對象 | 過期後行為 |
 |---|---|
 | **建立新請款 / 收款連結** | **擋**（API 403、UI 鎖定）。 |
-| **已開出、買家尚未付款的舊連結** | **繼續有效、可付款**。理由：BYO merchant 款項**直接進店主自己的 PAYUNi 帳戶**，平台不碰錢、無資金責任；硬擋反而害到已下單買家。NotifyURL/return 照常處理、更新訂單。 |
-| **已存的金鑰設定** | **保留**（加密續存，僅標記功能 inactive）。續約後免重填即恢復。**不因過期刪金鑰。** |
-| **Admin 金流設定頁** | 轉唯讀 + 顯示「方案已到期，續約以繼續使用收款」CTA（複用既有升級 box / `upgrade_click`）。 |
-| **`is_enabled` 旗標** | 不被過期清掉；effective gate 由 plan 計算，續約即自動恢復。 |
+| **收款連結有效期** | 建立時**強制 `expires_at`**（上限 14 天，預設 7 天）。無「永久連結」。 |
+| **尚未開始付款的舊連結** | **一律失效不可付**（即使 `expires_at` 還沒到，只要 `effective_enabled=false` 就擋 checkout）。 |
+| **已 checkout、已送 PAYUNi 等 webhook 回拋的交易** | **允許完成**（NotifyURL 照常驗簽更新），不卡到已下單買家。判定依 `checkout_started_at IS NOT NULL`。 |
+| **已存的金鑰設定** | **保留**（加密續存，標 inactive），續約免重填即恢復。**不因過期刪金鑰。** |
+| **Admin 金流設定頁** | 轉唯讀 + 「方案已到期，續約以繼續使用收款」CTA（複用既有升級 box / `upgrade_click`）。 |
 
-> 邊界：續約後不需要重新驗證金鑰；但建議 UI 提示「請按一次測試連線確認」。
+稽核欄位：order 記 `created_under_plan`、`checkout_started_at`、`plan_valid_until_at`。
+> 續約後免重驗金鑰，但 UI 提示「請按一次測試連線確認」。
 
 ### 9.2 後台 UI 設計（沿用既有 admin 結構，不另起風格）
 **落點**：`public/admin.html` 的 `<section data-tab="settings">`，在現有 sub-nav（基本 / 外觀 / 標籤 / 定價）**新增第 5 個 sub-tab「收款」**（`data-subtab="payment"` + `data-subtab-panel="payment"`），與既有分頁機制一致。
@@ -325,3 +328,48 @@ graph TD
 - domain 結論文件化；自訂網域明列為後續選配、未擋 MVP。
 - 每階段經 codex-reviewer 安全審查通過後才 commit；分階段 commit 由 haiku-latest 執行。
 - 加解密層 `src/shared/payuni.js` 維持零/近零修改。
+
+---
+
+## 15. Codex plan-review 安全修訂（**實作必遵**，2026-06-13）
+以下為 codex (gpt-5.5) plan-review 採納項，覆寫前述相關設計，實作時以本節為準。
+
+### 15.1 訂單狀態機 + anti-replay（BLOCKER）
+- `store_payment_orders.status` 為**嚴格狀態機**：`pending → paid | failed | expired | cancelled`；`paid/refunded/cancelled/expired` 為**終態**，notify 不得把終態改回 paid。
+- notify 僅允許 `pending`（含 ATM 取號 pending）轉移；其他狀態一律忽略並回 200（避免 PAYUNi 重送）。
+- 防重放：記錄並比對解密出的 PAYUNi `TradeNo`/auth no/交易時間；同一 `mer_trade_no` 不得被不同交易資料覆蓋；納入合理時間窗。
+- 金額竄改防護：見 15.4 canonical parser。
+
+### 15.2 金鑰 key lifecycle（BLOCKER）
+- master key 改用 **keyring**：`STORE_PAY_ENC_KEY_V1`、`_V2`…（Cloudflare secret），不用單一 secret。寫入用 latest version，讀取依 `enc_version` 找對應 key。
+- **AAD**（AES-GCM additional authenticated data）綁定 `store_id|provider|field_name|enc_version`，防 ciphertext 跨欄位/跨店搬移仍可解。
+- **rotate job**：逐筆 decrypt(old)→encrypt(latest)→更新 enc_version。
+- **compromise response**：停用所有 checkout、要求店主重填金鑰、稽核 raw access。**loss response**：無法復原 → UI/API 須能優雅處理 decrypt fail 並引導店主重填。
+
+### 15.3 公開端點安全（MAJOR）
+- 收款連結對外識別碼用**高 entropy `public_token`**（非可枚舉的 `mer_trade_no`/序列）；`mer_trade_no` 改 opaque，**不放 store_id**、不作安全依據。
+- NotifyURL 分派：`?s=` 僅 key-lookup hint；**驗簽後**必用解密出的 `MerTradeNo` 查 DB，並強制 `order.store_id === s`。
+- `/api/store-pay/public/*` 與 `/notify` 加 **rate limit**（IP + order + store 維度）；對 expired/cancelled/paid 訂單**快速拒絕、不進 PAYUNi build**。
+- public 查詢回**最小資料**，不存在/無權/過期一律**一致錯誤**避免枚舉。
+
+### 15.4 金額 / 幣別 / 環境（MAJOR）
+- **canonical amount parser**：只接受正整數 TWD、範圍 `1..9999999`；建單 / checkout / notify **共用同一 parser**；一律 server 端 DB 取值，忽略前端 amount。
+- 每筆 order 寫入 **`is_sandbox` snapshot**（非僅存在 config）；checkout 與 notify 都比對 `order.is_sandbox === config.is_sandbox`；切換環境後舊 pending 不可混用。
+
+### 15.5 ReturnURL（MAJOR）
+- **paid 狀態只能由 NotifyURL 更新**；ReturnURL 驗簽後僅導頁，完成頁只輪詢 server order-status，不信任 URL payload。
+
+### 15.6 權限 / 稽核 / 狀態模型（MAJOR）
+- 金流設定（`GET/PUT /api/store-pay/config`）**僅 store owner / billing role 可改**；改金鑰寫 **audit log**（actor、時間、is_sandbox、mer_id_last4），改後自動 disable 須 retest 才能 re-enable。
+- 狀態分離：`is_enabled`（店主意圖）vs computed **`effective_enabled = is_enabled && plan_ok && config_valid`**；UI 區分「已設定但目前不可用」與「有效啟用」。
+
+### 15.7 資料保存 / log 脫敏（MAJOR/MINOR）
+- `raw_notify` **不存完整 payload**，只存 redacted allowlist：`MerTradeNo/TradeAmt/Status/PayType/TradeNo/時間/回應碼`；EncryptInfo 原文不長期保存。
+- **redaction logger**：config/test、checkout、notify 的錯誤只回 generic code，不回 PAYUNi raw response；解密後的 secret 變數禁止被 JSON stringify 進 log。
+- **retention/刪除**：刪店或關閉收款時金鑰可永久刪除；訂單/notify 個資定明確保存期限。
+
+### 15.8 Schema 約束 / 雜項（MINOR）
+- D1 加 check constraints：`amount > 0`、`status IN (...)`、`is_sandbox IN (0,1)`、`is_enabled IN (0,1)`、`currency = 'TWD'`。
+- 移除裸 `mer_id_hash = sha256(mer_id)`（方案 B 不需要）；若日後採方案 A 改用 `HMAC(master-derived key, mer_id)`。
+- 教學頁費率/額度/審核天數**不寫死為保證值**，標「以 PAYUNi 官方公告為準」。
+- 法遵聲明補：店主為收款主體、平台非賣方/支付機構/履約保證、退款爭議由店主處理、個資處理目的與保存期限、禁售品停權條款。
