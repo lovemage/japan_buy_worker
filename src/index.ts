@@ -200,6 +200,38 @@ function buildCtxFromStore(
   };
 }
 
+// Dispatch the store-owned PAYUNi collection routes. Returns a Response promise
+// when `pathname` matches a store-pay route, or null when it doesn't.
+//
+// The handlers resolve the store from the session cookie (getSessionStore), so
+// they are path-independent and must be reachable from BOTH the main domain
+// (e.g. /api/store-pay/config) and path-based tenant routing, where the admin
+// page's apiFetch prefixes the basePath (e.g. /s/{slug}/api/store-pay/config).
+function dispatchStorePayRoute(
+  pathname: string,
+  request: Request,
+  env: Env
+): Promise<Response> | null {
+  if (pathname === "/api/store-pay/config") {
+    if (request.method === "GET") return handleGetStorePayConfig(request, env);
+    if (request.method === "PUT") return handlePutStorePayConfig(request, env);
+    return Promise.resolve(json({ ok: false, error: "Method Not Allowed" }, 405));
+  }
+  if (pathname === "/api/store-pay/config/test") return handleTestStorePayConfig(request, env);
+  if (pathname === "/api/store-pay/config/enable") return handleEnableStorePayConfig(request, env);
+  if (pathname === "/api/store-pay/orders") {
+    if (request.method === "POST") return handleCreateStorePayOrder(request, env);
+    if (request.method === "GET") return handleListStorePayOrders(request, env);
+    return Promise.resolve(json({ ok: false, error: "Method Not Allowed" }, 405));
+  }
+  if (pathname === "/api/store-pay/public/order") return handlePublicGetOrder(request, env);
+  if (pathname === "/api/store-pay/public/checkout") return handlePublicCheckout(request, env);
+  if (pathname === "/api/store-pay/public/order-status") return handlePublicOrderStatus(request, env);
+  if (pathname === "/api/store-pay/notify") return handleStorePayNotify(request, env, new URL(request.url));
+  if (pathname === "/api/store-pay/return") return handleStorePayReturn(request, env, new URL(request.url));
+  return null;
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
    try {
@@ -334,37 +366,10 @@ export default {
       return handleBillingOrders(request, env);
     }
 
-    // ── Store-owned PAYUNi collection（主網域） ──
-    if (url.pathname === "/api/store-pay/config") {
-      if (request.method === "GET") return handleGetStorePayConfig(request, env);
-      if (request.method === "PUT") return handlePutStorePayConfig(request, env);
-      return json({ ok: false, error: "Method Not Allowed" }, 405);
-    }
-    if (url.pathname === "/api/store-pay/config/test") {
-      return handleTestStorePayConfig(request, env);
-    }
-    if (url.pathname === "/api/store-pay/config/enable") {
-      return handleEnableStorePayConfig(request, env);
-    }
-    if (url.pathname === "/api/store-pay/orders") {
-      if (request.method === "POST") return handleCreateStorePayOrder(request, env);
-      if (request.method === "GET") return handleListStorePayOrders(request, env);
-      return json({ ok: false, error: "Method Not Allowed" }, 405);
-    }
-    if (url.pathname === "/api/store-pay/public/order") {
-      return handlePublicGetOrder(request, env);
-    }
-    if (url.pathname === "/api/store-pay/public/checkout") {
-      return handlePublicCheckout(request, env);
-    }
-    if (url.pathname === "/api/store-pay/public/order-status") {
-      return handlePublicOrderStatus(request, env);
-    }
-    if (url.pathname === "/api/store-pay/notify") {
-      return handleStorePayNotify(request, env, url);
-    }
-    if (url.pathname === "/api/store-pay/return") {
-      return handleStorePayReturn(request, env, url);
+    // ── Store-owned PAYUNi collection（主網域 + 路徑型租戶） ──
+    {
+      const storePayResp = dispatchStorePayRoute(url.pathname, request, env);
+      if (storePayResp) return storePayResp;
     }
 
     // ── Auth routes (platform-level, not tenant-scoped) ──
@@ -436,6 +441,11 @@ export default {
       if (!store || !store.is_active) {
         return json({ ok: false, error: "Store not found" }, 404);
       }
+      // Store-pay routes are store-scoped via the session cookie (not path), but
+      // the tenant admin page calls them with the /s/{slug} basePath prefix.
+      // Dispatch them here so /s/{slug}/api/store-pay/* reaches the same handlers.
+      const storePayResp = dispatchStorePayRoute(subPath, request, env);
+      if (storePayResp) return storePayResp;
       const ctx = buildCtxFromStore(store, env, `/s/${slug}`);
       return routeTenantRequest(request, ctx, subPath, getCrawlEnv(env), env.ASSETS);
     }
