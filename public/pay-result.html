@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>付款結果</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: #f7f8fa; color: #1a1d21;
+         min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #fff; border: 1px solid #e6e8eb; border-radius: 16px; padding: 40px 32px;
+          max-width: 480px; width: 100%; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .icon { line-height: 0; margin-bottom: 16px; display: flex; justify-content: center; }
+  .icon svg { width: 56px; height: 56px; }
+  h1 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  p { font-size: 15px; color: #5c636e; line-height: 1.8; }
+  .atm-box { margin: 20px 0 4px; padding: 16px; background: #f7f8fa; border-radius: 12px; text-align: left; }
+  .atm-box dt { font-size: 12px; color: #8a919c; margin-top: 10px; }
+  .atm-box dt:first-child { margin-top: 0; }
+  .atm-box dd { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .muted { font-size: 13px; color: #8a919c; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f26b1d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  </div>
+  <h1>正在確認付款狀態…</h1>
+  <p>請稍候，正在向金流系統確認你的訂單。</p>
+</div>
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get("o") || "";
+  var card = document.getElementById("card");
+  var tries = 0;
+  var MAX_TRIES = 36; // 最多輪詢約 3 分鐘（每 5 秒一次）
+
+  function setCard(html) { card.innerHTML = html; }
+
+  function renderGenericError() {
+    setCard(
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#d93636" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div>' +
+      '<h1>付款確認失敗</h1>' +
+      '<p>若你已完成付款，請聯繫賣家確認訂單狀態。</p>'
+    );
+  }
+
+  function renderIncomplete() {
+    setCard(
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#d93636" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div>' +
+      '<h1>付款未完成或連結已失效</h1>' +
+      '<p>若你認為有誤，請聯繫賣家確認。</p>'
+    );
+  }
+
+  function renderPaid() {
+    setCard(
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a9e6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>' +
+      '<h1>付款完成</h1>' +
+      '<p>感謝你的付款，賣家將盡快與你聯繫。</p>'
+    );
+  }
+
+  function renderAtm(atm) {
+    var bankCode = document.createElement("dd");
+    bankCode.textContent = atm.bankCode || "—";
+
+    var account = document.createElement("dd");
+    account.textContent = atm.account || "—";
+
+    var expireAt = document.createElement("dd");
+    expireAt.textContent = atm.expireAt || "—";
+
+    // Build ATM box safely
+    var dl = document.createElement("dl");
+    dl.className = "atm-box";
+
+    function addRow(labelText, valueEl) {
+      var dt = document.createElement("dt");
+      dt.textContent = labelText;
+      dl.appendChild(dt);
+      dl.appendChild(valueEl);
+    }
+
+    addRow("銀行代碼", bankCode);
+    addRow("虛擬帳號", account);
+    addRow("繳費期限", expireAt);
+
+    card.innerHTML =
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f26b1d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></div>' +
+      '<h1>請完成 ATM 轉帳</h1>' +
+      '<p>轉帳入帳後賣家將自動收到通知，無需再操作。</p>';
+    card.appendChild(dl);
+
+    var muted = document.createElement("p");
+    muted.className = "muted";
+    muted.textContent = "請於期限前完成轉帳。此頁面會持續確認付款狀態。";
+    card.appendChild(muted);
+  }
+
+  function renderPollingTimeout() {
+    setCard(
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#8a919c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>' +
+      '<h1>尚未收到付款結果</h1>' +
+      '<p>若你已完成付款，賣家將在收到金流通知後確認訂單。<br>可重新整理此頁查看，或聯繫賣家。</p>' +
+      '<p class="muted" style="margin-top:20px;"><a href="" style="color:#f26b1d;">重新整理</a></p>'
+    );
+  }
+
+  function poll() {
+    fetch("/api/store-pay/public/order-status?o=" + encodeURIComponent(token))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) { renderIncomplete(); return; }
+
+        var status = d.status;
+
+        if (status === "paid") {
+          renderPaid();
+          return;
+        }
+
+        if (status === "failed" || status === "expired" || status === "cancelled") {
+          renderIncomplete();
+          return;
+        }
+
+        // status === "pending"
+        if (d.atm) {
+          renderAtm(d.atm);
+          // Keep polling even when ATM shown, in case payment comes through
+          tries++;
+          if (tries < MAX_TRIES) {
+            setTimeout(poll, 5000);
+          }
+          return;
+        }
+
+        // pending, no ATM yet
+        tries++;
+        if (tries < MAX_TRIES) {
+          setTimeout(poll, 5000);
+        } else {
+          renderPollingTimeout();
+        }
+      })
+      .catch(function () {
+        tries++;
+        if (tries < MAX_TRIES) {
+          setTimeout(poll, 5000);
+        } else {
+          renderGenericError();
+        }
+      });
+  }
+
+  if (!token) { renderGenericError(); return; }
+  poll();
+})();
+</script>
+</body>
+</html>

@@ -171,7 +171,7 @@ async function serveTenantHtml(
     if (code) canonicalUrl.searchParams.set("code", code);
   }
   const canonicalTag = `<link rel="canonical" href="${escapeHtmlAttr(canonicalUrl.toString())}" />`;
-  const noIndexPages = new Set(["request.html", "success.html", "order-history.html", "admin.html", "admin-login.html"]);
+  const noIndexPages = new Set(["request.html", "success.html", "order-history.html", "admin.html", "admin-login.html", "pay.html", "pay-result.html"]);
   const robotsTag = noIndexPages.has(filename)
     ? '<meta name="robots" content="noindex, nofollow" />'
     : '<meta name="robots" content="index, follow" />';
@@ -658,6 +658,12 @@ export async function routeTenantRequest(
   }
   if (subPath === "/order-history.html" || subPath === "/order-history") {
     return serveTenantHtml(request, ctx, "order-history.html", assets);
+  }
+  if (subPath === "/pay-result.html" || subPath === "/pay-result") {
+    return serveTenantHtml(request, ctx, "pay-result.html", assets);
+  }
+  if (subPath === "/pay.html" || subPath === "/pay") {
+    return serveTenantHtml(request, ctx, "pay.html", assets);
   }
 
   // ── Static assets (CSS, JS, images) ──

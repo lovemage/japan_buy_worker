@@ -30,6 +30,19 @@ import {
   handleBillingOrderStatus,
   handleBillingOrders,
 } from "./routes/billing";
+import {
+  handleGetStorePayConfig,
+  handlePutStorePayConfig,
+  handleTestStorePayConfig,
+  handleEnableStorePayConfig,
+  handleCreateStorePayOrder,
+  handleListStorePayOrders,
+  handlePublicGetOrder,
+  handlePublicCheckout,
+  handlePublicOrderStatus,
+  handleStorePayNotify,
+  handleStorePayReturn,
+} from "./routes/store-payment";
 
 type Env = {
   DB: D1DatabaseLike;
@@ -233,6 +246,7 @@ export default {
       add(`https://${mainDomain}/blog/sell-secondhand-items-fast.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/japan-cosmetics-daigou-guide.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/guide/payuni-setup/`, today, "monthly", "0.7");
 
       const storesRows = await env.DB
         .prepare("SELECT id, slug, plan, updated_at FROM stores WHERE is_active = 1")
@@ -320,6 +334,39 @@ export default {
       return handleBillingOrders(request, env);
     }
 
+    // ── Store-owned PAYUNi collection（主網域） ──
+    if (url.pathname === "/api/store-pay/config") {
+      if (request.method === "GET") return handleGetStorePayConfig(request, env);
+      if (request.method === "PUT") return handlePutStorePayConfig(request, env);
+      return json({ ok: false, error: "Method Not Allowed" }, 405);
+    }
+    if (url.pathname === "/api/store-pay/config/test") {
+      return handleTestStorePayConfig(request, env);
+    }
+    if (url.pathname === "/api/store-pay/config/enable") {
+      return handleEnableStorePayConfig(request, env);
+    }
+    if (url.pathname === "/api/store-pay/orders") {
+      if (request.method === "POST") return handleCreateStorePayOrder(request, env);
+      if (request.method === "GET") return handleListStorePayOrders(request, env);
+      return json({ ok: false, error: "Method Not Allowed" }, 405);
+    }
+    if (url.pathname === "/api/store-pay/public/order") {
+      return handlePublicGetOrder(request, env);
+    }
+    if (url.pathname === "/api/store-pay/public/checkout") {
+      return handlePublicCheckout(request, env);
+    }
+    if (url.pathname === "/api/store-pay/public/order-status") {
+      return handlePublicOrderStatus(request, env);
+    }
+    if (url.pathname === "/api/store-pay/notify") {
+      return handleStorePayNotify(request, env, url);
+    }
+    if (url.pathname === "/api/store-pay/return") {
+      return handleStorePayReturn(request, env, url);
+    }
+
     // ── Auth routes (platform-level, not tenant-scoped) ──
     if (url.pathname === "/auth/google") {
       return handleGoogleAuthRedirect(getAuthEnv(env));
@@ -391,6 +438,34 @@ export default {
       }
       const ctx = buildCtxFromStore(store, env, `/s/${slug}`);
       return routeTenantRequest(request, ctx, subPath, getCrawlEnv(env), env.ASSETS);
+    }
+
+    // ── Public store-pay pages (main domain only; no cache — transaction pages) ──
+    if (url.pathname === "/pay" || url.pathname === "/pay.html") {
+      if (env.ASSETS) {
+        const resp = await env.ASSETS.fetch(new Request(new URL("/pay.html", request.url).toString(), { method: "GET", headers: request.headers }));
+        if (resp.ok) {
+          const out = new Response(resp.body, resp);
+          out.headers.set("Cache-Control", "no-store, max-age=0");
+          out.headers.set("X-Robots-Tag", "noindex, nofollow");
+          return out;
+        }
+        return resp;
+      }
+      return json({ ok: false, error: "Not found" }, 404);
+    }
+    if (url.pathname === "/pay-result" || url.pathname === "/pay-result.html") {
+      if (env.ASSETS) {
+        const resp = await env.ASSETS.fetch(new Request(new URL("/pay-result.html", request.url).toString(), { method: "GET", headers: request.headers }));
+        if (resp.ok) {
+          const out = new Response(resp.body, resp);
+          out.headers.set("Cache-Control", "no-store, max-age=0");
+          out.headers.set("X-Robots-Tag", "noindex, nofollow");
+          return out;
+        }
+        return resp;
+      }
+      return json({ ok: false, error: "Not found" }, 404);
     }
 
     // ── Onboarding page ──

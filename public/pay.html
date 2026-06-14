@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>付款｜結帳</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: #f7f8fa; color: #1a1d21;
+         min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #fff; border: 1px solid #e6e8eb; border-radius: 16px; padding: 40px 32px;
+          max-width: 480px; width: 100%; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .icon { line-height: 0; margin-bottom: 16px; display: flex; justify-content: center; }
+  .icon svg { width: 56px; height: 56px; }
+  .store-name { font-size: 13px; color: #8a919c; margin-bottom: 6px; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+  .amount { font-size: 32px; font-weight: 900; color: #f26b1d; margin-bottom: 28px;
+            font-variant-numeric: tabular-nums; }
+  .btn { display: inline-block; width: 100%; padding: 14px 32px; border-radius: 10px;
+         background: #f26b1d; color: #fff; font-weight: 700; font-size: 16px;
+         border: none; cursor: pointer; text-align: center; }
+  .btn:disabled { background: #ccc; cursor: not-allowed; }
+  .error-msg { font-size: 15px; color: #5c636e; line-height: 1.8; margin-top: 8px; }
+  .muted { font-size: 13px; color: #8a919c; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f26b1d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  </div>
+  <p>載入中…</p>
+</div>
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get("o") || "";
+  var card = document.getElementById("card");
+
+  function setCard(html) { card.innerHTML = html; }
+
+  function renderError() {
+    setCard(
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#e0a800" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>' +
+      '<p class="error-msg">此付款連結無法使用或已失效</p>'
+    );
+  }
+
+  function doCheckout() {
+    var btn = document.getElementById("pay-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "處理中…"; }
+
+    fetch("/api/store-pay/public/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ o: token })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok || !d.action || !d.fields) { renderError(); return; }
+
+        var actionUrl;
+        try { actionUrl = new URL(d.action, window.location.origin); } catch (_) { renderError(); return; }
+        var allowedHosts = ["api.payuni.com.tw", "sandbox-api.payuni.com.tw"];
+        if (actionUrl.protocol !== "https:" || allowedHosts.indexOf(actionUrl.hostname) === -1) { renderError(); return; }
+
+        var form = document.createElement("form");
+        form.method = "POST";
+        form.action = actionUrl.toString();
+
+        var fields = d.fields;
+        var keys = Object.keys(fields);
+        for (var i = 0; i < keys.length; i++) {
+          var input = document.createElement("input");
+          input.type = "hidden";
+          input.name = keys[i];
+          input.value = String(fields[keys[i]]);
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      })
+      .catch(renderError);
+  }
+
+  function renderOrder(d) {
+    var storeName = document.createElement("p");
+    storeName.className = "store-name";
+    storeName.textContent = d.storeName;
+
+    var icon = document.createElement("div");
+    icon.className = "icon";
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#1a9e6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>';
+
+    var h1 = document.createElement("h1");
+    h1.textContent = d.title;
+
+    var amt = document.createElement("div");
+    amt.className = "amount";
+    var currency = (d.currency === "TWD" || d.currency === "NTD") ? "NT$" : d.currency + " ";
+    amt.textContent = currency + Number(d.amount).toLocaleString();
+
+    var btn = document.createElement("button");
+    btn.id = "pay-btn";
+    btn.className = "btn";
+    btn.textContent = "前往付款";
+    btn.type = "button";
+
+    var muted = document.createElement("p");
+    muted.className = "muted";
+    muted.textContent = "點擊後將轉跳至安全付款頁面";
+
+    card.innerHTML = "";
+    card.appendChild(icon);
+    card.appendChild(storeName);
+    card.appendChild(h1);
+    card.appendChild(amt);
+    card.appendChild(btn);
+    card.appendChild(muted);
+
+    btn.addEventListener("click", doCheckout);
+  }
+
+  if (!token) { renderError(); return; }
+
+  fetch("/api/store-pay/public/order?o=" + encodeURIComponent(token))
+    .then(function (r) {
+      if (!r.ok) { renderError(); return null; }
+      return r.json();
+    })
+    .then(function (d) {
+      if (!d) return;
+      if (!d.ok) { renderError(); return; }
+      renderOrder(d);
+    })
+    .catch(renderError);
+})();
+</script>
+</body>
+</html>
