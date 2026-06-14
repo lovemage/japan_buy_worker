@@ -17,37 +17,56 @@
 <meta name="twitter:image" content="https://vovosnap.com/assets/images/og-image.png" />
 <link rel="icon" type="image/png" href="/assets/images/logo-icon-64.png" />
 <link rel="canonical" href="https://vovosnap.com/guide/payuni-setup/" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
 <style>
 :root {
-  --brand: #8A9A5B;
-  --brand-light: #EEF1E6;
-  --brand-dark: #768a4a;
-  --accent: #9E5F38;
-  --text: #3D3A35;
-  --text-secondary: #7A756D;
-  --text-muted: #A09A90;
-  --bg: #F9F7F1;
-  --bg-alt: #F3F0E8;
-  --bg-card: #FFFEFA;
-  --border: #E5E0D6;
-  --success: #8A9A5B;
-  --radius: 12px;
+  /* 對齊首頁設計語彙：米杏暖底 + 品牌蜜橘 */
+  --brand: #e86b2c;        /* 品牌蜜橘：CTA、強調 */
+  --brand-light: #fbeadc;  /* 橘色淡底 */
+  --brand-dark: #c9531a;   /* hover */
+  --accent: #9E5F38;        /* 暖棕：警示用 */
+  --text: #322d27;          /* 主文字 */
+  --text-secondary: #6f655a;/* 次文字 */
+  --text-muted: #a3978a;    /* 弱文字、裝飾 */
+  --bg: #faf6ef;            /* 米杏主底 */
+  --bg-alt: #f4ecdf;        /* 深一階米杏 */
+  --bg-card: #fffdf9;       /* 暖白卡片 */
+  --blush: #f7e7da;         /* 蜜桃粉底面 */
+  --border: #e9ddcb;        /* 邊線 */
+  --success: #4c7e5b;
+  --radius: 16px;
+  --shadow: 0 10px 30px rgba(86, 62, 36, 0.08);
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; }
+body { font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
 
-/* Nav */
-.nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,241,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-.nav-inner { max-width: 720px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-.nav-logo { font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
-.nav-logo span { color: var(--brand); }
-.nav-actions { display: flex; gap: 8px; align-items: center; }
-.nav-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
-.nav-link:hover { background: var(--bg-alt); color: var(--text); }
-.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }
-.btn-fill { background: var(--brand); color: #fff; }
-.btn-fill:hover { background: var(--brand-dark); }
+/* Buttons（沿用首頁膠囊樣式）*/
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700;
+       border-radius: 999px; text-decoration: none; cursor: pointer; border: none; white-space: nowrap;
+       font-family: inherit; letter-spacing: .04em;
+       transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out), color .2s var(--ease-out), border-color .2s var(--ease-out); }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--brand); color: #fff; box-shadow: 0 8px 20px rgba(232,107,44,.28); }
+.btn-primary:hover { background: var(--brand-dark); transform: translateY(-2px); box-shadow: 0 12px 26px rgba(232,107,44,.34); }
+.btn-ghost { background: transparent; color: var(--brand-dark); border: 1.5px solid rgba(232,107,44,.55); }
+.btn-ghost:hover { border-color: var(--brand); background: var(--brand-light); }
+.btn-sm { padding: 9px 18px; font-size: 13px; }
+
+/* Nav（對齊首頁）*/
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(250,246,239,.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 720px; margin: 0 auto; padding: 0 20px; height: 66px; display: flex; align-items: center; gap: 28px; }
+.nav-logo { display: flex; align-items: center; gap: 10px; font-family: "Noto Serif TC", serif; font-weight: 700; font-size: 17px; letter-spacing: .06em; text-decoration: none; color: var(--text); }
+.nav-logo img { width: 34px; height: 34px; border-radius: 50%; }
+.nav-logo span { white-space: nowrap; }
+.nav-links { display: flex; gap: 22px; margin-left: auto; }
+.nav-links a { font-size: 14px; font-weight: 500; letter-spacing: .08em; color: var(--text-secondary); text-decoration: none; transition: color .2s; }
+.nav-links a:hover { color: var(--brand-dark); }
+.nav-actions { display: flex; gap: 10px; }
+@media (max-width: 640px) { .nav-links { display: none; } .nav-inner { gap: 12px; } }
 
 /* Article */
 .article-wrapper { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
@@ -57,13 +76,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .article-breadcrumb a:hover { color: var(--brand); }
 
 .article-header { margin-bottom: 40px; }
-.article-header h1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--text); }
+.article-header h1 { font-family: 'Noto Serif TC', serif; font-size: 33px; font-weight: 700; line-height: 1.45; letter-spacing: .04em; margin-bottom: 16px; color: var(--text); }
 .article-header .lead { font-size: 17px; line-height: 1.8; color: var(--text-secondary); }
 .article-date { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
 
 /* Content */
-.article-content h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); color: var(--text); letter-spacing: -0.3px; }
-.article-content h3 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; color: var(--text); }
+.article-content h2 { font-family: 'Noto Serif TC', serif; font-size: 25px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-light); color: var(--text); letter-spacing: .04em; }
+.article-content h3 { font-family: 'Noto Serif TC', serif; font-size: 19px; font-weight: 700; letter-spacing: .03em; margin: 32px 0 12px; color: var(--text); }
 .article-content p { font-size: 16px; line-height: 1.9; margin-bottom: 16px; color: var(--text); }
 .article-content ul, .article-content ol { margin: 12px 0 20px 24px; }
 .article-content li { font-size: 16px; line-height: 1.8; margin-bottom: 8px; color: var(--text); }
@@ -93,7 +112,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 20px 0 32px; }
 
 /* Step card */
-.step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; }
+.step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 20px 0; box-shadow: var(--shadow); }
 .step-card .step-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--brand); color: #fff; border-radius: 50%; font-size: 14px; font-weight: 700; margin-right: 10px; flex-shrink: 0; }
 .step-card .step-title { font-size: 17px; font-weight: 700; display: inline; }
 .step-card p { margin-top: 10px; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
@@ -113,15 +132,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .fee-note { font-size: 13px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
 
 /* CTA */
-.cta-box { background: linear-gradient(135deg, var(--brand-light) 0%, #F5F0E6 100%); border: 1.5px solid var(--brand); border-radius: var(--radius); padding: 32px; margin: 40px 0; text-align: center; }
-.cta-box h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 8px; color: var(--text); }
-.cta-box p { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
-.cta-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none; background: var(--brand); color: #fff; border: none; cursor: pointer; transition: all 0.2s; }
+.cta-box { background: linear-gradient(180deg, var(--bg) 0%, var(--blush) 100%); border: 1.5px solid rgba(232,107,44,.5); border-radius: var(--radius); padding: 36px 32px; margin: 40px 0; text-align: center; box-shadow: var(--shadow); }
+.cta-box h3 { font-family: 'Noto Serif TC', serif; font-size: 23px; font-weight: 700; letter-spacing: .04em; margin-bottom: 8px; color: var(--text); }
+.cta-box p { font-size: 15px; color: var(--text-secondary); margin-bottom: 22px; }
+.cta-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 36px; border-radius: 999px; font-size: 16px; font-weight: 700; letter-spacing: .04em; text-decoration: none; background: var(--brand); color: #fff; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(232,107,44,.28); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out); }
 .article-content .cta-btn { color: #fff; text-decoration: none; }
-.cta-btn:hover { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(138,154,91,0.3); }
+.cta-btn:hover { background: var(--brand-dark); transform: translateY(-2px); box-shadow: 0 12px 26px rgba(232,107,44,.34); }
 
 /* TOC */
-.toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 0 0 40px; }
+.toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 0 0 40px; box-shadow: var(--shadow); }
 .toc h4 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
 .toc ol { margin: 0; padding-left: 20px; }
 .toc li { font-size: 14px; line-height: 1.8; }
@@ -142,10 +161,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .related-list a { font-size: 15px; color: var(--text); text-decoration: none; font-weight: 500; }
 .related-list a:hover { color: var(--brand); }
 
-/* Footer */
-.footer { text-align: center; padding: 24px 20px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
-.footer a { color: var(--text-secondary); text-decoration: none; }
-.footer a:hover { color: var(--brand); }
+/* Footer（對齊首頁）*/
+.footer { background: var(--bg-alt); border-top: 1px solid var(--border); padding: 52px 0 30px; }
+.footer-inner { max-width: 720px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.footer-inner p { color: var(--text-secondary); font-size: 14px; margin-top: 6px; }
+.footer-inner nav { display: flex; gap: 18px; }
+.footer-inner nav a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+.footer-inner nav a:hover { color: var(--brand-dark); }
+.footer-meta { max-width: 720px; margin: 26px auto 0; padding: 0 20px; text-align: center; color: var(--text-muted); font-size: 12px; line-height: 1.9; }
+.footer-meta a { color: var(--text-secondary); text-decoration: none; }
+.footer-meta a:hover { color: var(--brand-dark); }
 </style>
 
 <!-- JSON-LD: HowTo -->
@@ -224,15 +249,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <body>
 
 <!-- Nav -->
-<nav class="nav">
+<header class="nav">
   <div class="nav-inner">
-    <a href="/" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;"><img src="/assets/images/logo-icon.webp" alt="我拍 VOVOSnap" style="width:38px;height:38px;border-radius:50%;" /><span style="font-family:'Noto Serif TC',serif;font-weight:700;font-size:16px;letter-spacing:.04em;color:#322d27;">我拍｜開店平台</span></a>
+    <a href="/" class="nav-logo"><img src="/assets/images/logo-icon.webp" alt="我拍 VOVOSnap" /><span>我拍｜開店平台</span></a>
+    <nav class="nav-links">
+      <a href="/#features">功能</a>
+      <a href="/#pricing">方案價格</a>
+      <a href="/blog/">教學資源</a>
+    </nav>
     <div class="nav-actions">
-      <a href="/blog/" class="nav-link">代購教學</a>
-      <a href="/" class="btn-sm btn-fill">免費開店</a>
+      <a href="/login.html" class="btn btn-ghost btn-sm">登入</a>
+      <a href="/login.html" class="btn btn-primary btn-sm">免費開店</a>
     </div>
   </div>
-</nav>
+</header>
 
 <article class="article-wrapper">
 
@@ -538,13 +568,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <!-- Footer -->
 <footer class="footer">
-  <a href="/"><img src="/assets/images/logo-full.webp" alt="我拍｜開店平台 vovosnap.com" style="width:160px;height:auto;margin-bottom:10px;" /></a><br>
-  <a href="/privacy.html">隱私權政策</a>
-  &nbsp;
-  <a href="/terms.html">服務條款</a>
-  <p style="margin-top:8px;">聯絡信箱：<a href="mailto:info@vovosnap.com">info@vovosnap.com</a></p>
-  <p>卉田國際有限公司｜統一編號：91093506</p>
-  <p style="margin-top:8px;">&copy; 2026 vovosnap</p>
+  <div class="footer-inner">
+    <div>
+      <a href="/"><img src="/assets/images/logo-full.webp" alt="我拍｜開店平台 vovosnap.com" width="180" style="width:180px;height:auto;margin-bottom:14px;display:block;" /></a>
+      <p>拍照上傳，AI 自動上架，把時間還給你。</p>
+    </div>
+    <nav>
+      <a href="/terms.html">服務條款</a>
+      <a href="/privacy.html">隱私權政策</a>
+      <a href="/blog/">教學資源</a>
+    </nav>
+  </div>
+  <div class="footer-meta">
+    <p>聯絡信箱：<a href="mailto:info@vovosnap.com">info@vovosnap.com</a>｜卉田國際有限公司｜統一編號：91093506</p>
+    <p>&copy; 2026 VOVOSnap. All rights reserved.</p>
+  </div>
 </footer>
 
 </body>

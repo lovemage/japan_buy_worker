@@ -2130,12 +2130,23 @@
         urlInput.value = pair[1] || "";
         urlInput.style.flex = "1";
         urlInput.addEventListener("focus", function () { urlInput.select(); });
+        var copyIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        var checkIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
         var copyBtn = document.createElement("button");
         copyBtn.type = "button";
         copyBtn.className = "button secondary";
-        copyBtn.textContent = "複製";
+        copyBtn.title = "複製";
+        copyBtn.setAttribute("aria-label", "複製");
+        copyBtn.innerHTML = copyIcon;
+        copyBtn.style.flexShrink = "0";
+        copyBtn.style.minWidth = "0";
+        copyBtn.style.padding = "8px 10px";
+        copyBtn.style.display = "inline-flex";
+        copyBtn.style.alignItems = "center";
+        copyBtn.style.justifyContent = "center";
+        copyBtn.style.lineHeight = "0";
         copyBtn.addEventListener("click", function () {
-          var done = function () { copyBtn.textContent = "已複製"; setTimeout(function () { copyBtn.textContent = "複製"; }, 1500); };
+          var done = function () { copyBtn.innerHTML = checkIcon; setTimeout(function () { copyBtn.innerHTML = copyIcon; }, 1500); };
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(urlInput.value).then(done).catch(function () { urlInput.select(); });
           } else { urlInput.select(); }
