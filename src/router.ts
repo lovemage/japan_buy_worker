@@ -642,7 +642,7 @@ export async function routeTenantRequest(
     return serveTenantHtml(request, ctx, "admin.html", assets);
   }
   if (subPath === "/admin-login.html") {
-    return serveTenantHtml(request, ctx, "admin-login.html", assets);
+    return serveTenantHtml(request, ctx, "login.html", assets);
   }
   if (subPath === "/" || subPath === "/index.html") {
     return serveTenantHtml(request, ctx, "store.html", assets);
