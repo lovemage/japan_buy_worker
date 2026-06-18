@@ -1302,7 +1302,8 @@
     });
   }
 
-  var storeCanChangeSlugOnce = false;
+  var storeCanChangeSlug = false;
+  var currentStoreSlug = "";
 
   // Store info load
   (function() {
@@ -1312,16 +1313,22 @@
         var nameInput = document.getElementById("store-display-name");
         if (nameInput) nameInput.value = d.store.name || "";
         var slugInput = document.getElementById("store-slug-edit");
-        if (slugInput) slugInput.value = d.store.slug || "";
+        currentStoreSlug = d.store.slug || "";
+        if (slugInput) slugInput.value = currentStoreSlug;
         var descInput = document.getElementById("store-description");
         if (descInput) descInput.value = d.store.description || "";
         var emailEl = document.getElementById("member-email");
         if (emailEl) emailEl.textContent = d.store.owner_email || "";
-        storeCanChangeSlugOnce = !!d.store.can_change_slug_once;
+        storeCanChangeSlug = !!(d.store.can_change_slug || d.store.can_change_slug_once);
         var slugMeta = document.getElementById("store-slug-meta");
-        if (!storeCanChangeSlugOnce) {
+        var slugLimit = Number(d.store.slug_change_limit || 0);
+        var slugUsed = Number(d.store.slug_change_used || 0);
+        if (slugMeta) slugMeta.textContent = slugLimit > 0 ? (slugUsed + "/" + slugLimit) : "";
+        if (!storeCanChangeSlug) {
           if (slugInput) { slugInput.disabled = true; slugInput.style.opacity = "0.5"; }
-          if (slugMeta) slugMeta.textContent = d.store.effective_plan !== "proplus" ? "需升級 Pro+ 方案才可修改" : "已使用修改機會";
+        } else if (slugInput) {
+          slugInput.disabled = false;
+          slugInput.style.opacity = "1";
         }
         var expiresEl = document.getElementById("plan-expires");
         if (expiresEl && d.store.plan_expires_at) {
@@ -1355,7 +1362,7 @@
       // If slug can be changed and user modified it, save slug too
       var slugInput = document.getElementById("store-slug-edit");
       var newSlug = slugInput ? slugInput.value.trim() : "";
-      if (storeCanChangeSlugOnce && newSlug && newSlug.length >= 3) {
+      if (storeCanChangeSlug && newSlug && newSlug.length >= 3 && newSlug !== currentStoreSlug) {
         apiFetch("/api/admin/store-slug", {
           method: "POST",
           headers: { "content-type": "application/json" },

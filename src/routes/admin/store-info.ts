@@ -1,5 +1,5 @@
 import type { RequestContext } from "../../context";
-import { normalizeSlug, getSlugValidationError, canChangeSlugOnceForPro } from "../../shared/slug-rules.js";
+import { normalizeSlug, getSlugValidationError, canChangeSlug, getSlugChangeUsage } from "../../shared/slug-rules.js";
 import { getGeminiApiKey } from "./settings";
 import { parseDisplaySettings, sanitizeDisplaySettingsPatch } from "../../shared/display-settings.js";
 
@@ -37,15 +37,20 @@ export async function handleStoreInfo(
 
     const countryConf = COUNTRY_CONFIG[store.destination_country] || COUNTRY_CONFIG["tw"];
 
+    const slugUsage = getSlugChangeUsage({
+      effectivePlan: ctx.storePlan,
+      slugChangeUsed: store.slug_change_used,
+    });
+
     return json({
       ok: true,
       store: {
         ...store,
         effective_plan: ctx.storePlan,
-        can_change_slug_once: canChangeSlugOnceForPro({
-          effectivePlan: ctx.storePlan,
-          slugChangeUsed: store.slug_change_used,
-        }),
+        can_change_slug: slugUsage.remaining > 0,
+        can_change_slug_once: slugUsage.remaining > 0,
+        slug_change_limit: slugUsage.limit,
+        slug_changes_remaining: slugUsage.remaining,
         countryConfig: countryConf,
       },
       countries: Object.entries(COUNTRY_CONFIG).map(([code, conf]) => ({
@@ -168,17 +173,10 @@ export async function handleStoreSlugUpdate(
   if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
 
   const store = await ctx.db
-    .prepare("SELECT slug_change_used FROM stores WHERE id = ?")
+    .prepare("SELECT slug, slug_change_used FROM stores WHERE id = ?")
     .bind(ctx.storeId)
-    .first<{ slug_change_used: number }>();
+    .first<{ slug: string; slug_change_used: number }>();
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
-
-  if (!canChangeSlugOnceForPro({ effectivePlan: ctx.storePlan, slugChangeUsed: store.slug_change_used })) {
-    const error = ctx.storePlan === "proplus"
-      ? "Pro+ members can change slug only once"
-      : "Upgrade to Pro+ to change slug";
-    return json({ ok: false, error }, 403);
-  }
 
   let body: { slug?: string };
   try {
@@ -191,6 +189,29 @@ export async function handleStoreSlugUpdate(
   const slugError = getSlugValidationError(slug);
   if (slugError) return json({ ok: false, error: slugError }, 400);
 
+  if (slug === store.slug) {
+    const usage = getSlugChangeUsage({ effectivePlan: ctx.storePlan, slugChangeUsed: store.slug_change_used });
+    return json({
+      ok: true,
+      slug,
+      slug_change_used: usage.used,
+      slug_change_limit: usage.limit,
+      slug_changes_remaining: usage.remaining,
+      redirectUrl: `/s/${slug}/admin`,
+    });
+  }
+
+  if (!canChangeSlug({ effectivePlan: ctx.storePlan, slugChangeUsed: store.slug_change_used })) {
+    const usage = getSlugChangeUsage({ effectivePlan: ctx.storePlan, slugChangeUsed: store.slug_change_used });
+    return json({
+      ok: false,
+      error: usage.limit > 0 ? "Slug change limit reached" : "Upgrade to Pro to change slug",
+      slug_change_used: usage.used,
+      slug_change_limit: usage.limit,
+      slug_changes_remaining: usage.remaining,
+    }, 403);
+  }
+
   const existing = await ctx.db
     .prepare("SELECT id FROM stores WHERE slug = ? AND id != ?")
     .bind(slug, ctx.storeId)
@@ -200,13 +221,21 @@ export async function handleStoreSlugUpdate(
   }
 
   await ctx.db
-    .prepare("UPDATE stores SET slug = ?, subdomain = ?, slug_change_used = 1, updated_at = datetime('now') WHERE id = ?")
+    .prepare("UPDATE stores SET slug = ?, subdomain = ?, slug_change_used = slug_change_used + 1, updated_at = datetime('now') WHERE id = ?")
     .bind(slug, slug, ctx.storeId)
     .run();
+
+  const usage = getSlugChangeUsage({
+    effectivePlan: ctx.storePlan,
+    slugChangeUsed: store.slug_change_used + 1,
+  });
 
   return json({
     ok: true,
     slug,
+    slug_change_used: usage.used,
+    slug_change_limit: usage.limit,
+    slug_changes_remaining: usage.remaining,
     redirectUrl: `/s/${slug}/admin`,
   });
 }

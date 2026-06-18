@@ -29,8 +29,31 @@ export function getSlugValidationError(value) {
   return "";
 }
 
+export function getSlugChangeLimit(effectivePlan) {
+  if (effectivePlan === "proplus") return 3;
+  if (effectivePlan === "pro") return 1;
+  return 0;
+}
+
+export function getSlugChangeUsage(options) {
+  const effectivePlan = options?.effectivePlan || "free";
+  const slugChangeUsed = Math.max(0, Number(options?.slugChangeUsed || 0));
+  const limit = getSlugChangeLimit(effectivePlan);
+  const remaining = Math.max(0, limit - slugChangeUsed);
+  return { limit, used: slugChangeUsed, remaining };
+}
+
+export function canChangeSlug(options) {
+  const usage = getSlugChangeUsage(options);
+  return usage.remaining > 0;
+}
+
 export function canChangeSlugOnceForPro(options) {
+  return canChangeSlug(options);
+}
+
+export function canChangeSlugWithinPlanLimit(options) {
   const effectivePlan = options?.effectivePlan || "free";
   const slugChangeUsed = Number(options?.slugChangeUsed || 0);
-  return effectivePlan === "proplus" && slugChangeUsed === 0;
+  return canChangeSlug({ effectivePlan, slugChangeUsed });
 }
