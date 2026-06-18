@@ -1,5 +1,6 @@
 import type { D1DatabaseLike } from "../types/d1";
 import { DEFAULT_PLAN_OFFERS, getPlanOfferByMonths } from "../shared/plan-offers.js";
+import { computeUpgradeQuote } from "../shared/billing-logic.js";
 import { getEffectivePlan } from "../context";
 import { parseDisplaySettings, sanitizeDisplaySettingsPatch, canManageStoreLogo } from "../shared/display-settings.js";
 
@@ -216,42 +217,51 @@ export async function handlePlatformAdmin(
     }
 
     const store = await db
-      .prepare("SELECT plan, plan_expires_at, plan_paid_amount, plan_started_at FROM stores WHERE id = ?")
+      .prepare("SELECT plan, plan_expires_at, plan_paid_amount, plan_started_at, plan_paid_days, plan_bonus_days, needs_billing_review FROM stores WHERE id = ?")
       .bind(storeId)
-      .first<{ plan: string; plan_expires_at: string | null; plan_paid_amount: number | null; plan_started_at: string | null }>();
+      .first<{ plan: string; plan_expires_at: string | null; plan_paid_amount: number | null; plan_started_at: string | null; plan_paid_days: number | null; plan_bonus_days: number | null; needs_billing_review: number | null }>();
     if (!store) return json({ ok: false, error: "Store not found" }, 404);
 
     const newOffer = getPlanOfferByMonths(body.newPlan, body.newMonths, DEFAULT_PLAN_OFFERS);
     if (!newOffer) return json({ ok: false, error: "Invalid new plan/months" }, 400);
 
-    // Calculate remaining value from current plan
-    let remainingValue = 0;
-    if (store.plan_paid_amount && store.plan_paid_amount > 0 && store.plan_started_at && store.plan_expires_at) {
-      const started = new Date(store.plan_started_at).getTime();
-      const expires = new Date(store.plan_expires_at).getTime();
-      const now = Date.now();
-      const totalDays = (expires - started) / 86400_000;
-      const remainingDays = Math.max(0, (expires - now) / 86400_000);
-      if (totalDays > 0 && remainingDays > 0) {
-        const dailyRate = store.plan_paid_amount / totalDays;
-        remainingValue = Math.round(dailyRate * remainingDays);
-      }
+    // 無法唯一判定折抵基準的店家 → 導客服人工處理，不自助折抵
+    if (store.needs_billing_review) {
+      return json({ ok: false, error: "CONTACT_SUPPORT", needsBillingReview: true });
     }
 
-    const newAmount = newOffer.amount;
-    const difference = Math.max(0, newAmount - remainingValue);
+    const quote = computeUpgradeQuote({
+      current: {
+        plan: store.plan,
+        paidAmount: store.plan_paid_amount || 0,
+        paidDays: store.plan_paid_days || 0,
+        bonusDays: store.plan_bonus_days || 0,
+        expiresAt: store.plan_expires_at,
+      },
+      newOffer,
+      now: new Date(),
+    });
+
+    // 折抵基準資料腐化 / 日期無效 / paidDays<=0 → 不輸出可付款報價，導客服（Codex High #3）
+    if (!quote.valid) {
+      return json({ ok: false, error: "CONTACT_SUPPORT", needsBillingReview: true });
+    }
 
     return json({
       ok: true,
       currentPlan: store.plan,
       currentPaidAmount: store.plan_paid_amount || 0,
       currentExpiresAt: store.plan_expires_at,
-      remainingValue,
+      remainingValue: quote.creditableValue, // 沿用舊鍵名供既有前端
+      creditableValue: quote.creditableValue,
       newPlan: body.newPlan,
       newMonths: body.newMonths,
-      newAmount,
+      newAmount: quote.listAmount,
       newDays: newOffer.days,
-      difference,
+      difference: quote.difference,
+      surplusValue: quote.surplusValue,
+      extraPaidDays: quote.extraPaidDays,
+      newExpiresAt: quote.newExpiresAt,
     });
   }
 
