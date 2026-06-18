@@ -173,6 +173,24 @@ function getAuthEnv(env: Env) {
   };
 }
 
+function redirectAuthStartToAppUrl(request: Request, appUrl: string): Response | null {
+  const currentUrl = new URL(request.url);
+  const appBaseUrl = new URL(appUrl);
+  if (currentUrl.origin === appBaseUrl.origin) return null;
+
+  const redirectUrl = new URL(currentUrl.pathname + currentUrl.search, appBaseUrl);
+  return Response.redirect(redirectUrl.toString(), 302);
+}
+
+function isTenantOwnerPath(pathname: string): boolean {
+  return pathname === "/admin" ||
+    pathname === "/admin.html" ||
+    pathname === "/admin-login.html" ||
+    pathname === "/admin/crawl" ||
+    pathname.startsWith("/api/admin/") ||
+    pathname.startsWith("/api/store-pay/");
+}
+
 function getCrawlEnv(env: Env) {
   return {
     CLOUDFLARE_ACCOUNT_ID: env.CLOUDFLARE_ACCOUNT_ID,
@@ -374,13 +392,19 @@ export default {
 
     // ── Auth routes (platform-level, not tenant-scoped) ──
     if (url.pathname === "/auth/google") {
-      return handleGoogleAuthRedirect(getAuthEnv(env));
+      const authEnv = getAuthEnv(env);
+      const canonicalRedirect = redirectAuthStartToAppUrl(request, authEnv.APP_URL);
+      if (canonicalRedirect) return canonicalRedirect;
+      return handleGoogleAuthRedirect(authEnv);
     }
     if (url.pathname === "/auth/google/callback") {
       return handleGoogleAuthCallback(request, env.DB, getAuthEnv(env));
     }
     if (url.pathname === "/auth/line") {
-      return handleLineAuthRedirect(getAuthEnv(env));
+      const authEnv = getAuthEnv(env);
+      const canonicalRedirect = redirectAuthStartToAppUrl(request, authEnv.APP_URL);
+      if (canonicalRedirect) return canonicalRedirect;
+      return handleLineAuthRedirect(authEnv);
     }
     if (url.pathname === "/auth/line/callback") {
       return handleLineAuthCallback(request, env.DB, getAuthEnv(env));
@@ -421,6 +445,12 @@ export default {
       const store = await resolveStoreBySubdomain(env.DB, slug);
       if (!store || !store.is_active) {
         return json({ ok: false, error: "Store not found" }, 404);
+      }
+      if (isTenantOwnerPath(url.pathname)) {
+        const redirectUrl = new URL(request.url);
+        redirectUrl.hostname = mainDomain;
+        redirectUrl.pathname = `/s/${store.slug}${url.pathname}`;
+        return Response.redirect(redirectUrl.toString(), 302);
       }
       if (getEffectivePlan(store) !== "proplus") {
         const redirectUrl = new URL(request.url);
