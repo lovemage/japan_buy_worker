@@ -174,7 +174,10 @@ export async function handleStoreSlugUpdate(
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
 
   if (!canChangeSlugOnceForPro({ effectivePlan: ctx.storePlan, slugChangeUsed: store.slug_change_used })) {
-    return json({ ok: false, error: "Pro members can change slug only once" }, 403);
+    const error = ctx.storePlan === "proplus"
+      ? "Pro+ members can change slug only once"
+      : "Upgrade to Pro+ to change slug";
+    return json({ ok: false, error }, 403);
   }
 
   let body: { slug?: string };

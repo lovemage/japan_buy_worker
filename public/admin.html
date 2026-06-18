@@ -1321,7 +1321,7 @@
         var slugMeta = document.getElementById("store-slug-meta");
         if (!storeCanChangeSlugOnce) {
           if (slugInput) { slugInput.disabled = true; slugInput.style.opacity = "0.5"; }
-          if (slugMeta) slugMeta.textContent = d.store.effective_plan !== "pro" ? "需升級 Pro 方案才可修改" : "已使用修改機會";
+          if (slugMeta) slugMeta.textContent = d.store.effective_plan !== "proplus" ? "需升級 Pro+ 方案才可修改" : "已使用修改機會";
         }
         var expiresEl = document.getElementById("plan-expires");
         if (expiresEl && d.store.plan_expires_at) {
