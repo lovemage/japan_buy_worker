@@ -23,6 +23,9 @@ type FormRow = {
   requires_ezway: number | null;
   notes: string | null;
   status: string;
+  payment_status: string | null;
+  payment_public_token: string | null;
+  payment_paid_at: string | null;
   created_at: string;
 };
 
@@ -265,6 +268,9 @@ SELECT
   requires_ezway,
   notes,
   status,
+  (SELECT spo.status FROM store_payment_orders spo WHERE spo.requirement_form_id = requirement_forms.id ORDER BY spo.id DESC LIMIT 1) AS payment_status,
+  (SELECT spo.public_token FROM store_payment_orders spo WHERE spo.requirement_form_id = requirement_forms.id ORDER BY spo.id DESC LIMIT 1) AS payment_public_token,
+  (SELECT spo.paid_at FROM store_payment_orders spo WHERE spo.requirement_form_id = requirement_forms.id ORDER BY spo.id DESC LIMIT 1) AS payment_paid_at,
   created_at
 FROM requirement_forms
 WHERE store_id = ?
@@ -342,6 +348,9 @@ ORDER BY ri.id DESC
         requiresEzway: Number(form.requires_ezway || 0) === 1,
         notes: form.notes || "",
         status: form.status,
+        paymentStatus: form.payment_status || null,
+        paymentPublicToken: form.payment_public_token || null,
+        paymentPaidAt: form.payment_paid_at || null,
         createdAt: form.created_at,
         items: (itemMap.get(form.id) || []).map((item) => ({
           id: item.id,

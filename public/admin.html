@@ -1978,6 +1978,8 @@
     var effectiveEnabled = !!cfg.effectiveEnabled;
     var isSandbox = !!cfg.isSandbox;
     var isEnabled = !!cfg.isEnabled;
+    var directCheckoutEnabled = !!cfg.directCheckoutEnabled;
+    var directCheckoutAvailable = !!cfg.directCheckoutAvailable;
     var merIdPlaceholder = cfg.merIdLast4 ? "已設定（末四碼 " + escHtml(cfg.merIdLast4) + "）" : "未設定";
     var keyPlaceholder = cfg.hashKeySet ? "已設定" : "未設定";
     var ivPlaceholder = cfg.hashIvSet ? "已設定" : "未設定";
@@ -2029,6 +2031,10 @@
           .then(function (d) {
             if (d.ok) {
               enableText.textContent = "收款已開啟";
+              var directChkNow = document.getElementById("payment-direct-checkout-toggle");
+              var directTextNow = document.getElementById("payment-direct-checkout-label");
+              if (directChkNow) directChkNow.disabled = false;
+              if (directTextNow) directTextNow.textContent = directChkNow && directChkNow.checked ? "下單後直接前往付款" : "下單後先人工核對";
             } else {
               enableChk.checked = false;
               enableText.textContent = d.error || "開啟失敗，請先測試連線";
@@ -2077,6 +2083,33 @@
     group.appendChild(sandboxWrap);
     sandboxChk.addEventListener("change", function () {
       sandboxText.textContent = sandboxChk.checked ? "沙盒模式（測試）" : "正式環境";
+    });
+
+    // 下單後直接付款
+    var directWrap = document.createElement("label");
+    directWrap.className = "toggle-label";
+    directWrap.style.marginBottom = "12px";
+    var directToggleLabel = document.createElement("label");
+    directToggleLabel.className = "toggle-switch";
+    var directChk = document.createElement("input");
+    directChk.type = "checkbox";
+    directChk.id = "payment-direct-checkout-toggle";
+    directChk.checked = directCheckoutEnabled;
+    directChk.disabled = !directCheckoutAvailable;
+    var directSlider = document.createElement("span");
+    directSlider.className = "toggle-slider";
+    directToggleLabel.appendChild(directChk);
+    directToggleLabel.appendChild(directSlider);
+    var directText = document.createElement("span");
+    directText.id = "payment-direct-checkout-label";
+    directText.textContent = directCheckoutAvailable
+      ? (directCheckoutEnabled ? "下單後直接前往付款" : "下單後先人工核對")
+      : "收款啟用後才可開啟直接付款";
+    directWrap.appendChild(directToggleLabel);
+    directWrap.appendChild(directText);
+    group.appendChild(directWrap);
+    directChk.addEventListener("change", function () {
+      directText.textContent = directChk.checked ? "下單後直接前往付款" : "下單後先人工核對";
     });
 
     // MER_ID
@@ -2237,8 +2270,10 @@
     var keyInput = document.getElementById("payment-hash-key");
     var ivInput = document.getElementById("payment-hash-iv");
     var sandboxChk = document.getElementById("payment-sandbox-toggle");
+    var directChk = document.getElementById("payment-direct-checkout-toggle");
 
     var body = { isSandbox: sandboxChk ? sandboxChk.checked : undefined };
+    if (directChk) body.directCheckoutEnabled = directChk.checked;
     if (merInput && merInput.value.trim()) body.merId = merInput.value.trim();
     if (keyInput && keyInput.value.trim()) body.hashKey = keyInput.value.trim();
     if (ivInput && ivInput.value.trim()) body.hashIv = ivInput.value.trim();
@@ -2286,6 +2321,17 @@
             var testOk2 = cfg.lastTestStatus === "ok";
             enableChk2.disabled = !testOk2;
             if (enableText2) enableText2.textContent = cfg.isEnabled ? "收款已開啟" : (testOk2 ? "收款已關閉（點擊開啟）" : "需先測試連線成功才可開啟");
+          }
+          var directChk2 = document.getElementById("payment-direct-checkout-toggle");
+          var directText2 = document.getElementById("payment-direct-checkout-label");
+          if (directChk2) {
+            directChk2.checked = !!cfg.directCheckoutEnabled;
+            directChk2.disabled = !cfg.directCheckoutAvailable;
+            if (directText2) {
+              directText2.textContent = cfg.directCheckoutAvailable
+                ? (cfg.directCheckoutEnabled ? "下單後直接前往付款" : "下單後先人工核對")
+                : "收款啟用後才可開啟直接付款";
+            }
           }
         }
       });

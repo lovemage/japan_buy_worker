@@ -1816,6 +1816,26 @@
   white-space: nowrap;
 }
 
+.payment-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-left: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  vertical-align: 2px;
+  background: var(--admin-hover);
+  color: var(--admin-text-secondary);
+}
+
+.payment-status-badge--paid {
+  background: #e8f5ee;
+  color: #14613d;
+}
+
 /* Keep amount input aligned with save button width. */
 .admin-body .admin-adjust-box .input-cute {
   width: 100%;

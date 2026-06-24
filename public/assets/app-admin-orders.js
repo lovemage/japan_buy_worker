@@ -94,6 +94,21 @@ function itemStatusSelectHtml(itemId, current) {
   return `<label class="admin-item-status"><select class="js-item-status-select" data-item-id="${itemId}">${placeholder}${options}</select></label>`;
 }
 
+function paymentBadgeHtml(status) {
+  const value = String(status || "");
+  if (!value) return "";
+  const labelMap = {
+    paid: "已付款",
+    pending: "待付款",
+    failed: "付款未完成",
+    expired: "付款逾期",
+    cancelled: "付款取消",
+  };
+  const label = labelMap[value];
+  if (!label) return "";
+  return `<span class="payment-status-badge payment-status-badge--${value}">${label}</span>`;
+}
+
 function adjustedValue(value) {
   return value === null || value === undefined ? "" : String(value);
 }
@@ -172,7 +187,7 @@ function renderForms(forms) {
     return `
     <article class="admin-form-card" data-status="${form.status}">
       <div class="admin-form-header">
-        <h2 class="product-card__title">訂單 #${displayCode}</h2>
+        <h2 class="product-card__title">訂單 #${displayCode} ${paymentBadgeHtml(form.paymentStatus)}</h2>
         <div class="admin-form-status">${statusSelectHtml(form.id, form.status)}</div>
       </div>
       <p class="meta">建立時間：${new Date(form.createdAt).toLocaleString("zh-TW")}</p>

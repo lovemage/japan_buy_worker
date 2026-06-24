@@ -1,5 +1,13 @@
 import type { RequestContext } from "../../context";
 import type { D1DatabaseLike } from "../../types/d1";
+import {
+  genMerTradeNo,
+  genPublicToken,
+  computeExpiresAt,
+  canUseStoreCollection,
+  computeEffectiveEnabled,
+  parseCanonicalAmount,
+} from "../../shared/store-payment-logic.js";
 
 type RequirementItemInput = {
   productId?: number | null;
@@ -67,12 +75,88 @@ type RequirementFormRow = {
   created_at: string;
 };
 
+type StorePaymentConfigRow = {
+  mer_id_enc: string | null;
+  hash_key_enc: string | null;
+  hash_iv_enc: string | null;
+  is_sandbox: number;
+  is_enabled: number;
+  direct_checkout_enabled: number;
+};
+
 function generateOrderCode(): string {
   const now = new Date();
   const dd = String(now.getDate()).padStart(2, "0");
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const rand = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
   return `${dd}${mm}${rand}`;
+}
+
+function configIsValid(cfg: StorePaymentConfigRow | null | undefined): boolean {
+  return Boolean(cfg?.mer_id_enc && cfg.hash_key_enc && cfg.hash_iv_enc);
+}
+
+function computeRequirementAmountTwd(body: RequirementInput): number | null {
+  const itemsTotal = (body.items || []).reduce((sum, item) => {
+    const subtotal = Number(item.subtotalTwd || 0);
+    return sum + (Number.isFinite(subtotal) && subtotal > 0 ? subtotal : 0);
+  }, 0);
+  const shippingTotal = Number(body.shippingTotalTwd || 0);
+  const total = Math.round(itemsTotal + (Number.isFinite(shippingTotal) && shippingTotal > 0 ? shippingTotal : 0));
+  return parseCanonicalAmount(total);
+}
+
+async function maybeCreateDirectPaymentOrder(
+  ctx: RequestContext,
+  requirementId: number,
+  orderCode: string,
+  body: RequirementInput
+): Promise<string | null> {
+  const cfg = await ctx.db
+    .prepare("SELECT * FROM store_payment_configs WHERE store_id = ?")
+    .bind(ctx.storeId)
+    .first<StorePaymentConfigRow>();
+
+  const paymentEnabled = computeEffectiveEnabled({
+    isEnabled: cfg?.is_enabled === 1,
+    planOk: canUseStoreCollection(ctx.storePlan),
+    configValid: configIsValid(cfg),
+  });
+  if (!paymentEnabled || cfg?.direct_checkout_enabled !== 1) return null;
+
+  const amount = computeRequirementAmountTwd(body);
+  if (amount === null) return null;
+
+  const publicToken = genPublicToken();
+  const merTradeNo = genMerTradeNo();
+  const expiresAt = computeExpiresAt(168);
+  const now = new Date().toISOString();
+  const title = `訂單 #${orderCode || requirementId} 收款`;
+
+  await ctx.db
+    .prepare(
+      `INSERT INTO store_payment_orders
+         (store_id, public_token, mer_trade_no, title, amount, currency,
+          status, is_sandbox, requirement_form_id, expires_at,
+          created_under_plan, plan_valid_until_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'TWD', 'pending', ?, ?, ?, ?, NULL, ?, ?)`
+    )
+    .bind(
+      ctx.storeId,
+      publicToken,
+      merTradeNo,
+      title,
+      amount,
+      cfg.is_sandbox,
+      requirementId,
+      expiresAt,
+      ctx.storePlan,
+      now,
+      now
+    )
+    .run();
+
+  return `${ctx.basePath || ""}/pay?o=${encodeURIComponent(publicToken)}`;
 }
 
 async function generateUniqueOrderCode(db: D1DatabaseLike, storeId: number, maxRetries = 10): Promise<string> {
@@ -301,11 +385,24 @@ INSERT INTO requirement_items (
     }
   }
 
+  let payUrl: string | null = null;
+  try {
+    payUrl = await maybeCreateDirectPaymentOrder(
+      ctx,
+      insertedForm.id,
+      insertedForm.order_code || String(insertedForm.id),
+      body
+    );
+  } catch {
+    payUrl = null;
+  }
+
   return new Response(
     JSON.stringify({
       ok: true,
       requirementId: insertedForm.id,
       orderCode: insertedForm.order_code || String(insertedForm.id),
+      payUrl,
     }),
     { status: 200, headers: { "content-type": "application/json" } }
   );

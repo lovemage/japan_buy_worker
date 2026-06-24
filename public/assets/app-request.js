@@ -744,6 +744,10 @@ async function onSubmit(event) {
 
     clearDraft();
     const code = body.orderCode || String(body.requirementId);
+    if (body.payUrl) {
+      location.href = body.payUrl;
+      return;
+    }
     location.href = `${window.__API_BASE || ""}/success.html?id=${encodeURIComponent(String(body.requirementId))}&code=${encodeURIComponent(code)}`;
   } finally {
     if (submitBtn) {

@@ -61,6 +61,7 @@ type StorePayConfigRow = {
   mer_id_last4: string | null;
   is_sandbox: number;
   is_enabled: number;
+  direct_checkout_enabled: number;
   last_tested_at: string | null;
   last_test_status: string | null;
   created_at: string;
@@ -319,6 +320,8 @@ export async function handleGetStorePayConfig(
         merIdLast4: null,
         isSandbox: false,
         isEnabled: false,
+        directCheckoutEnabled: false,
+        directCheckoutAvailable: false,
         effectiveEnabled: false,
         hashKeySet: false,
         hashIvSet: false,
@@ -345,6 +348,8 @@ export async function handleGetStorePayConfig(
       merIdLast4: cfg.mer_id_last4,
       isSandbox: cfg.is_sandbox === 1,
       isEnabled: cfg.is_enabled === 1,
+      directCheckoutEnabled: cfg.direct_checkout_enabled === 1,
+      directCheckoutAvailable: effEnabled,
       effectiveEnabled: effEnabled,
       // Presence indicators only — never return the ciphertext blobs
       hashKeySet: Boolean(cfg.hash_key_enc),
@@ -373,7 +378,13 @@ export async function handlePutStorePayConfig(
   const plan = effectivePlan(store.plan, store.plan_expires_at);
   if (!canUseStoreCollection(plan)) return json({ ok: false, error: "Forbidden: pro/proplus plan required" }, 403);
 
-  let body: { merId?: string; hashKey?: string; hashIv?: string; isSandbox?: boolean };
+  let body: {
+    merId?: string;
+    hashKey?: string;
+    hashIv?: string;
+    isSandbox?: boolean;
+    directCheckoutEnabled?: boolean;
+  };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -396,6 +407,8 @@ export async function handlePutStorePayConfig(
   const isSandbox = body.isSandbox !== undefined ? (body.isSandbox ? 1 : 0) : null;
 
   const anyCredChange = merId !== null || hashKey !== null || hashIv !== null;
+  const directCheckoutRequested =
+    body.directCheckoutEnabled !== undefined ? (body.directCheckoutEnabled ? 1 : 0) : null;
 
   // Encrypt any provided credential fields
   let merIdEnc: string | null = existing?.mer_id_enc ?? null;
@@ -430,19 +443,36 @@ export async function handlePutStorePayConfig(
   const lastTestStatus = anyCredChange ? null : (existing?.last_test_status ?? null);
   const lastTestedAt = anyCredChange ? null : (existing?.last_tested_at ?? null);
   const newSandbox = isSandbox !== null ? isSandbox : (existing?.is_sandbox ?? 0);
+  const configValidAfterSave = Boolean(merIdEnc && hashKeyEnc && hashIvEnc);
+  const directCheckoutEnabled = anyCredChange
+    ? 0
+    : directCheckoutRequested !== null
+      ? directCheckoutRequested
+      : (existing?.direct_checkout_enabled ?? 0);
+
+  if (
+    directCheckoutEnabled === 1 &&
+    !computeEffectiveEnabled({
+      isEnabled: isEnabled === 1,
+      planOk: canUseStoreCollection(plan),
+      configValid: configValidAfterSave,
+    })
+  ) {
+    return json({ ok: false, error: "Enable and test payment collection before direct checkout" }, 400);
+  }
 
   if (!existing) {
     await env.DB
       .prepare(
         `INSERT INTO store_payment_configs
            (store_id, provider, mer_id_enc, hash_key_enc, hash_iv_enc, enc_version,
-            mer_id_last4, is_sandbox, is_enabled, last_tested_at, last_test_status,
+            mer_id_last4, is_sandbox, is_enabled, direct_checkout_enabled, last_tested_at, last_test_status,
             created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         storeId, provider, merIdEnc, hashKeyEnc, hashIvEnc, encVersion,
-        merIdLast4, newSandbox, isEnabled, lastTestedAt, lastTestStatus, now, now
+        merIdLast4, newSandbox, isEnabled, directCheckoutEnabled, lastTestedAt, lastTestStatus, now, now
       )
       .run();
   } else {
@@ -450,13 +480,13 @@ export async function handlePutStorePayConfig(
       .prepare(
         `UPDATE store_payment_configs SET
            mer_id_enc = ?, hash_key_enc = ?, hash_iv_enc = ?, enc_version = ?,
-           mer_id_last4 = ?, is_sandbox = ?, is_enabled = ?,
+           mer_id_last4 = ?, is_sandbox = ?, is_enabled = ?, direct_checkout_enabled = ?,
            last_tested_at = ?, last_test_status = ?, updated_at = ?
          WHERE store_id = ?`
       )
       .bind(
         merIdEnc, hashKeyEnc, hashIvEnc, encVersion,
-        merIdLast4, newSandbox, isEnabled,
+        merIdLast4, newSandbox, isEnabled, directCheckoutEnabled,
         lastTestedAt, lastTestStatus, now,
         storeId
       )
@@ -464,7 +494,7 @@ export async function handlePutStorePayConfig(
   }
 
   // Audit log (redacted — no secrets, no ciphertext)
-  if (anyCredChange || isSandbox !== null) {
+  if (anyCredChange || isSandbox !== null || directCheckoutRequested !== null) {
     await writeAuditLog(env.DB, {
       storeId,
       action: "config_update",
@@ -1032,6 +1062,15 @@ export async function handleStorePayNotify(
         order.id
       )
       .run();
+
+    if (claim?.meta?.changes === 1 && order.requirement_form_id) {
+      await env.DB
+        .prepare(
+          "UPDATE requirement_forms SET status = 'paid', updated_at = datetime('now') WHERE id = ? AND store_id = ? AND status = 'pending'"
+        )
+        .bind(order.requirement_form_id, storeId)
+        .run();
+    }
 
     // changes !== 1 means another concurrent notify already claimed it — that's fine
     return okStop();
