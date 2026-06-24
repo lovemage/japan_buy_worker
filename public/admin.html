@@ -1994,8 +1994,18 @@
     title.textContent = "PAYUNi 線上收款";
     group.appendChild(title);
 
+    var toggleHint = document.createElement("p");
+    toggleHint.id = "payment-toggle-hint";
+    toggleHint.className = "admin-status";
+    toggleHint.style.display = "none";
+    toggleHint.style.marginTop = "0";
+    function showToggleHint(message) {
+      toggleHint.textContent = message;
+      toggleHint.style.display = "block";
+    }
+
     // 啟用開關
-    var enableWrap = document.createElement("label");
+    var enableWrap = document.createElement("div");
     enableWrap.className = "toggle-label";
     enableWrap.style.marginBottom = "8px";
     var toggleLabel = document.createElement("label");
@@ -2015,6 +2025,13 @@
     enableWrap.appendChild(toggleLabel);
     enableWrap.appendChild(enableText);
     group.appendChild(enableWrap);
+    group.appendChild(toggleHint);
+
+    enableWrap.addEventListener("click", function () {
+      if (enableChk.disabled) {
+        showToggleHint("請先完成金鑰設定並測試連線成功，才能開啟收款。");
+      }
+    });
 
     enableChk.addEventListener("change", function () {
       if (enableChk.checked) {
@@ -2024,6 +2041,7 @@
         if (!currentTestOk && !testOk) {
           enableChk.checked = false;
           enableText.textContent = "請先測試連線成功才可開啟收款";
+          showToggleHint("請先完成 PAYUNi 連線測試，再開啟收款。");
           return;
         }
         apiFetch("/api/store-pay/config/enable", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({}) })
@@ -2031,6 +2049,7 @@
           .then(function (d) {
             if (d.ok) {
               enableText.textContent = "收款已開啟";
+              showToggleHint("收款已開啟。若要調整沙盒模式或直接付款，切換後請按「儲存」。");
               var directChkNow = document.getElementById("payment-direct-checkout-toggle");
               var directTextNow = document.getElementById("payment-direct-checkout-label");
               if (directChkNow) directChkNow.disabled = false;
@@ -2038,15 +2057,18 @@
             } else {
               enableChk.checked = false;
               enableText.textContent = d.error || "開啟失敗，請先測試連線";
+              showToggleHint(d.error || "開啟失敗，請先測試連線。");
             }
           }).catch(function () {
             enableChk.checked = false;
             enableText.textContent = "開啟失敗，請稍後重試";
+            showToggleHint("開啟失敗，請稍後重試。");
           });
       } else {
         // 切到 off：後端無 disable 端點，還原開關並說明
         enableChk.checked = true;
         enableText.textContent = "收款已開啟";
+        showToggleHint("目前無法直接關閉收款；如需停用，請更新或清空金鑰後重新測試，或聯繫平台。");
         var disableHint = document.getElementById("payment-disable-hint");
         if (!disableHint) {
           disableHint = document.createElement("p");
@@ -2064,7 +2086,7 @@
     });
 
     // 沙盒/正式切換
-    var sandboxWrap = document.createElement("label");
+    var sandboxWrap = document.createElement("div");
     sandboxWrap.className = "toggle-label";
     sandboxWrap.style.marginBottom = "12px";
     var sandboxToggleLabel = document.createElement("label");
@@ -2083,10 +2105,11 @@
     group.appendChild(sandboxWrap);
     sandboxChk.addEventListener("change", function () {
       sandboxText.textContent = sandboxChk.checked ? "沙盒模式（測試）" : "正式環境";
+      showToggleHint("已切換環境，請按下方「儲存」才會生效。");
     });
 
     // 下單後直接付款
-    var directWrap = document.createElement("label");
+    var directWrap = document.createElement("div");
     directWrap.className = "toggle-label";
     directWrap.style.marginBottom = "12px";
     var directToggleLabel = document.createElement("label");
@@ -2108,8 +2131,14 @@
     directWrap.appendChild(directToggleLabel);
     directWrap.appendChild(directText);
     group.appendChild(directWrap);
+    directWrap.addEventListener("click", function () {
+      if (directChk.disabled) {
+        showToggleHint("需先開啟收款並通過連線測試，才能啟用下單後直接前往付款。");
+      }
+    });
     directChk.addEventListener("change", function () {
       directText.textContent = directChk.checked ? "下單後直接前往付款" : "下單後先人工核對";
+      showToggleHint("已切換下單付款流程，請按下方「儲存」才會生效。");
     });
 
     // MER_ID
@@ -2294,6 +2323,11 @@
       if (!d.ok) {
         if (statusEl) statusEl.textContent = d.error || "儲存失敗";
         return;
+      }
+      var toggleHint = document.getElementById("payment-toggle-hint");
+      if (toggleHint) {
+        toggleHint.textContent = "";
+        toggleHint.style.display = "none";
       }
       if (statusEl) { statusEl.textContent = "已儲存"; setTimeout(function () { if (statusEl) statusEl.style.display = "none"; }, 2000); }
       // 清空已填欄位，重新 fetch config 刷新遮罩狀態

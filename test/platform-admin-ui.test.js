@@ -37,3 +37,22 @@ test("member admin banner section uses an accessible button-based collapse contr
     assert.ok(adminHtml.includes(snippet), `Expected admin banner collapse control to include ${snippet}`);
   }
 });
+
+test("member payment toggles expose clear disabled and pending-save feedback", () => {
+  const requiredSnippets = [
+    'id = "payment-toggle-hint"',
+    '請先完成金鑰設定並測試連線成功，才能開啟收款。',
+    '目前無法直接關閉收款',
+    '已切換環境，請按下方「儲存」才會生效。',
+    '需先開啟收款並通過連線測試，才能啟用下單後直接前往付款。',
+    '已切換下單付款流程，請按下方「儲存」才會生效。',
+  ];
+
+  for (const snippet of requiredSnippets) {
+    assert.ok(adminHtml.includes(snippet), `Expected payment toggle UI to include ${snippet}`);
+  }
+
+  assert.match(adminHtml, /var enableWrap = document\.createElement\("div"\);/);
+  assert.match(adminHtml, /var sandboxWrap = document\.createElement\("div"\);/);
+  assert.match(adminHtml, /var directWrap = document\.createElement\("div"\);/);
+});
