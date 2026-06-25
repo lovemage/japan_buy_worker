@@ -2,11 +2,16 @@ name = "japan-buy-workers"  # TODO: rename to "vovosnap-workers" when ready to d
 main = "src/index.ts"
 compatibility_date = "2026-03-13"
 assets = { directory = "./public", binding = "ASSETS", run_worker_first = true }
+send_email = [{ name = "EMAIL" }]
 
 routes = [
   { pattern = "vovosnap.com/*", zone_name = "vovosnap.com" },
   { pattern = "*.vovosnap.com/*", zone_name = "vovosnap.com" },
 ]
+
+[triggers]
+# 00:15 Asia/Taipei: downgrade expired paid plans and send renewal reminders.
+crons = ["15 16 * * *"]
 
 [vars]
 CRAWL_LIST_PAGES = "100"

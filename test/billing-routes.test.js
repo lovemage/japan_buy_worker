@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 
 const billing = readFileSync(new URL("../src/routes/billing.ts", import.meta.url), "utf8");
 const index = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
+const wrangler = readFileSync(new URL("../wrangler.toml", import.meta.url), "utf8");
+const emailNotifications = readFileSync(new URL("../src/services/email-notifications.ts", import.meta.url), "utf8");
 
 test("billing routes are mounted on the main domain", () => {
   for (const p of [
@@ -45,4 +47,35 @@ test("applyActivation claims the order before extending the store plan (prevents
 
 test("handleBillingOrders scopes queries to the session store", () => {
   assert.ok(billing.includes("WHERE store_id = ?"), "handleBillingOrders must scope by WHERE store_id = ?");
+});
+
+test("paid plan activation sends a transactional membership email", () => {
+  assert.ok(billing.includes("sendPlanActivatedEmail"), "billing activation should call email notification service");
+  assert.ok(emailNotifications.includes('eventType = "plan_activated"'));
+  assert.ok(emailNotifications.includes("我拍會員方案已升級為"));
+});
+
+test("expired paid plans are downgraded and renewal emails run from a scheduled job", () => {
+  assert.ok(wrangler.includes('send_email = [{ name = "EMAIL" }]'), "wrangler must define EMAIL binding");
+  assert.ok(wrangler.includes("crons = ["), "wrangler must define a scheduled trigger");
+  assert.ok(index.includes("runPlanExpiryNotifications"), "scheduled handler must run expiry notification job");
+  assert.ok(emailNotifications.includes('eventType = "plan_expired"'));
+  assert.ok(emailNotifications.includes('eventType = "plan_expiring_soon"'));
+  assert.ok(emailNotifications.includes("3 日內到期"));
+  assert.ok(emailNotifications.includes("SET plan = 'free'"));
+  assert.ok(emailNotifications.includes("我拍會員資格已到期"));
+});
+
+test("PAYUNi return and notify use a centralized trade-status resolver", () => {
+  assert.ok(billing.includes("getPayuniTradeStatus(data)"));
+  assert.ok(!billing.includes("data.TradeStatus"), "billing route should not read TradeStatus directly");
+});
+
+test("scheduled plan notification job catches top-level failures", () => {
+  const scheduledIdx = index.indexOf("async scheduled");
+  assert.ok(scheduledIdx !== -1, "scheduled handler must exist");
+  const scheduledBlock = index.slice(scheduledIdx, index.indexOf("async fetch", scheduledIdx));
+  assert.ok(scheduledBlock.includes("try {"));
+  assert.ok(scheduledBlock.includes("catch (error)"));
+  assert.ok(scheduledBlock.includes("console.error(\"Plan expiry notification job failed:\""));
 });

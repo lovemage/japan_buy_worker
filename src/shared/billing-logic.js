@@ -21,6 +21,10 @@ export function decideNotifyAction({ orderStatus, orderAmount, tradeStatus, trad
   return "pending";
 }
 
+export function getPayuniTradeStatus(data) {
+  return data?.TradeStatus ?? data?.Status ?? data?.status ?? "";
+}
+
 const DAY_MS = 86400000;
 
 function toMs(t) {

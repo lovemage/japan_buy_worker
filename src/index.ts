@@ -43,9 +43,20 @@ import {
   handleStorePayNotify,
   handleStorePayReturn,
 } from "./routes/store-payment";
+import { runPlanExpiryNotifications } from "./services/email-notifications";
+import { parsePlanProductLimits } from "./shared/product-limits.js";
 
 type Env = {
   DB: D1DatabaseLike;
+  EMAIL?: {
+    send: (message: {
+      to: string | string[];
+      from: { email: string; name?: string };
+      subject: string;
+      html: string;
+      text: string;
+    }) => Promise<unknown>;
+  };
   IMAGES?: any;
   ASSETS?: { fetch: (request: Request) => Promise<Response> };
   CLOUDFLARE_ACCOUNT_ID: string;
@@ -251,6 +262,15 @@ function dispatchStorePayRoute(
 }
 
 export default {
+  async scheduled(_controller: unknown, env: Env): Promise<void> {
+    try {
+      const result = await runPlanExpiryNotifications(env);
+      console.log("Plan expiry notification job completed:", result);
+    } catch (error) {
+      console.error("Plan expiry notification job failed:", error);
+    }
+  },
+
   async fetch(request: Request, env: Env): Promise<Response> {
    try {
     const url = new URL(request.url);
@@ -355,8 +375,7 @@ export default {
       const row = await env.DB
         .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
         .first<{ value: string }>();
-      const limits = row?.value ? JSON.parse(row.value) : { free: 10, plus: 25, pro: 60, proplus: -1 };
-      return json({ ok: true, limits });
+      return json({ ok: true, limits: parsePlanProductLimits(row?.value) });
     }
     if (url.pathname === "/api/faq") {
       const row = await env.DB

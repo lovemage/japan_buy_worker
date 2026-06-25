@@ -1,6 +1,8 @@
 import type { RequestContext } from "../../context";
 import { buildProductWhereClause, parseBrandFilters } from "./product-filters";
 import { parseStoredProductPayload } from "../../jobs/product-records";
+import { buildVisibleProductLimitClause, getPlanProductLimit } from "../../shared/product-limits.js";
+import { parseCookieHeader, STORE_COOKIE_NAME } from "../admin/auth";
 
 type ProductRow = {
   id: number;
@@ -73,6 +75,17 @@ function mapProduct(item: ProductRow) {
   };
 }
 
+async function isStoreOwnerRequest(request: Request, ctx: RequestContext): Promise<boolean> {
+  const cookies = parseCookieHeader(request.headers.get("cookie"));
+  const token = cookies[STORE_COOKIE_NAME];
+  if (!token) return false;
+  const session = await ctx.db
+    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
+    .bind(token)
+    .first<{ store_id: number }>();
+  return Number(session?.store_id) === ctx.storeId;
+}
+
 export async function handlePublicProducts(
   request: Request,
   ctx: RequestContext
@@ -90,8 +103,9 @@ export async function handlePublicProducts(
   const category = (url.searchParams.get("category") || "").trim();
   const brands = parseBrandFilters(url.searchParams.get("brands"));
   const search = (url.searchParams.get("search") || "").trim();
-  const includeInactive = url.searchParams.get("includeInactive") === "1";
-  const onlyInactive = url.searchParams.get("onlyInactive") === "1";
+  const ownerRequest = await isStoreOwnerRequest(request, ctx);
+  const includeInactive = ownerRequest && url.searchParams.get("includeInactive") === "1";
+  const onlyInactive = ownerRequest && url.searchParams.get("onlyInactive") === "1";
   const sort = normalizeProductSort(url.searchParams.get("sort"));
   const hasCategory = category.length > 0;
   const where = buildProductWhereClause({
@@ -102,6 +116,13 @@ export async function handlePublicProducts(
     search,
     includeInactive,
     onlyInactive,
+  });
+  const publicVisibilityLimit = ownerRequest || includeInactive || onlyInactive
+    ? null
+    : await getPlanProductLimit(ctx.db, ctx.storePlan);
+  const visible = buildVisibleProductLimitClause({
+    storeId: ctx.storeId,
+    limit: publicVisibilityLimit,
   });
 
   const listSql = `
@@ -120,19 +141,19 @@ SELECT
   p.source_payload_json,
   p.tags
 FROM products p
-${where.whereSql}
+${where.whereSql}${visible.sql}
 ${getProductOrderBy(sort)}
 LIMIT ? OFFSET ?
 `;
   const rows = await ctx.db
     .prepare(listSql)
-    .bind(...where.params, limit, offset)
+    .bind(...where.params, ...visible.params, limit, offset)
     .all<ProductRow>();
 
   const products = Array.isArray(rows?.results) ? rows.results : [];
   const totalRow = await ctx.db
-    .prepare(`SELECT COUNT(1) as total FROM products p ${where.whereSql}`)
-    .bind(...where.params)
+    .prepare(`SELECT COUNT(1) as total FROM products p ${where.whereSql}${visible.sql}`)
+    .bind(...where.params, ...visible.params)
     .first<{ total: number }>();
   const total = Number(totalRow?.total || 0);
   const totalSkuSql = `
@@ -148,11 +169,11 @@ SELECT
     0
   ) as total_sku
 FROM products p
-${where.whereSql}
+${where.whereSql}${visible.sql}
 `;
   const totalSkuRow = await ctx.db
     .prepare(totalSkuSql)
-    .bind(...where.params)
+    .bind(...where.params, ...visible.params)
     .first<{ total_sku: number }>();
   const totalSku = Number(totalSkuRow?.total_sku || 0);
   const page = Math.floor(offset / Math.max(limit, 1)) + 1;
@@ -190,17 +211,20 @@ export async function handlePublicProductCategories(
     });
   }
 
+  const ownerRequest = await isStoreOwnerRequest(request, ctx);
+  const limit = ownerRequest ? null : await getPlanProductLimit(ctx.db, ctx.storePlan);
+  const visible = buildVisibleProductLimitClause({ storeId: ctx.storeId, limit });
   const rows = await ctx.db
     .prepare(
       `
 SELECT category, COUNT(1) as total
-FROM products
-WHERE store_id = ? AND is_active = 1 AND category IS NOT NULL AND category != ''
+FROM products p
+WHERE p.store_id = ? AND p.is_active = 1 AND p.category IS NOT NULL AND p.category != ''${visible.sql}
 GROUP BY category
 ORDER BY total DESC, category ASC
 `
     )
-    .bind(ctx.storeId)
+    .bind(ctx.storeId, ...visible.params)
     .all<CategoryRow>();
   const categories = Array.isArray(rows?.results)
     ? rows.results
@@ -233,18 +257,21 @@ export async function handlePublicProductBrands(
     maxBaseJpy: null,
     brands: [],
   });
+  const ownerRequest = await isStoreOwnerRequest(request, ctx);
+  const limit = ownerRequest ? null : await getPlanProductLimit(ctx.db, ctx.storePlan);
+  const visible = buildVisibleProductLimitClause({ storeId: ctx.storeId, limit });
 
   const rows = await ctx.db
     .prepare(
       `
 SELECT p.brand, COUNT(1) as total
 FROM products p
-${where.whereSql} AND p.brand IS NOT NULL AND TRIM(p.brand) != ''
+${where.whereSql}${visible.sql} AND p.brand IS NOT NULL AND TRIM(p.brand) != ''
 GROUP BY p.brand
 ORDER BY total DESC, p.brand ASC
 `
     )
-    .bind(...where.params)
+    .bind(...where.params, ...visible.params)
     .all<BrandRow>();
   const brands = Array.isArray(rows?.results)
     ? rows.results
@@ -275,6 +302,9 @@ export async function handlePublicProductRecommendations(
   const limit = Math.max(1, Math.min(Number(url.searchParams.get("limit") || 6), 12));
 
   const SELECT = `SELECT id, source_product_code, title_ja, title_zh_tw, brand, category, price_jpy_tax_in, color_count, image_url, is_active, last_crawled_at, source_payload_json, tags FROM products`;
+  const ownerRequest = await isStoreOwnerRequest(request, ctx);
+  const visibleLimit = ownerRequest ? null : await getPlanProductLimit(ctx.db, ctx.storePlan);
+  const visible = buildVisibleProductLimitClause({ storeId: ctx.storeId, limit: visibleLimit });
 
   const collected: ProductRow[] = [];
   const seenIds = new Set<number>();
@@ -283,9 +313,9 @@ export async function handlePublicProductRecommendations(
   if (category) {
     const result = await ctx.db
       .prepare(
-        `${SELECT} WHERE store_id = ? AND is_active = 1 AND category = ? AND source_product_code != ? ORDER BY RANDOM() LIMIT ?`
+        `${SELECT} p WHERE store_id = ? AND is_active = 1 AND category = ? AND source_product_code != ?${visible.sql} ORDER BY RANDOM() LIMIT ?`
       )
-      .bind(ctx.storeId, category, excludeCode, limit)
+      .bind(ctx.storeId, category, excludeCode, ...visible.params, limit)
       .all<ProductRow>();
     for (const row of result.results || []) {
       if (!seenIds.has(row.id)) {
@@ -302,9 +332,9 @@ export async function handlePublicProductRecommendations(
     const idClause = excludeIds.length > 0 ? `AND id NOT IN (${excludeIds.join(",")})` : "";
     const result = await ctx.db
       .prepare(
-        `${SELECT} WHERE store_id = ? AND is_active = 1 AND source_product_code != ? ${idClause} ORDER BY RANDOM() LIMIT ?`
+        `${SELECT} p WHERE store_id = ? AND is_active = 1 AND source_product_code != ? ${idClause}${visible.sql} ORDER BY RANDOM() LIMIT ?`
       )
-      .bind(ctx.storeId, excludeCode, remaining)
+      .bind(ctx.storeId, excludeCode, ...visible.params, remaining)
       .all<ProductRow>();
     for (const row of result.results || []) {
       if (!seenIds.has(row.id)) {
@@ -342,6 +372,12 @@ export async function handlePublicProductDetail(
     });
   }
 
+  const ownerRequest = await isStoreOwnerRequest(request, ctx);
+  const publicVisibilityLimit = ownerRequest ? null : await getPlanProductLimit(ctx.db, ctx.storePlan);
+  const visible = buildVisibleProductLimitClause({
+    storeId: ctx.storeId,
+    limit: publicVisibilityLimit,
+  });
   const product = await ctx.db
     .prepare(
       `
@@ -358,12 +394,12 @@ SELECT
   last_crawled_at,
   source_payload_json,
   tags
-FROM products
-WHERE store_id = ? AND is_active = 1 AND source_product_code = ?
+FROM products p
+WHERE store_id = ? AND is_active = 1 AND source_product_code = ?${visible.sql}
 LIMIT 1
 `
     )
-    .bind(ctx.storeId, code)
+    .bind(ctx.storeId, code, ...visible.params)
     .first<ProductRow>();
 
   if (!product) {

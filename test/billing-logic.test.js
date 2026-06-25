@@ -6,6 +6,7 @@ import {
   PLAN_LABELS,
   makeMerTradeNo,
   decideNotifyAction,
+  getPayuniTradeStatus,
   computeActivation,
 } from "../src/shared/billing-logic.js";
 
@@ -48,6 +49,13 @@ test("decideNotifyAction: non-paid status stays pending (ATM 取號)", () => {
     decideNotifyAction({ orderStatus: "pending", orderAmount: 490, tradeStatus: "0", tradeAmt: "490" }),
     "pending"
   );
+});
+
+test("getPayuniTradeStatus centralizes PAYUNi success status field handling", () => {
+  assert.equal(getPayuniTradeStatus({ TradeStatus: "1" }), "1");
+  assert.equal(getPayuniTradeStatus({ Status: "1" }), "1");
+  assert.equal(getPayuniTradeStatus({ status: "1" }), "1");
+  assert.equal(getPayuniTradeStatus({}), "");
 });
 
 test("computeActivation: same plan with future expiry extends from expiry", () => {

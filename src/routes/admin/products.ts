@@ -1,4 +1,5 @@
 import type { RequestContext } from "../../context";
+import { getPlanProductLimit } from "../../shared/product-limits.js";
 
 type ManualProductRequest = {
   titleJa: string;
@@ -50,13 +51,7 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 async function getProductLimitState(ctx: RequestContext): Promise<ProductLimitState> {
-  const limitsRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'plan_limits'")
-    .first<{ value: string }>();
-  const planLimits = limitsRow?.value ? JSON.parse(limitsRow.value) : { free: 10, plus: 25, pro: 60, proplus: -1 };
-  const limit = Number(planLimits[ctx.storePlan]);
-  if (!Number.isFinite(limit) || limit < 0) return { limit: null, phoneVerified: true };
-  return { limit, phoneVerified: true };
+  return { limit: await getPlanProductLimit(ctx.db, ctx.storePlan), phoneVerified: true };
 }
 
 async function getActiveProductCount(ctx: RequestContext): Promise<number> {

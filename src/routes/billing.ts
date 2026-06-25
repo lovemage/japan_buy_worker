@@ -6,13 +6,24 @@ import {
   makeMerTradeNo,
   decideNotifyAction,
   computeActivation,
+  getPayuniTradeStatus,
 } from "../shared/billing-logic.js";
 import { buildUppRequest, verifyAndDecrypt } from "../shared/payuni.js";
 import { parseCookieHeader, STORE_COOKIE_NAME } from "./admin/auth";
 import { ensureLogTable, getTestStoreIds } from "./platform-admin";
+import { sendPlanActivatedEmail } from "../services/email-notifications";
 
 export type BillingEnv = {
   DB: D1DatabaseLike;
+  EMAIL?: {
+    send: (message: {
+      to: string | string[];
+      from: { email: string; name?: string };
+      subject: string;
+      html: string;
+      text: string;
+    }) => Promise<unknown>;
+  };
   APP_URL: string;
   PAYUNI_MER_ID?: string;
   PAYUNI_HASH_KEY?: string;
@@ -121,7 +132,8 @@ export async function handleBillingCheckout(request: Request, env: BillingEnv): 
   return json({ ok: true, merTradeNo, action: upp.action, fields: upp.fields });
 }
 
-async function applyActivation(db: D1DatabaseLike, order: OrderRow, data: Record<string, string>) {
+async function applyActivation(env: BillingEnv, order: OrderRow, data: Record<string, string>) {
+  const db = env.DB;
   // Claim the order first so that two concurrent PAYUNi notifies for the same
   // order cannot both proceed to extend the plan (double-extension).  Only the
   // notify that atomically flips status → 'paid' continues; the other returns
@@ -139,9 +151,9 @@ async function applyActivation(db: D1DatabaseLike, order: OrderRow, data: Record
 
   // Merge both stores SELECTs into one to reduce round-trips.
   const storeRow = await db
-    .prepare("SELECT plan, plan_expires_at, name, owner_email FROM stores WHERE id = ?")
+    .prepare("SELECT plan, plan_expires_at, name, slug, owner_email FROM stores WHERE id = ?")
     .bind(order.store_id)
-    .first<{ plan: string; plan_expires_at: string | null; name: string; owner_email: string }>();
+    .first<{ plan: string; plan_expires_at: string | null; name: string; slug: string; owner_email: string }>();
   const activation = computeActivation({
     currentPlan: storeRow?.plan || "free",
     currentExpiresAt: storeRow?.plan_expires_at || null,
@@ -155,6 +167,18 @@ async function applyActivation(db: D1DatabaseLike, order: OrderRow, data: Record
     )
     .bind(activation.plan, activation.expiresAt, order.amount, new Date().toISOString(), order.store_id)
     .run();
+
+  await sendPlanActivatedEmail(env, {
+    storeId: order.store_id,
+    storeName: storeRow?.name || "",
+    storeSlug: storeRow?.slug || "default",
+    ownerEmail: storeRow?.owner_email || null,
+    plan: activation.plan,
+    expiresAt: activation.expiresAt,
+    merTradeNo: order.mer_trade_no,
+  }).catch((error) => {
+    console.error("Failed to send plan activation email:", error);
+  });
 
   // 與 platform-admin 人工開通一致：記錄營收（排除測試店）
   const testIds = await getTestStoreIds(db);
@@ -198,7 +222,7 @@ export async function handleBillingNotify(request: Request, env: BillingEnv): Pr
   const action = decideNotifyAction({
     orderStatus: order.status,
     orderAmount: order.amount,
-    tradeStatus: data.TradeStatus,
+    tradeStatus: getPayuniTradeStatus(data),
     tradeAmt: data.TradeAmt,
   });
 
@@ -211,7 +235,7 @@ export async function handleBillingNotify(request: Request, env: BillingEnv): Pr
     return new Response("OK");
   }
   if (action === "activate") {
-    await applyActivation(env.DB, order, data);
+    await applyActivation(env, order, data);
     return new Response("OK");
   }
   // pending：ATM 取號等，回填帳號資訊（欄位名稱防禦性讀取）
@@ -241,7 +265,7 @@ export async function handleBillingReturn(request: Request, env: BillingEnv): Pr
   try {
     const data = await verifyAndDecrypt(await parseNotifyForm(request), cfg.hashKey, cfg.hashIv);
     const order = encodeURIComponent(data.MerTradeNo || "");
-    const status = String(data.TradeStatus) === "1" ? "paid" : "pending";
+    const status = String(getPayuniTradeStatus(data)) === "1" ? "paid" : "pending";
     return redirect(`order=${order}&status=${status}`);
   } catch {
     return redirect("status=error");
