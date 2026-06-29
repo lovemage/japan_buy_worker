@@ -40,3 +40,19 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: pnpm run deploy
+
+      # Public HTML (/, /blog/*, /guide/*) is edge-cached for 1h with 24h SWR
+      # (see withPublicHtmlCache in src/index.ts), so deploys aren't visible
+      # until the edge cache is purged. Token needs the "Cache Purge" permission.
+      - name: Purge Cloudflare cache
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          resp=$(curl -sS -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}')
+          echo "$resp"
+          echo "$resp" | grep -q '"success":true' || { echo "Cache purge failed"; exit 1; }

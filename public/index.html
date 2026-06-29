@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>我拍 VOVOSnap｜拍一張照，商品就上架了 — AI 自動辨識上架的開店平台</title>
 <meta name="description" content="拍照上傳，AI 自動辨識商品、寫文案、抓規格、換算匯率定價，60 秒生成可下單的商品頁。代購、創作者、小賣家的一鍵開店工具。" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://vovosnap.com/" />
+<meta property="og:site_name" content="我拍 VOVOSnap" />
 <meta property="og:title" content="我拍 VOVOSnap｜拍一張照，商品就上架了" />
 <meta property="og:description" content="AI 自動辨識商品、生成文案與售價，60 秒上架開賣。不抽成、不用學電商系統。" />
 <meta property="og:type" content="website" />
@@ -39,6 +42,44 @@
     "price": "0",
     "priceCurrency": "TWD"
   }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "我拍 VOVOSnap 有沒有交易抽成？",
+      "acceptedAnswer": { "@type": "Answer", "text": "沒有！我拍不抽取任何交易手續費。你賺的利潤 100% 是你的，我們只收取月費方案費用。" }
+    },
+    {
+      "@type": "Question",
+      "name": "回國了不想用怎麼辦？",
+      "acceptedAnswer": { "@type": "Answer", "text": "目前是以月為單位計價，不續約就不會再扣款。Free 方案則完全免費，隨時可以使用。請選擇適合您的方案就好！" }
+    },
+    {
+      "@type": "Question",
+      "name": "不從事代購，而是賣自己的二手商品，可以使用嗎？",
+      "acceptedAnswer": { "@type": "Answer", "text": "沒有問題！我們的系統非常適合銷售二手商品，因為東西多上架很麻煩。使用免費方案就能上架十個商品，你可以在自己的社群媒體分享商品網址，有人下單後再用賣貨便或好賣家處理即可。" }
+    },
+    {
+      "@type": "Question",
+      "name": "有提供第三方支付嗎？",
+      "acceptedAnswer": { "@type": "Answer", "text": "沒有喔！代購代買一般為個人經營，我們沒有提供第三方支付。付款方式由你和客人自行約定（例如轉帳、LINE Pay 等）。" }
+    },
+    {
+      "@type": "Question",
+      "name": "方案裡的 AI 文案撰寫是什麼？",
+      "acceptedAnswer": { "@type": "Answer", "text": "內建的 AI 文案可以針對 IG、Reels、Threads 等社群，為你的商店、商品或網址一鍵生成文案，讓你快速分享，不必再花時間想文案。" }
+    },
+    {
+      "@type": "Question",
+      "name": "我是新手，可以學怎麼代購嗎？",
+      "acceptedAnswer": { "@type": "Answer", "text": "當然可以！建議到我們的代購教學文章裡點選觀看，有詳細的圖文教學，手把手帶你從零開始。" }
+    }
+  ]
 }
 </script>
 <link rel="icon" type="image/png" href="/assets/images/logo-icon-64.png" />
@@ -108,6 +149,9 @@ section.alt { background: var(--bg-alt); }
 .btn-ghost:hover { border-color: var(--orange); background: var(--orange-soft); }
 .btn-lg { padding: 15px 36px; font-size: 17px; }
 .btn-sm { padding: 9px 22px; font-size: 14px; }
+/* 小尺寸實心 CTA：白字需更深橘底以達 AA 對比（~5:1）*/
+.btn-sm.btn-primary { background: var(--orange-text); box-shadow: 0 6px 16px rgba(181,77,21,.26); }
+.btn-sm.btn-primary:hover { background: #97400f; }
 /* ── Reveal（JS 啟用時才隱藏；無 JS 預設可見）────── */
 .will-reveal { opacity: 0; transform: translateY(20px);
                transition: opacity .8s var(--ease-out), transform .8s var(--ease-out); }
@@ -124,7 +168,8 @@ section.alt { background: var(--bg-alt); }
 .nav-links a { font-size: 14px; font-weight: 500; letter-spacing: .08em; color: var(--muted); text-decoration: none; transition: color .2s; }
 .nav-links a:hover { color: var(--orange-text); }
 .nav-actions { display: flex; gap: 10px; }
-@media (max-width: 760px) { .nav-links { display: none; } .nav-inner { gap: 12px; } .btn-sm { padding: 9px 16px; } }
+@media (max-width: 760px) { .nav-links { display: none; } .nav-inner { gap: 12px; } .btn-sm { padding: 9px 16px; }
+  section { padding: 64px 0; } }
 @media (max-width: 430px) { .nav-logo span { display: none; } }
 /* ── Hero ────────────────────────────────── */
 .hero { position: relative; padding: 100px 0 88px; overflow: hidden;
@@ -191,6 +236,10 @@ section.alt { background: var(--bg-alt); }
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
   .hero { padding: 60px 0 56px; }
   .hero-sakura { width: 200px; top: -22px; right: -34px; opacity: .85; }
+}
+@media (max-width: 560px) {
+  .hero-cta { flex-direction: column; align-items: stretch; }
+  .hero-cta .btn { width: 100%; }
 }
 @media (max-width: 480px) {
   .hero-creators { align-items: flex-start; flex-direction: column; gap: 8px; }
@@ -286,19 +335,21 @@ section.alt { background: var(--bg-alt); }
 .billing-toggle-inner { display: inline-flex; background: var(--bg-alt); border-radius: 999px; padding: 4px; border: 1px solid var(--line); }
 .billing-toggle-btn { padding: 9px 24px; border-radius: 999px; border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--muted); cursor: pointer; transition: all 0.25s var(--ease-out); position: relative; }
 .billing-toggle-btn.active { background: var(--card); color: var(--ink); box-shadow: 0 2px 10px rgba(86,62,36,0.12); }
-.billing-toggle-btn .toggle-save { display: none; position: absolute; top: -9px; right: -6px; background: var(--orange); color: #fff; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
+.billing-toggle-btn .toggle-save { display: none; position: absolute; top: -9px; right: -6px; background: var(--orange-text); color: #fff; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
 .billing-toggle-btn.has-save .toggle-save { display: block; }
 .plan-carousel { position: relative; overflow: hidden; margin: 0 -20px; padding: 0 20px; }
 .plan-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 28px 4px 18px; cursor: grab; }
 .plan-track::-webkit-scrollbar { display: none; }
 .plan-track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
 .plan-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
-.plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; transition: all 0.25s var(--ease-out); }
+.plan-dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; transition: all 0.25s var(--ease-out); }
+/* 視覺 8px，觸控熱區擴大到 44px 高以符合 mobile tap target */
+.plan-dot::after { content: ""; position: absolute; inset: -18px -6px; }
 .plan-dot.active { background: var(--orange); width: 22px; border-radius: 999px; }
 .plan { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 30px 24px 26px; display: flex; flex-direction: column; min-width: 260px; flex-shrink: 0; scroll-snap-align: center; box-shadow: var(--shadow); transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out); }
 .plan:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(86,62,36,0.12); }
 .plan.pop { border: 1.5px solid var(--orange); box-shadow: 0 14px 38px rgba(232,107,44,0.16); }
-.plan.pop::before { content: "推薦"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--orange); color: #fff; padding: 4px 18px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-indent: .2em; }
+.plan.pop::before { content: "推薦"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--orange-text); color: #fff; padding: 4px 18px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-indent: .2em; }
 .plan-name { font-family: "Noto Serif TC", serif; font-size: 19px; font-weight: 700; letter-spacing: .08em; margin-bottom: 2px; }
 .plan.pop .plan-name { color: var(--orange-text); }
 .plan-desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
@@ -635,9 +686,9 @@ section.alt { background: var(--bg-alt); }
 
 <!-- Offer popup -->
 <div class="offer-backdrop" id="offer-backdrop" onclick="if(event.target===this)closePlanOfferPopup()">
-  <div class="offer-modal">
+  <div class="offer-modal" role="dialog" aria-modal="true" aria-labelledby="offer-title">
     <div class="offer-head">
-      <h3>方案優惠說明</h3>
+      <h3 id="offer-title">方案優惠說明</h3>
       <button class="offer-close" type="button" onclick="closePlanOfferPopup()">關閉</button>
     </div>
     <div id="offer-content"></div>
@@ -647,7 +698,7 @@ section.alt { background: var(--bg-alt); }
 
 <!-- Checkout modal -->
 <div class="checkout-backdrop" id="checkout-backdrop">
-  <div class="checkout-modal">
+  <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
     <h3 id="checkout-title">選擇開通期數</h3>
     <div id="checkout-options"></div>
     <button class="checkout-close" onclick="closeCheckoutModal()">取消</button>
@@ -658,7 +709,33 @@ section.alt { background: var(--bg-alt); }
 <section class="alt" id="faq">
   <div class="wrap center">
     <h2 class="sec-title">常見問題</h2>
-    <div id="faq-list" class="faq-list"></div>
+    <!-- 靜態 FAQ：SEO / 無 JS 時的 fallback；/api/faq 載入成功後由 JS 覆蓋 -->
+    <div id="faq-list" class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我拍 VOVOSnap 有沒有交易抽成？</button>
+        <div class="faq-a"><p>沒有！我拍不抽取任何交易手續費。你賺的利潤 100% 是你的，我們只收取月費方案費用。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">回國了不想用怎麼辦？</button>
+        <div class="faq-a"><p>目前是以月為單位計價，不續約就不會再扣款。Free 方案則完全免費，隨時可以使用。請選擇適合您的方案就好！</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">不從事代購，而是賣自己的二手商品，可以使用嗎？</button>
+        <div class="faq-a"><p>沒有問題！我們的系統非常適合銷售二手商品，因為東西多上架很麻煩。使用免費方案就能上架十個商品，你可以在自己的社群媒體分享商品網址，有人下單後再用賣貨便或好賣家處理即可。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">有提供第三方支付嗎？</button>
+        <div class="faq-a"><p>沒有喔！代購代買一般為個人經營，我們沒有提供第三方支付。付款方式由你和客人自行約定（例如轉帳、LINE Pay 等）。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">方案裡的 AI 文案撰寫是什麼？</button>
+        <div class="faq-a"><p>內建的 AI 文案可以針對 IG、Reels、Threads 等社群，為你的商店、商品或網址一鍵生成文案，讓你快速分享，不必再花時間想文案。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">我是新手，可以學怎麼代購嗎？</button>
+        <div class="faq-a"><p>當然可以！建議到我們的代購教學文章裡點選觀看，有詳細的圖文教學，手把手帶你從零開始。</p></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -842,7 +919,10 @@ function openPlanOfferPopup(focusPlan) {
       '</tbody></table></div>';
   }).join("");
   var back = document.getElementById("offer-backdrop");
-  if (back) back.classList.add("is-open");
+  if (back) {
+    back.classList.add("is-open");
+    modalA11y.open(back.querySelector(".offer-modal"), closePlanOfferPopup);
+  }
   if (focusPlan) {
     setTimeout(function() {
       var node = document.getElementById("offer-" + focusPlan);
@@ -854,6 +934,7 @@ function openPlanOfferPopup(focusPlan) {
 function closePlanOfferPopup() {
   var back = document.getElementById("offer-backdrop");
   if (back) back.classList.remove("is-open");
+  modalA11y.close();
 }
 
 // Billing period toggle
@@ -994,7 +1075,9 @@ function openCheckoutModal(plan) {
         "<span>" + o.months + " 個月" + (bonus ? "（" + bonus + "）" : "") + "</span>" +
         "<strong>NT$ " + Number(o.amount).toLocaleString() + "</strong></button>";
     }).join("");
-    document.getElementById("checkout-backdrop").classList.add("is-open");
+    var ckBack = document.getElementById("checkout-backdrop");
+    ckBack.classList.add("is-open");
+    modalA11y.open(ckBack.querySelector(".checkout-modal"), closeCheckoutModal);
   };
   fetch("/auth/me")
     .then(function(r) { return r.json(); })
@@ -1012,7 +1095,44 @@ function openCheckoutModal(plan) {
 }
 function closeCheckoutModal() {
   document.getElementById("checkout-backdrop").classList.remove("is-open");
+  modalA11y.close();
 }
+
+// ── Modal a11y：Esc 關閉、Tab focus trap、關閉後還原焦點 ──────────────────
+var modalA11y = (function() {
+  var active = null, lastFocus = null, onEsc = null;
+  function focusables(root) {
+    return Array.prototype.slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])'
+    )).filter(function(el) { return el.offsetParent !== null; });
+  }
+  function onKey(e) {
+    if (!active) return;
+    if (e.key === "Escape") { e.preventDefault(); if (onEsc) onEsc(); return; }
+    if (e.key !== "Tab") return;
+    var f = focusables(active);
+    if (!f.length) { e.preventDefault(); return; }
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  return {
+    open: function(modalEl, closeFn) {
+      if (!modalEl) return;
+      active = modalEl; onEsc = closeFn; lastFocus = document.activeElement;
+      document.addEventListener("keydown", onKey, true);
+      var f = focusables(modalEl);
+      if (f.length) f[0].focus();
+    },
+    close: function() {
+      if (!active) return;
+      document.removeEventListener("keydown", onKey, true);
+      active = null; onEsc = null;
+      if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
+      lastFocus = null;
+    }
+  };
+})();
 
 // ── Scroll reveal（JS 啟用才隱藏；無 JS / reduced-motion 預設可見）─────────
 (function () {
