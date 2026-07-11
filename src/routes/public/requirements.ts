@@ -8,6 +8,8 @@ import {
   computeEffectiveEnabled,
   parseCanonicalAmount,
 } from "../../shared/store-payment-logic.js";
+import { parseDisplaySettings } from "../../shared/display-settings.js";
+import { getPricingConfig } from "../pricing";
 
 type RequirementItemInput = {
   productId?: number | null;
@@ -96,13 +98,87 @@ function configIsValid(cfg: StorePaymentConfigRow | null | undefined): boolean {
   return Boolean(cfg?.mer_id_enc && cfg.hash_key_enc && cfg.hash_iv_enc);
 }
 
-function computeRequirementAmountTwd(body: RequirementInput): number | null {
+type ShippingQuote = {
+  method: string;
+  internationalTwd: number;
+  domesticTwd: number;
+  totalTwd: number;
+  requiresEzway: boolean;
+};
+
+type CustomShippingMethod = {
+  name?: unknown;
+  price?: unknown;
+  enabled?: unknown;
+};
+
+function toShippingPrice(value: unknown): number {
+  const price = Number(value);
+  return Number.isFinite(price) && price > 0 ? Math.round(price) : 0;
+}
+
+async function quoteShipping(
+  ctx: RequestContext,
+  shippingMethod: string
+): Promise<ShippingQuote | null> {
+  const displayRow = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+    .bind(ctx.storeId)
+    .first<{ value: string }>();
+  const displaySettings = parseDisplaySettings(displayRow?.value || null);
+  const customMethods = Array.isArray(displaySettings.shippingMethods)
+    ? (displaySettings.shippingMethods as CustomShippingMethod[]).filter(
+        (method) => method && method.enabled !== false && String(method.name || "").trim()
+      )
+    : [];
+
+  // Merchant-defined methods override the legacy checkout options.
+  if (customMethods.length > 0) {
+    const method = customMethods.find((candidate) => String(candidate.name).trim() === shippingMethod);
+    if (!method) return null;
+
+    const totalTwd = toShippingPrice(method.price);
+    return { method: shippingMethod, internationalTwd: 0, domesticTwd: totalTwd, totalTwd, requiresEzway: false };
+  }
+
+  const pricing = await getPricingConfig(ctx.db, ctx.storeId);
+  if (!pricing.shippingOptionsEnabled) {
+    return shippingMethod === "shipping_hidden"
+      ? { method: shippingMethod, internationalTwd: 0, domesticTwd: 0, totalTwd: 0, requiresEzway: false }
+      : null;
+  }
+
+  switch (shippingMethod) {
+    case "consolidated_tw": {
+      const internationalTwd = toShippingPrice(pricing.internationalShippingTwd);
+      const domesticTwd = toShippingPrice(pricing.domesticShippingTwd);
+      return {
+        method: shippingMethod,
+        internationalTwd,
+        domesticTwd,
+        totalTwd: internationalTwd + domesticTwd,
+        requiresEzway: false,
+      };
+    }
+    case "jp_direct": {
+      const internationalTwd = toShippingPrice(pricing.internationalShippingTwd);
+      return { method: shippingMethod, internationalTwd, domesticTwd: 0, totalTwd: internationalTwd, requiresEzway: true };
+    }
+    case "limited_proxy": {
+      const totalTwd = toShippingPrice(pricing.limitedProxyShippingTwd);
+      return { method: shippingMethod, internationalTwd: 0, domesticTwd: 0, totalTwd, requiresEzway: false };
+    }
+    default:
+      return null;
+  }
+}
+
+function computeRequirementAmountTwd(body: RequirementInput, shippingTotalTwd: number): number | null {
   const itemsTotal = (body.items || []).reduce((sum, item) => {
     const subtotal = Number(item.subtotalTwd || 0);
     return sum + (Number.isFinite(subtotal) && subtotal > 0 ? subtotal : 0);
   }, 0);
-  const shippingTotal = Number(body.shippingTotalTwd || 0);
-  const total = Math.round(itemsTotal + (Number.isFinite(shippingTotal) && shippingTotal > 0 ? shippingTotal : 0));
+  const total = Math.round(itemsTotal + shippingTotalTwd);
   return parseCanonicalAmount(total);
 }
 
@@ -110,7 +186,8 @@ async function maybeCreateDirectPaymentOrder(
   ctx: RequestContext,
   requirementId: number,
   orderCode: string,
-  body: RequirementInput
+  body: RequirementInput,
+  shippingTotalTwd: number
 ): Promise<string | null> {
   const cfg = await ctx.db
     .prepare("SELECT * FROM store_payment_configs WHERE store_id = ?")
@@ -124,7 +201,7 @@ async function maybeCreateDirectPaymentOrder(
   });
   if (!paymentEnabled || cfg?.direct_checkout_enabled !== 1) return null;
 
-  const amount = computeRequirementAmountTwd(body);
+  const amount = computeRequirementAmountTwd(body, shippingTotalTwd);
   if (amount === null) return null;
 
   const publicToken = genPublicToken();
@@ -255,12 +332,8 @@ export async function handlePublicRequirements(
   if (!body.lineId?.trim()) {
     return badRequest("lineId is required");
   }
-  if (
-    !body.shippingMethod ||
-    !["consolidated_tw", "jp_direct", "limited_proxy", "shipping_hidden"].includes(
-      body.shippingMethod
-    )
-  ) {
+  const shippingMethod = (body.shippingMethod || "").trim();
+  if (!shippingMethod) {
     return badRequest("shippingMethod is required");
   }
   if (!Array.isArray(body.items) || body.items.length === 0) {
@@ -268,6 +341,12 @@ export async function handlePublicRequirements(
   }
   if (body.items.some((item) => Number(item.quantity || 0) < 1)) {
     return badRequest("item quantity must be >= 1");
+  }
+
+  // The server owns the quote so a browser cannot omit or alter the shipping fee.
+  const shipping = await quoteShipping(ctx, shippingMethod);
+  if (!shipping) {
+    return badRequest("shippingMethod is invalid or unavailable");
   }
 
   const orderCode = await generateUniqueOrderCode(ctx.db, ctx.storeId);
@@ -305,15 +384,11 @@ RETURNING id, order_code
       body.recipientCity.trim(),
       body.recipientAddress.trim(),
       body.lineId.trim(),
-      body.shippingMethod,
-      Number.isFinite(Number(body.shippingInternationalTwd))
-        ? Number(body.shippingInternationalTwd)
-        : null,
-      Number.isFinite(Number(body.shippingDomesticTwd))
-        ? Number(body.shippingDomesticTwd)
-        : null,
-      Number.isFinite(Number(body.shippingTotalTwd)) ? Number(body.shippingTotalTwd) : null,
-      body.requiresEzway ? 1 : 0,
+      shipping.method,
+      shipping.internationalTwd,
+      shipping.domesticTwd,
+      shipping.totalTwd,
+      shipping.requiresEzway ? 1 : 0,
       (() => {
         const userNotes = (body.notes || "").trim();
         const cvs = body.cvsStore;
@@ -391,7 +466,8 @@ INSERT INTO requirement_items (
       ctx,
       insertedForm.id,
       insertedForm.order_code || String(insertedForm.id),
-      body
+      body,
+      shipping.totalTwd
     );
   } catch {
     payUrl = null;

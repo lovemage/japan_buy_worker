@@ -29,6 +29,14 @@ test("public requirement creation can create a linked direct payment order", () 
   assert.ok(publicRequirements.includes("payUrl"));
 });
 
+test("public requirement creation calculates shipping from the active store method", () => {
+  assert.ok(publicRequirements.includes("async function quoteShipping"));
+  assert.ok(publicRequirements.includes("parseDisplaySettings"));
+  assert.ok(publicRequirements.includes("shippingMethod is invalid or unavailable"));
+  assert.ok(publicRequirements.includes("shipping.totalTwd"));
+  assert.ok(!publicRequirements.includes("Number.isFinite(Number(body.shippingTotalTwd))"));
+});
+
 test("request frontend redirects to payUrl when direct checkout is returned", () => {
   assert.ok(requestJs.includes("if (body.payUrl)"));
   assert.ok(requestJs.includes("location.href = body.payUrl"));
