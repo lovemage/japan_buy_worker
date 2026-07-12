@@ -333,9 +333,19 @@ function getActiveShippingMethods() {
       name: String(m.name).trim(),
       desc: String(m.desc || "").trim(),
       price: Number.isFinite(Number(m.price)) ? Number(m.price) : 0,
-      type: String(m.type || "").trim(),
+      type: inferShippingType(m.name, m.type),
     }));
   return enabled.length > 0 ? enabled : LEGACY_SHIPPING_FALLBACK;
+}
+
+function inferShippingType(name, explicitType) {
+  const type = String(explicitType || "").trim();
+  if (type === "cvs-711" || type === "cvs-family") return type;
+
+  const label = String(name || "").toLowerCase().replaceAll(/\s+/g, "");
+  if (/(7-?11|seven|統一超|7eleven)/.test(label)) return "cvs-711";
+  if (/(全家|family)/.test(label)) return "cvs-family";
+  return "";
 }
 
 function hasCustomShippingMethods() {
@@ -392,6 +402,23 @@ function getSelectedShippingType() {
   return checked?.getAttribute("data-type") || "";
 }
 
+function isCvsShippingType(type) {
+  return type === "cvs-711" || type === "cvs-family";
+}
+
+function syncRecipientAddressFields(type) {
+  const isCvs = isCvsShippingType(type);
+  const fields = document.getElementById("recipient-address-fields");
+  const city = document.getElementById("recipientCity");
+  const address = document.getElementById("recipientAddress");
+  if (fields) fields.hidden = isCvs;
+  [city, address].forEach((field) => {
+    if (!field) return;
+    field.required = !isCvs;
+    field.setAttribute("aria-required", isCvs ? "false" : "true");
+  });
+}
+
 async function loadCvsData(type) {
   if (cvsCache[type]) return cvsCache[type];
   const url = CVS_DATA_URLS[type];
@@ -407,8 +434,9 @@ function applyCvsPickerVisibility() {
   const picker = document.getElementById("cvs-picker");
   if (!picker) return;
   const type = getSelectedShippingType();
-  const isCvs = type === "cvs-711" || type === "cvs-family";
+  const isCvs = isCvsShippingType(type);
   picker.hidden = !isCvs;
+  syncRecipientAddressFields(type);
   // Reset on each switch — selection is per-method
   cvsSelectedStore = null;
   const sel = document.getElementById("cvs-picker-selected");
@@ -486,7 +514,7 @@ function bindCvsSearch() {
     clearTimeout(cvsSearchTimer);
     cvsSearchTimer = setTimeout(async () => {
       const type = getSelectedShippingType();
-      if (type !== "cvs-711" && type !== "cvs-family") return;
+      if (!isCvsShippingType(type)) return;
       const q = search.value.trim().toLowerCase();
       const status = document.getElementById("cvs-picker-status");
       if (q.length < 1) {
@@ -671,9 +699,10 @@ async function onSubmit(event) {
   const draft = getDraft();
   const totals = renderTotals();
   const cvsType = getSelectedShippingType();
-  const isCvsMethod = cvsType === "cvs-711" || cvsType === "cvs-family";
-  if (isCvsMethod && !cvsSelectedStore) {
-    showError("請於下方搜尋並選擇取貨門市");
+  const isCvsMethod = isCvsShippingType(cvsType);
+  const cvsManualNote = (document.getElementById("cvs-manual-note")?.value || "").trim();
+  if (isCvsMethod && !cvsSelectedStore && !cvsManualNote) {
+    showError("請搜尋並選擇取貨門市，或在備註填寫指定門市");
     return;
   }
   let recipientCity = document.getElementById("recipientCity")?.value || "";
@@ -682,6 +711,10 @@ async function onSubmit(event) {
     const chainLabel = cvsType === "cvs-711" ? "7-11" : "全家";
     recipientCity = cvsSelectedStore.city || recipientCity;
     recipientAddress = `[${chainLabel} ${cvsSelectedStore.name} #${cvsSelectedStore.id}] ${cvsSelectedStore.address}`;
+  } else if (isCvsMethod && cvsManualNote) {
+    const chainLabel = cvsType === "cvs-711" ? "7-11" : "全家";
+    recipientCity = "待確認";
+    recipientAddress = `[${chainLabel} 門市待確認] ${cvsManualNote}`;
   }
   const payload = {
     memberName: document.getElementById("memberName")?.value || "",
@@ -702,7 +735,10 @@ async function onSubmit(event) {
     shippingDomesticTwd: totals.shippingDomesticTwd,
     shippingTotalTwd: totals.shippingTotalTwd,
     requiresEzway: totals.requiresEzway,
-    notes: document.getElementById("notes")?.value || "",
+    notes: [
+      cvsManualNote ? `[自填取貨門市] ${cvsManualNote}` : "",
+      document.getElementById("notes")?.value || "",
+    ].filter(Boolean).join("\n"),
     items: draft.items.map((item) => ({
       productId: item.productId,
       productNameSnapshot: item.productNameSnapshot,
