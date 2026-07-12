@@ -733,7 +733,11 @@ async function onSubmit(event) {
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      showError(`送出失敗：${res.status}`);
+      const errorBody = await res.json().catch(() => null);
+      const message = typeof errorBody?.error === "string" && errorBody.error.trim()
+        ? errorBody.error.trim()
+        : `HTTP ${res.status}`;
+      showError(`送出失敗：${message}`);
       return;
     }
     const body = await res.json();

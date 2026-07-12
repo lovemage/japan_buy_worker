@@ -7,6 +7,7 @@ const storeInfoRoute = readFileSync(new URL("../src/routes/admin/store-info.ts",
 const adminProductsJs = readFileSync(new URL("../public/assets/app-admin-products.js", import.meta.url), "utf8");
 const adminRecognizeJs = readFileSync(new URL("../public/assets/app-admin-recognize.js", import.meta.url), "utf8");
 const adminHtml = readFileSync(new URL("../public/admin.html", import.meta.url), "utf8");
+const routerTs = readFileSync(new URL("../src/router.ts", import.meta.url), "utf8");
 
 test("AI image-edit route returns image data for client-side WebP conversion instead of storing to R2", () => {
   assert.ok(imageEditRoute.includes("imageDataUrl"), "Expected image edit route to return imageDataUrl");
@@ -22,4 +23,9 @@ test("admin frontends consume imageDataUrl for WebP conversion", () => {
   assert.ok(adminProductsJs.includes("data.imageDataUrl"), "Expected product admin AI edit flow to use imageDataUrl");
   assert.ok(adminRecognizeJs.includes("data.imageDataUrl"), "Expected recognize AI edit flow to use imageDataUrl");
   assert.ok(adminHtml.includes("d.imageDataUrl"), "Expected admin banner AI flow to use imageDataUrl");
+});
+
+test("image proxy responses are marked noindex for crawlers", () => {
+  assert.ok(routerTs.includes('if (subPath.startsWith("/api/images/"))'), "Expected image proxy route");
+  assert.ok(routerTs.includes('"X-Robots-Tag": "noindex, nofollow"'), "Expected image proxy noindex header");
 });

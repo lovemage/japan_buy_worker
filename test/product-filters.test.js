@@ -97,3 +97,14 @@ test('public product route gates inactive and over-limit bypasses behind owner s
   assert.ok(productsRoute.includes('const publicVisibilityLimit = ownerRequest || includeInactive || onlyInactive'));
   assert.ok(productsRoute.includes('const limit = ownerRequest ? null : await getPlanProductLimit(ctx.db, ctx.storePlan);'));
 });
+
+test('public product ownership checks share the admin authorization helper', () => {
+  assert.ok(
+    productsRoute.includes('import { isStoreOwnerAuthorized } from "../admin/auth";'),
+    'Expected product reads to use the same session compatibility as admin routes'
+  );
+  assert.ok(
+    productsRoute.includes('return isStoreOwnerAuthorized(request, ctx);'),
+    'Expected legacy admin sessions to retain owner-level product access'
+  );
+});
