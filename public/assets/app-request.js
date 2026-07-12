@@ -242,7 +242,10 @@ function renderTotals() {
     (sum, item) => sum + Number(item.unitPriceTwd || 0) * Number(item.quantity || 1),
     0
   );
-  const shippingOptionsEnabled = pricingConfig?.shippingOptionsEnabled !== false;
+  // Custom methods take precedence over the legacy shipping-options toggle.
+  // Otherwise the UI can show a custom method while submission sends
+  // "shipping_hidden", which the server correctly rejects.
+  const shippingOptionsEnabled = hasCustomShippingMethods() || pricingConfig?.shippingOptionsEnabled !== false;
   const checkedRadio = document.querySelector('input[name="shippingMethod"]:checked');
   const shippingMethod = shippingOptionsEnabled
     ? checkedRadio?.value || "consolidated_tw"
@@ -333,6 +336,13 @@ function getActiveShippingMethods() {
       type: String(m.type || "").trim(),
     }));
   return enabled.length > 0 ? enabled : LEGACY_SHIPPING_FALLBACK;
+}
+
+function hasCustomShippingMethods() {
+  const ds = window.__DISPLAY_SETTINGS || {};
+  return Array.isArray(ds.shippingMethods) && ds.shippingMethods.some(
+    (method) => method && method.enabled !== false && String(method.name || "").trim()
+  );
 }
 
 function renderShippingOptions() {
@@ -515,12 +525,7 @@ function applyShippingOptionsVisibility() {
   const radios = document.querySelectorAll('input[name="shippingMethod"]');
   // If admin configured any custom shippingMethods, always show — that toggle
   // only governed the legacy 3-option flow.
-  const ds = window.__DISPLAY_SETTINGS || {};
-  const hasCustom =
-    Array.isArray(ds.shippingMethods) &&
-    ds.shippingMethods.some(
-      (m) => m && m.enabled !== false && String(m?.name || "").trim()
-    );
+  const hasCustom = hasCustomShippingMethods();
   const enabled = hasCustom || pricingConfig?.shippingOptionsEnabled !== false;
   if (box) {
     box.classList.toggle("hidden", !enabled);
