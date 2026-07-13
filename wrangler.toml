@@ -9,6 +9,9 @@ routes = [
   { pattern = "*.vovosnap.com/*", zone_name = "vovosnap.com" },
 ]
 
+[observability]
+enabled = true
+
 [triggers]
 # 00:15 Asia/Taipei: downgrade expired paid plans and send renewal reminders.
 crons = ["15 16 * * *"]

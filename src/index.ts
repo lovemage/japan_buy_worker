@@ -414,7 +414,7 @@ export default {
       const authEnv = getAuthEnv(env);
       const canonicalRedirect = redirectAuthStartToAppUrl(request, authEnv.APP_URL);
       if (canonicalRedirect) return canonicalRedirect;
-      return handleGoogleAuthRedirect(authEnv);
+      return handleGoogleAuthRedirect(request, authEnv);
     }
     if (url.pathname === "/auth/google/callback") {
       return handleGoogleAuthCallback(request, env.DB, getAuthEnv(env));
@@ -423,7 +423,7 @@ export default {
       const authEnv = getAuthEnv(env);
       const canonicalRedirect = redirectAuthStartToAppUrl(request, authEnv.APP_URL);
       if (canonicalRedirect) return canonicalRedirect;
-      return handleLineAuthRedirect(authEnv);
+      return handleLineAuthRedirect(request, authEnv);
     }
     if (url.pathname === "/auth/line/callback") {
       return handleLineAuthCallback(request, env.DB, getAuthEnv(env));

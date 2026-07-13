@@ -171,30 +171,87 @@ async function getGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo> {
   return resp.json() as Promise<GoogleUserInfo>;
 }
 
-// ── Google OAuth: initiate ──
+// ── Shared: OAuth state (CSRF) handling ──
 
-export function handleGoogleAuthRedirect(authEnv: AuthEnv): Response {
-  const state = generateToken().slice(0, 32);
-  const url = getGoogleAuthUrl(authEnv, state);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      location: url,
-      "set-cookie": `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600`,
-    },
-  });
+const OAUTH_STATE_TTL_SECONDS = 1800; // 30 min — LINE/Google sign-in can take a while
+const OAUTH_STATE_COOKIE = "oauth_state";
+// Marks a state issued by an auto-retry, so a retry that fails again stops instead of looping.
+const RETRY_STATE_PREFIX = "r1-";
+
+function createOAuthState(isRetry: boolean): string {
+  return (isRetry ? RETRY_STATE_PREFIX : "") + generateToken().slice(0, 32);
+}
+
+function setStateCookie(state: string): string {
+  return `${OAUTH_STATE_COOKIE}=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${OAUTH_STATE_TTL_SECONDS}`;
+}
+
+function clearStateCookie(): string {
+  return `${OAUTH_STATE_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+}
+
+function isRetryRequest(request: Request): boolean {
+  return new URL(request.url).searchParams.get("retry") === "1";
+}
+
+/**
+ * The state cookie failed to come back with the callback. The flow is not recoverable
+ * from here (the code is bound to a state we can't verify), but restarting it is: the
+ * retry sets a fresh cookie in whichever browser is actually holding the callback, and
+ * the provider — already consented — bounces straight back. This costs one hop and
+ * weakens nothing: the retried flow is still verified against its own cookie.
+ *
+ * Retry only once (detected via the state prefix, since a cookie marker is exactly what
+ * may be broken); a second failure means cookies aren't sticking at all, so give up.
+ */
+function recoverFromStateFailure(
+  request: Request,
+  authEnv: AuthEnv,
+  provider: "google" | "line",
+  state: string,
+  cookieState: string | undefined
+): Response {
+  console.warn(JSON.stringify({
+    event: "oauth_state_failure",
+    provider,
+    // Distinguishes "cookie never arrived" (lost browser context / expired / blocked)
+    // from "cookie arrived but differs" (stale tab, re-opened callback link).
+    reason: cookieState ? "cookie_mismatch" : "cookie_missing",
+    alreadyRetried: state.startsWith(RETRY_STATE_PREFIX),
+    userAgent: request.headers.get("user-agent"),
+    referer: request.headers.get("referer"),
+  }));
+
+  if (state.startsWith(RETRY_STATE_PREFIX)) return redirectToHome(authEnv);
+
+  const headers = new Headers();
+  headers.set("location", `${authEnv.APP_URL}/auth/${provider}?retry=1`);
+  headers.append("set-cookie", clearStateCookie());
+  return new Response(null, { status: 302, headers });
 }
 
 // ── Shared: bounce a failed OAuth callback back to the homepage ──
 
-// A failed callback used to render raw JSON in the browser. The most common cause
-// is the oauth_state cookie not surviving the round trip (LINE in-app browser,
-// stale/re-opened callback link), so send the user back to the homepage to retry.
+// A failed callback used to render raw JSON in the browser. Send the user somewhere
+// they can act instead.
 function redirectToHome(authEnv: AuthEnv): Response {
   const headers = new Headers();
   headers.set("location", `${authEnv.APP_URL}/`);
-  headers.append("set-cookie", `oauth_state=; Path=/; HttpOnly; Max-Age=0`);
+  headers.append("set-cookie", clearStateCookie());
   return new Response(null, { status: 302, headers });
+}
+
+// ── Google OAuth: initiate ──
+
+export function handleGoogleAuthRedirect(request: Request, authEnv: AuthEnv): Response {
+  const state = createOAuthState(isRetryRequest(request));
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: getGoogleAuthUrl(authEnv, state),
+      "set-cookie": setStateCookie(state),
+    },
+  });
 }
 
 // ── Shared: login existing store and redirect ──
@@ -238,9 +295,8 @@ export async function handleGoogleAuthCallback(
 
   // Verify state
   const cookies = parseCookieHeader(request.headers.get("cookie"));
-  if (cookies["oauth_state"] !== state) {
-    console.warn("Google callback: invalid OAuth state");
-    return redirectToHome(authEnv);
+  if (cookies[OAUTH_STATE_COOKIE] !== state) {
+    return recoverFromStateFailure(request, authEnv, "google", state, cookies[OAUTH_STATE_COOKIE]);
   }
 
   // Exchange code for tokens
@@ -310,7 +366,7 @@ export async function handleGoogleAuthCallback(
   const headers = new Headers();
   headers.set("location", `${authEnv.APP_URL}/onboarding`);
   headers.append("set-cookie", `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`);
-  headers.append("set-cookie", `oauth_state=; Path=/; HttpOnly; Max-Age=0`);
+  headers.append("set-cookie", clearStateCookie());
 
   return new Response(null, { status: 302, headers });
 }
@@ -376,14 +432,13 @@ function base64UrlDecode(str: string): Uint8Array {
 
 // ── LINE Login: initiate ──
 
-export function handleLineAuthRedirect(authEnv: AuthEnv): Response {
-  const state = generateToken().slice(0, 32);
-  const url = getLineAuthUrl(authEnv, state);
+export function handleLineAuthRedirect(request: Request, authEnv: AuthEnv): Response {
+  const state = createOAuthState(isRetryRequest(request));
   return new Response(null, {
     status: 302,
     headers: {
-      location: url,
-      "set-cookie": `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600`,
+      location: getLineAuthUrl(authEnv, state),
+      "set-cookie": setStateCookie(state),
     },
   });
 }
@@ -408,9 +463,8 @@ export async function handleLineAuthCallback(
 
   // Verify state
   const cookies = parseCookieHeader(request.headers.get("cookie"));
-  if (cookies["oauth_state"] !== state) {
-    console.warn("LINE callback: invalid OAuth state");
-    return redirectToHome(authEnv);
+  if (cookies[OAUTH_STATE_COOKIE] !== state) {
+    return recoverFromStateFailure(request, authEnv, "line", state, cookies[OAUTH_STATE_COOKIE]);
   }
 
   // Exchange code for tokens
@@ -487,7 +541,7 @@ export async function handleLineAuthCallback(
   const headers = new Headers();
   headers.set("location", `${authEnv.APP_URL}/onboarding`);
   headers.append("set-cookie", `${STORE_COOKIE_NAME}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`);
-  headers.append("set-cookie", `oauth_state=; Path=/; HttpOnly; Max-Age=0`);
+  headers.append("set-cookie", clearStateCookie());
 
   return new Response(null, { status: 302, headers });
 }

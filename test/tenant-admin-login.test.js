@@ -23,8 +23,19 @@ test("tenant admin-login route serves OAuth login page instead of legacy passwor
 test("OAuth starts on APP_URL origin so state cookie matches callback origin", () => {
   assert.match(indexTs, /function redirectAuthStartToAppUrl\(request: Request, appUrl: string\): Response \| null/, "Expected auth start canonical redirect helper");
   assert.match(indexTs, /if \(currentUrl\.origin === appBaseUrl\.origin\) return null;/, "Expected same-origin auth starts to continue normally");
-  assert.match(indexTs, /const canonicalRedirect = redirectAuthStartToAppUrl\(request, authEnv\.APP_URL\);[\s\S]*if \(canonicalRedirect\) return canonicalRedirect;[\s\S]*return handleGoogleAuthRedirect\(authEnv\);/, "Expected Google auth to canonicalize before setting oauth_state");
-  assert.match(indexTs, /const canonicalRedirect = redirectAuthStartToAppUrl\(request, authEnv\.APP_URL\);[\s\S]*if \(canonicalRedirect\) return canonicalRedirect;[\s\S]*return handleLineAuthRedirect\(authEnv\);/, "Expected LINE auth to canonicalize before setting oauth_state");
+  assert.match(indexTs, /const canonicalRedirect = redirectAuthStartToAppUrl\(request, authEnv\.APP_URL\);[\s\S]*if \(canonicalRedirect\) return canonicalRedirect;[\s\S]*return handleGoogleAuthRedirect\(request, authEnv\);/, "Expected Google auth to canonicalize before setting oauth_state");
+  assert.match(indexTs, /const canonicalRedirect = redirectAuthStartToAppUrl\(request, authEnv\.APP_URL\);[\s\S]*if \(canonicalRedirect\) return canonicalRedirect;[\s\S]*return handleLineAuthRedirect\(request, authEnv\);/, "Expected LINE auth to canonicalize before setting oauth_state");
+});
+
+test("a failed OAuth state restarts the flow once instead of dead-ending", () => {
+  const authTs = readFileSync(new URL("../src/routes/admin/auth.ts", import.meta.url), "utf8");
+  // The retry marker lives in the state, not a cookie — a cookie marker is exactly what may be broken.
+  assert.match(authTs, /const RETRY_STATE_PREFIX = "r1-";/, "Expected a state-borne retry marker");
+  assert.match(authTs, /if \(state\.startsWith\(RETRY_STATE_PREFIX\)\) return redirectToHome\(authEnv\);/, "Expected a second failure to stop instead of looping");
+  assert.match(authTs, /location`?.*\$\{authEnv\.APP_URL\}\/auth\/\$\{provider\}\?retry=1/, "Expected the first failure to restart the provider flow");
+  // The retried flow must still be verified against its own cookie.
+  assert.match(authTs, /cookies\[OAUTH_STATE_COOKIE\] !== state/, "Expected callbacks to still verify state against the cookie");
+  assert.match(authTs, /HttpOnly; Secure; SameSite=Lax/, "Expected the state cookie to be Secure");
 });
 
 test("subdomain owner routes redirect to path-based admin on main domain", () => {
