@@ -185,6 +185,18 @@ export function handleGoogleAuthRedirect(authEnv: AuthEnv): Response {
   });
 }
 
+// ── Shared: bounce a failed OAuth callback back to the homepage ──
+
+// A failed callback used to render raw JSON in the browser. The most common cause
+// is the oauth_state cookie not surviving the round trip (LINE in-app browser,
+// stale/re-opened callback link), so send the user back to the homepage to retry.
+function redirectToHome(authEnv: AuthEnv): Response {
+  const headers = new Headers();
+  headers.set("location", `${authEnv.APP_URL}/`);
+  headers.append("set-cookie", `oauth_state=; Path=/; HttpOnly; Max-Age=0`);
+  return new Response(null, { status: 302, headers });
+}
+
 // ── Shared: login existing store and redirect ──
 
 async function loginAndRedirect(
@@ -218,13 +230,17 @@ export async function handleGoogleAuthCallback(
   const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  if (error) return json({ ok: false, error: `Google auth error: ${error}` }, 400);
-  if (!code || !state) return json({ ok: false, error: "Missing code or state" }, 400);
+  if (error) {
+    console.warn("Google auth error:", error);
+    return redirectToHome(authEnv);
+  }
+  if (!code || !state) return redirectToHome(authEnv);
 
   // Verify state
   const cookies = parseCookieHeader(request.headers.get("cookie"));
   if (cookies["oauth_state"] !== state) {
-    return json({ ok: false, error: "Invalid OAuth state" }, 400);
+    console.warn("Google callback: invalid OAuth state");
+    return redirectToHome(authEnv);
   }
 
   // Exchange code for tokens
@@ -384,13 +400,17 @@ export async function handleLineAuthCallback(
   const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
-  if (error) return json({ ok: false, error: `LINE auth error: ${error}` }, 400);
-  if (!code || !state) return json({ ok: false, error: "Missing code or state" }, 400);
+  if (error) {
+    console.warn("LINE auth error:", error);
+    return redirectToHome(authEnv);
+  }
+  if (!code || !state) return redirectToHome(authEnv);
 
   // Verify state
   const cookies = parseCookieHeader(request.headers.get("cookie"));
   if (cookies["oauth_state"] !== state) {
-    return json({ ok: false, error: "Invalid OAuth state" }, 400);
+    console.warn("LINE callback: invalid OAuth state");
+    return redirectToHome(authEnv);
   }
 
   // Exchange code for tokens
