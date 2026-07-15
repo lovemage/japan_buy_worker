@@ -3,7 +3,7 @@ import type { RequestContext } from "../../context";
 import { normalizeSlug, getSlugValidationError } from "../../shared/slug-rules.js";
 
 export const STORE_COOKIE_NAME = "store_session";
-const SESSION_TTL_SECONDS = 86400 * 7; // 7 days
+const SESSION_TTL_SECONDS = 86400 * 30; // 30 days
 
 // Legacy cookie name for backward compatibility during transition
 const LEGACY_COOKIE_NAME = "admin_session";
