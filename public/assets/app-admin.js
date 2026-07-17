@@ -2,6 +2,7 @@ import { initOrders, refreshOrders } from "./app-admin-orders.js";
 import { initProducts } from "./app-admin-products.js";
 import { initSettings } from "./app-admin-settings.js";
 import { initMarketing } from "./app-admin-marketing.js";
+import { copyText } from "./clipboard.js";
 import {
   buildStorePublicBaseUrl,
   buildStorePublicDisplayText,
@@ -21,6 +22,27 @@ const SHEET_TABS = new Set(["camera", "orders", "settings"]);
 let currentTab = "products";
 let sheetOpen = false;
 const tabInitialized = {};
+
+function initStoreUrlCopyButton() {
+  const button = document.getElementById("copy-url-btn");
+  const storeUrl = document.getElementById("public-url-link");
+  if (!button || !storeUrl || button.dataset.bound === "1") return;
+  button.dataset.bound = "1";
+
+  button.addEventListener("click", async () => {
+    const originalLabel = "複製網址";
+    const copied = await copyText(storeUrl.href);
+    if (!copied) return;
+
+    button.textContent = "✓ 已複製";
+    button.setAttribute("aria-label", "網址已複製");
+    clearTimeout(Number(button.dataset.resetTimer) || 0);
+    button.dataset.resetTimer = String(window.setTimeout(() => {
+      button.textContent = originalLabel;
+      button.setAttribute("aria-label", originalLabel);
+    }, 1500));
+  });
+}
 
 // ── Bottom Sheet ──
 
@@ -215,6 +237,7 @@ function bootstrap() {
     publicUrlLink.href = `${baseUrl}/`;
     publicUrlLink.textContent = "我的商店";
   }
+  initStoreUrlCopyButton();
 
   document.querySelectorAll(".admin-nav-item").forEach((btn) => {
     btn.addEventListener("click", () => {

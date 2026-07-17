@@ -2,6 +2,7 @@ import { showError } from "./app-admin.js";
 import { withProductImageFallback, applyProductImageFallback } from "./image-fallback.js";
 import { buildProductShareUrl } from "./store-url.js";
 import { handleUnauthorized } from "./session-guard.js";
+import { copyText } from "./clipboard.js";
 
 function prefixImageUrl(url) {
   if (!url) return url;
@@ -357,7 +358,7 @@ function renderProductGrid(products, paging) {
   });
 
   grid.querySelectorAll(".js-copy-url").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const code = btn.getAttribute("data-code");
       const url = buildProductShareUrl(code, {
         plan: window.__STORE_PLAN,
@@ -367,11 +368,17 @@ function renderProductGrid(products, paging) {
         origin: location.origin,
         apiBase: window.__API_BASE || "",
       });
-      navigator.clipboard.writeText(url).then(() => {
-        const orig = btn.textContent;
-        btn.textContent = "✓";
-        setTimeout(() => { btn.textContent = orig; }, 1200);
-      });
+      const copied = await copyText(url);
+      if (!copied) return;
+
+      const originalLabel = "網址";
+      btn.textContent = "✓ 已複製";
+      btn.setAttribute("aria-label", "商品網址已複製");
+      clearTimeout(Number(btn.dataset.resetTimer) || 0);
+      btn.dataset.resetTimer = String(window.setTimeout(() => {
+        btn.textContent = originalLabel;
+        btn.setAttribute("aria-label", "複製商品網址");
+      }, 1500));
     });
   });
 
