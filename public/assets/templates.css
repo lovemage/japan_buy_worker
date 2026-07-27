@@ -857,3 +857,216 @@
   border-color: #87A96B;
   box-shadow: 0 0 0 3px rgba(135, 169, 107, 0.22);
 }
+
+
+/* ══════════════════════════════════════════
+   Template: editorial (米白磚紅)
+   雜誌式商品目錄 — 明朝體 + 米白 + 磚紅
+   無卡片、無陰影、無圓角，只留 1px 分隔線與留白。
+   規格見 docs/new_design.md
+   ══════════════════════════════════════════ */
+[data-template="editorial"] {
+  font-family: "Noto Serif TC", "Georgia", serif;
+  --bg-color: #F2EEE8;
+  /* 與底同色：卡片、header 一律不浮出背景 */
+  --card-bg: #F2EEE8;
+  --primary-color: #9C4432;
+  --primary-hover: #82372A;
+  --text-color: #12100D;
+  --accent-warm: #9C4432;
+  --accent-warm-hover: #82372A;
+  --accent-warm-subtle: #EBE7E1;
+  --accent-gold: #8A8378;
+  --accent-gold-bg: #EBE7E1;
+  --muted: #8A8378;
+  --muted-brand: #B3ABA0;
+  --line: #E2DDD5;
+  --shadow: none;
+  --btn-secondary: #141210;
+  --btn-secondary-hover: #000000;
+  --btn-added: #4F7A4C;
+  --card-border: transparent;
+  --brand-shadow-sm: rgba(18, 16, 13, 0.06);
+  --brand-shadow-md: rgba(18, 16, 13, 0.08);
+  --brand-shadow-lg: rgba(18, 16, 13, 0.12);
+  --focus-ring: rgba(156, 68, 50, 0.14);
+}
+[data-template="editorial"] .page-header {
+  border-bottom: 1px solid #E2DDD5;
+}
+[data-template="editorial"] .page-header h1 {
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+/* 標籤：直角、扁平、無陰影 */
+[data-template="editorial"] .promo-badge {
+  color: #FFFFFF;
+  background: #9C4432;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+[data-template="editorial"] .product-tag {
+  border-radius: 0;
+  font-weight: 500;
+}
+[data-template="editorial"] .btn-pill.secondary {
+  background: transparent;
+  color: #12100D;
+  border-color: #D6D0C6;
+}
+[data-template="editorial"] .btn-pill.secondary:hover {
+  background: #EBE7E1;
+  color: #12100D;
+}
+/* 主按鈕：黑底白字、直角，不使用磚紅（磚紅只留給標籤與價格） */
+[data-template="editorial"] .button {
+  background: #141210;
+  color: #FFFFFF;
+  border-radius: 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: none;
+}
+[data-template="editorial"] .button:hover {
+  background: #000000;
+  color: #FFFFFF;
+  box-shadow: none;
+}
+[data-template="editorial"] .button.secondary {
+  background: transparent;
+  color: #12100D;
+  border: 1px solid #D6D0C6;
+  border-radius: 0;
+}
+[data-template="editorial"] .button.secondary:hover {
+  background: #EBE7E1;
+  color: #12100D;
+}
+[data-template="editorial"] .floating-request-btn,
+[data-template="editorial"] .floating-back-btn,
+[data-template="editorial"] .detail-add-btn {
+  background: #141210;
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(18, 16, 13, 0.22);
+}
+[data-template="editorial"] .floating-request-btn:hover,
+[data-template="editorial"] .floating-back-btn:hover,
+[data-template="editorial"] .detail-add-btn:hover {
+  background: #000000;
+  color: #FFFFFF;
+  box-shadow: 0 6px 22px rgba(18, 16, 13, 0.28);
+}
+[data-template="editorial"] .floating-cart-badge {
+  background: #9C4432;
+  color: #FFFFFF;
+}
+/* 卡片內按鈕：細框幽靈鈕，不搶圖片 */
+[data-template="editorial"] .product-card__body .button {
+  background: transparent;
+  color: #12100D;
+  border: 1px solid #D6D0C6;
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-template="editorial"] .product-card__body .button:hover {
+  background: #EBE7E1;
+  color: #12100D;
+  transform: none;
+  box-shadow: none;
+}
+/* 網格：靠留白分隔，不畫線也不用容器 */
+[data-template="editorial"] .product-grid {
+  gap: 26px 20px;
+}
+[data-template="editorial"] .product-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-template="editorial"] .product-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+[data-template="editorial"] .product-card__media {
+  border-radius: 0;
+}
+/* hover 不抬卡片，改推圖片本身 */
+[data-template="editorial"] .product-card img {
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-template="editorial"] .product-card:hover img {
+  transform: scale(1.035);
+}
+[data-template="editorial"] .product-card__body {
+  padding: 14px 4px 18px;
+}
+[data-template="editorial"] .product-card__title {
+  letter-spacing: 0.02em;
+}
+/* 列表價格用近黑；磚紅只留給促銷標籤與詳情頁主價格 */
+[data-template="editorial"] .product-card__price {
+  color: #12100D;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+[data-template="editorial"] .product-card__category,
+[data-template="editorial"] .product-card__body .meta {
+  color: #B3ABA0;
+  letter-spacing: 0.03em;
+}
+[data-template="editorial"] .product-card__detail-link {
+  border-radius: 0;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+[data-template="editorial"] .product-card__cart-btn.is-added {
+  background: #141210;
+  color: #FFFFFF;
+}
+/* 詳情頁：價格區去色塊，改上下細線 */
+[data-template="editorial"] .detail-price-block {
+  background: transparent;
+  border-top: 1px solid #E2DDD5;
+  border-bottom: 1px solid #E2DDD5;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 16px 0 14px;
+}
+[data-template="editorial"] .detail-price-twd {
+  color: #9C4432;
+  font-variant-numeric: tabular-nums;
+}
+[data-template="editorial"] .detail-thumb-btn.is-active .detail-thumb {
+  border-color: #9C4432;
+  box-shadow: none;
+}
+[data-template="editorial"] .qty-stepper {
+  border-radius: 0;
+  border-color: #D6D0C6;
+}
+[data-template="editorial"] .qty-stepper__btn:hover {
+  background: #EBE7E1;
+  color: #9C4432;
+}
+[data-template="editorial"] .input-cute {
+  border-radius: 0;
+  border-color: #D6D0C6;
+}
+[data-template="editorial"] .detail-variant-select {
+  border-radius: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-template="editorial"] .product-card,
+  [data-template="editorial"] .product-card img,
+  [data-template="editorial"] .product-card:hover img {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
