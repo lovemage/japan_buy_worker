@@ -351,6 +351,7 @@ const TEMPLATES: Record<string, { name: string; plans: string[] }> = {
   "bold-ocean": { name: "白藍黑",   plans: ["proplus"] },
   lilac:        { name: "淺紫",     plans: ["plus", "pro", "proplus"] },
   matcha:       { name: "抹茶綠",   plans: ["plus", "pro", "proplus"] },
+  editorial:    { name: "米白磚紅", plans: ["proplus"] },
 };
 
 export { TEMPLATES };

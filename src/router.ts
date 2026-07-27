@@ -70,6 +70,14 @@ function json(payload: unknown, status = 200, headers: Record<string, string> = 
   });
 }
 
+function imageProxyHeaders(contentType = "image/webp"): Headers {
+  return new Headers({
+    "content-type": contentType,
+    "cache-control": "public, max-age=31536000, immutable",
+    "X-Robots-Tag": "noindex, nofollow",
+  });
+}
+
 function escapeHtmlAttr(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -249,10 +257,14 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     const requestUrl = new URL(request.url);
     const origin = requestUrl.origin;
     let ogImage = `${origin}/assets/images/logo-3.png`;
-    if (bannerData.enabled && bannerData.images && bannerData.images.length > 0) {
-      ogImage = `${origin}${ctx.basePath}/api/images/${bannerData.images[0]}`;
-    } else if (displayData.storeLogo) {
-      ogImage = `${origin}${ctx.basePath}/api/images/${displayData.storeLogo}`;
+    const bannerImage = bannerData.enabled && Array.isArray(bannerData.images)
+      ? (bannerData.images.find((image) => typeof image === "string" && image.trim()) || "").trim()
+      : "";
+    const storeLogo = typeof displayData.storeLogo === "string" ? displayData.storeLogo.trim() : "";
+    if (bannerImage) {
+      ogImage = `${origin}${ctx.basePath}/api/images/${bannerImage}`;
+    } else if (storeLogo) {
+      ogImage = `${origin}${ctx.basePath}/api/images/${storeLogo}`;
     }
 
     const ogTags = `<meta name="description" content="${ogDesc}" />
@@ -473,14 +485,28 @@ export async function routeTenantRequest(
   // ── R2 image proxy ──
   if (subPath.startsWith("/api/images/")) {
     const key = subPath.slice("/api/images/".length);
-    if (!ctx.r2) return json({ ok: false, error: "R2 not configured" }, 500);
+    if (!key) {
+      return new Response("Not Found", {
+        status: 404,
+        headers: imageProxyHeaders("text/plain; charset=UTF-8"),
+      });
+    }
+    if (!ctx.r2) {
+      return json(
+        { ok: false, error: "R2 not configured" },
+        500,
+        { "X-Robots-Tag": "noindex, nofollow" }
+      );
+    }
     const object = await ctx.r2.get(key);
-    if (!object) return new Response("Not Found", { status: 404 });
+    if (!object) {
+      return new Response("Not Found", {
+        status: 404,
+        headers: imageProxyHeaders("text/plain; charset=UTF-8"),
+      });
+    }
     return new Response(object.body, {
-      headers: {
-        "content-type": object.httpMetadata?.contentType || "image/webp",
-        "cache-control": "public, max-age=31536000, immutable",
-      },
+      headers: imageProxyHeaders(object.httpMetadata?.contentType || "image/webp"),
     });
   }
 

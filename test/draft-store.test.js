@@ -15,10 +15,14 @@ globalThis.localStorage = {
   },
 };
 
+globalThis.window = { __STORE_SLUG: 'default', __API_BASE: '' };
+
 const { addItem, clearDraft, getDraft } = await import('../public/assets/draft-store.js');
 
 test.beforeEach(() => {
   store = new Map();
+  globalThis.window.__STORE_SLUG = 'default';
+  globalThis.window.__API_BASE = '';
   clearDraft();
 });
 
@@ -89,4 +93,22 @@ test('addItem keeps variants as separate draft lines', () => {
     getDraft().items.map((item) => item.variantName),
     ['6入', '12入']
   );
+});
+
+test('drafts are isolated by storefront and discard the legacy shared draft', () => {
+  store.set('requirementDraft', JSON.stringify({ items: [{ productId: 99, code: 'legacy' }] }));
+  globalThis.window.__STORE_SLUG = 'japan';
+
+  assert.deepEqual(getDraft().items, []);
+  assert.equal(store.has('requirementDraft'), false);
+
+  addItem({ productId: 1, code: 'JP-1', productNameSnapshot: 'Japan item', quantity: 1 });
+
+  globalThis.window.__STORE_SLUG = 'chixu';
+  assert.deepEqual(getDraft().items, []);
+  addItem({ productId: 2, code: 'CX-1', productNameSnapshot: 'Chixu item', quantity: 1 });
+  assert.deepEqual(getDraft().items.map((item) => item.code), ['CX-1']);
+
+  globalThis.window.__STORE_SLUG = 'japan';
+  assert.deepEqual(getDraft().items.map((item) => item.code), ['JP-1']);
 });

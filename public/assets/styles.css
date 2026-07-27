@@ -1321,6 +1321,18 @@ body {
   font-size: 12px;
   color: var(--muted);
 }
+.cvs-picker__manual-note {
+  display: grid;
+  gap: 6px;
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+.cvs-picker__manual-note .input-cute {
+  min-height: 68px;
+  resize: vertical;
+  font-weight: 400;
+}
 .cvs-picker__results {
   max-height: 300px;
   overflow-y: auto;

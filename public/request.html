@@ -57,6 +57,22 @@
         <p class="trust-signal" aria-label="隱私保護說明">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>您的資料僅用於本次代購配送，不會用於其他用途
         </p>
+        <fieldset id="shipping-options-box" class="shipping-options">
+          <legend>配送方式</legend>
+          <div id="shipping-options-list"></div>
+          <div id="cvs-picker" class="cvs-picker" hidden>
+            <p class="meta cvs-picker__hint">輸入店名、店號、路名或地址關鍵字，搜尋對應門市</p>
+            <input id="cvs-search" type="text" class="input-cute" placeholder="例：信義門市、117290、忠孝東路" autocomplete="off" />
+            <div id="cvs-picker-results" class="cvs-picker__results" hidden></div>
+            <div id="cvs-picker-selected" class="cvs-picker__selected" hidden></div>
+            <label class="cvs-picker__manual-note" for="cvs-manual-note">
+              找不到指定門市？請自行填寫
+              <textarea id="cvs-manual-note" rows="2" class="input-cute" placeholder="門市名稱、店號或地址"></textarea>
+            </label>
+            <p id="cvs-picker-status" class="meta cvs-picker__status"></p>
+          </div>
+          <p id="shipping-note" class="meta"></p>
+        </fieldset>
         <label for="memberName">
           會員姓名
           <input id="memberName" name="memberName" type="text" class="input-cute" required aria-required="true" placeholder="收件人真實姓名" />
@@ -71,28 +87,18 @@
             <input id="lineId" name="lineId" type="text" class="input-cute" required aria-required="true" />
           </label>
         </div>
-        <label for="recipientCity">
-          收件縣市
-          <select id="recipientCity" name="recipientCity" class="input-cute" required aria-required="true"></select>
-        </label>
-        <label for="recipientAddress">
-          收件地址
-          <input id="recipientAddress" name="recipientAddress" type="text" class="input-cute" required aria-required="true" placeholder="街道路名、門牌號碼、樓層" />
-        </label>
-        <fieldset id="shipping-options-box" class="shipping-options">
-          <legend>配送方式</legend>
-          <div id="shipping-options-list"></div>
-          <div id="cvs-picker" class="cvs-picker" hidden>
-            <p class="meta cvs-picker__hint">輸入店名、店號或地址關鍵字搜尋門市</p>
-            <input id="cvs-search" type="text" class="input-cute" placeholder="例：信義門市、117290、台北市" autocomplete="off" />
-            <div id="cvs-picker-results" class="cvs-picker__results" hidden></div>
-            <div id="cvs-picker-selected" class="cvs-picker__selected" hidden></div>
-            <p id="cvs-picker-status" class="meta cvs-picker__status"></p>
-          </div>
-          <p id="shipping-note" class="meta"></p>
-        </fieldset>
+        <div id="recipient-address-fields">
+          <label for="recipientCity">
+            收件縣市
+            <select id="recipientCity" name="recipientCity" class="input-cute" required aria-required="true"></select>
+          </label>
+          <label for="recipientAddress">
+            收件地址
+            <input id="recipientAddress" name="recipientAddress" type="text" class="input-cute" required aria-required="true" placeholder="街道路名、門牌號碼、樓層" />
+          </label>
+        </div>
         <label>
-          整單備註
+          訂單備註（選填）
           <textarea id="notes" name="notes" rows="3" class="input-cute"></textarea>
         </label>
         <div class="captcha-box">

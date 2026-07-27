@@ -1,8 +1,29 @@
-const DRAFT_KEY = "requirementDraft";
+const LEGACY_DRAFT_KEY = "requirementDraft";
+const DRAFT_KEY_PREFIX = "requirementDraft:v2";
+
+function getStoreScope() {
+  const slug = typeof window !== "undefined" ? String(window.__STORE_SLUG || "").trim() : "";
+  if (slug) return slug;
+
+  const apiBase = typeof window !== "undefined" ? String(window.__API_BASE || "") : "";
+  const match = apiBase.match(/^\/s\/([^/]+)/);
+  return match?.[1] || "default";
+}
+
+function getDraftKey() {
+  return `${DRAFT_KEY_PREFIX}:${getStoreScope()}`;
+}
+
+function discardLegacyDraft() {
+  // The old global key could mix carts from different storefronts. Do not
+  // migrate it because its store of origin cannot be trusted.
+  localStorage.removeItem(LEGACY_DRAFT_KEY);
+}
 
 export function getDraft() {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY);
+    discardLegacyDraft();
+    const raw = localStorage.getItem(getDraftKey());
     if (!raw) {
       return { items: [] };
     }
@@ -16,11 +37,13 @@ export function getDraft() {
 }
 
 export function setDraft(draft) {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  discardLegacyDraft();
+  localStorage.setItem(getDraftKey(), JSON.stringify(draft));
 }
 
 export function clearDraft() {
-  localStorage.removeItem(DRAFT_KEY);
+  discardLegacyDraft();
+  localStorage.removeItem(getDraftKey());
 }
 
 export function addItem(item) {

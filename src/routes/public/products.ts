@@ -2,7 +2,7 @@ import type { RequestContext } from "../../context";
 import { buildProductWhereClause, parseBrandFilters } from "./product-filters";
 import { parseStoredProductPayload } from "../../jobs/product-records";
 import { buildVisibleProductLimitClause, getPlanProductLimit } from "../../shared/product-limits.js";
-import { parseCookieHeader, STORE_COOKIE_NAME } from "../admin/auth";
+import { isStoreOwnerAuthorized } from "../admin/auth";
 
 type ProductRow = {
   id: number;
@@ -76,14 +76,10 @@ function mapProduct(item: ProductRow) {
 }
 
 async function isStoreOwnerRequest(request: Request, ctx: RequestContext): Promise<boolean> {
-  const cookies = parseCookieHeader(request.headers.get("cookie"));
-  const token = cookies[STORE_COOKIE_NAME];
-  if (!token) return false;
-  const session = await ctx.db
-    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
-    .bind(token)
-    .first<{ store_id: number }>();
-  return Number(session?.store_id) === ctx.storeId;
+  // Keep public product reads in lockstep with admin authorization. In
+  // particular, existing owners may still have the legacy admin_session
+  // cookie, which is accepted by the admin routes.
+  return isStoreOwnerAuthorized(request, ctx);
 }
 
 export async function handlePublicProducts(

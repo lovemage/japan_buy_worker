@@ -42,6 +42,22 @@ test("request frontend redirects to payUrl when direct checkout is returned", ()
   assert.ok(requestJs.includes("location.href = body.payUrl"));
 });
 
+test("request frontend submits enabled custom shipping even when legacy shipping is disabled", () => {
+  assert.ok(requestJs.includes("function hasCustomShippingMethods()"));
+  assert.ok(
+    requestJs.includes("hasCustomShippingMethods() || pricingConfig?.shippingOptionsEnabled !== false"),
+    "Expected custom shipping methods to override the legacy shipping toggle during submission"
+  );
+});
+
+test("request frontend supports CVS type inference, store search, and optional manual store notes", () => {
+  assert.ok(requestJs.includes("function inferShippingType(name, explicitType)"));
+  assert.ok(requestJs.includes('return "cvs-711"'));
+  assert.ok(requestJs.includes('return "cvs-family"'));
+  assert.ok(requestJs.includes('function syncRecipientAddressFields(type)'));
+  assert.ok(requestJs.includes('document.getElementById("cvs-manual-note")'));
+});
+
 test("PAYUNi notify marks linked requirement as paid only after successful claim", () => {
   const claimIdx = storePayment.indexOf("WHERE id = ? AND status = 'pending'");
   const requirementPaidIdx = storePayment.indexOf("UPDATE requirement_forms SET status = 'paid'");
