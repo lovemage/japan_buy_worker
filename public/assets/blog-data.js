@@ -5,6 +5,33 @@
  */
 var BLOG_ARTICLES = [
   {
+    href: "/blog/japan-cosmetics-photo-listing-software.html",
+    tag: "工具選擇",
+    title: "日本藥妝代購有拍照自動上架軟體嗎？工具選擇、流程與收費一次看",
+    desc: "從照片辨識、商品資料確認到建立自己的商店，整理日本藥妝快速上架工具的選擇方法與費用。",
+    thumb: "/assets/images/blog/og-japan-cosmetics-photo-listing.webp",
+    date: "2026-08-06",
+    readMin: 7,
+  },
+  {
+    href: "/blog/ai-vs-barcode-product-listing.html",
+    tag: "上架比較",
+    title: "AI 拍照上架、掃碼上架、手動輸入哪個準？三種商品建檔方式比較",
+    desc: "條碼擅長確認標準商品身分，AI 擅長從照片建立初稿，手動輸入保留最高控制。一次看懂三種方法。",
+    thumb: "/assets/images/blog/og-ai-barcode-manual-listing.webp",
+    date: "2026-08-06",
+    readMin: 8,
+  },
+  {
+    href: "/blog/solo-seller-fast-product-listing.html",
+    tag: "上架教學",
+    title: "一個人怎麼快速上新？不用 AI 也能加快商品上架的 6 種方法",
+    desc: "從批次拍照、欄位範本到二手商品分級，整理一人賣家真正能執行的快速上新方法。",
+    thumb: "/assets/images/blog/og-solo-seller-fast-listing.webp",
+    date: "2026-08-06",
+    readMin: 8,
+  },
+  {
     href: "/blog/japan-cosmetics-daigou-guide.html",
     tag: "實戰攻略",
     title: "日本藥妝代購攻略：走進店裡拍照就上架",
