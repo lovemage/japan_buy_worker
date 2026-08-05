@@ -902,6 +902,20 @@
     </section>
   </main>
 
+  <!-- 方案續約 / 更換彈窗：放在 tab panel 之外，否則切到其他分頁時會被 .hidden 一起藏掉 -->
+  <div id="plan-modal" class="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title">
+    <div class="plan-modal__content">
+      <h3 class="plan-modal__title" id="plan-modal-title">選擇方案</h3>
+      <div class="plan-modal__current" id="plan-modal-current"></div>
+      <div id="plan-modal-options"></div>
+      <div class="plan-modal__actions">
+        <button type="button" class="plan-modal__cancel" id="plan-modal-cancel">取消</button>
+        <button type="button" class="upgrade-btn" id="plan-modal-submit" disabled>前往付款</button>
+      </div>
+      <p class="plan-modal__hint" id="plan-modal-hint">付款完成後方案立即生效。</p>
+    </div>
+  </div>
+
   <!-- Bottom Sheet -->
   <div class="admin-sheet-backdrop" id="admin-sheet-backdrop"></div>
   <div class="admin-sheet" id="admin-sheet">
@@ -934,48 +948,299 @@
   </nav>
 
   <script>
-  // ── 升級方案：開新視窗前往方案頁（主網域 /#pricing） ──
-  function openUpgrade(reason) {
-    try { if (typeof gtag === "function") gtag("event", "upgrade_click", { reason: reason || "admin" }); } catch (e) {}
-    var url = new URL("/#pricing", location.origin);
-    window.open(url.href, "_blank", "noopener");
+  // ── 方案續約 / 更換：後台彈窗直接結帳，不跳轉方案頁 ──
+  var PLAN_NAMES = { free: "免費", plus: "Plus", pro: "Pro", proplus: "Pro+" };
+  var planOffersCache = null;
+  var currentPlanStore = null;
+  var selectedOffer = null;
+
+  function planName(plan) { return PLAN_NAMES[plan] || plan; }
+
+  var planQuotes = {};
+
+  function loadPlanOffers() {
+    if (planOffersCache) return Promise.resolve(planOffersCache);
+    return fetch("/api/plan-offers")
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        planOffersCache = (d && d.ok && d.offers) ? d.offers : {};
+        return planOffersCache;
+      })
+      .catch(function () { planOffersCache = {}; return planOffersCache; });
   }
-  window.openUpgrade = openUpgrade;
 
-  // 帳號資訊：依方案狀態顯示升級提示（free / 到期 / 付費可升級 / 已最高方案）
-  function renderPlanUpgrade(store) {
-    var box = document.getElementById("plan-upgrade-box");
-    if (!box) return;
-    var eff = (store && store.effective_plan) || "free";
-    var raw = (store && store.plan) || "free";
+  // 升級折抵報價；失敗時退回原價顯示（結帳端仍會重算，不會因此少收）
+  function loadPlanQuotes() {
+    return fetch("/api/billing/upgrade-quotes", { credentials: "same-origin" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { planQuotes = (d && d.ok && d.quotes) ? d.quotes : {}; })
+      .catch(function () { planQuotes = {}; });
+  }
+
+  function quoteFor(plan, months) { return planQuotes[plan + ":" + months] || null; }
+
+  function renderPlanModalCurrent() {
+    var el = document.getElementById("plan-modal-current");
+    if (!el) return;
+    el.textContent = "";
+    var store = currentPlanStore || {};
+    var raw = store.plan || "free";
+    var eff = store.effective_plan || "free";
     var expired = raw !== "free" && eff === "free";
-    var names = { free: "免費", plus: "Plus", pro: "Pro", proplus: "Pro+" };
-    box.textContent = "";
 
-    if (eff === "proplus") {
-      var maxCard = document.createElement("div");
-      maxCard.className = "upgrade-card upgrade-card--max";
-      maxCard.innerHTML = '<div class="upgrade-card__text"><strong>感謝支持，您已是 Pro+ 最高方案</strong></div></div>';
-      box.appendChild(maxCard);
+    var line = document.createElement("div");
+    line.appendChild(document.createTextNode("目前方案："));
+    var strong = document.createElement("strong");
+    strong.textContent = planName(raw);
+    line.appendChild(strong);
+    if (expired) {
+      var ex = document.createElement("span");
+      ex.className = "plan-modal__expired";
+      ex.textContent = "（已到期）";
+      line.appendChild(ex);
+    }
+    el.appendChild(line);
+
+    if (store.plan_expires_at) {
+      var sub = document.createElement("div");
+      sub.textContent = (expired ? "到期日：" : "有效期至：") +
+        new Date(store.plan_expires_at).toLocaleDateString("zh-TW");
+      el.appendChild(sub);
+    }
+  }
+
+  // 目前方案剩餘天數；已到期或免費方案回 0
+  function planRemainingDays() {
+    var store = currentPlanStore || {};
+    var raw = store.plan || "free";
+    var eff = store.effective_plan || "free";
+    if (raw === "free" || eff === "free" || !store.plan_expires_at) return 0;
+    var diff = new Date(store.plan_expires_at).getTime() - Date.now();
+    return diff > 0 ? Math.ceil(diff / 86400000) : 0;
+  }
+
+  // 同方案續約從到期日接續；升級折抵原方案剩餘價值；降級沒有折抵，會從付款日重算。
+  function updatePlanModalHint() {
+    var hint = document.getElementById("plan-modal-hint");
+    if (!hint) return;
+    var raw = (currentPlanStore && currentPlanStore.plan) || "free";
+    var remaining = planRemainingDays();
+    hint.classList.remove("plan-modal__hint--warn");
+
+    if (!selectedOffer) {
+      hint.textContent = "付款完成後方案立即生效。";
       return;
     }
 
-    var title, sub, btnLabel, extraClass;
+    var quote = quoteFor(selectedOffer.plan, selectedOffer.months);
+    if (selectedOffer.plan === raw && remaining > 0) {
+      hint.textContent = "續約會從原到期日接續計算，剩餘 " + remaining + " 天不會浪費。";
+    } else if (quote && quote.upgrading && Number(quote.credit) > 0) {
+      hint.textContent = "升級會折抵原方案剩餘價值 NT$" + quote.credit + "，新方案自付款日重新起算。";
+    } else if (remaining > 0 && selectedOffer.plan !== raw) {
+      hint.textContent = "注意：降級或更換為較低方案沒有折抵，目前方案剩餘 " + remaining + " 天將不會保留。";
+      hint.classList.add("plan-modal__hint--warn");
+    } else {
+      hint.textContent = "付款完成後方案立即生效，自付款日起算。";
+    }
+  }
+
+  function selectPlanOffer(plan, offer, payable, btn) {
+    var all = document.querySelectorAll("#plan-modal-options .plan-option");
+    for (var i = 0; i < all.length; i++) all[i].classList.remove("is-selected");
+    btn.classList.add("is-selected");
+    selectedOffer = { plan: plan, months: offer.months, payable: payable };
+    var submit = document.getElementById("plan-modal-submit");
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = payable > 0 ? "前往付款 NT$" + payable : "直接開通（免補差額）";
+    }
+    updatePlanModalHint();
+  }
+
+  function buildPlanOption(plan, offer) {
+    var quote = quoteFor(plan, offer.months);
+    var needsSupport = !!(quote && quote.needsBillingReview);
+    var payable = quote && typeof quote.payable === "number" ? quote.payable : offer.amount;
+    var credit = quote && typeof quote.credit === "number" ? quote.credit : 0;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "plan-option";
+    if (needsSupport) btn.disabled = true;
+
+    var left = document.createElement("div");
+    var term = document.createElement("span");
+    term.className = "plan-option__term";
+    term.textContent = offer.months + " 個月";
+    left.appendChild(term);
+
+    var notes = [];
+    if (Number(offer.bonusDays) > 0) notes.push("加贈 " + offer.bonusDays + " 天");
+    if (Number(offer.monthlyPrice) && Number(offer.originalMonthlyPrice) > Number(offer.monthlyPrice)) {
+      notes.push("每月 NT$" + offer.monthlyPrice + "（原 NT$" + offer.originalMonthlyPrice + "）");
+    }
+    if (needsSupport) {
+      notes = ["此帳號的方案基準需人工確認，請聯繫客服升級"];
+    } else if (credit > 0) {
+      notes.unshift("已折抵原方案剩餘 NT$" + credit);
+      if (Number(quote.extraPaidDays) > 0) notes.push("多出的價值再加贈 " + quote.extraPaidDays + " 天");
+    }
+    if (notes.length) {
+      var note = document.createElement("span");
+      note.className = "plan-option__note";
+      note.textContent = notes.join("・");
+      left.appendChild(note);
+    }
+    btn.appendChild(left);
+
+    var price = document.createElement("span");
+    price.className = "plan-option__price";
+    if (needsSupport) {
+      price.textContent = "—";
+    } else if (credit > 0) {
+      price.textContent = "NT$" + payable;
+      var orig = document.createElement("span");
+      orig.className = "plan-option__unit";
+      orig.textContent = " 原 NT$" + offer.amount;
+      price.appendChild(orig);
+    } else {
+      price.textContent = "NT$" + payable;
+    }
+    btn.appendChild(price);
+
+    if (!needsSupport) {
+      btn.addEventListener("click", function () { selectPlanOffer(plan, offer, payable, btn); });
+    }
+    return btn;
+  }
+
+  function setPlanModalMode(mode) {
+    var titleEl = document.getElementById("plan-modal-title");
+    var wrap = document.getElementById("plan-modal-options");
+    var submit = document.getElementById("plan-modal-submit");
+    if (!wrap) return;
+
+    var raw = (currentPlanStore && currentPlanStore.plan) || "free";
+    var renewable = mode === "renew" && raw !== "free" && planOffersCache[raw];
+    if (titleEl) titleEl.textContent = renewable ? "續約方案" : "更換方案";
+
+    wrap.textContent = "";
+    selectedOffer = null;
+    if (submit) { submit.disabled = true; submit.textContent = "前往付款"; }
+    updatePlanModalHint();
+
+    var plans = renewable ? [raw] : ["plus", "pro", "proplus"];
+    plans.forEach(function (plan) {
+      var offers = planOffersCache[plan] || [];
+      if (!offers.length) return;
+
+      var group = document.createElement("div");
+      group.className = "plan-group";
+
+      var name = document.createElement("div");
+      name.className = "plan-group__name";
+      name.appendChild(document.createTextNode(planName(plan) + " 方案"));
+      if (plan === raw) {
+        var badge = document.createElement("span");
+        badge.className = "plan-group__badge";
+        badge.textContent = "目前方案";
+        name.appendChild(badge);
+      }
+      group.appendChild(name);
+
+      offers.forEach(function (offer) { group.appendChild(buildPlanOption(plan, offer)); });
+      wrap.appendChild(group);
+    });
+
+    if (renewable) {
+      var switchBtn = document.createElement("button");
+      switchBtn.type = "button";
+      switchBtn.className = "upgrade-btn upgrade-btn--ghost";
+      switchBtn.style.width = "100%";
+      switchBtn.textContent = "改選其他方案";
+      switchBtn.addEventListener("click", function () { setPlanModalMode("change"); });
+      wrap.appendChild(switchBtn);
+    }
+  }
+
+  function closePlanModal() {
+    var modal = document.getElementById("plan-modal");
+    if (modal) modal.classList.remove("is-open");
+  }
+
+  function openPlanModal(mode, reason) {
+    try { if (typeof gtag === "function") gtag("event", "upgrade_click", { reason: reason || mode }); } catch (e) {}
+    var modal = document.getElementById("plan-modal");
+    if (!modal) return;
+    modal.classList.add("is-open");
+    renderPlanModalCurrent();
+    Promise.all([loadPlanOffers(), loadPlanQuotes()]).then(function () { setPlanModalMode(mode); });
+  }
+
+  // 舊呼叫點（鎖定功能、收款鎖）沿用這個入口，一律開「更換方案」
+  function openUpgrade(reason) { openPlanModal("change", reason); }
+  window.openUpgrade = openUpgrade;
+  window.openPlanModal = openPlanModal;
+
+  (function bindPlanModal() {
+    var modal = document.getElementById("plan-modal");
+    if (!modal) return;
+    var cancel = document.getElementById("plan-modal-cancel");
+    if (cancel) cancel.addEventListener("click", closePlanModal);
+    modal.addEventListener("click", function (e) { if (e.target === modal) closePlanModal(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closePlanModal();
+    });
+    var submit = document.getElementById("plan-modal-submit");
+    if (submit) {
+      submit.addEventListener("click", function () {
+        if (!selectedOffer) return;
+        if (typeof window.startPlanCheckout !== "function") {
+          alert("付款模組載入失敗，請重新整理頁面");
+          return;
+        }
+        window.startPlanCheckout(selectedOffer.plan, selectedOffer.months, submit);
+      });
+    }
+  })();
+
+  // 帳號資訊：依方案狀態顯示續約 / 更換方案入口（free / 到期 / 付費可升級 / 已最高方案）
+  function renderPlanUpgrade(store) {
+    var box = document.getElementById("plan-upgrade-box");
+    if (!box) return;
+    currentPlanStore = store || null;
+    var eff = (store && store.effective_plan) || "free";
+    var raw = (store && store.plan) || "free";
+    var expired = raw !== "free" && eff === "free";
+    box.textContent = "";
+
+    var title, sub, extraClass = "";
+    var actions;
     if (expired) {
       extraClass = "upgrade-card--expired";
       title = "方案已到期";
-      sub = "您的付費方案已到期，目前功能已降為免費方案。重新升級即可恢復進階功能。";
-      btnLabel = "重新升級";
+      sub = "您的 " + planName(raw) + " 方案已到期，目前功能已降為免費方案。續約即可恢復進階功能。";
+      actions = [
+        { label: "續約 " + planName(raw), mode: "renew" },
+        { label: "更換方案", mode: "change", ghost: true },
+      ];
     } else if (eff === "free") {
-      extraClass = "";
       title = "升級解鎖更多功能";
       sub = "免費方案功能有限，升級可獲得更多商品數、AI 用量與品牌設定。";
-      btnLabel = "升級方案";
+      actions = [{ label: "選擇方案", mode: "change" }];
+    } else if (eff === "proplus") {
+      extraClass = "upgrade-card--max";
+      title = "感謝支持，您已是 Pro+ 最高方案";
+      sub = "續約會從目前到期日接續計算，不會浪費剩餘天數。";
+      actions = [{ label: "續約", mode: "renew" }];
     } else {
-      extraClass = "";
-      title = "升級更高方案";
-      sub = "目前為 " + (names[eff] || eff) + " 方案，升級可獲得更多商品數與進階功能。";
-      btnLabel = "升級方案";
+      title = "續約或升級方案";
+      sub = "目前為 " + planName(eff) + " 方案。續約會從到期日接續計算，升級可獲得更多商品數與進階功能。";
+      actions = [
+        { label: "續約", mode: "renew" },
+        { label: "更換方案", mode: "change", ghost: true },
+      ];
     }
 
     var card = document.createElement("div");
@@ -991,12 +1256,19 @@
     textDiv.appendChild(spanEl);
     card.appendChild(textDiv);
 
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "upgrade-btn";
-    btn.textContent = btnLabel;
-    btn.addEventListener("click", function () { openUpgrade(expired ? "expired" : eff); });
-    card.appendChild(btn);
+    var actionsDiv = document.createElement("div");
+    actionsDiv.className = "upgrade-card__actions";
+    actions.forEach(function (action) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = action.ghost ? "upgrade-btn upgrade-btn--ghost" : "upgrade-btn";
+      btn.textContent = action.label;
+      btn.addEventListener("click", function () {
+        openPlanModal(action.mode, expired ? "expired" : eff);
+      });
+      actionsDiv.appendChild(btn);
+    });
+    card.appendChild(actionsDiv);
 
     box.appendChild(card);
   }
@@ -2406,11 +2678,11 @@
       const phone = data.store.phone_number || "";
 
       if (isVerified) {
-        if (currentEl) currentEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' + (phone ? phone : "Verified") + '</span>';
+        if (currentEl) currentEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' + (phone ? phone : "已驗證") + '</span>';
         if (formEl) formEl.classList.add("hidden");
         setPhoneStatus("", "");
       } else {
-        if (currentEl) currentEl.textContent = "Phone not verified (Free plan: max 5 products without verification, 10 with verification)";
+        if (currentEl) currentEl.textContent = "尚未完成手機驗證。免費方案未驗證最多上架 5 件商品，完成驗證即可提高上限；升級付費方案則不受此限。";
         if (formEl) formEl.classList.remove("hidden");
         setPhoneStatus("", "");
       }
@@ -2425,13 +2697,13 @@
 
     const raw = input.value.trim();
     if (!raw) {
-      setPhoneStatus("Please enter phone number", "var(--admin-danger)");
+      setPhoneStatus("請輸入手機號碼", "var(--admin-danger)");
       return;
     }
 
     const phone = formatPhoneNumber(raw);
     btn.disabled = true;
-    setPhoneStatus("Sending...", "var(--admin-text-muted)");
+    setPhoneStatus("發送中...", "var(--admin-text-muted)");
 
     try {
       const resp = await fetch("/auth/send-phone-code", {
@@ -2443,15 +2715,15 @@
       const data = await resp.json();
       if (data.ok) {
         wrap.classList.remove("hidden");
-        setPhoneStatus("Verification code sent", "var(--admin-success)");
-        btn.textContent = "Resend";
+        setPhoneStatus("驗證碼已發送", "var(--admin-success)");
+        btn.textContent = "重新發送";
         btn.disabled = false;
       } else {
-        setPhoneStatus(data.error || "Failed to send", "var(--admin-danger)");
+        setPhoneStatus(data.error || "發送失敗", "var(--admin-danger)");
         btn.disabled = false;
       }
     } catch (err) {
-      setPhoneStatus("Failed to send, please try again", "var(--admin-danger)");
+      setPhoneStatus("發送失敗，請稍後再試", "var(--admin-danger)");
       btn.disabled = false;
     }
   }
@@ -2462,7 +2734,7 @@
 
     const code = codeEl.value.trim();
     if (!code) {
-      setPhoneStatus("Please enter verification code", "var(--admin-danger)");
+      setPhoneStatus("請輸入驗證碼", "var(--admin-danger)");
       return;
     }
 
@@ -2475,13 +2747,13 @@
       });
       const data = await resp.json();
       if (!data.ok) {
-        setPhoneStatus(data.error || "Phone verification failed", "var(--admin-danger)");
+        setPhoneStatus(data.error || "手機驗證失敗", "var(--admin-danger)");
         return;
       }
-      setPhoneStatus("Phone verified, reloading...", "var(--admin-success)");
+      setPhoneStatus("手機驗證完成，重新載入中...", "var(--admin-success)");
       setTimeout(() => location.reload(), 600);
     } catch {
-      setPhoneStatus("Invalid or expired code, please try again", "var(--admin-danger)");
+      setPhoneStatus("驗證碼錯誤或已過期，請重新嘗試", "var(--admin-danger)");
     }
   }
 
@@ -2688,5 +2960,6 @@
     }
   })();
   </script>
+  <script src="/assets/billing-checkout.js"></script>
 </body>
 </html>

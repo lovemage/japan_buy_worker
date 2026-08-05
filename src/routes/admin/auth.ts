@@ -994,6 +994,50 @@ export async function handleVerifyPhone(
   return json({ ok: true });
 }
 
+/**
+ * Skip phone verification during onboarding.
+ *
+ * Moves the store on to store_setup while leaving phone_verified at 0 — the
+ * owner really has not verified, and the free-plan product cap keys off that
+ * flag. They can finish verifying later from the store admin.
+ */
+export async function handleSkipPhoneVerification(
+  request: Request,
+  db: D1DatabaseLike
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+
+  const cookies = parseCookieHeader(request.headers.get("cookie"));
+  const sessionToken = cookies[STORE_COOKIE_NAME];
+  if (!sessionToken) return json({ ok: false, error: "Unauthorized" }, 401);
+
+  const session = await db
+    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
+    .bind(sessionToken)
+    .first<{ store_id: number }>();
+  if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
+
+  const store = await db
+    .prepare("SELECT email_verified, onboarding_step FROM stores WHERE id = ?")
+    .bind(session.store_id)
+    .first<{ email_verified: number; onboarding_step: string }>();
+
+  if (!store) return json({ ok: false, error: "Store not found" }, 404);
+  if (!store.email_verified) return json({ ok: false, error: "請先完成 Email 驗證" }, 400);
+  if (store.onboarding_step !== "phone_pending") {
+    return json({ ok: false, error: "目前不是手機驗證步驟" }, 400);
+  }
+
+  await db
+    .prepare(
+      "UPDATE stores SET onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ?"
+    )
+    .bind(session.store_id)
+    .run();
+
+  return json({ ok: true, onboarding_step: "store_setup" });
+}
+
 // ── Store onboarding: set slug and finalize ──
 
 export async function handleCompleteOnboarding(

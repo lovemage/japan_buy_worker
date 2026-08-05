@@ -1,5 +1,5 @@
 import type { RequestContext } from "../../context";
-import { getPlanProductLimit } from "../../shared/product-limits.js";
+import { getStoreProductLimit } from "../../shared/product-limits.js";
 
 type ManualProductRequest = {
   titleJa: string;
@@ -38,7 +38,9 @@ function sanitizeVariants(input: unknown): Array<{ name: string; stock: number; 
 
 type ProductLimitState = {
   limit: number | null;
+  planLimit: number | null;
   phoneVerified: boolean;
+  cappedByPhone: boolean;
 };
 
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -51,7 +53,16 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 async function getProductLimitState(ctx: RequestContext): Promise<ProductLimitState> {
-  return { limit: await getPlanProductLimit(ctx.db, ctx.storePlan), phoneVerified: true };
+  return getStoreProductLimit(ctx.db, ctx.storeId, ctx.storePlan);
+}
+
+function buildLimitReachedMessage(ctx: RequestContext, state: ProductLimitState): string {
+  if (!state.cappedByPhone) {
+    return `${ctx.storePlan.toUpperCase()} 方案最多 ${state.limit} 件商品，升級方案可解鎖更多額度。`;
+  }
+  const unlocked =
+    state.planLimit === null ? "驗證後即可解除此限制" : `驗證後可上架至 ${state.planLimit} 件`;
+  return `未完成手機驗證最多 ${state.limit} 件商品。請至「設定 → 手機驗證」完成驗證，${unlocked}；升級付費方案則不受此限。`;
 }
 
 async function getActiveProductCount(ctx: RequestContext): Promise<number> {
@@ -85,9 +96,12 @@ export async function handleAdminProducts(
   if (limitState.limit && limitState.limit > 0) {
     const activeCount = await getActiveProductCount(ctx);
     if (activeCount >= limitState.limit) {
-      const msg = `${ctx.storePlan.toUpperCase()} 方案最多 ${limitState.limit} 件商品，升級方案可解鎖更多額度。`;
       return new Response(
-        JSON.stringify({ ok: false, error: msg }),
+        JSON.stringify({
+          ok: false,
+          error: buildLimitReachedMessage(ctx, limitState),
+          needsPhoneVerification: limitState.cappedByPhone,
+        }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
     }
@@ -205,12 +219,14 @@ export async function handleAdminProductToggle(
       if (limitState.limit && limitState.limit > 0) {
         const activeCount = await getActiveProductCount(ctx);
         if (activeCount >= limitState.limit) {
-          const msg = ctx.storePlan === "free" && !limitState.phoneVerified
-            ? "Free 方案未完成手機驗證最多上架 5 件商品；完成手機驗證後可上架 10 件。"
-            : `${ctx.storePlan.toUpperCase()} 方案最多 ${limitState.limit} 件商品。`;
-          return new Response(JSON.stringify({ ok: false, error: msg }), {
-            status: 403, headers: { "content-type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({
+              ok: false,
+              error: buildLimitReachedMessage(ctx, limitState),
+              needsPhoneVerification: limitState.cappedByPhone,
+            }),
+            { status: 403, headers: { "content-type": "application/json" } }
+          );
         }
       }
     }

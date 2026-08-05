@@ -928,6 +928,18 @@
   white-space: nowrap;
 }
 
+.upgrade-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.upgrade-btn--ghost {
+  background: #fff;
+  color: var(--upgrade-orange);
+  border: 1.5px solid var(--upgrade-orange);
+}
+.upgrade-btn--ghost:hover { background: var(--upgrade-soft); }
+
 /* Mobile: upgrade/locked cards wrap */
 @media (max-width: 480px) {
   .upgrade-card,
@@ -940,7 +952,101 @@
     width: 100%;
     text-align: center;
   }
+  .upgrade-card__actions { width: 100%; }
 }
+
+/* ── 方案續約 / 更換彈窗 ── */
+.plan-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.45);
+}
+.plan-modal.is-open { display: flex; }
+.plan-modal__content {
+  width: 100%;
+  max-width: 520px;
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 22px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+.plan-modal__title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.plan-modal__current {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--admin-hover);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--admin-text-secondary);
+}
+.plan-modal__current strong { font-weight: 700; }
+.plan-modal__expired { color: #b54d15; font-weight: 700; }
+.plan-group { margin-bottom: 16px; }
+.plan-group__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.plan-group__badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--upgrade-soft);
+  color: #7a3a12;
+  font-size: 11px;
+  font-weight: 700;
+}
+.plan-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--admin-transition), border-color var(--admin-transition);
+}
+.plan-option:hover { border-color: var(--upgrade-orange); }
+.plan-option.is-selected {
+  background: var(--upgrade-soft);
+  border-color: var(--upgrade-orange);
+}
+.plan-option.is-selected .plan-option__term { color: #7a3a12; font-weight: 700; }
+.plan-option.is-selected .plan-option__price { color: #7a3a12; }
+.plan-option__term { font-size: 14px; }
+.plan-option__note { display: block; margin-top: 2px; font-size: 11px; color: var(--admin-text-muted); }
+.plan-option__price { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.plan-option__unit { font-size: 11px; font-weight: 400; color: var(--admin-text-muted); }
+.plan-modal__actions { display: flex; gap: 8px; margin-top: 18px; }
+.plan-modal__actions .upgrade-btn { flex: 1; }
+.plan-modal__cancel {
+  flex-shrink: 0;
+  padding: 9px 18px;
+  background: var(--admin-hover);
+  color: var(--admin-text-secondary);
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.plan-modal__hint { margin-top: 10px; font-size: 12px; line-height: 1.6; color: var(--admin-text-muted); text-align: center; }
+.plan-modal__hint--warn { color: #b54d15; font-weight: 700; }
 
 /* ── Category list ── */
 .category-list {

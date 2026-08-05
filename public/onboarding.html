@@ -140,6 +140,10 @@ body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: v
       <button class="btn btn-secondary" id="manual-verify-btn" onclick="verifyPhoneCode()">手動驗證</button>
     </div>
     <p id="phone-error" class="error"></p>
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
+      <button class="btn btn-secondary" id="skip-phone-btn" onclick="skipPhoneVerification()">稍後再驗證，先開店</button>
+      <div class="hint" style="margin-top:8px;">未驗證手機仍可正常開店、上架與接單，免費方案最多上架 5 件商品。之後可在後台隨時完成驗證，或升級付費方案解除限制。</div>
+    </div>
   </div>
 
   <!-- Step 3: Store Setup -->
@@ -377,6 +381,31 @@ function startPhoneCooldown(btn) {
       btn.textContent = "重新發送（" + remaining + "s）";
     }
   }, 1000);
+}
+
+async function skipPhoneVerification() {
+  const btn = document.getElementById("skip-phone-btn");
+  const errEl = document.getElementById("phone-error");
+  btn.disabled = true;
+  btn.textContent = "處理中...";
+  errEl.style.display = "none";
+
+  try {
+    const resp = await fetch("/auth/skip-phone", { method: "POST", credentials: "same-origin" });
+    const data = await resp.json();
+    if (data.ok) {
+      window.location.reload();
+      return;
+    }
+    errEl.textContent = data.error || "操作失敗";
+    errEl.style.display = "block";
+  } catch (e) {
+    errEl.textContent = "操作失敗: " + (e.message || e);
+    errEl.style.display = "block";
+  }
+
+  btn.textContent = "稍後再驗證，先開店";
+  btn.disabled = false;
 }
 
 let verifying = false;

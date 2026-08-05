@@ -2,6 +2,7 @@ import { crawlProducts } from "../../jobs/crawl-products";
 import { normalizeProducts } from "../../jobs/normalize-products";
 import { upsertProducts } from "../../jobs/upsert-products";
 import type { RequestContext } from "../../context";
+import { getStoreProductLimit } from "../../shared/product-limits.js";
 
 type CrawlEnv = {
   CLOUDFLARE_ACCOUNT_ID: string;
@@ -25,6 +26,14 @@ export async function handleAdminCrawl(request: Request, ctx: RequestContext, cr
     const crawlLimit = crawlLimits[ctx.storePlan] ?? 10;
     if (crawlLimit > 0) {
       maxProducts = crawlLimit;
+    }
+
+    // A free store that skipped phone verification is capped lower, and bulk
+    // import must respect it too — otherwise the cap is one crawl away from
+    // being bypassed.
+    const limitState = await getStoreProductLimit(ctx.db, ctx.storeId, ctx.storePlan);
+    if (limitState.limit !== null && limitState.limit > 0) {
+      maxProducts = maxProducts === null ? limitState.limit : Math.min(maxProducts, limitState.limit);
     }
 
     const crawled = await crawlProducts({

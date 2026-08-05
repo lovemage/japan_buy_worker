@@ -130,6 +130,26 @@ test("computeActivation 舊模式：續約往後疊（向後相容）", () => {
   assert.equal(a.resetEntitlement, undefined); // 舊模式不回此鍵
 });
 
+// 後台方案彈窗依這兩個行為決定要顯示「剩餘天數不會浪費」還是「剩餘天數不保留」。
+// 線上自助付款走的就是舊模式（billing.ts 的 applyActivation），改動請同步 admin.html
+// 的 updatePlanModalHint()。
+test("computeActivation 舊模式：換方案從付款日重算，剩餘天數不保留", () => {
+  const now = new Date(T0);
+  const a = computeActivation({
+    currentPlan: "pro", currentExpiresAt: iso(T0 + 100 * DAY), orderPlan: "proplus", days: 30, now,
+  });
+  assert.equal(a.plan, "proplus");
+  assert.equal(a.expiresAt, iso(T0 + 30 * DAY), "原方案剩餘 100 天不併入");
+});
+
+test("computeActivation 舊模式：已到期續約從付款日起算", () => {
+  const now = new Date(T0);
+  const a = computeActivation({
+    currentPlan: "pro", currentExpiresAt: iso(T0 - 10 * DAY), orderPlan: "pro", days: 30, now,
+  });
+  assert.equal(a.expiresAt, iso(T0 + 30 * DAY));
+});
+
 test("computeActivation 新模式-續約：回傳增量、startedAt=null（疊加）", () => {
   const a = computeActivation({
     currentPlan: "pro",

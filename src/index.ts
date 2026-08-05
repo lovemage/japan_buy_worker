@@ -15,6 +15,7 @@ import {
   handleResendVerificationEmail,
   handleSendPhoneCode,
   handleVerifyPhone,
+  handleSkipPhoneVerification,
   handleCompleteOnboarding,
   handleGetCurrentStore,
   handleAdminLogin,
@@ -25,6 +26,7 @@ import { handlePlatformAdmin } from "./routes/platform-admin";
 import { DEFAULT_PLAN_OFFERS } from "./shared/plan-offers.js";
 import {
   handleBillingCheckout,
+  handleBillingUpgradeQuotes,
   handleBillingNotify,
   handleBillingReturn,
   handleBillingOrderStatus,
@@ -283,6 +285,13 @@ export default {
       return Response.redirect(redirectUrl.toString(), 302);
     }
 
+    // relay.{mainDomain} is the Cloudflare Tunnel to the SMS relay VM, not a
+    // tenant. Hand it to the origin before subdomain routing below resolves it
+    // as a store slug and answers "Store not found".
+    if (hostname === `relay.${mainDomain}`) {
+      return fetch(request);
+    }
+
     // ── Health check ──
     if (request.method === "GET" && url.pathname === "/healthz") {
       return json({ ok: true, service: "vovosnap" });
@@ -316,6 +325,9 @@ export default {
       add(`https://${mainDomain}/blog/daigou-preparation-checklist.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/sell-secondhand-items-fast.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/japan-cosmetics-daigou-guide.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/japan-cosmetics-photo-listing-software.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/ai-vs-barcode-product-listing.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/solo-seller-fast-product-listing.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/payuni-setup/`, today, "monthly", "0.7");
 
@@ -391,6 +403,9 @@ export default {
     if (url.pathname === "/api/billing/checkout") {
       return handleBillingCheckout(request, env);
     }
+    if (url.pathname === "/api/billing/upgrade-quotes") {
+      return handleBillingUpgradeQuotes(request, env);
+    }
     if (url.pathname === "/api/billing/notify") {
       return handleBillingNotify(request, env);
     }
@@ -443,6 +458,9 @@ export default {
     }
     if (url.pathname === "/auth/verify-phone") {
       return handleVerifyPhone(request, env.DB, getAuthEnv(env));
+    }
+    if (url.pathname === "/auth/skip-phone") {
+      return handleSkipPhoneVerification(request, env.DB);
     }
     if (url.pathname === "/auth/complete-onboarding") {
       return handleCompleteOnboarding(request, env.DB);

@@ -360,17 +360,20 @@ export async function handlePlatformAdmin(
           return json({ ok: false, error: "目前不是手機驗證待完成狀態" }, 400);
         }
 
+        // Leave phone_verified at 0 — skipping is not verifying, and the
+        // free-plan product cap keys off that flag. Marking it 1 here would
+        // silently hand out the verified limit and make the two states
+        // indistinguishable afterwards.
         await db
           .prepare(
             `UPDATE stores
-             SET phone_verified = 1,
-                 onboarding_step = 'store_setup',
+             SET onboarding_step = 'store_setup',
                  updated_at = datetime('now')
              WHERE id = ?`
           )
           .bind(storeId)
           .run();
-        return json({ ok: true, onboarding_step: "store_setup", phone_verified: 1 });
+        return json({ ok: true, onboarding_step: "store_setup", phone_verified: 0 });
       }
       default:
         return json({ ok: false, error: "Unknown action" }, 400);

@@ -29,7 +29,17 @@ function startPlanCheckout(plan, months, button) {
       if (!d) return;
       if (!d.ok) {
         resetButton();
-        alert(d.error || "建立訂單失敗，請稍後再試");
+        if (d.needsBillingReview) {
+          alert("此帳號的方案基準需人工確認，請聯繫客服協助升級");
+        } else {
+          alert(d.error || "建立訂單失敗，請稍後再試");
+        }
+        return;
+      }
+      // 折抵已涵蓋全額：後端直接開通，沒有金流表單可送
+      if (d.activated) {
+        alert("升級完成，原方案剩餘價值已全額折抵，無需補差額");
+        window.location.reload();
         return;
       }
       var form = document.createElement("form");
