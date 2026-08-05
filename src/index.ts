@@ -307,6 +307,7 @@ export default {
 
       // Platform pages
       add(`https://${mainDomain}/`, today, "weekly", "1.0");
+      add(`https://${mainDomain}/about.html`, today, "monthly", "0.7");
       add(`https://${mainDomain}/privacy.html`, today, "yearly", "0.3");
       add(`https://${mainDomain}/terms.html`, today, "yearly", "0.3");
       add(`https://${mainDomain}/blog/`, today, "weekly", "0.9");

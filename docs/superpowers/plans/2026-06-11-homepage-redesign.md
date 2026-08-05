@@ -133,7 +133,7 @@ git commit -m "test(landing): replace collage guard with SaaS redesign guard (re
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>我拍 VOVOSnap｜拍一張照，商品就上架了 — AI 自動辨識上架的開店平台</title>
-<meta name="description" content="拍照上傳，AI 自動辨識商品、寫文案、抓規格、換算匯率定價，60 秒生成可下單的商品頁。代購、創作者、小賣家的一鍵開店工具。" />
+<meta name="description" content="拍照上傳，AI 自動辨識商品、寫文案、抓規格、換算匯率定價，60 秒生成可下單的商品頁。給任何想快速上架並擁有自己電商網站的賣家。" />
 <meta property="og:title" content="我拍 VOVOSnap｜拍一張照，商品就上架了" />
 <meta property="og:description" content="AI 自動辨識商品、生成文案與售價，60 秒上架開賣。不抽成、不用學電商系統。" />
 <meta property="og:type" content="website" />
@@ -305,7 +305,7 @@ git commit -m "feat(landing): rewrite shell — clean SaaS tokens, nav, footer"
         <a href="/login.html" class="btn btn-primary btn-lg" onclick="trackCta('hero')">免費開店</a>
         <a href="〔沿用舊檔「查看範例店舖」的 href〕" class="btn btn-ghost btn-lg" target="_blank" rel="noopener">查看範例店舖</a>
       </div>
-      <p class="hero-proof">已有 <strong>10,000+</strong> 位創作者與代購賣家使用・平台<strong>不抽成</strong></p>
+      <p class="hero-proof">已有 <strong>10,000+</strong> 位賣家使用・平台<strong>不抽成</strong></p>
     </div>
     <div class="hero-demo" id="ai-demo" aria-label="AI 上架流程演示">
       <div class="demo-phone">
@@ -568,7 +568,7 @@ git commit -m "feat(landing): manual-vs-AI pain comparison section"
 <!-- ── 社會證明 ────────────────────────────── -->
 <section id="proof">
   <div class="wrap center">
-    <h2 class="sec-title">創作者與代購賣家，已經用起來了</h2>
+    <h2 class="sec-title">想快速開店的賣家，已經用起來了</h2>
     <div class="proof-grid">
       <div class="proof-stat"><strong>10,000+</strong><span>使用中的賣家</span></div>
       <div class="proof-stat"><strong>60 秒</strong><span>平均一件商品上架</span></div>

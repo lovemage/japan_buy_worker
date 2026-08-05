@@ -1,3 +1,4 @@
+# Public storefront and product pages are crawlable by search and AI agents.
 User-agent: *
 Allow: /
 Allow: /blog/

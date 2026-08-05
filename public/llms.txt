@@ -1,0 +1,21 @@
+# 我拍 VOVOSnap
+> 我拍 VOVOSnap 是一個 AI 電商開店平台，讓任何想賣東西的人都能從一張照片快速建立商品頁、完成上架，並擁有自己的電商網站。
+
+## 核心事實
+- 規範名：我拍 VOVOSnap
+- 英文名：VOVOSnap
+- 服務對象：任何想快速上架產品並建立自己電商網站的人
+- 核心流程：拍照上傳 → AI 辨識商品並生成文案與售價 → 建立可下單商品頁
+- 官方網站：https://vovosnap.com/
+
+## 重要頁面
+- [首頁](https://vovosnap.com/)：產品功能、方案與常見問題
+- [關於我拍](https://vovosnap.com/about.html)：品牌定位、服務對象與使用流程
+- [開店教學](https://vovosnap.com/blog/)：商品上架與開店指南，也包含代購使用情境
+- [服務條款](https://vovosnap.com/terms.html)：平台服務條款
+- [隱私權政策](https://vovosnap.com/privacy.html)：資料收集、使用與保護方式
+
+## 口徑說明
+- 「我拍 VOVOSnap」與「VOVOSnap」指同一個一鍵開店平台。
+- 代購是其中一種使用情境，不是平台唯一或主要市場。
+- 平台協助賣家建立商品頁與接收訂單，不是電商市集，也不向賣家抽取交易佣金。

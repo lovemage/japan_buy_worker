@@ -177,13 +177,13 @@
 更新 [public/index.html#L6-L16](../../public/index.html#L6-L16)：
 
 ```html
-<title>我拍｜開店平台 — 創作者一鍵開店，從內容到成交全自動</title>
-<meta name="description" content="拍照上傳 → AI 生成商品頁 → 一鍵上架開店，自動導購、回覆、成交。讓創作者專注分享，10,000+ 創作者正在使用。">
-<meta property="og:title" content="我拍｜開店平台 — 創作者一鍵開店，從內容到成交全自動">
-<meta property="og:description" content="拍照上傳 → AI 生成商品頁 → 一鍵上架開店，自動導購、回覆、成交。讓創作者專注分享。">
+<title>我拍｜開店平台 — 賣家一鍵開店，從上架到成交全自動</title>
+<meta name="description" content="拍照上傳 → AI 生成商品頁 → 一鍵上架開店，自動導購、回覆、成交。讓賣家專注銷售，10,000+ 賣家正在使用。">
+<meta property="og:title" content="我拍｜開店平台 — 賣家一鍵開店，從上架到成交全自動">
+<meta property="og:description" content="拍照上傳 → AI 生成商品頁 → 一鍵上架開店，自動導購、回覆、成交。讓賣家專注銷售。">
 <meta property="og:image" content="/assets/images/new_sale.webp">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="我拍｜開店平台 — 創作者一鍵開店">
+<meta name="twitter:title" content="我拍｜開店平台 — 賣家一鍵開店">
 <meta name="twitter:description" content="拍照上傳 → AI 生成商品頁 → 一鍵上架開店，自動導購、回覆、成交。">
 <meta name="twitter:image" content="/assets/images/new_sale.webp">
 ```

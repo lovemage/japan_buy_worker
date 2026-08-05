@@ -63,7 +63,7 @@ Token 定義在 `public/index.html` inline `<style>` 的 `:root`：
 | Hero step 1-3 | `assets/images/hero/step1-capture / step2-recognize / step3-listing.webp` | 三幕輪播：拍照→AI 辨識→上架完成（同場景連續，quiet-luxury 暖調） |
 | 櫻花枝 | `assets/images/hero/sakura-branch.webp` | hero 右上裝飾（透明背景，mobile 縮 150-200px 保留） |
 | Final CTA 場景 | `assets/images/hero/cta-scene.webp` | 牛皮紙包裹 + 緞帶 + 櫻花，final CTA 右欄 |
-| Creator avatars | `assets/images/creator-avatar-01~04.webp` | hero proof 頭像（沿用） |
+| Seller avatars | `assets/images/creator-avatar-01~04.webp` | hero proof 賣家頭像（沿用） |
 | 原始 PNG | `tmp/gen/*.png` | 生成原檔（未進版控） |
 
 再生成素材時的調性 prompt 關鍵詞：quiet luxury, feminine, warm ivory / cream / blush pink / muted apricot orange, soft window light, premium product-photography realism。

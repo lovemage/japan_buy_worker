@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>關於我拍 VOVOSnap｜拍照就能開店的一鍵開店平台</title>
+<meta name="description" content="我拍 VOVOSnap 是一個 AI 電商開店平台，讓任何想賣東西的人都能從一張照片快速建立商品頁、完成上架，並擁有自己的電商網站。" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://vovosnap.com/about.html" />
+<link rel="icon" type="image/png" href="/assets/images/logo-icon-64.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --ink: #322d27;
+  --muted: #6f655a;
+  --faint: #a3978a;
+  --bg: #faf6ef;
+  --bg-alt: #f4ecdf;
+  --card: #fffdf9;
+  --blush: #f7e7da;
+  --line: #e9ddcb;
+  --orange: #e86b2c;
+  --orange-dark: #c9531a;
+  --orange-text: #b54d15;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: var(--bg); line-height: 1.8; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.wrap { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
+.nav { position: sticky; top: 0; z-index: 10; background: rgba(250,246,239,.94); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.nav-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: "Noto Serif TC", serif; font-weight: 700; letter-spacing: .04em; }
+.brand img { width: 40px; height: 40px; border-radius: 50%; }
+.nav-actions { display: flex; align-items: center; gap: 18px; }
+.nav-link { color: var(--muted); font-size: 14px; text-decoration: none; }
+.nav-link:hover { color: var(--ink); }
+.btn { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 10px 22px; border-radius: 999px; background: var(--orange); color: #fff; font-weight: 700; text-decoration: none; transition: background .2s ease; }
+.btn:hover { background: var(--orange-dark); }
+.hero { position: relative; overflow: hidden; padding: clamp(72px, 10vw, 126px) 0 clamp(70px, 9vw, 112px); background: radial-gradient(720px 380px at 82% 0%, var(--blush), rgba(247,231,218,0) 68%), var(--bg); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: clamp(42px, 7vw, 86px); align-items: end; }
+.kicker { display: inline-block; color: var(--orange-text); font-family: "Noto Serif TC", serif; font-size: 14px; letter-spacing: .12em; margin-bottom: 18px; }
+h1, h2 { font-family: "Noto Serif TC", serif; text-wrap: balance; }
+h1 { max-width: 800px; font-size: clamp(38px, 6vw, 68px); line-height: 1.28; letter-spacing: .04em; }
+.definition { max-width: 720px; margin-top: 26px; color: var(--muted); font-size: clamp(17px, 2vw, 20px); line-height: 1.9; text-wrap: pretty; }
+.promise { padding: 28px 0 8px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+.promise strong { display: block; color: var(--ink); font-family: "Noto Serif TC", serif; font-size: 30px; line-height: 1.3; margin-bottom: 8px; }
+.content { padding: clamp(68px, 9vw, 104px) 0; }
+.content-grid { display: grid; grid-template-columns: .72fr 1.28fr; gap: clamp(44px, 8vw, 100px); }
+h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.45; letter-spacing: .04em; }
+.prose { max-width: 680px; }
+.prose p { color: var(--muted); margin-bottom: 20px; font-size: 16px; }
+.steps { margin-top: 34px; list-style: none; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.steps li { display: grid; grid-template-columns: 42px 1fr; gap: 14px; padding: 20px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+.steps span { color: var(--orange-text); font-family: "Noto Serif TC", serif; font-weight: 700; }
+.cta { background: var(--bg-alt); padding: clamp(56px, 8vw, 86px) 0; text-align: center; }
+.cta p { color: var(--muted); margin: 14px auto 26px; max-width: 620px; }
+.footer { padding: 30px 0; border-top: 1px solid var(--line); }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 20px; color: var(--faint); font-size: 13px; }
+.footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+.footer a { color: var(--muted); text-decoration: none; }
+@media (max-width: 760px) {
+  .hero-grid, .content-grid { grid-template-columns: 1fr; }
+  .hero-grid { align-items: start; }
+  .promise { max-width: 300px; }
+  .nav-link { display: none; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><img src="/assets/images/logo-icon.webp" alt="" width="40" height="40" /><span>我拍｜開店平台</span></a>
+    <nav class="nav-actions" aria-label="主要導覽">
+      <a class="nav-link" href="/blog/">開店教學</a>
+      <a class="btn" href="/login.html">免費開店</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="kicker">關於我拍 VOVOSnap</span>
+        <h1>把上架的麻煩交給 AI，把時間留給你。</h1>
+        <p class="definition" data-brand-definition>我拍 VOVOSnap 是一個 AI 電商開店平台，讓任何想賣東西的人都能從一張照片快速建立商品頁、完成上架，並擁有自己的電商網站。</p>
+      </div>
+      <p class="promise"><strong>60 秒</strong>從一張商品照片，到能直接分享、接單的商品頁。</p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap content-grid">
+      <h2>開店不該先學會一套複雜系統</h2>
+      <div class="prose">
+        <p>我拍服務的是手上已經有商品、希望快速完成上架並擁有自己電商網站的人。從第一次開店的個人賣家、小型品牌，到需要大量上架商品的代購業者，都能從拍照開始。</p>
+        <p>平台把辨識商品、整理規格、撰寫文案、換算售價與建立網站串成同一個流程。賣家不用先學會複雜的電商系統，也能把自己的網站分享給顧客並開始接單。</p>
+        <ol class="steps">
+          <li><span>01</span><div><strong>拍照上傳</strong><br />拍下商品，或直接選擇現有圖片。</div></li>
+          <li><span>02</span><div><strong>AI 自動整理</strong><br />辨識商品並生成文案、規格與售價。</div></li>
+          <li><span>03</span><div><strong>分享接單</strong><br />建立商品頁後，直接分享到你的社群。</div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <h2>拍一張照，開始你的第一間店</h2>
+      <p>免費方案不用信用卡。實際上傳一張商品照片，就知道這個流程能替你省下多少時間。</p>
+      <a class="btn" href="/login.html">免費開店</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p>© 2026 VOVOSnap. All rights reserved.</p>
+    <nav aria-label="頁尾導覽">
+      <a href="/">首頁</a>
+      <a href="/blog/">教學資源</a>
+      <a href="/terms.html">服務條款</a>
+      <a href="/privacy.html">隱私權政策</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

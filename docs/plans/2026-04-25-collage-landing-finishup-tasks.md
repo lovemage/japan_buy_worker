@@ -118,7 +118,7 @@ collage decoration."
 Modify `test/landing-collage.test.js` — add to `requiredSnippets` array:
 
 ```javascript
-"我拍｜開店平台 — 創作者一鍵開店",
+"我拍｜開店平台 — 賣家一鍵開店",
 "AI 生成商品頁，一鍵上架開店",
 "new_sale.webp",
 ```
@@ -129,22 +129,22 @@ Modify `test/landing-collage.test.js` — add to `requiredSnippets` array:
 node --test test/landing-collage.test.js
 ```
 
-Expected: FAIL — "Expected landing page to include 我拍｜開店平台 — 創作者一鍵開店"
+Expected: FAIL — "Expected landing page to include 我拍｜開店平台 — 賣家一鍵開店"
 
 - [ ] **Step 3: Replace meta block at `public/index.html:6-16`**
 
 Replace lines 6–16 with:
 
 ```html
-<title>我拍｜開店平台 — 創作者一鍵開店，從內容到成交全自動</title>
-<meta name="description" content="拍照上傳 → AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。讓創作者專注分享，10,000+ 創作者正在使用。" />
-<meta property="og:title" content="我拍｜開店平台 — 創作者一鍵開店，從內容到成交全自動" />
-<meta property="og:description" content="拍照上傳，AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。讓創作者專注分享。" />
+<title>我拍｜開店平台 — 賣家一鍵開店，從上架到成交全自動</title>
+<meta name="description" content="拍照上傳 → AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。讓賣家專注銷售，10,000+ 賣家正在使用。" />
+<meta property="og:title" content="我拍｜開店平台 — 賣家一鍵開店，從上架到成交全自動" />
+<meta property="og:description" content="拍照上傳，AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。讓賣家專注銷售。" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://vovosnap.com/" />
 <meta property="og:image" content="https://vovosnap.com/assets/images/new_sale.webp" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="我拍｜開店平台 — 創作者一鍵開店" />
+<meta name="twitter:title" content="我拍｜開店平台 — 賣家一鍵開店" />
 <meta name="twitter:description" content="拍照上傳，AI 生成商品頁，一鍵上架開店，自動導購、回覆、成交。" />
 <meta name="twitter:image" content="https://vovosnap.com/assets/images/new_sale.webp" />
 ```
@@ -163,10 +163,10 @@ Expected: PASS — all required snippets found.
 
 ```bash
 git add public/index.html test/landing-collage.test.js
-git commit -m "feat(landing): refresh SEO meta to creator commerce narrative
+git commit -m "feat(landing): refresh SEO meta to seller commerce narrative
 
 Switch title/description/OG/Twitter from cross-border代購 narrative to
-我拍｜開店平台 creator commerce platform. Switch OG image to new_sale.webp
+我拍｜開店平台 seller commerce platform. Switch OG image to new_sale.webp
 collage and upgrade twitter:card to summary_large_image."
 ```
 
@@ -256,7 +256,7 @@ git add public/index.html test/landing-collage.test.js
 git commit -m "refactor(landing): remove edu section (redundant with 4-step flow)
 
 The Edu section overlapped with the 4-step flow content. Removing it
-to tighten the narrative around 我拍｜開店平台 creator commerce."
+to tighten the narrative around 我拍｜開店平台 seller commerce."
 ```
 
 ---
@@ -388,7 +388,7 @@ git add public/index.html
 git commit -m "refactor(landing): remove country marquee section
 
 The country marquee belonged to the cross-border代購 B2C narrative
-and no longer fits the 我拍｜開店平台 creator commerce positioning."
+and no longer fits the 我拍｜開店平台 seller commerce positioning."
 ```
 
 ---
@@ -696,7 +696,7 @@ git commit -m "feat(landing): polish hero collage layer
 
 Wire up collage-camera and collage-flower assets, upgrade tape with
 torn edges, replace scribble-note Comic Sans with Caveat handwritten
-font, enlarge hero torn-paper background, add creator avatar to
+font, enlarge hero torn-paper background, add seller avatar to
 dashboard mockup."
 ```
 
