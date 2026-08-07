@@ -328,6 +328,14 @@ export default {
       add(`https://${mainDomain}/blog/japan-cosmetics-photo-listing-software.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/ai-vs-barcode-product-listing.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/blog/solo-seller-fast-product-listing.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/secondhand-fast-listing-alternatives.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/photo-listing-software-pricing.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/free-or-pay-per-listing-software.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/edit-ai-recognition-before-publish.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/taobao-auto-listing-duplicate-risk.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/japan-drugstore-batch-recognition.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/secondhand-bag-photo-recognition.html`, today, "monthly", "0.8");
+      add(`https://${mainDomain}/blog/daigou-exchange-rate-auto-pricing.html`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/payuni-setup/`, today, "monthly", "0.7");
 

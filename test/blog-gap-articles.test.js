@@ -15,6 +15,38 @@ const articles = [
     slug: "solo-seller-fast-product-listing",
     image: "og-solo-seller-fast-listing.webp",
   },
+  {
+    slug: "secondhand-fast-listing-alternatives",
+    image: "og-secondhand-fast-listing-alternatives.webp",
+  },
+  {
+    slug: "photo-listing-software-pricing",
+    image: "og-photo-listing-software-pricing.webp",
+  },
+  {
+    slug: "free-or-pay-per-listing-software",
+    image: "og-free-usage-based-listing.webp",
+  },
+  {
+    slug: "edit-ai-recognition-before-publish",
+    image: "og-ai-listing-review-edit.webp",
+  },
+  {
+    slug: "taobao-auto-listing-duplicate-risk",
+    image: "og-taobao-auto-listing-risk.webp",
+  },
+  {
+    slug: "japan-drugstore-batch-recognition",
+    image: "og-japan-drugstore-batch-recognition.webp",
+  },
+  {
+    slug: "secondhand-bag-photo-recognition",
+    image: "og-secondhand-bag-no-barcode.webp",
+  },
+  {
+    slug: "daigou-exchange-rate-auto-pricing",
+    image: "og-daigou-exchange-rate-pricing.webp",
+  },
 ];
 
 const registry = readFileSync(new URL("../public/assets/blog-data.js", import.meta.url), "utf8");
