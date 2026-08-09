@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>vovosnap 管理後台</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo-icon-64.png" />
   <link rel="stylesheet" href="/assets/styles.css" />
   <link rel="stylesheet" href="/assets/admin.css" />
 </head>
@@ -560,7 +561,7 @@
           <label style="margin-top:10px;">網站介紹<input id="store-description" type="text" class="input-cute" placeholder="日韓代購，品質保證" maxlength="200" /></label>
           <p class="meta">顯示在商店名稱下方（最多 200 字）</p>
           <label style="margin-top:10px;">子網域 (*.vovosnap.com)
-            <input id="store-slug-edit" type="text" class="input-cute" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
+            <input id="store-slug-edit" type="text" class="input-cute" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9\-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
           </label>
           <p class="meta" id="store-slug-meta"></p>
           <button class="button" type="button" id="btn-save-account" onclick="saveAccountSettings()">儲存</button>

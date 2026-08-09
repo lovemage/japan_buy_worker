@@ -156,7 +156,7 @@ body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: v
     </div>
     <div class="form-group">
       <label>店面網址 (slug)</label>
-      <input type="text" id="store-slug" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
+      <input type="text" id="store-slug" placeholder="xiaomei" maxlength="30" pattern="[a-z0-9\-]+" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')" />
       <div class="hint" id="slug-preview">你的店面網址：vovosnap.com/s/<span id="slug-display">...</span></div>
       <div class="error" id="slug-error"></div>
     </div>

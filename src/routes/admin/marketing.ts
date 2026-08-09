@@ -218,6 +218,8 @@ ${tone}
   }
 
   let content: string;
+  // 上游回 200 但沒有文字時的原因（模型被擋、額度不足、finishReason 等），用於錯誤訊息
+  let emptyReason = "";
 
   if (provider === "openrouter") {
     const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -231,11 +233,22 @@ ${tone}
 
     if (!orRes.ok) {
       const errText = await orRes.text().catch(() => "");
-      return json({ ok: false, error: `AI 產生失敗 (${orRes.status})：${errText.slice(0, 200)}` }, 502);
+      return json({ ok: false, error: `AI 產生失敗 (openrouter/${modelId} ${orRes.status})：${errText.slice(0, 200)}` }, 502);
     }
 
-    const orData = (await orRes.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const orData = (await orRes.json()) as {
+      choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+      error?: { code?: number; message?: string };
+    };
     content = orData?.choices?.[0]?.message?.content || "";
+    if (!content) {
+      // OpenRouter 常以 HTTP 200 夾帶 error 物件回傳（額度不足、模型下架等）
+      emptyReason = orData?.error?.message
+        ? `${orData.error.message}${orData.error.code ? ` (code ${orData.error.code})` : ""}`
+        : orData?.choices?.[0]?.finish_reason
+          ? `finish_reason=${orData.choices[0].finish_reason}`
+          : "上游未回傳 choices";
+    }
   } else {
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
     const geminiRes = await fetch(geminiUrl, {
@@ -248,17 +261,28 @@ ${tone}
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text().catch(() => "");
-      return json({ ok: false, error: `AI 產生失敗 (${geminiRes.status})：${errText.slice(0, 200)}` }, 502);
+      return json({ ok: false, error: `AI 產生失敗 (gemini/${modelId} ${geminiRes.status})：${errText.slice(0, 200)}` }, 502);
     }
 
     const geminiData = (await geminiRes.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
+      promptFeedback?: { blockReason?: string };
     };
     content = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (!content) {
+      // 常見：safety 擋下、thinking 模型把額度耗在 MAX_TOKENS、prompt 整段被 block
+      const blockReason = geminiData?.promptFeedback?.blockReason;
+      const finishReason = geminiData?.candidates?.[0]?.finishReason;
+      emptyReason = blockReason
+        ? `blockReason=${blockReason}`
+        : finishReason
+          ? `finishReason=${finishReason}`
+          : "上游未回傳 candidates";
+    }
   }
 
   if (!content) {
-    return json({ ok: false, error: "AI 未回傳結果" }, 502);
+    return json({ ok: false, error: `AI 未回傳結果（${provider}/${modelId}：${emptyReason}）` }, 502);
   }
 
   // Increment usage counter

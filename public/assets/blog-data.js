@@ -227,7 +227,7 @@ function renderBlogIndex() {
       '<div class="post-card__thumb"><img src="' + a.thumb + '" alt="" width="120" height="120" loading="lazy"></div>' +
       '<div class="post-card__body">' +
       '<span class="post-tag">' + a.tag + "</span>" +
-      "<h2>" + a.title + "</h2>" +
+      "<h3>" + a.title + "</h3>" +
       "<p>" + a.desc + "</p>" +
       '<div class="post-meta">' + dateDisplay + " ・ 閱讀 " + a.readMin + " 分鐘</div>" +
       "</div></a>"

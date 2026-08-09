@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "test": "node --test \"test/*.test.js\"",
+    "build:blog": "node scripts/build-blog-index.mjs",
     "d1:migrate:local": "wrangler d1 migrations apply japan_buy --local",
     "d1:migrate:remote": "wrangler d1 migrations apply japan_buy --remote"
   },

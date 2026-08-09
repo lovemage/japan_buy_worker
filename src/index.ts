@@ -141,6 +141,28 @@ function makeSitemapEntry(
   ].join("\n");
 }
 
+// Published blog articles and their publication dates, newest first. Mirrors
+// public/assets/blog-data.js — test/blog-article-freshness.test.js fails if the
+// two ever disagree, so add new articles to both.
+const BLOG_ARTICLE_LASTMOD: ReadonlyArray<readonly [string, string]> = [
+  ["/blog/daigou-exchange-rate-auto-pricing.html", "2026-08-07"],
+  ["/blog/secondhand-bag-photo-recognition.html", "2026-08-07"],
+  ["/blog/japan-drugstore-batch-recognition.html", "2026-08-07"],
+  ["/blog/taobao-auto-listing-duplicate-risk.html", "2026-08-07"],
+  ["/blog/edit-ai-recognition-before-publish.html", "2026-08-07"],
+  ["/blog/free-or-pay-per-listing-software.html", "2026-08-07"],
+  ["/blog/photo-listing-software-pricing.html", "2026-08-07"],
+  ["/blog/secondhand-fast-listing-alternatives.html", "2026-08-07"],
+  ["/blog/japan-cosmetics-photo-listing-software.html", "2026-08-06"],
+  ["/blog/ai-vs-barcode-product-listing.html", "2026-08-06"],
+  ["/blog/solo-seller-fast-product-listing.html", "2026-08-06"],
+  ["/blog/japan-cosmetics-daigou-guide.html", "2026-06-13"],
+  ["/blog/sell-secondhand-items-fast.html", "2026-04-07"],
+  ["/blog/daigou-profit-calculation.html", "2026-04-04"],
+  ["/blog/daigou-preparation-checklist.html", "2026-04-04"],
+  ["/blog/first-time-daigou-guide.html", "2026-04-04"],
+];
+
 function sitemapXml(entries: string[]): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -320,22 +342,12 @@ export default {
       add(`https://${mainDomain}/privacy.html`, today, "yearly", "0.3");
       add(`https://${mainDomain}/terms.html`, today, "yearly", "0.3");
       add(`https://${mainDomain}/blog/`, today, "weekly", "0.9");
-      add(`https://${mainDomain}/blog/first-time-daigou-guide.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/daigou-profit-calculation.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/daigou-preparation-checklist.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/sell-secondhand-items-fast.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/japan-cosmetics-daigou-guide.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/japan-cosmetics-photo-listing-software.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/ai-vs-barcode-product-listing.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/solo-seller-fast-product-listing.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/secondhand-fast-listing-alternatives.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/photo-listing-software-pricing.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/free-or-pay-per-listing-software.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/edit-ai-recognition-before-publish.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/taobao-auto-listing-duplicate-risk.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/japan-drugstore-batch-recognition.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/secondhand-bag-photo-recognition.html`, today, "monthly", "0.8");
-      add(`https://${mainDomain}/blog/daigou-exchange-rate-auto-pricing.html`, today, "monthly", "0.8");
+      // Article lastmod must be the article's own date, not "today" — a sitemap
+      // that claims every page changed today teaches crawlers to ignore lastmod.
+      // Kept in step with public/assets/blog-data.js by blog-article-freshness.test.js.
+      for (const [path, lastmod] of BLOG_ARTICLE_LASTMOD) {
+        add(`https://${mainDomain}${path}`, lastmod, "monthly", "0.8");
+      }
       add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/payuni-setup/`, today, "monthly", "0.7");
 
