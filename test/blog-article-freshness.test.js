@@ -7,8 +7,10 @@ import { renderBlogFragments } from "../scripts/build-blog-index.mjs";
 const { articles } = renderBlogFragments();
 const sitemapSource = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
 
+// Article hrefs are extensionless (Workers Assets 307s `/x.html` to `/x`), but
+// the files on disk still carry the .html suffix.
 function readArticle(href) {
-  return readFileSync(new URL(`../public${href}`, import.meta.url), "utf8");
+  return readFileSync(new URL(`../public${href}.html`, import.meta.url), "utf8");
 }
 
 test("every article shows a machine-readable date that matches its registry entry", () => {
@@ -42,6 +44,9 @@ test("the sitemap lists every published article with its real lastmod", () => {
   const listed = new Map(
     [...block[0].matchAll(/\["(\/blog\/[^"]+)",\s*"(\d{4}-\d{2}-\d{2})"\]/g)].map((match) => [match[1], match[2]])
   );
+  for (const path of listed.keys()) {
+    assert.ok(!path.endsWith(".html"), `${path} would 307-redirect; the sitemap must list the extensionless URL`);
+  }
 
   assert.equal(listed.size, articles.length, "the sitemap article list and blog-data.js differ in length");
   for (const article of articles) {

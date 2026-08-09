@@ -26,40 +26,26 @@ test("every article is reachable from the static blog index HTML", () => {
   }
 });
 
-test("blog index carries the reference blocks AI crawlers extract", () => {
-  for (const marker of [
-    "data-brand-definition",
-    'id="how-to-start"',
-    'id="plans-at-a-glance"',
-    'id="manual-vs-photo-listing"',
-    'id="faq"',
-    '<time datetime="2026-08-09">',
-  ]) {
-    assert.ok(html.includes(marker), `blog index is missing ${marker}`);
+test("blog index stays an article list, not a product page", () => {
+  // Product explainers belong on / and /about. This page is the article index.
+  for (const marker of ["data-brand-definition", "geo-section", "FAQPage", "方案、額度與費用"]) {
+    assert.ok(!html.includes(marker), `blog index should not carry ${marker}`);
   }
-
-  const h2Count = (html.match(/<h2[^>]*>/g) || []).length;
-  assert.ok(h2Count >= 6 && h2Count <= 10, `expected 6-10 section H2s on the blog index, found ${h2Count}`);
+  const body = html.slice(html.indexOf("<body"));
+  assert.equal((body.match(/<h1[^>]*>/g) || []).length, 1, "the index should have exactly one H1");
+  assert.equal((body.match(/<h2[^>]*>/g) || []).length, 0, "article cards use H3; no section H2s belong here");
 });
 
-test("blog index exposes Blog, BreadcrumbList and FAQPage structured data", () => {
+test("blog index exposes Blog and BreadcrumbList structured data", () => {
   const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((match) =>
     JSON.parse(match[1])
   );
-  const types = schemas.map((schema) => schema["@type"]);
-  assert.deepEqual(types.sort(), ["Blog", "BreadcrumbList", "FAQPage"]);
+  assert.deepEqual(schemas.map((schema) => schema["@type"]).sort(), ["Blog", "BreadcrumbList"]);
 
   const blog = schemas.find((schema) => schema["@type"] === "Blog");
   const { articles } = renderBlogFragments();
   assert.equal(blog.blogPost.length, articles.length);
-
-  const faq = schemas.find((schema) => schema["@type"] === "FAQPage");
-  assert.ok(faq.mainEntity.length >= 5, "expected at least 5 FAQ entries");
-  for (const entry of faq.mainEntity) {
-    assert.ok(html.includes(entry.name), `FAQ question "${entry.name}" is not visible in the page body`);
-    assert.ok(
-      html.includes(entry.acceptedAnswer.text),
-      `FAQ answer for "${entry.name}" is not visible in the page body`
-    );
+  for (const post of blog.blogPost) {
+    assert.ok(!post.url.endsWith(".html"), `${post.url} would 307-redirect; use the extensionless URL`);
   }
 });

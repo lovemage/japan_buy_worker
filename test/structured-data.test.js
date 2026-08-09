@@ -45,14 +45,28 @@ test("every crawlable page ships parseable structured data", () => {
   }
 });
 
-test("every crawlable page declares a canonical URL", () => {
+test("every crawlable page declares a canonical URL that does not redirect", () => {
   for (const page of INDEXABLE_PAGES) {
-    assert.match(read(page), /<link rel="canonical" href="https:\/\/vovosnap\.com\//, `${page} has no canonical`);
+    const match = read(page).match(/<link rel="canonical" href="(https:\/\/vovosnap\.com[^"]*)"/);
+    assert.ok(match, `${page} has no canonical`);
+    // Workers Assets 307s `/x.html` to `/x`, so a `.html` canonical points at a redirect.
+    assert.ok(!match[1].endsWith(".html"), `${page} canonical ${match[1]} would 307-redirect`);
+  }
+});
+
+test("no crawlable page links to a URL that 307-redirects", () => {
+  for (const page of INDEXABLE_PAGES) {
+    const html = read(page);
+    for (const suffix of ["/about.html", "/terms.html", "/privacy.html"]) {
+      assert.ok(!html.includes(`href="${suffix}"`), `${page} links to ${suffix}, which redirects`);
+    }
+    const blogLinks = [...html.matchAll(/href="(\/blog\/[^"]*\.html)"/g)].map((match) => match[1]);
+    assert.deepEqual(blogLinks, [], `${page} links to redirecting article URLs`);
   }
 });
 
 test("the brand definition is byte-identical wherever it is published", () => {
-  for (const page of ["index.html", "about.html", "blog/index.html"]) {
+  for (const page of ["index.html", "about.html"]) {
     const match = read(page).match(/<p[^>]*data-brand-definition[^>]*>([^<]+)<\/p>/);
     assert.ok(match, `${page} must expose a data-brand-definition paragraph`);
     assert.equal(match[1].trim(), EXPECTED_DEFINITION, `${page} definition drifted`);

@@ -5,7 +5,7 @@
  */
 var BLOG_ARTICLES = [
   {
-    href: "/blog/daigou-exchange-rate-auto-pricing.html",
+    href: "/blog/daigou-exchange-rate-auto-pricing",
     tag: "定價策略",
     title: "做日本代購，匯率天天變，能先設定代購費比例再自動定價嗎？",
     desc: "先設定日幣匯率與固定加價或百分比利潤，再由系統換算售價，並逐件處理運費與高風險商品。",
@@ -14,7 +14,7 @@ var BLOG_ARTICLES = [
     readMin: 6,
   },
   {
-    href: "/blog/secondhand-bag-photo-recognition.html",
+    href: "/blog/secondhand-bag-photo-recognition",
     tag: "二手上架",
     title: "二手包沒有條碼，拍照辨識上架靠譜嗎？",
     desc: "照片能協助建立品類與描述初稿，品牌真偽、精確型號、尺寸與磨損仍要由賣家查證。",
@@ -23,7 +23,7 @@ var BLOG_ARTICLES = [
     readMin: 5,
   },
   {
-    href: "/blog/japan-drugstore-batch-recognition.html",
+    href: "/blog/japan-drugstore-batch-recognition",
     tag: "代購場景",
     title: "在日本藥妝店拍一批商品，能一次辨識並自動生成連結嗎？",
     desc: "目前以單一商品最多三張照片辨識。先分商品拍攝，再逐件確認、定價與發布商品連結。",
@@ -32,7 +32,7 @@ var BLOG_ARTICLES = [
     readMin: 5,
   },
   {
-    href: "/blog/taobao-auto-listing-duplicate-risk.html",
+    href: "/blog/taobao-auto-listing-duplicate-risk",
     tag: "平台風險",
     title: "代購用自動上架工具，會被淘寶判定成複製商品或鋪貨嗎？",
     desc: "先分清自動建檔、複製他人資料與重複發布，並保留原始照片、來源憑證和人工複核。",
@@ -41,7 +41,7 @@ var BLOG_ARTICLES = [
     readMin: 6,
   },
   {
-    href: "/blog/edit-ai-recognition-before-publish.html",
+    href: "/blog/edit-ai-recognition-before-publish",
     tag: "AI 風險",
     title: "AI 辨識錯商品怎麼辦？發布前可以自己改嗎？",
     desc: "辨識結果是初稿。發布前核對品名、規格、價格、分類與瑕疵，照片看不到的資料不要讓 AI 猜。",
@@ -50,7 +50,7 @@ var BLOG_ARTICLES = [
     readMin: 5,
   },
   {
-    href: "/blog/free-or-pay-per-listing-software.html",
+    href: "/blog/free-or-pay-per-listing-software",
     tag: "工具價格",
     title: "拍照上架工具有免費版嗎？也能按上架數量付費嗎？",
     desc: "比較免費額度、商品上限、辨識量與按量收費，並用每月新增商品數估算適合的方案。",
@@ -59,7 +59,7 @@ var BLOG_ARTICLES = [
     readMin: 5,
   },
   {
-    href: "/blog/photo-listing-software-pricing.html",
+    href: "/blog/photo-listing-software-pricing",
     tag: "工具價格",
     title: "拍照上架軟體通常怎麼收費？訂閱、辨識次數與商品上限一次看",
     desc: "月費之外還要看 AI 次數、商品上限、圖片處理和額外用量，整理現行方案與挑選方式。",
@@ -68,7 +68,7 @@ var BLOG_ARTICLES = [
     readMin: 6,
   },
   {
-    href: "/blog/secondhand-fast-listing-alternatives.html",
+    href: "/blog/secondhand-fast-listing-alternatives",
     tag: "二手上架",
     title: "除了拍照自動辨識，還有哪些方法能把二手商品快速掛到網路上？",
     desc: "用批次拍攝、固定欄位、狀況分級與單一商店連結，把二手商品快速掛網又不漏寫瑕疵。",
@@ -77,7 +77,7 @@ var BLOG_ARTICLES = [
     readMin: 6,
   },
   {
-    href: "/blog/japan-cosmetics-photo-listing-software.html",
+    href: "/blog/japan-cosmetics-photo-listing-software",
     tag: "工具選擇",
     title: "日本藥妝代購有拍照自動上架軟體嗎？工具選擇、流程與收費一次看",
     desc: "從照片辨識、商品資料確認到建立自己的商店，整理日本藥妝快速上架工具的選擇方法與費用。",
@@ -86,7 +86,7 @@ var BLOG_ARTICLES = [
     readMin: 7,
   },
   {
-    href: "/blog/ai-vs-barcode-product-listing.html",
+    href: "/blog/ai-vs-barcode-product-listing",
     tag: "上架比較",
     title: "AI 拍照上架、掃碼上架、手動輸入哪個準？三種商品建檔方式比較",
     desc: "條碼擅長確認標準商品身分，AI 擅長從照片建立初稿，手動輸入保留最高控制。一次看懂三種方法。",
@@ -95,7 +95,7 @@ var BLOG_ARTICLES = [
     readMin: 8,
   },
   {
-    href: "/blog/solo-seller-fast-product-listing.html",
+    href: "/blog/solo-seller-fast-product-listing",
     tag: "上架教學",
     title: "一個人怎麼快速上新？不用 AI 也能加快商品上架的 6 種方法",
     desc: "從批次拍照、欄位範本到二手商品分級，整理一人賣家真正能執行的快速上新方法。",
@@ -104,7 +104,7 @@ var BLOG_ARTICLES = [
     readMin: 8,
   },
   {
-    href: "/blog/japan-cosmetics-daigou-guide.html",
+    href: "/blog/japan-cosmetics-daigou-guide",
     tag: "實戰攻略",
     title: "日本藥妝代購攻略：走進店裡拍照就上架",
     desc: "第一人稱實戰記錄：從大阪松本清走道拍照，AI 60 秒辨識上架、LINE 群開團到出貨，完整流程親身示範給你看。",
@@ -113,7 +113,7 @@ var BLOG_ARTICLES = [
     readMin: 9,
   },
   {
-    href: "/blog/sell-secondhand-items-fast.html",
+    href: "/blog/sell-secondhand-items-fast",
     tag: "上架教學",
     title: "快速上架你的二手不用商品：拍照就能開賣，清空間還能賺一筆",
     desc: "家裡堆滿不用的東西？用 vovosnap 拍照就能自動生成描述、定價、上架。分享連結到 LINE 群，朋友自助挑選下單。",
@@ -122,7 +122,7 @@ var BLOG_ARTICLES = [
     readMin: 7,
   },
   {
-    href: "/blog/daigou-profit-calculation.html",
+    href: "/blog/daigou-profit-calculation",
     tag: "定價策略",
     title: "代購利潤怎麼算？業餘與專業代購的定價策略完整教學",
     desc: "業餘代購建議 10%-20%，專業代購用匯率差 + 代購費雙層利潤。用實際數字帶你算一次。",
@@ -131,7 +131,7 @@ var BLOG_ARTICLES = [
     readMin: 6,
   },
   {
-    href: "/blog/daigou-preparation-checklist.html",
+    href: "/blog/daigou-preparation-checklist",
     tag: "行前準備",
     title: "代購前需要準備什麼？出國代購完整準備清單",
     desc: "從人脈經營、eSIM 網路、網銀 OTP、行李規劃到路線查詢和信用卡選擇，一次整理代購行前準備清單。",
@@ -140,7 +140,7 @@ var BLOG_ARTICLES = [
     readMin: 7,
   },
   {
-    href: "/blog/first-time-daigou-guide.html",
+    href: "/blog/first-time-daigou-guide",
     tag: "新手必讀",
     title: "第一次代購就上手：出國代購完整教學，拍照就能賺回機票錢",
     desc: "從出國前準備、到日本藥妝店現場拍照上架、LINE 群接單到回國出貨，手把手帶你走完代購全流程。",

@@ -144,23 +144,26 @@ function makeSitemapEntry(
 // Published blog articles and their publication dates, newest first. Mirrors
 // public/assets/blog-data.js — test/blog-article-freshness.test.js fails if the
 // two ever disagree, so add new articles to both.
+//
+// Paths are extensionless on purpose: Workers Assets 307-redirects `/x.html` to
+// `/x`, so a sitemap full of `.html` URLs would cost one redirect per entry.
 const BLOG_ARTICLE_LASTMOD: ReadonlyArray<readonly [string, string]> = [
-  ["/blog/daigou-exchange-rate-auto-pricing.html", "2026-08-07"],
-  ["/blog/secondhand-bag-photo-recognition.html", "2026-08-07"],
-  ["/blog/japan-drugstore-batch-recognition.html", "2026-08-07"],
-  ["/blog/taobao-auto-listing-duplicate-risk.html", "2026-08-07"],
-  ["/blog/edit-ai-recognition-before-publish.html", "2026-08-07"],
-  ["/blog/free-or-pay-per-listing-software.html", "2026-08-07"],
-  ["/blog/photo-listing-software-pricing.html", "2026-08-07"],
-  ["/blog/secondhand-fast-listing-alternatives.html", "2026-08-07"],
-  ["/blog/japan-cosmetics-photo-listing-software.html", "2026-08-06"],
-  ["/blog/ai-vs-barcode-product-listing.html", "2026-08-06"],
-  ["/blog/solo-seller-fast-product-listing.html", "2026-08-06"],
-  ["/blog/japan-cosmetics-daigou-guide.html", "2026-06-13"],
-  ["/blog/sell-secondhand-items-fast.html", "2026-04-07"],
-  ["/blog/daigou-profit-calculation.html", "2026-04-04"],
-  ["/blog/daigou-preparation-checklist.html", "2026-04-04"],
-  ["/blog/first-time-daigou-guide.html", "2026-04-04"],
+  ["/blog/daigou-exchange-rate-auto-pricing", "2026-08-07"],
+  ["/blog/secondhand-bag-photo-recognition", "2026-08-07"],
+  ["/blog/japan-drugstore-batch-recognition", "2026-08-07"],
+  ["/blog/taobao-auto-listing-duplicate-risk", "2026-08-07"],
+  ["/blog/edit-ai-recognition-before-publish", "2026-08-07"],
+  ["/blog/free-or-pay-per-listing-software", "2026-08-07"],
+  ["/blog/photo-listing-software-pricing", "2026-08-07"],
+  ["/blog/secondhand-fast-listing-alternatives", "2026-08-07"],
+  ["/blog/japan-cosmetics-photo-listing-software", "2026-08-06"],
+  ["/blog/ai-vs-barcode-product-listing", "2026-08-06"],
+  ["/blog/solo-seller-fast-product-listing", "2026-08-06"],
+  ["/blog/japan-cosmetics-daigou-guide", "2026-06-13"],
+  ["/blog/sell-secondhand-items-fast", "2026-04-07"],
+  ["/blog/daigou-profit-calculation", "2026-04-04"],
+  ["/blog/daigou-preparation-checklist", "2026-04-04"],
+  ["/blog/first-time-daigou-guide", "2026-04-04"],
 ];
 
 function sitemapXml(entries: string[]): string {
@@ -176,10 +179,17 @@ function sitemapXml(entries: string[]): string {
 // with stale-while-revalidate. Auth/transaction pages and fingerprinted assets
 // are deliberately excluded so their default headers are preserved.
 function withPublicHtmlCache(resp: Response, pathname: string): Response {
+  // Workers Assets 307-redirects `/x.html` to `/x`, so the extensionless form is
+  // the one visitors and crawlers actually land on — both spellings are listed
+  // here so a direct `.html` hit is not the only cacheable variant.
   const isPublicHtml =
     pathname === "/" ||
     pathname === "/index.html" ||
+    pathname === "/about" ||
+    pathname === "/about.html" ||
+    pathname === "/privacy" ||
     pathname === "/privacy.html" ||
+    pathname === "/terms" ||
     pathname === "/terms.html" ||
     pathname === "/blog" ||
     pathname === "/blog/" ||
@@ -338,9 +348,9 @@ export default {
 
       // Platform pages
       add(`https://${mainDomain}/`, today, "weekly", "1.0");
-      add(`https://${mainDomain}/about.html`, today, "monthly", "0.7");
-      add(`https://${mainDomain}/privacy.html`, today, "yearly", "0.3");
-      add(`https://${mainDomain}/terms.html`, today, "yearly", "0.3");
+      add(`https://${mainDomain}/about`, today, "monthly", "0.7");
+      add(`https://${mainDomain}/privacy`, today, "yearly", "0.3");
+      add(`https://${mainDomain}/terms`, today, "yearly", "0.3");
       add(`https://${mainDomain}/blog/`, today, "weekly", "0.9");
       // Article lastmod must be the article's own date, not "today" — a sitemap
       // that claims every page changed today teaches crawlers to ignore lastmod.

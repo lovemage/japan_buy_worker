@@ -60,7 +60,8 @@ for (const article of articles) {
     assert.ok(existsSync(imageUrl), "OG image must exist");
 
     const html = readFileSync(htmlUrl, "utf8");
-    const canonical = `https://vovosnap.com/blog/${article.slug}.html`;
+    // Extensionless: Workers Assets 307-redirects `/blog/x.html` to `/blog/x`.
+    const canonical = `https://vovosnap.com/blog/${article.slug}`;
     const ogImage = `https://vovosnap.com/assets/images/blog/${article.image}`;
     assert.ok(html.includes(`<link rel="canonical" href="${canonical}">`));
     assert.ok(html.includes(`<meta property="og:image" content="${ogImage}">`));
@@ -69,8 +70,8 @@ for (const article of articles) {
     for (const match of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
       assert.doesNotThrow(() => JSON.parse(match[1]), "JSON-LD must be valid JSON");
     }
-    assert.ok(registry.includes(`/blog/${article.slug}.html`), "blog registry must include article");
-    assert.ok(worker.includes(`/blog/${article.slug}.html`), "sitemap must include article");
+    assert.ok(registry.includes(`"/blog/${article.slug}"`), "blog registry must include article");
+    assert.ok(worker.includes(`"/blog/${article.slug}"`), "sitemap must include article");
   });
 }
 
