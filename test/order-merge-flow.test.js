@@ -92,11 +92,28 @@ test("店家不能用狀態下拉手動把訂單設成 merged", () => {
 test("被併訂單的品項靠 origin_form_id 還原", () => {
   for (const [name, src] of [["admin", adminRequirementsTs], ["public", publicRequirementsTs]]) {
     assert.ok(
-      src.includes("OR ri.origin_form_id IN (${placeholders})") || src.includes("OR ri.origin_form_id = ?"),
+      src.includes("OR ri.origin_form_id IN (${placeholders})")
+        || src.includes("OR ri.origin_form_id = ?")
+        || src.includes("ri.origin_form_id IN (SELECT id FROM selected_forms)"),
       `Expected the ${name} item query to also fetch items by origin_form_id`
     );
     assert.ok(src.includes("originItemMap") || src.includes("origin_form_id = ?"), `Expected ${name} to map origin items`);
   }
+});
+
+test("店家訂單品項查詢不會為每張訂單重複綁定 SQL 變數", () => {
+  assert.ok(
+    adminRequirementsTs.includes("json_each(?)"),
+    "Expected the admin item query to pass paginated form ids through one JSON parameter"
+  );
+  assert.ok(
+    adminRequirementsTs.includes(".bind(JSON.stringify(ids))"),
+    "Expected only one bound variable regardless of the number of orders"
+  );
+  assert.ok(
+    !adminRequirementsTs.includes(".bind(...ids, ...ids)"),
+    "Must not bind two variables per order because D1 rejects more than 100 SQL variables"
+  );
 });
 
 test("後台有已合併分頁，且全部分頁不重複列出被併走的單", () => {

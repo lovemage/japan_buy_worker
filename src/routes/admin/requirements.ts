@@ -389,8 +389,10 @@ LIMIT ? OFFSET ?
   }
 
   const ids = forms.map((form) => form.id);
-  const placeholders = ids.map(() => "?").join(",");
   const itemsSql = `
+WITH selected_forms(id) AS (
+  SELECT CAST(value AS INTEGER) FROM json_each(?)
+)
 SELECT
   ri.id,
   ri.requirement_form_id,
@@ -410,12 +412,13 @@ SELECT
   p.source_product_code AS product_code
 FROM requirement_items ri
 LEFT JOIN products p ON p.id = ri.product_id
-WHERE ri.requirement_form_id IN (${placeholders}) OR ri.origin_form_id IN (${placeholders})
+WHERE ri.requirement_form_id IN (SELECT id FROM selected_forms)
+   OR ri.origin_form_id IN (SELECT id FROM selected_forms)
 ORDER BY ri.id DESC
 `;
   const itemsResult = await ctx.db
     .prepare(itemsSql)
-    .bind(...ids, ...ids)
+    .bind(JSON.stringify(ids))
     .all<ItemRow>();
   const items = Array.isArray(itemsResult?.results) ? itemsResult.results : [];
 
