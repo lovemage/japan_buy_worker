@@ -5,6 +5,11 @@ import { isStoreOwnerAuthorized, handleStoreLogout, handleAdminLogin } from "./r
 import { handleAdminCrawl } from "./routes/admin/crawl";
 import { handleAdminRequirements } from "./routes/admin/requirements";
 import {
+  handleMergeCandidates,
+  handleOrderMerge,
+  handleOrderUnmerge,
+} from "./routes/admin/order-merge";
+import {
   handlePublicProductBrands,
   handlePublicProductCategories,
   handlePublicProductDetail,
@@ -16,6 +21,10 @@ import {
   handlePublicRequirementHistory,
   handlePublicRequirements,
 } from "./routes/public/requirements";
+import {
+  handlePublicRemittanceInfo,
+  handlePublicRemittanceReport,
+} from "./routes/public/remittance";
 import { handleAdminPricing, handlePublicPricing, getPricingConfig } from "./routes/pricing";
 import {
   handleAdminProducts,
@@ -39,6 +48,7 @@ import {
   handleStoreNameUpdate,
   handleStoreSlugUpdate,
   handleDisplaySettings,
+  handleRemittanceSettings,
   handlePopupAds,
   handlePopupAdUpload,
   handlePopupAdDelete,
@@ -625,6 +635,8 @@ export async function routeTenantRequest(
   if (subPath === "/api/requirements") return handlePublicRequirements(request, ctx);
   if (subPath === "/api/requirement") return handlePublicRequirementDetail(request, ctx);
   if (subPath === "/api/requirement-history") return handlePublicRequirementHistory(request, ctx);
+  if (subPath === "/api/remittance-info") return handlePublicRemittanceInfo(request, ctx);
+  if (subPath === "/api/remittance-report") return handlePublicRemittanceReport(request, ctx);
   if (subPath === "/api/pricing") return handlePublicPricing(request, ctx);
 
   // ── R2 image proxy ──
@@ -665,6 +677,18 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/requirements") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleAdminRequirements(request, ctx);
+  }
+  if (subPath === "/api/admin/merge-candidates") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleMergeCandidates(request, ctx);
+  }
+  if (subPath === "/api/admin/requirements/merge") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleOrderMerge(request, ctx);
+  }
+  if (subPath === "/api/admin/requirements/unmerge") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleOrderUnmerge(request, ctx);
   }
   if (subPath === "/api/admin/pricing") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
@@ -730,6 +754,10 @@ export async function routeTenantRequest(
     // GET is public (store front reads it), POST requires auth
     if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleDisplaySettings(request, ctx);
+  }
+  if (subPath === "/api/admin/remittance-settings") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleRemittanceSettings(request, ctx);
   }
   if (subPath === "/api/admin/tutorial") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

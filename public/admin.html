@@ -531,6 +531,7 @@
         </div>
         <div id="order-filter-tabs" class="order-filter-tabs"></div>
         <section id="admin-forms" class="admin-forms"></section>
+        <div id="orders-load-more"></div>
       </div>
       <div id="orders-stats-view" class="hidden">
         <div id="stats-content"></div>
@@ -896,6 +897,7 @@
 
       <!-- 收款設定 -->
       <div class="admin-sub-panel hidden" data-subtab-panel="payment">
+        <div id="remittance-panel-content"></div>
         <div id="payment-panel-content">
           <p class="meta" style="color:var(--admin-text-muted);">載入中...</p>
         </div>
@@ -2184,6 +2186,138 @@
     });
   }, 600);
 
+  // ── 銀行匯款收款設定 ──
+  // 刻意不綁方案：離線匯款不經過平台金流，免費方案也能用。
+  // 需要方案 gate 的是下面的 PAYUNi 線上收款。
+  var _remittanceSettings = { enabled: false, instruction: "", accounts: [] };
+
+  function remittanceAccountRowHtml(acc, idx) {
+    return '<div class="remittance-account-row" data-idx="' + idx + '">' +
+      '<input class="input-cute js-remit-bank-name" type="text" maxlength="40" placeholder="銀行名稱（例：國泰世華）" value="' + escHtml(acc.bankName) + '" />' +
+      '<input class="input-cute js-remit-bank-code" type="text" inputmode="numeric" maxlength="5" placeholder="代號" value="' + escHtml(acc.bankCode) + '" />' +
+      '<input class="input-cute js-remit-account-no" type="text" inputmode="numeric" maxlength="24" placeholder="帳號" value="' + escHtml(acc.accountNo) + '" />' +
+      '<input class="input-cute js-remit-account-name" type="text" maxlength="40" placeholder="戶名" value="' + escHtml(acc.accountName) + '" />' +
+      '<button class="button secondary js-remit-remove" type="button">刪除</button>' +
+      '</div>';
+  }
+
+  function readRemittanceForm() {
+    var rows = document.querySelectorAll("#remittance-accounts .remittance-account-row");
+    var accounts = [];
+    for (var i = 0; i < rows.length; i++) {
+      accounts.push({
+        bankName: rows[i].querySelector(".js-remit-bank-name").value.trim(),
+        bankCode: rows[i].querySelector(".js-remit-bank-code").value.trim(),
+        accountNo: rows[i].querySelector(".js-remit-account-no").value.trim(),
+        accountName: rows[i].querySelector(".js-remit-account-name").value.trim(),
+      });
+    }
+    var toggle = document.getElementById("remittance-toggle");
+    var instruction = document.getElementById("remittance-instruction");
+    return {
+      enabled: !!(toggle && toggle.checked),
+      instruction: instruction ? instruction.value : "",
+      accounts: accounts,
+    };
+  }
+
+  function renderRemittanceSettings() {
+    var panel = document.getElementById("remittance-panel-content");
+    if (!panel) return;
+    var st = _remittanceSettings;
+    var rowsHtml = (st.accounts || []).map(remittanceAccountRowHtml).join("");
+    panel.innerHTML =
+      '<div class="settings-group">' +
+        '<h3 class="settings-group__title">銀行匯款收款</h3>' +
+        '<p class="meta" style="margin-bottom:8px;">開啟後，買家在訂單完成頁與歷史訂單頁會看到您的收款帳戶，並可回報匯款帳號後五碼。回報會出現在訂單分頁的「待核帳」。</p>' +
+        '<label class="toggle-label">' +
+          '<label class="toggle-switch">' +
+            '<input type="checkbox" id="remittance-toggle"' + (st.enabled ? " checked" : "") + ' />' +
+            '<span class="toggle-slider"></span>' +
+          '</label>' +
+          '<span id="remittance-toggle-label">' + (st.enabled ? "開啟" : "關閉") + '</span>' +
+        '</label>' +
+        '<div id="remittance-accounts" style="margin-top:12px;">' + rowsHtml + '</div>' +
+        '<button class="button secondary" type="button" id="remittance-add" style="margin-top:8px;">新增收款帳戶</button>' +
+        '<p class="meta" style="margin:12px 0 4px;">匯款說明（選填，顯示在收款帳戶下方）</p>' +
+        '<textarea id="remittance-instruction" rows="3" class="input-cute" maxlength="500" placeholder="例如：匯款後請回報帳號後五碼，我們會在 1 個工作天內核對。">' + escHtml(st.instruction) + '</textarea>' +
+        '<button class="button" type="button" id="remittance-save" style="margin-top:12px;">儲存</button>' +
+        '<p id="remittance-status" class="admin-status"></p>' +
+      '</div>';
+
+    var toggle = document.getElementById("remittance-toggle");
+    if (toggle) {
+      toggle.addEventListener("change", function () {
+        document.getElementById("remittance-toggle-label").textContent = toggle.checked ? "開啟" : "關閉";
+      });
+    }
+
+    var addBtn = document.getElementById("remittance-add");
+    if (addBtn) {
+      addBtn.addEventListener("click", function () {
+        var current = readRemittanceForm();
+        if (current.accounts.length >= 5) return;
+        current.accounts.push({ bankName: "", bankCode: "", accountNo: "", accountName: "" });
+        _remittanceSettings = current;
+        renderRemittanceSettings();
+      });
+    }
+
+    panel.querySelectorAll(".js-remit-remove").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var row = btn.closest(".remittance-account-row");
+        var idx = Number(row && row.getAttribute("data-idx"));
+        var current = readRemittanceForm();
+        current.accounts.splice(idx, 1);
+        _remittanceSettings = current;
+        renderRemittanceSettings();
+      });
+    });
+
+    var saveBtn = document.getElementById("remittance-save");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", function () {
+        var status = document.getElementById("remittance-status");
+        var payload = readRemittanceForm();
+        if (payload.enabled && payload.accounts.length === 0) {
+          if (status) status.textContent = "請先新增至少一組收款帳戶再開啟";
+          return;
+        }
+        saveBtn.disabled = true;
+        apiFetch("/api/admin/remittance-settings", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        }).then(function (r) { return r.json(); }).then(function (d) {
+          saveBtn.disabled = false;
+          if (!d || !d.ok) {
+            if (status) status.textContent = "儲存失敗，請稍後再試";
+            return;
+          }
+          // 後端會把不完整的帳戶濾掉，用回傳值重繪才看得到實際存下來的內容
+          _remittanceSettings = { enabled: d.enabled, instruction: d.instruction, accounts: d.accounts };
+          renderRemittanceSettings();
+          var newStatus = document.getElementById("remittance-status");
+          if (newStatus) newStatus.textContent = "已儲存";
+        }).catch(function () {
+          saveBtn.disabled = false;
+          if (status) status.textContent = "網路錯誤，請稍後再試";
+        });
+      });
+    }
+  }
+
+  function initRemittanceTab() {
+    apiFetch("/api/admin/remittance-settings").then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.ok) {
+        _remittanceSettings = { enabled: !!d.enabled, instruction: d.instruction || "", accounts: d.accounts || [] };
+      }
+      renderRemittanceSettings();
+    }).catch(function () {
+      renderRemittanceSettings();
+    });
+  }
+
   // ── PAYUNi 收款設定分頁 ──
   var _storePayConfig = null;
 
@@ -2192,6 +2326,7 @@
   }
 
   function initPaymentTab(store) {
+    initRemittanceTab();
     var eff = (store && store.effective_plan) || "free";
     var isProOrAbove = eff === "pro" || eff === "proplus";
     var panel = document.getElementById("payment-panel-content");

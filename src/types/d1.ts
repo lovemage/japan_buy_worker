@@ -7,4 +7,8 @@ export type D1PreparedStatement = {
 
 export type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement;
+  // D1 在單一 transaction 中依序執行；任何一句失敗整批回滾。
+  batch: <T = Record<string, unknown>>(
+    statements: D1PreparedStatement[]
+  ) => Promise<{ results: T[]; success?: boolean }[]>;
 };

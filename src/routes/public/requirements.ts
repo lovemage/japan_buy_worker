@@ -74,6 +74,10 @@ type RequirementFormRow = {
   requires_ezway: number | null;
   notes: string | null;
   status?: string | null;
+  remittance_status?: string | null;
+  remittance_last5?: string | null;
+  merged_into_id?: number | null;
+  merged_into_order_code?: string | null;
   created_at: string;
 };
 
@@ -519,6 +523,10 @@ SELECT
   requires_ezway,
   notes,
   status,
+  remittance_status,
+  remittance_last5,
+  merged_into_id,
+  (SELECT p.order_code FROM requirement_forms p WHERE p.id = requirement_forms.merged_into_id) AS merged_into_order_code,
   created_at
 FROM requirement_forms
 WHERE id = ? AND store_id = ?
@@ -555,11 +563,11 @@ SELECT
   p.source_product_code as product_code
 FROM requirement_items ri
 LEFT JOIN products p ON p.id = ri.product_id
-WHERE ri.requirement_form_id = ?
+WHERE ri.requirement_form_id = ? OR ri.origin_form_id = ?
 ORDER BY ri.id ASC
 `
     )
-    .bind(id)
+    .bind(id, id)
     .all<RequirementItemRow>();
   const items = Array.isArray(itemsRes?.results) ? itemsRes.results : [];
 
@@ -590,6 +598,9 @@ ORDER BY ri.id ASC
         requiresEzway: Number(form.requires_ezway || 0) === 1,
         notes: form.notes || "",
         status: form.status || "pending",
+        remittanceStatus: form.remittance_status || null,
+        remittanceLast5: form.remittance_last5 || "",
+        mergedIntoOrderCode: form.merged_into_order_code || "",
         itemsTotalJpy,
         itemsTotalTwd,
         originalItemsTotalTwd,
@@ -650,10 +661,6 @@ SELECT
   id,
   order_code,
   customer_name,
-  member_phone,
-  recipient_city,
-  recipient_address,
-  line_id,
   shipping_method,
   shipping_international_jpy,
   shipping_domestic_twd,
@@ -663,6 +670,10 @@ SELECT
   requires_ezway,
   notes,
   status,
+  remittance_status,
+  remittance_last5,
+  merged_into_id,
+  (SELECT p.order_code FROM requirement_forms p WHERE p.id = requirement_forms.merged_into_id) AS merged_into_order_code,
   created_at
 FROM requirement_forms
 WHERE store_id = ? AND member_phone = ?
@@ -704,26 +715,31 @@ SELECT
   p.source_product_code as product_code
 FROM requirement_items ri
 LEFT JOIN products p ON p.id = ri.product_id
-WHERE ri.requirement_form_id IN (${placeholders})
+WHERE ri.requirement_form_id IN (${placeholders}) OR ri.origin_form_id IN (${placeholders})
 ORDER BY ri.id ASC
 `
     )
-    .bind(...ids)
-    .all<RequirementItemRow & { requirement_form_id: number }>();
+    .bind(...ids, ...ids)
+    .all<RequirementItemRow & { requirement_form_id: number; origin_form_id: number | null }>();
   const items = Array.isArray(itemsResult?.results) ? itemsResult.results : [];
+  // 被併單在買家手上仍是一組有效的訂單編號，要看得到自己原本買了什麼
   const itemMap = new Map<number, RequirementItemRow[]>();
+  const originItemMap = new Map<number, RequirementItemRow[]>();
+  const pushTo = (map: Map<number, RequirementItemRow[]>, key: number, item: RequirementItemRow) => {
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)?.push(item);
+  };
   for (const item of items) {
-    if (!itemMap.has(item.requirement_form_id)) {
-      itemMap.set(item.requirement_form_id, []);
-    }
-    itemMap.get(item.requirement_form_id)?.push(item);
+    pushTo(itemMap, item.requirement_form_id, item);
+    if (item.origin_form_id) pushTo(originItemMap, item.origin_form_id, item);
   }
 
   return new Response(
     JSON.stringify({
       ok: true,
       orders: forms.map((form) => {
-        const orderItems = itemMap.get(form.id) || [];
+        const isMerged = form.status === "merged";
+        const orderItems = (isMerged ? originItemMap.get(form.id) : itemMap.get(form.id)) || [];
         const itemsTotalJpy = orderItems.reduce((sum, item) => sum + Number(item.subtotal_jpy || 0), 0);
         const originalItemsTotalTwd = orderItems.reduce((sum, item) => sum + Number(item.subtotal_twd || 0), 0);
         const originalShippingTwd = Number(form.shipping_total_twd || 0);
@@ -735,10 +751,6 @@ ORDER BY ri.id ASC
           orderCode: form.order_code || String(form.id),
           createdAt: form.created_at,
           memberName: form.customer_name,
-          memberPhone: form.member_phone || "",
-          recipientCity: form.recipient_city || "",
-          recipientAddress: form.recipient_address || "",
-          lineId: form.line_id || "",
           shippingMethod: form.shipping_method || "consolidated_tw",
           shippingInternationalTwd: Number(form.shipping_international_jpy || 0),
           shippingDomesticTwd: Number(form.shipping_domestic_twd || 0),
@@ -746,6 +758,9 @@ ORDER BY ri.id ASC
           requiresEzway: Number(form.requires_ezway || 0) === 1,
           notes: form.notes || "",
           status: form.status || "pending",
+          remittanceStatus: form.remittance_status || null,
+          remittanceLast5: form.remittance_last5 || "",
+          mergedIntoOrderCode: form.merged_into_order_code || "",
           itemsTotalJpy,
           itemsTotalTwd,
           originalItemsTotalTwd,

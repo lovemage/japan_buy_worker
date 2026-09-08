@@ -41,6 +41,8 @@
         <div class="order-totals" id="order-totals"></div>
       </div>
 
+      <section id="remittance-section"></section>
+
       <section id="success-error" class="notice hidden"></section>
 
       <div class="success-actions">
@@ -51,6 +53,7 @@
 
     <script type="module">
     import { applyProductImageFallback } from "./assets/image-fallback.js";
+    import { mountRemittanceSection } from "./assets/remittance-form.js";
 
     const _cc = window.__COUNTRY_CONFIG || {};
     const srcSym = _cc.currencySymbol || "¥";
@@ -94,6 +97,12 @@
         '<div class="row"><span>商品小計</span><span>NT$' + itemTotal.toLocaleString() + '</span></div>' +
         (shipping > 0 ? '<div class="row"><span>運費</span><span>NT$' + shipping.toLocaleString() + '</span></div>' : '') +
         '<div class="row total"><span>合計</span><span>NT$' + (itemTotal + shipping).toLocaleString() + '</span></div>';
+
+      // 匯款回報（店家未開啟匯款收款時，元件自己不渲染）
+      mountRemittanceSection(document.getElementById("remittance-section"), {
+        order: order,
+        phone: order.memberPhone || "",
+      });
 
       // Copy button
       document.getElementById("copy-order-text").addEventListener("click", function() {

@@ -2,6 +2,7 @@ import type { RequestContext } from "../../context";
 import { normalizeSlug, getSlugValidationError, canChangeSlug, getSlugChangeUsage } from "../../shared/slug-rules.js";
 import { getGeminiApiKey } from "./settings";
 import { parseDisplaySettings, sanitizeDisplaySettingsPatch } from "../../shared/display-settings.js";
+import { parseRemittanceSettings, sanitizeRemittanceSettingsPatch } from "../../shared/remittance-logic.js";
 
 // Country → currency mapping
 export const COUNTRY_CONFIG: Record<string, { currency: string; currencySymbol: string; currencyLabel: string; defaultRate: number; defaultMarkup: number }> = {
@@ -134,6 +135,37 @@ export async function handleDisplaySettings(
       .bind(ctx.storeId, JSON.stringify(settings))
       .run();
     return json({ ok: true });
+  }
+
+  return json({ ok: false, error: "Method Not Allowed" }, 405);
+}
+
+// 匯款收款帳戶（離線銀行轉帳）。買家端 /api/remittance-info 讀的是同一把 key。
+export async function handleRemittanceSettings(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method === "GET") {
+    const row = await ctx.db
+      .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'remittance_accounts'")
+      .bind(ctx.storeId)
+      .first<{ value: string }>();
+    return json({ ok: true, ...parseRemittanceSettings(row?.value || null) });
+  }
+
+  if (request.method === "POST") {
+    let body: Record<string, unknown>;
+    try {
+      body = (await request.json()) as Record<string, unknown>;
+    } catch {
+      return json({ ok: false, error: "Invalid JSON" }, 400);
+    }
+    const settings = sanitizeRemittanceSettingsPatch(body);
+    await ctx.db
+      .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'remittance_accounts', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
+      .bind(ctx.storeId, JSON.stringify(settings))
+      .run();
+    return json({ ok: true, ...settings });
   }
 
   return json({ ok: false, error: "Method Not Allowed" }, 405);

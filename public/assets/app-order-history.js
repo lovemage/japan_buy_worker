@@ -1,4 +1,5 @@
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
+import { mountRemittanceSection } from "./remittance-form.js";
 
 function escapeHtml(value) {
   return String(value || "")
@@ -22,6 +23,7 @@ function statusText(status) {
     shipped: "已出貨",
     completed: "已完成",
     cancelled: "已取消",
+    merged: "已合併",
   };
   return map[status] || status || "待確認";
 }
@@ -48,7 +50,7 @@ function setError(message) {
   node.classList.toggle("hidden", !message);
 }
 
-function renderOrders(orders) {
+function renderOrders(orders, phone) {
   const results = document.getElementById("history-results");
   if (!results) return;
 
@@ -82,17 +84,26 @@ function renderOrders(orders) {
         <div class="name">${escapeHtml(order.memberName || "會員")}
           <div class="spec">${escapeHtml(created)}</div>
         </div>
-        <div class="price">NT$${formatMoney(order.grandTotalTwd)}</div>
+        <div class="price">${order.mergedIntoOrderCode ? "—" : `NT$${formatMoney(order.grandTotalTwd)}`}</div>
       </div>
       ${itemsHtml}
-      <div class="order-totals">
+      ${order.mergedIntoOrderCode
+        ? `<div class="order-totals"><div class="row total"><span>已併入訂單 #${escapeHtml(order.mergedIntoOrderCode)}</span><span>款項以該訂單為準</span></div></div>`
+        : `<div class="order-totals">
         <div class="row"><span>商品小計</span><span>NT$${formatMoney(order.itemsTotalTwd)}</span></div>
         <div class="row"><span>運費</span><span>NT$${formatMoney(order.shippingTotalTwd)}</span></div>
         <div class="row total"><span>合計</span><span>NT$${formatMoney(order.grandTotalTwd)}</span></div>
-      </div>
+      </div>`}
+      <div class="remittance-slot" data-order-code="${escapeHtml(order.orderCode)}"></div>
     </article>`;
   }).join("");
   applyProductImageFallback(results);
+
+  // 已出貨／已完成／已取消的訂單不需要再回報匯款，元件內部會擋掉
+  for (const order of orders) {
+    const slot = results.querySelector(`.remittance-slot[data-order-code="${CSS.escape(String(order.orderCode))}"]`);
+    if (slot) mountRemittanceSection(slot, { order, phone });
+  }
 }
 
 async function loadHistory(phone) {
@@ -131,7 +142,7 @@ function bootstrap() {
       submit.textContent = "查詢中...";
     }
     try {
-      renderOrders(await loadHistory(phone));
+      renderOrders(await loadHistory(phone), phone);
     } catch (error) {
       setError(error instanceof Error ? error.message : "查詢失敗");
     } finally {
