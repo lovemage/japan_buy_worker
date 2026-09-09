@@ -44,68 +44,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   shippingOptionsEnabled: boolean;
   pricingMode: string;
 }> {
-  await ensureSettingsTable(db);
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_jpy', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_MARKUP_JPY))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'jpy_to_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_JPY_TO_TWD))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'international_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_INTL_SHIPPING_TWD))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'domestic_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_DOMESTIC_SHIPPING_TWD))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'promo_tag_max_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_PROMO_TAG_MAX_TWD))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'limited_proxy_shipping_twd', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_LIMITED_PROXY_SHIPPING_TWD))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'shipping_options_enabled', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_SHIPPING_OPTIONS_ENABLED))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_mode', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, DEFAULT_MARKUP_MODE)
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'markup_percent', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, String(DEFAULT_MARKUP_PERCENT))
-    .run();
-  await db
-    .prepare(
-      "INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'pricing_mode', ?, datetime('now')) ON CONFLICT(store_id, key) DO NOTHING"
-    )
-    .bind(storeId, DEFAULT_PRICING_MODE)
-    .run();
-
+  // Schema is managed by migrations; public reads must not issue writes.
   const rows = await db
     .prepare(
       "SELECT key, value FROM app_settings WHERE store_id = ? AND key IN ('markup_jpy','markup_mode','markup_percent','jpy_to_twd','international_shipping_twd','international_shipping_jpy','domestic_shipping_twd','promo_tag_max_twd','limited_proxy_shipping_twd','shipping_options_enabled','pricing_mode')"
@@ -118,7 +57,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   const markupPercentRaw = result.find((x) => x.key === "markup_percent")?.value;
   const rateRaw = result.find((x) => x.key === "jpy_to_twd")?.value;
   const intlShippingRaw =
-    result.find((x) => x.key === "international_shipping_twd")?.value ||
+    (result.find((x) => x.key === "international_shipping_twd")?.value ?? String(DEFAULT_INTL_SHIPPING_TWD)) ||
     result.find((x) => x.key === "international_shipping_jpy")?.value;
   const domesticShippingRaw = result.find((x) => x.key === "domestic_shipping_twd")?.value;
   const promoTagMaxRaw = result.find((x) => x.key === "promo_tag_max_twd")?.value;
@@ -139,7 +78,7 @@ export async function getPricingConfig(db: D1DatabaseLike, storeId: number): Pro
   const promoTagMaxTwd = Number(promoTagMaxRaw);
   const limitedProxyShippingTwd = Number(limitedProxyShippingRaw);
   const shippingOptionsEnabled = Number(shippingOptionsEnabledRaw);
-  const pricingMode = pricingModeRaw === "manual" ? "manual" : "auto";
+  const pricingMode = (pricingModeRaw ?? DEFAULT_PRICING_MODE) === "manual" ? "manual" : "auto";
   return {
     markupJpy: Number.isFinite(markup) ? markup : DEFAULT_MARKUP_JPY,
     markupMode,

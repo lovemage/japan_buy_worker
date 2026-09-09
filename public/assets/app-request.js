@@ -1,4 +1,5 @@
 import { clearDraft, getDraft, setDraft } from "./draft-store.js";
+import { fetchStoreJson } from "./storefront-data.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = {
@@ -567,29 +568,40 @@ function applyShippingOptionsVisibility() {
   });
 }
 
+function needsDraftOptions(item) {
+  if (!item?.code || item.optionsHydrated) return false;
+  const hasSize = Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0;
+  const hasColor = Array.isArray(item.colorOptions) && item.colorOptions.length > 0;
+  const hasVariants = Array.isArray(item.variantOptions) && item.variantOptions.length > 0;
+  return !hasVariants && !(hasSize && hasColor);
+}
+
 async function hydrateDraftWithOptions() {
+  const codes = [...new Set(getDraft().items.filter(needsDraftOptions).map((item) => item.code))];
+  const products = new Map();
+  const failed = new Set();
+  // Bound concurrency for large carts; duplicate products share one request.
+  let cursor = 0;
+  await Promise.all(Array.from({ length: Math.min(4, codes.length) }, async () => {
+    while (cursor < codes.length) {
+      const code = codes[cursor++];
+      try {
+        const body = await fetchStoreJson(`/api/product?code=${encodeURIComponent(code)}`);
+        if (!body.product) throw new Error("找不到商品");
+        products.set(code, body.product);
+      } catch {
+        failed.add(code);
+      }
+    }
+  }));
+
+  // Read again after network I/O so edits/removals made during loading survive.
   const draft = getDraft();
   let changed = false;
-  for (let i = 0; i < draft.items.length; i += 1) {
-    const item = draft.items[i];
-    if (!item?.code) {
-      continue;
-    }
-    const hasSize = Array.isArray(item.sizeOptions) && item.sizeOptions.length > 0;
-    const hasColor = Array.isArray(item.colorOptions) && item.colorOptions.length > 0;
-    const hasVariants = Array.isArray(item.variantOptions) && item.variantOptions.length > 0;
-    if (hasVariants || (hasSize && hasColor)) {
-      continue;
-    }
-    const res = await apiFetch(`/api/product?code=${encodeURIComponent(item.code)}`);
-    if (!res.ok) {
-      continue;
-    }
-    const body = await res.json();
-    const product = body?.product;
-    if (!product) {
-      continue;
-    }
+  for (const item of draft.items) {
+    if (!needsDraftOptions(item)) continue;
+    const product = products.get(item.code);
+    if (!product) continue;
     const variantOptions = normalizeVariantOptions(product.variants);
     const sizeOptions = Array.isArray(product.sizeOptions) ? product.sizeOptions.filter(Boolean) : [];
     const colorOptions = Array.isArray(product.colorOptions) ? product.colorOptions.filter(Boolean) : [];
@@ -597,25 +609,19 @@ async function hydrateDraftWithOptions() {
       item.variantOptions = variantOptions;
       item.variantName = item.variantName || variantOptions[0].name;
       applyVariantPricing(item);
-      changed = true;
     } else if (!item.priceJpyTaxIn || !item.unitPriceTwd) {
       const adjusted = calcAdjustedPrices(product.priceJpyTaxIn, pricingConfig);
       item.priceJpyTaxIn = adjusted.jpy;
       item.unitPriceTwd = adjusted.twd;
-      changed = true;
     }
-    if (sizeOptions.length > 0) {
-      item.sizeOptions = sizeOptions;
-      changed = true;
-    }
-    if (colorOptions.length > 0) {
-      item.colorOptions = colorOptions;
-      changed = true;
-    }
+    if (sizeOptions.length > 0) item.sizeOptions = sizeOptions;
+    if (colorOptions.length > 0) item.colorOptions = colorOptions;
+    item.optionsHydrated = true;
+    changed = true;
   }
-
-  if (changed) {
-    setDraft(draft);
+  if (changed) setDraft(draft);
+  if (draft.items.some((item) => needsDraftOptions(item) && failed.has(item.code))) {
+    throw new Error("商品規格載入失敗");
   }
 }
 
@@ -689,6 +695,10 @@ function validateForm(payload) {
 
 async function onSubmit(event) {
   event.preventDefault();
+  if (!checkoutReady) {
+    showError("請先返回購物車，完成商品資料載入後再送出訂單");
+    return;
+  }
   const captchaInput = (document.getElementById("captchaInput")?.value || "").trim().toUpperCase();
   if (!captchaInput || captchaInput !== currentCaptchaCode) {
     showError("圖形驗證錯誤，請重新輸入");
@@ -802,13 +812,42 @@ async function onSubmit(event) {
   }
 }
 
-async function bootstrap() {
-  const pricingRes = await apiFetch("/api/pricing");
-  const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
-  pricingConfig = pricingBody?.pricing || DEFAULT_PRICING;
+let checkoutReady = false;
+let cartLoading = false;
 
+async function loadCartData() {
+  if (cartLoading) return;
+  cartLoading = true;
+  checkoutReady = false;
+  const next = document.getElementById("next-step-btn");
+  const status = document.getElementById("cart-load-status");
+  if (next) { next.disabled = true; next.textContent = "確認商品資料中…"; }
+  if (status) status.textContent = "正在確認商品規格與運費，購物車商品已保留。";
+  try {
+    const pricingBody = await fetchStoreJson("/api/pricing");
+    if (!pricingBody.pricing) throw new Error("價格載入失敗");
+    pricingConfig = pricingBody.pricing;
+    await hydrateDraftWithOptions();
+    checkoutReady = true;
+    if (status) status.textContent = "";
+  } catch {
+    if (status) status.textContent = "商品資料暫時載入失敗，購物車商品已保留，請點下方重試。";
+  } finally {
+    cartLoading = false;
+    renderDraftItems();
+    renderShippingOptions();
+    applyShippingOptionsVisibility();
+    renderTotals();
+    if (next) {
+      next.disabled = false;
+      next.textContent = checkoutReady ? "下一步" : "重試載入";
+    }
+  }
+}
+
+function bootstrap() {
+  // Local cart contents are available immediately, even with a slow/offline API.
   renderCityOptions();
-  await hydrateDraftWithOptions();
   renderDraftItems();
   renderTotals();
   const refreshBtn = document.getElementById("captcha-refresh");
@@ -832,6 +871,7 @@ async function bootstrap() {
     form.addEventListener("submit", onSubmit);
   }
   initStepFlow();
+  void loadCartData();
 }
 
 // ── Two-step UX: cart review → fill info ──
@@ -880,6 +920,7 @@ function initStepFlow() {
   const prevBtn = document.getElementById("prev-step-btn");
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
+      if (!checkoutReady) { void loadCartData(); return; }
       const draft = getDraft();
       if (!draft.items || draft.items.length === 0) {
         showError("購物車是空的，請先加入商品");

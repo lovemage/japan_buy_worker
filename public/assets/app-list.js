@@ -2,6 +2,7 @@ import { addItem, getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback } from "./image-fallback.js";
 import { buildListQueryParams } from "./list-query.js";
 import { getNormalizedQuickSort, nextSingleBrandSelection } from "./list-state.js";
+import { fetchStoreJson } from "./storefront-data.js";
 
 const PAGE_SIZE = 30;
 const _cc = window.__COUNTRY_CONFIG || {};
@@ -266,7 +267,7 @@ function renderProducts(products, pricing) {
   }
   const promoThreshold = Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
   grid.innerHTML = products
-    .map((item) => {
+    .map((item, index) => {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
       const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
       const isPromo =
@@ -296,7 +297,7 @@ function renderProducts(products, pricing) {
         <div class="product-card__media image-loading" data-image-loading-wrap>
           ${isPromo ? '<span class="promo-badge">優惠</span>' : ""}
           ${(item.tags || []).map(t => `<span class="product-tag product-tag--${escapeHtml(t)}">${getTagLabel(t)}</span>`).join("")}
-          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="lazy" data-card-image data-fallback="product" data-image-loading="1" />
+          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" data-card-image data-fallback="product" data-image-loading="1" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
           <div class="product-card__overlay" data-card-overlay>
@@ -765,20 +766,13 @@ async function bootstrap() {
     const brandParams = buildListQueryParams({
       category,
     });
-    const [categoryRes, brandRes] = await Promise.all([
-      apiFetch("/api/product-categories"),
-      apiFetch(`/api/product-brands?${brandParams.toString()}`),
-    ]);
-    const categoryBody = categoryRes.ok ? await categoryRes.json() : null;
-    const brandBody = brandRes.ok ? await brandRes.json() : null;
-    const categories = Array.isArray(categoryBody?.categories) ? categoryBody.categories : [];
-    const brands = Array.isArray(brandBody?.brands) ? brandBody.brands : [];
-    renderBrandFilters(brands);
-    renderCategoryFilters(categories);
-
-    const pricingRes = await apiFetch("/api/pricing");
-    const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
-    const pricing = pricingBody?.pricing || DEFAULT_PRICING;
+    // Filters are optional: a slow/failed filter must not hold up products.
+    void fetchStoreJson("/api/product-categories")
+      .then((body) => renderCategoryFilters(Array.isArray(body.categories) ? body.categories : []))
+      .catch(() => {});
+    void fetchStoreJson(`/api/product-brands?${brandParams.toString()}`)
+      .then((body) => renderBrandFilters(Array.isArray(body.brands) ? body.brands : []))
+      .catch(() => {});
     const page = getPage();
     const selectedBrands = getSelectedBrands();
     const offset = (page - 1) * PAGE_SIZE;
@@ -789,11 +783,12 @@ async function bootstrap() {
       category,
       brands: selectedBrands,
     });
-    const res = await apiFetch(`/api/products?${params.toString()}`);
-    if (!res.ok) {
-      throw new Error(`Load failed: ${res.status}`);
-    }
-    const body = await res.json();
+    const [pricingBody, body] = await Promise.all([
+      fetchStoreJson("/api/pricing"),
+      fetchStoreJson(`/api/products?${params.toString()}`),
+    ]);
+    if (!pricingBody.pricing) throw new Error("價格載入失敗，請重新整理後再試");
+    const pricing = pricingBody.pricing;
     const products = Array.isArray(body.products) ? body.products : [];
     const last = products.find((p) => p.lastCrawledAt)?.lastCrawledAt;
     const totalProducts = Number(body?.paging?.total || 0);

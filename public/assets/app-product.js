@@ -1,23 +1,8 @@
 import { addItem, getDraft } from "./draft-store.js";
 import { applyProductImageFallback, withProductImageFallback, PRODUCT_PLACEHOLDER } from "./image-fallback.js";
+import { fetchStoreJson } from "./storefront-data.js";
 const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = { markupJpy: 1000, markupMode: "flat", markupPercent: 15, jpyToTwd: _cc.defaultRate || 0.21 };
-
-function preloadImages(urls) {
-  return Promise.all(
-    urls.map((url) => new Promise((resolve) => {
-      if (!url) { resolve({ url, ok: false }); return; }
-      const img = new Image();
-      let settled = false;
-      const finish = (ok) => { if (settled) return; settled = true; resolve({ url, ok }); };
-      img.onload = () => finish(true);
-      img.onerror = () => finish(false);
-      img.src = url;
-      // Safety timeout — don't block UI on stuck images
-      setTimeout(() => finish(false), 5000);
-    }))
-  );
-}
 
 function isTwdSource() {
   const cc = window.__COUNTRY_CONFIG || _cc || {};
@@ -116,8 +101,7 @@ async function renderProduct(item, pricing) {
   const main = document.getElementById("detail-main-image");
   const mainWrap = document.getElementById("detail-main-wrap");
   const gallery = document.getElementById("detail-gallery");
-  // Track first thumbnail URL for cart fallback (resolved after preload)
-  let firstResolvedUrl = mainImage;
+  const firstImageUrl = galleryUrls[0] || mainImage;
 
   const bindText = (id, text) => {
     const node = document.getElementById(id);
@@ -219,7 +203,7 @@ async function renderProduct(item, pricing) {
         return;
       }
       const quantity = Math.max(1, Number(qtyInput?.value || 1));
-      const selectedImageUrl = main?.src || firstResolvedUrl || mainImage;
+      const selectedImageUrl = main?.src || firstImageUrl;
       const adjusted = renderPriceBlock();
       addItem({
         productId: item.id,
@@ -259,25 +243,23 @@ async function renderProduct(item, pricing) {
     });
   }
 
-  // Preload all gallery images so the actual <img> elements appear instantly
-  // from cache — prevents the flash of 4 broken/404 icons before bytes arrive.
-  const preloadResults = await preloadImages(galleryUrls);
-  const finalUrls = preloadResults.map((r) => (r.ok ? r.url : PRODUCT_PLACEHOLDER));
-  firstResolvedUrl = finalUrls[0] || mainImage;
-
-  if (main && finalUrls[0]) {
-    main.src = finalUrls[0];
+  // Show the primary image independently; other gallery images load on demand.
+  if (main) {
+    main.addEventListener("load", () => mainWrap?.classList.add("is-loaded"));
+    main.addEventListener("error", () => mainWrap?.classList.add("is-loaded"));
+    main.fetchPriority = "high";
+    main.src = firstImageUrl;
     main.alt = title;
     main.setAttribute("data-fallback", "product");
-    if (mainWrap) mainWrap.classList.add("is-loaded");
+    if (main.complete && main.naturalWidth > 0) mainWrap?.classList.add("is-loaded");
   }
 
   if (gallery) {
-    gallery.innerHTML = finalUrls
+    gallery.innerHTML = galleryUrls
       .map(
         (img, idx) =>
           `<button class="detail-thumb-btn ${idx === 0 ? "is-active" : ""}" type="button" data-image="${img}">
-            <img src="${img}" alt="${title}" class="detail-thumb" data-fallback="product" />
+            <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" class="detail-thumb" loading="lazy" decoding="async" data-fallback="product" />
           </button>`
       )
       .join("");
@@ -442,9 +424,6 @@ function renderDraftCount() {
 
 async function bootstrap() {
   renderDraftCount();
-  const pricingRes = await apiFetch("/api/pricing");
-  const pricingBody = pricingRes.ok ? await pricingRes.json() : null;
-  const pricing = pricingBody?.pricing || DEFAULT_PRICING;
 
   const url = new URL(location.href);
   const code = (url.searchParams.get("code") || "").trim();
@@ -453,12 +432,12 @@ async function bootstrap() {
     return;
   }
 
-  const res = await apiFetch(`/api/product?code=${encodeURIComponent(code)}`);
-  if (!res.ok) {
-    setError(`商品載入失敗：${res.status}`);
-    return;
-  }
-  const body = await res.json();
+  const [pricingBody, body] = await Promise.all([
+    fetchStoreJson("/api/pricing"),
+    fetchStoreJson(`/api/product?code=${encodeURIComponent(code)}`),
+  ]);
+  if (!pricingBody.pricing) throw new Error("價格載入失敗，請重新整理後再試");
+  const pricing = pricingBody.pricing;
   if (!body.ok || !body.product) {
     setError("商品載入失敗");
     return;
@@ -468,4 +447,4 @@ async function bootstrap() {
   loadRecommendations(body.product, pricing).catch(() => {});
 }
 
-bootstrap();
+bootstrap().catch(() => setError("商品載入失敗，請重新整理後再試"));
