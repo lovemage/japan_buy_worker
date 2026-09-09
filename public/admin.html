@@ -2191,6 +2191,14 @@
   // 需要方案 gate 的是下面的 PAYUNi 線上收款。
   var _remittanceSettings = { enabled: false, instruction: "", accounts: [] };
 
+  function showRemittanceStatus(message, isError) {
+    var status = document.getElementById("remittance-status");
+    if (!status) return;
+    status.textContent = message;
+    status.style.display = message ? "block" : "none";
+    status.style.color = isError ? "var(--admin-danger)" : "var(--admin-success)";
+  }
+
   function remittanceAccountRowHtml(acc, idx) {
     return '<div class="remittance-account-row" data-idx="' + idx + '">' +
       '<input class="input-cute js-remit-bank-name" type="text" maxlength="40" placeholder="銀行名稱（例：國泰世華）" value="' + escHtml(acc.bankName) + '" />' +
@@ -2242,7 +2250,7 @@
         '<p class="meta" style="margin:12px 0 4px;">匯款說明（選填，顯示在收款帳戶下方）</p>' +
         '<textarea id="remittance-instruction" rows="3" class="input-cute" maxlength="500" placeholder="例如：匯款後請回報帳號後五碼，我們會在 1 個工作天內核對。">' + escHtml(st.instruction) + '</textarea>' +
         '<button class="button" type="button" id="remittance-save" style="margin-top:12px;">儲存</button>' +
-        '<p id="remittance-status" class="admin-status"></p>' +
+        '<p id="remittance-status" class="admin-status" role="status" aria-live="polite" aria-atomic="true"></p>' +
       '</div>';
 
     var toggle = document.getElementById("remittance-toggle");
@@ -2277,31 +2285,38 @@
     var saveBtn = document.getElementById("remittance-save");
     if (saveBtn) {
       saveBtn.addEventListener("click", function () {
-        var status = document.getElementById("remittance-status");
+        if (saveBtn.disabled) return;
         var payload = readRemittanceForm();
         if (payload.enabled && payload.accounts.length === 0) {
-          if (status) status.textContent = "請先新增至少一組收款帳戶再開啟";
+          showRemittanceStatus("請先新增至少一組收款帳戶再開啟", true);
           return;
         }
         saveBtn.disabled = true;
+        saveBtn.textContent = "儲存中…";
+        showRemittanceStatus("儲存中…", false);
         apiFetch("/api/admin/remittance-settings", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload),
-        }).then(function (r) { return r.json(); }).then(function (d) {
-          saveBtn.disabled = false;
-          if (!d || !d.ok) {
-            if (status) status.textContent = "儲存失敗，請稍後再試";
-            return;
-          }
+        }).then(function (r) {
+          return r.json().then(function (d) {
+            if (!r.ok || !d || !d.ok) throw new Error((d && d.error) || "儲存失敗，請稍後再試");
+            return d;
+          });
+        }).then(function (d) {
           // 後端會把不完整的帳戶濾掉，用回傳值重繪才看得到實際存下來的內容
           _remittanceSettings = { enabled: d.enabled, instruction: d.instruction, accounts: d.accounts };
           renderRemittanceSettings();
-          var newStatus = document.getElementById("remittance-status");
-          if (newStatus) newStatus.textContent = "已儲存";
-        }).catch(function () {
+          if (payload.enabled && !d.enabled) {
+            showRemittanceStatus("已儲存，但收款帳戶資料不完整，銀行匯款仍為關閉。請補齊銀行名稱與帳號後再開啟。", true);
+          } else {
+            showRemittanceStatus(d.enabled ? "儲存成功，銀行匯款已開啟" : "儲存成功，銀行匯款已關閉", false);
+          }
+        }).catch(function (error) {
+          showRemittanceStatus(error instanceof TypeError ? "網路錯誤，請稍後再試" : (error.message || "儲存失敗，請稍後再試"), true);
+        }).finally(function () {
           saveBtn.disabled = false;
-          if (status) status.textContent = "網路錯誤，請稍後再試";
+          saveBtn.textContent = "儲存";
         });
       });
     }
