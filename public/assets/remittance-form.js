@@ -100,9 +100,9 @@ export async function mountRemittanceSection(container, options) {
         <label class="meta" for="remit-date-${escapeHtml(orderCode)}" style="margin-top:8px;display:block;"><strong>匯款日期</strong></label>
         <input id="remit-date-${escapeHtml(orderCode)}" class="input-cute js-remit-date" type="date" max="${todayIso()}" value="${todayIso()}" />
         <label class="meta" for="remit-note-${escapeHtml(orderCode)}" style="margin-top:8px;display:block;"><strong>備註（選填）</strong></label>
-        <input id="remit-note-${escapeHtml(orderCode)}" class="input-cute js-remit-note" type="text" maxlength="200" placeholder="例如：與 0908xxxx 訂單一起匯款" />
+        <input id="remit-note-${escapeHtml(orderCode)}" class="input-cute js-remit-note" type="text" maxlength="200" placeholder="請輸入匯款人姓名，方便對帳" />
         <button type="submit" class="btn-pill js-remit-submit" style="width:100%;margin-top:12px;">送出匯款回報</button>
-        <p class="notice hidden js-remit-msg" style="margin-top:8px;"></p>
+        <p class="notice hidden js-remit-msg" role="status" style="margin-top:8px;"></p>
       </form>`}
     </div>`;
 
@@ -129,6 +129,7 @@ export async function mountRemittanceSection(container, options) {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (submit.disabled) return;
     setMsg("");
     const last5 = container.querySelector(".js-remit-last5").value.trim();
     const amount = container.querySelector(".js-remit-amount").value.trim();
@@ -156,6 +157,7 @@ export async function mountRemittanceSection(container, options) {
       order.remittanceStatus = "reported";
       order.remittanceLast5 = last5;
       await mountRemittanceSection(container, { order, phone });
+      window.alert("匯款通知已送出！\n已收到您的帳號後五碼與匯款金額，請等候賣家核對。");
     } catch {
       setMsg("回報失敗，請稍後再試");
     } finally {

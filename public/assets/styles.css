@@ -489,6 +489,19 @@ body {
   font-weight: 700;
 }
 
+.remittance-box .remittance-form {
+  padding: 14px;
+}
+
+.remittance-box .remittance-form label {
+  color: var(--text-color);
+}
+
+.remittance-box .remittance-form .input-cute::placeholder {
+  color: #666;
+  opacity: 1;
+}
+
 .remittance-box .remittance-form .input-cute {
   width: 100%;
   box-sizing: border-box;
@@ -1751,17 +1764,19 @@ select:disabled {
   margin-bottom: 4px;
 }
 
-/* CTA: screenshot & send to Line */
-.success-cta-line {
+/* Informational screenshot reminder, not an action. */
+.success-screenshot-hint {
+  padding: 16px;
   margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 14px;
+  line-height: 1.7;
 }
-.success-cta-line .btn-pill {
-  width: 100%;
-  text-align: center;
-  font-size: 15px;
-  padding: 14px 20px;
-  background: var(--primary-color);
-  color: #fff;
+.success-screenshot-hint p {
+  margin: 4px 0 0;
 }
 
 .order-summary {
