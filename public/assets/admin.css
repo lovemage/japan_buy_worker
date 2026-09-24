@@ -791,6 +791,11 @@
   opacity: 1;
 }
 
+.admin-body .order-note-footer .button {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
 /* ── Admin inputs (override shared) ── */
 .admin-body .input-cute {
   border: 1px solid var(--admin-border);
@@ -2207,6 +2212,12 @@
     width: 100%;
     min-height: 44px;
     font-size: 15px;
+  }
+
+  /* 備註儲存鈕維持小尺寸靠右，不吃滿版寬度 */
+  .admin-tab-panel .order-note-footer .button {
+    width: auto;
+    min-height: 0;
   }
 
   .admin-body .photo-actions {

@@ -3054,13 +3054,14 @@ select:disabled {
 }
 
 .order-note-footer .meta {
+  flex: 1;
+  min-width: 0;
   margin: 0;
 }
 
 .order-note-footer .button {
   flex-shrink: 0;
-  height: 36px;
-  padding: 0 16px;
+  margin-left: auto;
 }
 
 /* 買家歷史訂單：店家寫給買家的外部備註 */

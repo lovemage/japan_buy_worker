@@ -190,9 +190,9 @@ function formatNoteTime(value) {
 
 function orderNoteMetaText(kind, form) {
   if (kind === "internal") {
-    return form.internalNoteUpdatedAt ? `更新時間：${formatNoteTime(form.internalNoteUpdatedAt)}` : "尚未填寫";
+    return form.internalNoteUpdatedAt ? `更新時間：${formatNoteTime(form.internalNoteUpdatedAt)}` : "";
   }
-  if (!form.externalNoteCreatedAt) return "尚未填寫";
+  if (!form.externalNoteCreatedAt) return "";
   return `編輯時間：${formatNoteTime(form.externalNoteCreatedAt)}｜更新時間：${formatNoteTime(form.externalNoteUpdatedAt)}`;
 }
 
@@ -204,7 +204,7 @@ function orderNoteBlockHtml(kind, form) {
   const hint = isInternal ? "僅後台可見，買家看不到" : "買家查詢訂單時會看到";
   return `
     <details class="order-note" data-note-kind="${kind}">
-      <summary><strong>${title}</strong><span class="order-note-state">${value ? "已填寫" : "未填寫"}</span></summary>
+      <summary><strong>${title}</strong><span class="order-note-state">${value ? "已填寫" : ""}</span></summary>
       <p class="meta">${hint}</p>
       <textarea class="input-cute js-order-note" rows="3" maxlength="1000" data-form-id="${form.id}" placeholder="${title}">${escapeHtml(value)}</textarea>
       <div class="order-note-footer">
@@ -508,9 +508,9 @@ function renderForms(forms) {
       // 就地更新而不重繪整張清單，否則展開中的備註會被收起來
       textarea.value = target[field];
       const state = block.querySelector(".order-note-state");
-      if (state) state.textContent = target[field] ? "已填寫" : "未填寫";
+      if (state) state.textContent = target[field] ? "已填寫" : "";
       const meta = block.querySelector(".js-order-note-meta");
-      if (meta) meta.textContent = `已儲存｜${orderNoteMetaText(kind, target)}`;
+      if (meta) meta.textContent = ["已儲存", orderNoteMetaText(kind, target)].filter(Boolean).join("｜");
     });
   });
 
