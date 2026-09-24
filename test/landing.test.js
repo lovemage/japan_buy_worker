@@ -71,3 +71,16 @@ test("collage-era assets and fonts are gone", () => {
     assert.ok(!html.includes(s), `Expected landing page NOT to include ${s}`);
   }
 });
+
+test("landing page blocks desktop view while preserving the mobile homepage", () => {
+  const required = [
+    'class="desktop-blocker"',
+    'id="desktop-blocker-title"',
+    "請使用手機瀏覽",
+    "@media (min-width: 768px)",
+    "body > :not(.desktop-blocker) { display: none !important; }",
+  ];
+  for (const s of required) {
+    assert.ok(html.includes(s), `Expected desktop blocker to include ${s}`);
+  }
+});
