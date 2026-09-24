@@ -18,24 +18,26 @@
             <path class="checkmark-check" fill="none" stroke="var(--primary-color)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M15 27l7 7 15-15"/>
           </svg>
         </div>
-        <h1>感謝您的訂購！</h1>
+        <h1 id="success-title">感謝您的訂購！</h1>
         <p class="order-code" id="success-id">單號載入中...</p>
       </div>
 
       <div class="success-msg" id="checkout-message">
-        <strong>感謝您支持本商店服務</strong>
-        請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。
+        <strong id="checkout-message-title">感謝您支持本商店服務</strong>
+        <span id="checkout-message-body">完成匯款後依照下面表格輸入匯款後五碼, 提供小幫手查帳, 可加入官方賴 @abcde 或是聯繫Thread ID: abcd123</span>
       </div>
 
-      <aside class="success-screenshot-hint" aria-label="截圖提醒">
-        <strong>請截圖本頁，傳至 LINE 給賣家</strong>
-        <p>請保留訂單編號與明細，方便賣家核對訂單。</p>
+      <aside class="success-screenshot-hint" id="success-screenshot-hint" aria-label="截圖提醒">
+        <strong id="success-screenshot-title">請截圖本頁，傳給賣家</strong>
+        <p id="success-screenshot-message">請保留訂單編號與明細，方便賣家核對訂單。</p>
       </aside>
 
       <section id="remittance-section"></section>
 
+      <section id="checkout-social-card" class="checkout-social-card hidden" aria-live="polite"></section>
+
       <div class="order-summary">
-        <div class="order-summary-title">訂單明細</div>
+        <div class="order-summary-title" id="order-summary-title">訂單明細</div>
         <div id="order-items"></div>
         <div class="order-totals" id="order-totals"></div>
       </div>
@@ -43,8 +45,8 @@
       <section id="success-error" class="notice hidden"></section>
 
       <div class="success-actions">
-        <button id="copy-order-text" class="btn-pill" type="button">📋 複製訂單資訊</button>
-        <a class="btn-pill secondary" id="back-to-store" href="./">← 返回商店</a>
+        <button id="copy-order-text" class="btn-pill" type="button"><span aria-hidden="true">📋 </span><span id="copy-order-label">複製訂單資訊</span></button>
+        <a class="btn-pill secondary" id="back-to-store" href="./"><span aria-hidden="true">← </span><span id="back-to-store-label">返回商店</span></a>
       </div>
     </div>
 
@@ -54,24 +56,112 @@
 
     const _cc = window.__COUNTRY_CONFIG || {};
     const srcSym = _cc.currencySymbol || "¥";
+    const pageParams = new URLSearchParams(location.search);
+    const isCheckoutPreview = pageParams.get("checkoutPreview") === "1";
 
     // Fix back-to-store link
     const base = window.__API_BASE || "";
     const backLink = document.getElementById("back-to-store");
     if (backLink) backLink.href = base + "/";
 
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el && typeof value === "string") el.textContent = value;
+    }
+
+    function socialButtonLabel(platform) {
+      return ({
+        line: "加入 LINE 社群",
+        facebook: "前往 Facebook 粉絲團",
+        threads: "前往 Threads",
+        instagram: "前往 Instagram",
+      })[platform] || "前往社群";
+    }
+
+    function renderSocialCard(social) {
+      const card = document.getElementById("checkout-social-card");
+      card.replaceChildren();
+      if (!social || !social.enabled) { card.classList.add("hidden"); return; }
+      card.dataset.platform = social.platform || "instagram";
+      if (social.imageKey) {
+        const img = document.createElement("img");
+        img.src = base + "/api/images/" + social.imageKey;
+        img.alt = social.title || "商家社群";
+        img.className = "checkout-social-image";
+        card.appendChild(img);
+      }
+      const title = document.createElement("strong");
+      title.textContent = social.title || "商家社群";
+      card.appendChild(title);
+      if (social.message) {
+        const message = document.createElement("p");
+        message.textContent = social.message;
+        card.appendChild(message);
+      }
+      if (social.url) {
+        const link = document.createElement("a");
+        link.className = "btn-pill checkout-social-link";
+        link.href = social.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = socialButtonLabel(social.platform);
+        card.appendChild(link);
+      }
+      card.classList.remove("hidden");
+    }
+
+    function applyCheckoutSettings(data) {
+      setText("success-title", data.title);
+      setText("checkout-message-title", data.messageTitle);
+      setText("checkout-message-body", data.message);
+      setText("success-screenshot-title", data.screenshotTitle);
+      setText("success-screenshot-message", data.screenshotMessage);
+      setText("order-summary-title", data.orderSummaryTitle);
+      document.getElementById("success-screenshot-hint").classList.toggle("hidden", data.screenshotEnabled === false);
+      renderSocialCard(data.social);
+    }
+
+    function getCheckoutPreviewSettings() {
+      if (!isCheckoutPreview) return null;
+      try {
+        const payload = JSON.parse(localStorage.getItem("vovosnap_checkout_preview") || "null");
+        if (!payload || payload.expiresAt < Date.now() || !payload.settings) return null;
+        return payload.settings;
+      } catch (_) { return null; }
+    }
+
+    async function loadCheckoutSettings() {
+      const previewSettings = getCheckoutPreviewSettings();
+      if (previewSettings) { applyCheckoutSettings(previewSettings); return; }
+      try {
+        const response = await apiFetch("/api/checkout-settings");
+        const data = await response.json();
+        if (!response.ok || !data.ok) return;
+        applyCheckoutSettings(data);
+      } catch (_) { /* Keep safe defaults when settings cannot be loaded. */ }
+    }
+
     async function loadOrder() {
-      const params = new URLSearchParams(location.search);
-      const id = params.get("id");
-      if (!id) { document.getElementById("success-id").textContent = "缺少訂單 ID"; return; }
-
-      const res = await apiFetch("/api/requirement?id=" + encodeURIComponent(id));
-      if (!res.ok) { document.getElementById("success-error").textContent = "載入失敗"; document.getElementById("success-error").classList.remove("hidden"); return; }
-      const data = await res.json();
-      if (!data.ok || !data.requirement) { document.getElementById("success-error").textContent = "找不到訂單"; document.getElementById("success-error").classList.remove("hidden"); return; }
-
-      const order = data.requirement;
-      document.getElementById("success-id").textContent = "訂單編號：" + (order.orderCode || order.id);
+      const id = pageParams.get("id");
+      let order;
+      if (isCheckoutPreview) {
+        order = {
+          id: "PREVIEW-001", orderCode: "PREVIEW-001", customerName: "預覽顧客", memberPhone: "0912345678", lineId: "preview",
+          shippingTotalTwd: 60,
+          items: [
+            { productNameSnapshot: "預覽商品", variantName: "範例規格", quantity: 1, subtotalTwd: 680 },
+            { productNameSnapshot: "第二件商品", quantity: 2, subtotalTwd: 360 },
+          ],
+        };
+      } else {
+        if (!id) { document.getElementById("success-id").textContent = "缺少訂單 ID"; return; }
+        const res = await apiFetch("/api/requirement?id=" + encodeURIComponent(id));
+        if (!res.ok) { document.getElementById("success-error").textContent = "載入失敗"; document.getElementById("success-error").classList.remove("hidden"); return; }
+        const data = await res.json();
+        if (!data.ok || !data.requirement) { document.getElementById("success-error").textContent = "找不到訂單"; document.getElementById("success-error").classList.remove("hidden"); return; }
+        order = data.requirement;
+      }
+      document.getElementById("success-id").textContent = (isCheckoutPreview ? "預覽模式 · " : "") + "訂單編號：" + (order.orderCode || order.id);
 
       // Render items
       const itemsEl = document.getElementById("order-items");
@@ -95,11 +185,15 @@
         (shipping > 0 ? '<div class="row"><span>運費</span><span>NT$' + shipping.toLocaleString() + '</span></div>' : '') +
         '<div class="row total"><span>合計</span><span>NT$' + (itemTotal + shipping).toLocaleString() + '</span></div>';
 
-      // 匯款回報（店家未開啟匯款收款時，元件自己不渲染）
-      mountRemittanceSection(document.getElementById("remittance-section"), {
-        order: order,
-        phone: order.memberPhone || "",
-      });
+      // 預覽不送出資料；正式頁才掛載匯款回報元件。
+      if (isCheckoutPreview) {
+        document.getElementById("remittance-section").innerHTML = '<div class="notice">匯款資料與匯款後五碼表格會顯示在此處</div>';
+      } else {
+        mountRemittanceSection(document.getElementById("remittance-section"), {
+          order: order,
+          phone: order.memberPhone || "",
+        });
+      }
 
       // Copy button
       document.getElementById("copy-order-text").addEventListener("click", function() {
@@ -114,24 +208,15 @@
         if (shipping > 0) text += "\n運費：NT$" + shipping.toLocaleString();
         text += "\n合計：NT$" + (itemTotal + shipping).toLocaleString();
         navigator.clipboard.writeText(text).then(function() {
-          var btn = document.getElementById("copy-order-text");
-          btn.textContent = "✓ 已複製";
-          setTimeout(function() { btn.textContent = "📋 複製訂單資訊"; }, 2000);
+          var label = document.getElementById("copy-order-label");
+          label.textContent = "已複製";
+          setTimeout(function() { label.textContent = "複製訂單資訊"; }, 2000);
         });
       });
 
-      // Load custom checkout message from store settings
-      try {
-        const msgRes = await apiFetch("/api/admin/display-settings");
-        const msgData = await msgRes.json();
-        if (msgData.ok && msgData.checkoutMessage) {
-          document.getElementById("checkout-message").innerHTML =
-            '<strong>感謝您支持本商店服務</strong>' + msgData.checkoutMessage.replace(/\n/g, '<br>');
-        }
-      } catch(e) {}
     }
 
-    loadOrder();
+    Promise.all([loadCheckoutSettings(), loadOrder()]);
     </script>
   </body>
 </html>

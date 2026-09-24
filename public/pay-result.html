@@ -22,6 +22,11 @@
   .atm-box dt:first-child { margin-top: 0; }
   .atm-box dd { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .muted { font-size: 13px; color: #8a919c; margin-top: 12px; }
+  .checkout-social-card { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e6e8eb; }
+  .checkout-social-card img { display:block; width:min(240px,100%); aspect-ratio:1; object-fit:cover; border-radius:12px; margin:0 auto 12px; }
+  .checkout-social-card strong { display:block; font-size:17px; }
+  .checkout-social-card p { margin:4px 0 12px; white-space:pre-line; }
+  .checkout-social-card a { display:block; padding:11px 16px; border-radius:999px; color:#fff; background:#f26b1d; text-decoration:none; font-weight:700; }
 </style>
 </head>
 <body>
@@ -42,6 +47,11 @@
   var card = document.getElementById("card");
   var tries = 0;
   var MAX_TRIES = 36; // 最多輪詢約 3 分鐘（每 5 秒一次）
+  var checkoutSettings = {
+    paidTitle: "付款完成",
+    paidMessage: "感謝你的付款，賣家將盡快與你聯繫。",
+    social: { enabled: false }
+  };
 
   function setCard(html) { card.innerHTML = html; }
 
@@ -64,9 +74,52 @@
   function renderPaid() {
     setCard(
       '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a9e6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>' +
-      '<h1>付款完成</h1>' +
-      '<p>感謝你的付款，賣家將盡快與你聯繫。</p>'
+      '<h1 id="paid-result-title"></h1>' +
+      '<p id="paid-result-message"></p>' +
+      '<section id="checkout-social-card" class="checkout-social-card" hidden></section>'
     );
+    document.getElementById("paid-result-title").textContent = checkoutSettings.paidTitle;
+    document.getElementById("paid-result-message").textContent = checkoutSettings.paidMessage;
+    renderSocialCard(checkoutSettings.social);
+  }
+
+  function socialButtonLabel(platform) {
+    return ({ line: "加入 LINE 社群", facebook: "前往 Facebook 粉絲團", threads: "前往 Threads", instagram: "前往 Instagram" })[platform] || "前往社群";
+  }
+
+  function renderSocialCard(social) {
+    var socialCard = document.getElementById("checkout-social-card");
+    if (!socialCard || !social || !social.enabled) return;
+    if (social.imageKey) {
+      var img = document.createElement("img");
+      img.src = (window.__API_BASE || "") + "/api/images/" + social.imageKey;
+      img.alt = social.title || "商家社群";
+      socialCard.appendChild(img);
+    }
+    var title = document.createElement("strong");
+    title.textContent = social.title || "商家社群";
+    socialCard.appendChild(title);
+    if (social.message) {
+      var message = document.createElement("p");
+      message.textContent = social.message;
+      socialCard.appendChild(message);
+    }
+    if (social.url) {
+      var link = document.createElement("a");
+      link.href = social.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = socialButtonLabel(social.platform);
+      socialCard.appendChild(link);
+    }
+    socialCard.hidden = false;
+  }
+
+  function loadCheckoutSettings() {
+    return fetch((window.__API_BASE || "") + "/api/checkout-settings")
+      .then(function(r) { return r.json(); })
+      .then(function(d) { if (d.ok) checkoutSettings = d; })
+      .catch(function() {});
   }
 
   function renderAtm(atm) {
@@ -163,7 +216,7 @@
   }
 
   if (!token) { renderGenericError(); return; }
-  poll();
+  loadCheckoutSettings().then(poll);
 })();
 </script>
 </body>

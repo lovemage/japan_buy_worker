@@ -1764,6 +1764,32 @@ select:disabled {
   margin-bottom: 4px;
 }
 
+#checkout-message-body { white-space: pre-line; }
+
+.checkout-social-card {
+  padding: 18px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card-bg);
+  text-align: center;
+}
+.checkout-social-card[data-platform="line"] { border-color: #06c755; }
+.checkout-social-card[data-platform="facebook"] { border-color: #1877f2; }
+.checkout-social-card[data-platform="threads"] { border-color: #222; }
+.checkout-social-card[data-platform="instagram"] { border-color: #c13584; }
+.checkout-social-image {
+  display: block;
+  width: min(260px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto 12px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.checkout-social-card strong { display: block; font-size: 17px; }
+.checkout-social-card p { margin: 5px 0 12px; color: var(--muted); white-space: pre-line; }
+.checkout-social-link { display: block; text-decoration: none; }
+
 /* Informational screenshot reminder, not an action. */
 .success-screenshot-hint {
   padding: 16px;

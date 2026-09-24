@@ -1,7 +1,7 @@
 import type { RequestContext } from "../../context";
 import { normalizeSlug, getSlugValidationError, canChangeSlug, getSlugChangeUsage } from "../../shared/slug-rules.js";
 import { getGeminiApiKey } from "./settings";
-import { parseDisplaySettings, sanitizeDisplaySettingsPatch } from "../../shared/display-settings.js";
+import { getPublicCheckoutSettings, parseDisplaySettings, sanitizeDisplaySettingsPatch } from "../../shared/display-settings.js";
 import { parseRemittanceSettings, sanitizeRemittanceSettingsPatch } from "../../shared/remittance-logic.js";
 
 // Country → currency mapping
@@ -128,7 +128,7 @@ export async function handleDisplaySettings(
     const existing = parseDisplaySettings(existingRow?.value || null);
     const settings: Record<string, unknown> = {
       ...existing,
-      ...sanitizeDisplaySettingsPatch(body, ctx.storePlan),
+      ...sanitizeDisplaySettingsPatch(body, ctx.storePlan, ctx.storeId),
     };
     await ctx.db
       .prepare("INSERT INTO app_settings (store_id, key, value, updated_at) VALUES (?, 'display_settings', ?, datetime('now')) ON CONFLICT(store_id, key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')")
@@ -138,6 +138,59 @@ export async function handleDisplaySettings(
   }
 
   return json({ ok: false, error: "Method Not Allowed" }, 405);
+}
+
+export async function handlePublicCheckoutSettings(
+  request: Request,
+  ctx: RequestContext
+): Promise<Response> {
+  if (request.method !== "GET") return json({ ok: false, error: "Method Not Allowed" }, 405);
+  const row = await ctx.db
+    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
+    .bind(ctx.storeId)
+    .first<{ value: string }>();
+  const settings = parseDisplaySettings(row?.value || null);
+  return json({ ok: true, ...getPublicCheckoutSettings(settings, ctx.storeId) });
+}
+
+function decodeCheckoutSocialImage(image: unknown): Uint8Array | null {
+  if (typeof image !== "string" || !image || image.length > 7_000_000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(image)) return null;
+  try {
+    const binary = atob(image);
+    if (!binary.length || binary.length > 5_000_000) return null;
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+export async function handleCheckoutSocialUpload(request: Request, ctx: RequestContext): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+  if (!ctx.r2) return json({ ok: false, error: "R2 not configured" }, 500);
+  let body: { image?: unknown };
+  try { body = (await request.json()) as { image?: unknown }; }
+  catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
+  const bytes = decodeCheckoutSocialImage(body.image);
+  if (!bytes) return json({ ok: false, error: "圖片格式錯誤或超過 5 MB" }, 400);
+  const key = `${ctx.storeId}/checkout-social/${Date.now()}-${crypto.randomUUID()}.webp`;
+  await ctx.r2.put(key, bytes.buffer, { httpMetadata: { contentType: "image/webp" } });
+  return json({ ok: true, key });
+}
+
+export async function handleCheckoutSocialDelete(request: Request, ctx: RequestContext): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
+  if (!ctx.r2) return json({ ok: false, error: "R2 not configured" }, 500);
+  let body: { key?: unknown };
+  try { body = (await request.json()) as { key?: unknown }; }
+  catch { return json({ ok: false, error: "Invalid JSON" }, 400); }
+  const key = typeof body.key === "string" ? body.key : "";
+  if (!key.startsWith(`${ctx.storeId}/checkout-social/`) || !/^[a-zA-Z0-9/_\-.]+$/.test(key)) {
+    return json({ ok: false, error: "Unauthorized" }, 403);
+  }
+  await ctx.r2.delete(key);
+  return json({ ok: true });
 }
 
 // 匯款收款帳戶（離線銀行轉帳）。買家端 /api/remittance-info 讀的是同一把 key。

@@ -73,7 +73,8 @@ test("admin orders include payment status and render paid badge", () => {
   assert.ok(adminOrders.includes("已付款"));
 });
 
-test("pay result page renders payment completion when status is paid", () => {
+test("pay result page renders customizable payment completion when status is paid", () => {
   assert.ok(payResult.includes('if (status === "paid")'));
-  assert.ok(payResult.includes("<h1>付款完成</h1>"));
+  assert.ok(payResult.includes('checkoutSettings.paidTitle'));
+  assert.ok(payResult.includes('checkoutSettings.paidMessage'));
 });

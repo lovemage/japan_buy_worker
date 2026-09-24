@@ -48,6 +48,9 @@ import {
   handleStoreNameUpdate,
   handleStoreSlugUpdate,
   handleDisplaySettings,
+  handlePublicCheckoutSettings,
+  handleCheckoutSocialUpload,
+  handleCheckoutSocialDelete,
   handleRemittanceSettings,
   handlePopupAds,
   handlePopupAdUpload,
@@ -638,6 +641,7 @@ export async function routeTenantRequest(
   if (subPath === "/api/remittance-info") return handlePublicRemittanceInfo(request, ctx);
   if (subPath === "/api/remittance-report") return handlePublicRemittanceReport(request, ctx);
   if (subPath === "/api/pricing") return handlePublicPricing(request, ctx);
+  if (subPath === "/api/checkout-settings") return handlePublicCheckoutSettings(request, ctx);
 
   // ── R2 image proxy ──
   if (subPath.startsWith("/api/images/")) {
@@ -754,6 +758,14 @@ export async function routeTenantRequest(
     // GET is public (store front reads it), POST requires auth
     if (request.method === "POST" && !isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleDisplaySettings(request, ctx);
+  }
+  if (subPath === "/api/admin/checkout-social/upload") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleCheckoutSocialUpload(request, ctx);
+  }
+  if (subPath === "/api/admin/checkout-social/delete") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleCheckoutSocialDelete(request, ctx);
   }
   if (subPath === "/api/admin/remittance-settings") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

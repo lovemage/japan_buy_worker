@@ -701,9 +701,58 @@
         </div>
 
         <div class="settings-group">
-          <h3 class="settings-group__title">結帳感謝訊息</h3>
-          <p class="meta" style="margin-bottom:8px;">客人送出訂單後顯示的訊息。</p>
-          <textarea id="checkout-message-input" rows="4" class="input-cute" placeholder="請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。"></textarea>
+          <h3 class="settings-group__title">結帳完成頁</h3>
+          <p class="meta" style="margin-bottom:12px;">自訂客人送出訂單及付款完成後看到的文字與社群導流。</p>
+          <button id="checkout-preview-button" class="button secondary" type="button" style="margin:0 0 12px;" onclick="openCheckoutPreview()">另開視窗預覽</button>
+          <div class="checkout-settings-grid">
+            <label>訂單完成標題<input id="checkout-title-input" class="input-cute" maxlength="80" placeholder="感謝您的訂購！" /></label>
+            <label>訊息小標<input id="checkout-message-title-input" class="input-cute" maxlength="100" placeholder="感謝您支持本商店服務" /></label>
+            <label class="checkout-settings-full">感謝訊息<textarea id="checkout-message-input" rows="4" class="input-cute" maxlength="2000" placeholder="完成匯款後依照下面表格輸入匯款後五碼, 提供小幫手查帳, 可加入官方賴 @abcde 或是聯繫Thread ID: abcd123"></textarea></label>
+            <label>訂單明細標題<input id="checkout-order-summary-title-input" class="input-cute" maxlength="50" placeholder="訂單明細" /></label>
+            <label>付款完成標題<input id="checkout-paid-title-input" class="input-cute" maxlength="80" placeholder="付款完成" /></label>
+            <label class="checkout-settings-full">付款完成訊息<textarea id="checkout-paid-message-input" rows="2" class="input-cute" maxlength="500" placeholder="感謝你的付款，賣家將盡快與你聯繫。"></textarea></label>
+          </div>
+
+          <div class="checkout-settings-subgroup">
+            <div class="checkout-settings-toggle-row">
+              <strong>截圖提醒</strong>
+              <label class="toggle-switch"><input type="checkbox" id="checkout-screenshot-toggle" checked onchange="toggleCheckoutSettingsPanels()" /><span class="toggle-slider"></span></label>
+            </div>
+            <div id="checkout-screenshot-fields" class="checkout-settings-grid">
+              <label>提醒標題<input id="checkout-screenshot-title-input" class="input-cute" maxlength="100" placeholder="請截圖本頁，傳給賣家" /></label>
+              <label>提醒內容<input id="checkout-screenshot-message-input" class="input-cute" maxlength="500" placeholder="請保留訂單編號與明細，方便賣家核對訂單。" /></label>
+            </div>
+          </div>
+
+          <div class="checkout-settings-subgroup">
+            <div class="checkout-settings-toggle-row">
+              <div><strong>商家社群</strong><p class="meta">選擇一個主要社群顯示在完成頁。</p></div>
+              <label class="toggle-switch"><input type="checkbox" id="checkout-social-toggle" onchange="toggleCheckoutSettingsPanels()" /><span class="toggle-slider"></span></label>
+            </div>
+            <div id="checkout-social-fields" class="checkout-settings-grid" style="display:none;">
+              <label>社群平台
+                <select id="checkout-social-platform" class="input-cute">
+                  <option value="line">LINE 社群</option>
+                  <option value="facebook">Facebook 粉絲團</option>
+                  <option value="threads">Threads</option>
+                  <option value="instagram">Instagram</option>
+                </select>
+              </label>
+              <label>社群網址<input id="checkout-social-url-input" type="url" class="input-cute" maxlength="500" placeholder="https://..." /></label>
+              <label>社群標題<input id="checkout-social-title-input" class="input-cute" maxlength="100" placeholder="追蹤我們的 Instagram" /></label>
+              <label class="checkout-settings-full">社群說明<input id="checkout-social-message-input" class="input-cute" maxlength="500" placeholder="掌握新品與最新消息" /></label>
+              <div class="checkout-settings-full">
+                <span class="admin-field-label">社群圖片</span>
+                <p class="meta" style="margin-bottom:8px;">上傳後可拖曳、縮放並裁切為 1:1 圖片。</p>
+                <div id="checkout-social-image-preview" class="checkout-social-image-preview"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <label class="upload-btn" style="margin:0;">上傳並裁切<input id="checkout-social-image-upload" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="openCheckoutSocialCropper(this.files[0])" /></label>
+                  <button class="button secondary" type="button" onclick="removeCheckoutSocialImage()">移除圖片</button>
+                </div>
+                <p id="checkout-social-image-status" class="admin-status"></p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="settings-group">
@@ -904,6 +953,20 @@
       </div>
     </section>
   </main>
+
+  <div id="checkout-crop-modal" class="checkout-crop-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-crop-title" hidden>
+    <div class="checkout-crop-backdrop" onclick="closeCheckoutSocialCropper()"></div>
+    <div class="checkout-crop-dialog">
+      <h3 id="checkout-crop-title">裁切社群圖片</h3>
+      <p class="meta">拖曳圖片調整位置，使用滑桿縮放。</p>
+      <canvas id="checkout-crop-canvas" width="320" height="320" aria-label="圖片裁切預覽"></canvas>
+      <label class="checkout-crop-zoom">縮放<input id="checkout-crop-zoom" type="range" min="1" max="3" step="0.01" value="1" /></label>
+      <div class="checkout-crop-actions">
+        <button class="button secondary" type="button" onclick="closeCheckoutSocialCropper()">取消</button>
+        <button class="button" id="checkout-crop-confirm" type="button" onclick="confirmCheckoutSocialCrop()">確認裁切並上傳</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 方案續約 / 更換彈窗：放在 tab panel 之外，否則切到其他分頁時會被 .hidden 一起藏掉 -->
   <div id="plan-modal" class="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title">
@@ -1497,6 +1560,40 @@
 
   // Display settings
   var promoEnabled = false;
+  var checkoutSocialImageKey = "";
+  var checkoutCropState = null;
+  var CHECKOUT_DEFAULTS = {
+    title: "感謝您的訂購！", messageTitle: "感謝您支持本商店服務",
+    message: "完成匯款後依照下面表格輸入匯款後五碼, 提供小幫手查帳, 可加入官方賴 @abcde 或是聯繫Thread ID: abcd123",
+    screenshotEnabled: true, screenshotTitle: "請截圖本頁，傳給賣家",
+    screenshotMessage: "請保留訂單編號與明細，方便賣家核對訂單。",
+    orderSummaryTitle: "訂單明細",
+    paidTitle: "付款完成", paidMessage: "感謝你的付款，賣家將盡快與你聯繫。",
+    social: { enabled: false, platform: "instagram", title: "追蹤我們的 Instagram", message: "掌握新品與最新消息", url: "", imageKey: "" }
+  };
+
+  function setCheckoutField(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.value = value || "";
+  }
+
+  function toggleCheckoutSettingsPanels() {
+    var screenshotOn = document.getElementById("checkout-screenshot-toggle").checked;
+    var socialOn = document.getElementById("checkout-social-toggle").checked;
+    document.getElementById("checkout-screenshot-fields").style.display = screenshotOn ? "grid" : "none";
+    document.getElementById("checkout-social-fields").style.display = socialOn ? "grid" : "none";
+  }
+
+  function renderCheckoutSocialImagePreview() {
+    var el = document.getElementById("checkout-social-image-preview");
+    if (!el) return;
+    el.innerHTML = "";
+    if (!checkoutSocialImageKey) return;
+    var img = document.createElement("img");
+    img.src = (window.__API_BASE || "") + "/api/images/" + checkoutSocialImageKey;
+    img.alt = "社群圖片預覽";
+    el.appendChild(img);
+  }
 
   function loadDisplaySettings() {
     apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(d) {
@@ -1509,9 +1606,30 @@
       var toggle = document.getElementById("promo-toggle");
       if (toggle) toggle.checked = promoEnabled;
       updatePromoToggleUI();
-      // Checkout message
-      var msgInput = document.getElementById("checkout-message-input");
-      if (msgInput && d.checkoutMessage) msgInput.value = d.checkoutMessage;
+      // Checkout completion page
+      var cp = d.checkoutPage || {};
+      var social = cp.social || {};
+      setCheckoutField("checkout-title-input", cp.title || CHECKOUT_DEFAULTS.title);
+      setCheckoutField("checkout-message-title-input", cp.messageTitle || CHECKOUT_DEFAULTS.messageTitle);
+      var checkoutMessage = cp.message || d.checkoutMessage || CHECKOUT_DEFAULTS.message;
+      if (checkoutMessage === "請將本頁面截圖傳至群組或 Line，我們將人工與您核對訂單內容。") checkoutMessage = CHECKOUT_DEFAULTS.message;
+      setCheckoutField("checkout-message-input", checkoutMessage);
+      setCheckoutField("checkout-screenshot-title-input", cp.screenshotTitle || CHECKOUT_DEFAULTS.screenshotTitle);
+      setCheckoutField("checkout-screenshot-message-input", cp.screenshotMessage || CHECKOUT_DEFAULTS.screenshotMessage);
+      setCheckoutField("checkout-order-summary-title-input", cp.orderSummaryTitle || CHECKOUT_DEFAULTS.orderSummaryTitle);
+
+      setCheckoutField("checkout-paid-title-input", cp.paidTitle || CHECKOUT_DEFAULTS.paidTitle);
+      setCheckoutField("checkout-paid-message-input", cp.paidMessage || CHECKOUT_DEFAULTS.paidMessage);
+      document.getElementById("checkout-screenshot-toggle").checked = cp.screenshotEnabled !== false;
+      document.getElementById("checkout-social-toggle").checked = social.enabled === true;
+      setCheckoutField("checkout-social-platform", social.platform || CHECKOUT_DEFAULTS.social.platform);
+      setCheckoutField("checkout-social-title-input", social.title || CHECKOUT_DEFAULTS.social.title);
+      setCheckoutField("checkout-social-message-input", social.message || CHECKOUT_DEFAULTS.social.message);
+      setCheckoutField("checkout-social-url-input", social.url || "");
+
+      checkoutSocialImageKey = social.imageKey || "";
+      renderCheckoutSocialImagePreview();
+      toggleCheckoutSettingsPanels();
       // Store rules
       var rulesInput = document.getElementById("store-rules-input");
       if (rulesInput && d.storeRules) rulesInput.value = d.storeRules;
@@ -1563,21 +1681,182 @@
   }
   window.onWholesaleToggle = onWholesaleToggle;
 
+  function readCheckoutSettingsForm() {
+    var checkoutMsg = (document.getElementById("checkout-message-input") || {}).value || "";
+    return {
+      title: document.getElementById("checkout-title-input").value || CHECKOUT_DEFAULTS.title,
+      messageTitle: document.getElementById("checkout-message-title-input").value || CHECKOUT_DEFAULTS.messageTitle,
+      message: checkoutMsg || CHECKOUT_DEFAULTS.message,
+      screenshotEnabled: document.getElementById("checkout-screenshot-toggle").checked,
+      screenshotTitle: document.getElementById("checkout-screenshot-title-input").value || CHECKOUT_DEFAULTS.screenshotTitle,
+      screenshotMessage: document.getElementById("checkout-screenshot-message-input").value || CHECKOUT_DEFAULTS.screenshotMessage,
+      orderSummaryTitle: document.getElementById("checkout-order-summary-title-input").value || CHECKOUT_DEFAULTS.orderSummaryTitle,
+      paidTitle: document.getElementById("checkout-paid-title-input").value || CHECKOUT_DEFAULTS.paidTitle,
+      paidMessage: document.getElementById("checkout-paid-message-input").value || CHECKOUT_DEFAULTS.paidMessage,
+      social: {
+        enabled: document.getElementById("checkout-social-toggle").checked,
+        platform: document.getElementById("checkout-social-platform").value,
+        title: document.getElementById("checkout-social-title-input").value || CHECKOUT_DEFAULTS.social.title,
+        message: document.getElementById("checkout-social-message-input").value || CHECKOUT_DEFAULTS.social.message,
+        url: document.getElementById("checkout-social-url-input").value,
+        imageKey: checkoutSocialImageKey
+      }
+    };
+  }
+
+  function openCheckoutPreview() {
+    var previewPayload = { expiresAt: Date.now() + 5 * 60 * 1000, settings: readCheckoutSettingsForm() };
+    try {
+      localStorage.setItem("vovosnap_checkout_preview", JSON.stringify(previewPayload));
+    } catch (_) {
+      alert("無法建立預覽，請確認瀏覽器未封鎖網站儲存空間。");
+      return;
+    }
+    var previewUrl = (window.__API_BASE || "") + "/success.html?checkoutPreview=1&t=" + Date.now();
+    var previewWindow = window.open(previewUrl, "_blank");
+    if (previewWindow) previewWindow.opener = null;
+    else alert("瀏覽器已封鎖預覽視窗，請允許此網站開啟彈出視窗。");
+  }
+
   function saveDisplaySettings() {
     var mode = "2card";
     document.querySelectorAll(".view-mode-opt.selected").forEach(function(b) { mode = b.dataset.mode; });
-    var checkoutMsg = (document.getElementById("checkout-message-input") || {}).value || "";
+    var checkoutPage = readCheckoutSettingsForm();
+    var checkoutMsg = checkoutPage.message;
     var storeRules = (document.getElementById("store-rules-input") || {}).value || "";
     var promoTagOn = document.getElementById("promo-tag-toggle").checked;
     var promoTagVal = Number(document.getElementById("promo-tag-threshold").value) || 500;
     return apiFetch("/api/admin/display-settings", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, checkoutMessage: checkoutMsg, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
+      body: JSON.stringify({ viewMode: mode, promoEnabled: promoEnabled, checkoutMessage: checkoutMsg, checkoutPage: checkoutPage, storeRules: storeRules, promoTagEnabled: promoTagOn, promoTagThreshold: promoTagVal }),
     }).then(function(r){return r.json()}).then(function(d) {
-      if (d.ok) { var st = document.getElementById("display-status"); if (st) { st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); } }
+      if (!d.ok) throw new Error(d.error || "儲存失敗");
+      var st = document.getElementById("display-status");
+      if (st) { st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000); }
+      return d;
     });
   }
+
+  function drawCheckoutCrop() {
+    if (!checkoutCropState) return;
+    var canvas = document.getElementById("checkout-crop-canvas");
+    var ctx2 = canvas.getContext("2d");
+    var img = checkoutCropState.image;
+    var zoom = Number(document.getElementById("checkout-crop-zoom").value) || 1;
+    var scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight) * zoom;
+    var drawW = img.naturalWidth * scale;
+    var drawH = img.naturalHeight * scale;
+    var maxX = Math.max(0, (drawW - canvas.width) / 2);
+    var maxY = Math.max(0, (drawH - canvas.height) / 2);
+    checkoutCropState.panX = Math.max(-maxX, Math.min(maxX, checkoutCropState.panX));
+    checkoutCropState.panY = Math.max(-maxY, Math.min(maxY, checkoutCropState.panY));
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    ctx2.drawImage(img, (canvas.width - drawW) / 2 + checkoutCropState.panX, (canvas.height - drawH) / 2 + checkoutCropState.panY, drawW, drawH);
+  }
+
+  function openCheckoutSocialCropper(file) {
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 10 * 1024 * 1024) {
+      alert("請選擇 JPG、PNG 或 WebP 圖片，原圖不可超過 10 MB");
+      return;
+    }
+    var img = new Image();
+    var objectUrl = URL.createObjectURL(file);
+    img.onload = function() {
+      URL.revokeObjectURL(objectUrl);
+      checkoutCropState = { image: img, panX: 0, panY: 0, dragging: false, lastX: 0, lastY: 0 };
+      document.getElementById("checkout-crop-zoom").value = "1";
+      document.getElementById("checkout-crop-modal").hidden = false;
+      document.body.style.overflow = "hidden";
+      drawCheckoutCrop();
+    };
+    img.onerror = function() { URL.revokeObjectURL(objectUrl); alert("圖片讀取失敗"); };
+    img.src = objectUrl;
+  }
+
+  function closeCheckoutSocialCropper() {
+    document.getElementById("checkout-crop-modal").hidden = true;
+    document.body.style.overflow = "";
+    checkoutCropState = null;
+    var input = document.getElementById("checkout-social-image-upload");
+    if (input) input.value = "";
+  }
+
+  function confirmCheckoutSocialCrop() {
+    if (!checkoutCropState) return;
+    var preview = document.getElementById("checkout-crop-canvas");
+    var output = document.createElement("canvas");
+    output.width = 1080; output.height = 1080;
+    var img = checkoutCropState.image;
+    var zoom = Number(document.getElementById("checkout-crop-zoom").value) || 1;
+    var scale = Math.max(preview.width / img.naturalWidth, preview.height / img.naturalHeight) * zoom;
+    var drawW = img.naturalWidth * scale;
+    var drawH = img.naturalHeight * scale;
+    var dx = (preview.width - drawW) / 2 + checkoutCropState.panX;
+    var dy = (preview.height - drawH) / 2 + checkoutCropState.panY;
+    var outputRatio = output.width / preview.width;
+    output.getContext("2d").drawImage(img, dx * outputRatio, dy * outputRatio, drawW * outputRatio, drawH * outputRatio);
+    var base64 = output.toDataURL("image/webp", 0.85).split(",")[1];
+    var button = document.getElementById("checkout-crop-confirm");
+    var status = document.getElementById("checkout-social-image-status");
+    var oldKey = checkoutSocialImageKey;
+    button.disabled = true; button.textContent = "上傳中...";
+    apiFetch("/api/admin/checkout-social/upload", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: base64 })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (!d.ok) throw new Error(d.error || "上傳失敗");
+      checkoutSocialImageKey = d.key;
+      renderCheckoutSocialImagePreview();
+      closeCheckoutSocialCropper();
+      return saveDisplaySettings().then(function() {
+        if (oldKey && oldKey !== checkoutSocialImageKey) {
+          return apiFetch("/api/admin/checkout-social/delete", {
+            method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: oldKey })
+          });
+        }
+      });
+    }).then(function() {
+      status.textContent = "圖片已上傳並儲存"; status.style.display = "block";
+    }).catch(function(error) {
+      status.textContent = error.message || "上傳失敗"; status.style.display = "block";
+    }).finally(function() {
+      button.disabled = false; button.textContent = "確認裁切並上傳";
+    });
+  }
+
+  function removeCheckoutSocialImage() {
+    var oldKey = checkoutSocialImageKey;
+    checkoutSocialImageKey = "";
+    renderCheckoutSocialImagePreview();
+    saveDisplaySettings().then(function() {
+      if (!oldKey) return;
+      return apiFetch("/api/admin/checkout-social/delete", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: oldKey })
+      });
+    });
+  }
+
+  (function setupCheckoutCropper() {
+    var canvas = document.getElementById("checkout-crop-canvas");
+    document.getElementById("checkout-crop-zoom").addEventListener("input", drawCheckoutCrop);
+    canvas.addEventListener("pointerdown", function(event) {
+      if (!checkoutCropState) return;
+      checkoutCropState.dragging = true; checkoutCropState.lastX = event.clientX; checkoutCropState.lastY = event.clientY;
+      canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener("pointermove", function(event) {
+      if (!checkoutCropState || !checkoutCropState.dragging) return;
+      var ratio = canvas.width / canvas.getBoundingClientRect().width;
+      checkoutCropState.panX += (event.clientX - checkoutCropState.lastX) * ratio;
+      checkoutCropState.panY += (event.clientY - checkoutCropState.lastY) * ratio;
+      checkoutCropState.lastX = event.clientX; checkoutCropState.lastY = event.clientY;
+      drawCheckoutCrop();
+    });
+    function stopDrag() { if (checkoutCropState) checkoutCropState.dragging = false; }
+    canvas.addEventListener("pointerup", stopDrag);
+    canvas.addEventListener("pointercancel", stopDrag);
+  })();
 
   var storeCanChangeSlug = false;
   var currentStoreSlug = "";

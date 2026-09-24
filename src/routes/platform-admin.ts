@@ -412,7 +412,7 @@ export async function handlePlatformAdmin(
     const effectivePlan = getEffectivePlan(store as any);
     const settings = {
       ...parseDisplaySettings(existingRow?.value || null),
-      ...sanitizeDisplaySettingsPatch(body, effectivePlan),
+      ...sanitizeDisplaySettingsPatch(body, effectivePlan, storeId),
     };
 
     await db
