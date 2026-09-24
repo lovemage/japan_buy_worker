@@ -82,6 +82,8 @@ function matchesSearch(form, query) {
     form.orderCode,
     form.id,
     form.remittanceLast5,
+    form.internalNote,
+    form.externalNote,
   ];
   return fields.some((v) => String(v ?? "").toLowerCase().includes(q));
 }
@@ -177,6 +179,39 @@ function remittanceBlockHtml(form, totals) {
       ${form.remittanceNote ? `<p class="meta">買家備註：${escapeHtml(form.remittanceNote)}</p>` : ""}
       ${actions}
     </div>`;
+}
+
+// D1 的 datetime('now') 是不帶時區的 UTC 字串，補上 Z 才會換成使用者本地時間
+function formatNoteTime(value) {
+  if (!value) return "";
+  const date = new Date(`${String(value).replace(" ", "T")}Z`);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("zh-TW");
+}
+
+function orderNoteMetaText(kind, form) {
+  if (kind === "internal") {
+    return form.internalNoteUpdatedAt ? `更新時間：${formatNoteTime(form.internalNoteUpdatedAt)}` : "尚未填寫";
+  }
+  if (!form.externalNoteCreatedAt) return "尚未填寫";
+  return `編輯時間：${formatNoteTime(form.externalNoteCreatedAt)}｜更新時間：${formatNoteTime(form.externalNoteUpdatedAt)}`;
+}
+
+// 兩種備註都預設收合，摘要列標出是否已有內容，展開才編輯
+function orderNoteBlockHtml(kind, form) {
+  const isInternal = kind === "internal";
+  const value = isInternal ? form.internalNote : form.externalNote;
+  const title = isInternal ? "內部備註" : "外部備註";
+  const hint = isInternal ? "僅後台可見，買家看不到" : "買家查詢訂單時會看到";
+  return `
+    <details class="order-note" data-note-kind="${kind}">
+      <summary><strong>${title}</strong><span class="order-note-state">${value ? "已填寫" : "未填寫"}</span></summary>
+      <p class="meta">${hint}</p>
+      <textarea class="input-cute js-order-note" rows="3" maxlength="1000" data-form-id="${form.id}" placeholder="${title}">${escapeHtml(value)}</textarea>
+      <div class="order-note-footer">
+        <span class="meta js-order-note-meta">${escapeHtml(orderNoteMetaText(kind, form))}</span>
+        <button class="button secondary js-save-note" type="button" data-form-id="${form.id}" data-note-kind="${kind}">儲存</button>
+      </div>
+    </details>`;
 }
 
 function mergeBlockHtml(form) {
@@ -293,6 +328,8 @@ function renderForms(forms) {
         <button class="button secondary js-save-adjustment" type="button" data-form-id="${form.id}">儲存金額</button>
       </div>
       ${noteText ? `<p class="meta">整單備註：${noteText}</p>` : ""}
+      ${orderNoteBlockHtml("internal", form)}
+      ${orderNoteBlockHtml("external", form)}
       ${isWholesaleEnabled() ? `<button class="button secondary js-apply-wholesale" type="button" data-form-id="${form.id}">套用批發價</button>` : ""}
       ${isPaymentEnabled() ? `<button class="button secondary js-make-paylink" type="button" data-form-id="${Number(form.id) || 0}" data-amount="${Number(totals.grandTotalTwd) || 0}">產生收款連結</button>` : ""}
       ${form.status === "cancelled" ? `<button class="button secondary js-delete-form" type="button" data-form-id="${form.id}">刪除此訂單</button>` : ""}
@@ -433,6 +470,47 @@ function renderForms(forms) {
           break;
         }
       }
+    });
+  });
+
+  wrapper.querySelectorAll(".js-save-note").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const formId = Number(button.getAttribute("data-form-id"));
+      const kind = button.getAttribute("data-note-kind");
+      const block = button.closest(".order-note");
+      const textarea = block?.querySelector(".js-order-note");
+      const target = allForms.find((f) => f.id === formId);
+      if (!block || !textarea || !target) return;
+      const field = kind === "internal" ? "internalNote" : "externalNote";
+      hideError();
+      button.disabled = true;
+      button.textContent = "儲存中...";
+      const res = await apiFetch("/api/admin/requirements", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: formId, [field]: textarea.value }),
+      });
+      if (handleUnauthorized(res)) return;
+      button.disabled = false;
+      button.textContent = "儲存";
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        showError((data && data.error) || `備註儲存失敗：${res.status}`);
+        return;
+      }
+      Object.assign(target, {
+        internalNote: data.internalNote,
+        internalNoteUpdatedAt: data.internalNoteUpdatedAt,
+        externalNote: data.externalNote,
+        externalNoteCreatedAt: data.externalNoteCreatedAt,
+        externalNoteUpdatedAt: data.externalNoteUpdatedAt,
+      });
+      // 就地更新而不重繪整張清單，否則展開中的備註會被收起來
+      textarea.value = target[field];
+      const state = block.querySelector(".order-note-state");
+      if (state) state.textContent = target[field] ? "已填寫" : "未填寫";
+      const meta = block.querySelector(".js-order-note-meta");
+      if (meta) meta.textContent = `已儲存｜${orderNoteMetaText(kind, target)}`;
     });
   });
 

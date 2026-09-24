@@ -2981,3 +2981,82 @@ select:disabled {
 }
 
 /* Photo/recognize styles moved to admin.css */
+
+/* ── 訂單備註 ─────────────────────────────────────────────────────────── */
+/* 後台：內部／外部備註預設收合，展開才編輯 */
+.order-note {
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-color);
+  border: 1px solid var(--line);
+}
+
+.order-note summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.order-note-state {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.order-note[open] summary {
+  margin-bottom: 6px;
+}
+
+.order-note .meta {
+  margin: 0 0 6px;
+}
+
+.order-note textarea.input-cute {
+  width: 100%;
+  min-height: 72px;
+  box-sizing: border-box;
+}
+
+.order-note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.order-note-footer .meta {
+  margin: 0;
+}
+
+.order-note-footer .button {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 16px;
+}
+
+/* 買家歷史訂單：店家寫給買家的外部備註 */
+.order-store-note {
+  padding: 10px 14px;
+  background: var(--accent-warm-subtle);
+  border-top: 1px solid var(--line);
+}
+
+.order-store-note-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.order-store-note-body {
+  margin: 4px 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.order-store-note-time {
+  color: var(--muted);
+  font-size: 12px;
+}

@@ -78,6 +78,9 @@ type RequirementFormRow = {
   remittance_last5?: string | null;
   merged_into_id?: number | null;
   merged_into_order_code?: string | null;
+  external_note?: string | null;
+  external_note_created_at?: string | null;
+  external_note_updated_at?: string | null;
   created_at: string;
 };
 
@@ -527,6 +530,9 @@ SELECT
   remittance_last5,
   merged_into_id,
   (SELECT p.order_code FROM requirement_forms p WHERE p.id = requirement_forms.merged_into_id) AS merged_into_order_code,
+  external_note,
+  external_note_created_at,
+  external_note_updated_at,
   created_at
 FROM requirement_forms
 WHERE id = ? AND store_id = ?
@@ -601,6 +607,9 @@ ORDER BY ri.id ASC
         remittanceStatus: form.remittance_status || null,
         remittanceLast5: form.remittance_last5 || "",
         mergedIntoOrderCode: form.merged_into_order_code || "",
+        externalNote: form.external_note || "",
+        externalNoteCreatedAt: form.external_note_created_at || "",
+        externalNoteUpdatedAt: form.external_note_updated_at || "",
         itemsTotalJpy,
         itemsTotalTwd,
         originalItemsTotalTwd,
@@ -674,6 +683,9 @@ SELECT
   remittance_last5,
   merged_into_id,
   (SELECT p.order_code FROM requirement_forms p WHERE p.id = requirement_forms.merged_into_id) AS merged_into_order_code,
+  external_note,
+  external_note_created_at,
+  external_note_updated_at,
   created_at
 FROM requirement_forms
 WHERE store_id = ? AND member_phone = ?
@@ -761,6 +773,9 @@ ORDER BY ri.id ASC
           remittanceStatus: form.remittance_status || null,
           remittanceLast5: form.remittance_last5 || "",
           mergedIntoOrderCode: form.merged_into_order_code || "",
+          externalNote: form.external_note || "",
+          externalNoteCreatedAt: form.external_note_created_at || "",
+          externalNoteUpdatedAt: form.external_note_updated_at || "",
           itemsTotalJpy,
           itemsTotalTwd,
           originalItemsTotalTwd,

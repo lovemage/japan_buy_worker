@@ -43,6 +43,23 @@ function productDetailUrl(code) {
   return `${window.__API_BASE || ""}/product?code=${encodeURIComponent(value)}`;
 }
 
+// D1 的 datetime('now') 是不帶時區的 UTC 字串，補上 Z 才會換成使用者本地時間
+function formatNoteTime(value) {
+  if (!value) return "";
+  const date = new Date(`${String(value).replace(" ", "T")}Z`);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("zh-TW");
+}
+
+function storeNoteHtml(order) {
+  const note = String(order.externalNote || "").trim();
+  if (!note) return "";
+  return `<div class="order-store-note">
+    <div class="order-store-note-title">店家備註</div>
+    <p class="order-store-note-body">${escapeHtml(note)}</p>
+    <div class="order-store-note-time">編輯時間：${escapeHtml(formatNoteTime(order.externalNoteCreatedAt))}｜更新時間：${escapeHtml(formatNoteTime(order.externalNoteUpdatedAt))}</div>
+  </div>`;
+}
+
 function setError(message) {
   const node = document.getElementById("history-error");
   if (!node) return;
@@ -86,6 +103,7 @@ function renderOrders(orders, phone) {
         </div>
         <div class="price">${order.mergedIntoOrderCode ? "—" : `NT$${formatMoney(order.grandTotalTwd)}`}</div>
       </div>
+      ${storeNoteHtml(order)}
       ${itemsHtml}
       ${order.mergedIntoOrderCode
         ? `<div class="order-totals"><div class="row total"><span>已併入訂單 #${escapeHtml(order.mergedIntoOrderCode)}</span><span>款項以該訂單為準</span></div></div>`

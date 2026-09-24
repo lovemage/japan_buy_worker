@@ -5,6 +5,7 @@ const VALID_STATUSES = ["pending", "paid", "preparing", "ordered", "shipped", "c
 type RequirementStatus = (typeof VALID_STATUSES)[number];
 const VALID_ITEM_STATUSES = ["pending", "processed", "cancelled"] as const;
 type RequirementItemStatus = (typeof VALID_ITEM_STATUSES)[number];
+const ORDER_NOTE_MAX_LENGTH = 1000;
 
 type FormRow = {
   id: number;
@@ -37,6 +38,11 @@ type FormRow = {
   merged_into_id: number | null;
   merged_into_order_code: string | null;
   merged_at: string | null;
+  internal_note: string | null;
+  internal_note_updated_at: string | null;
+  external_note: string | null;
+  external_note_created_at: string | null;
+  external_note_updated_at: string | null;
   created_at: string;
 };
 
@@ -73,6 +79,8 @@ export async function handleAdminRequirements(
       adjustedShippingTotalTwd?: number | string | null;
       applyWholesale?: boolean;
       remittanceStatus?: string;
+      internalNote?: string | null;
+      externalNote?: string | null;
     };
     try {
       body = (await request.json()) as typeof body;
@@ -140,6 +148,87 @@ export async function handleAdminRequirements(
         .run();
       return new Response(
         JSON.stringify({ ok: true, id: formId, adjustedItemsTotalTwd: adjusted, appliedCount }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    }
+    const hasInternalNote = Object.prototype.hasOwnProperty.call(body, "internalNote");
+    const hasExternalNote = Object.prototype.hasOwnProperty.call(body, "externalNote");
+    if (hasInternalNote || hasExternalNote) {
+      const formId = Number(body?.id);
+      if (!Number.isInteger(formId) || formId <= 0) {
+        return new Response(JSON.stringify({ ok: false, error: "id is required" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      const internalNote = hasInternalNote ? String(body.internalNote ?? "").trim() : "";
+      const externalNote = hasExternalNote ? String(body.externalNote ?? "").trim() : "";
+      if (internalNote.length > ORDER_NOTE_MAX_LENGTH || externalNote.length > ORDER_NOTE_MAX_LENGTH) {
+        return new Response(
+          JSON.stringify({ ok: false, error: `備註最多 ${ORDER_NOTE_MAX_LENGTH} 字` }),
+          { status: 400, headers: { "content-type": "application/json" } }
+        );
+      }
+      const target = await ctx.db
+        .prepare("SELECT id FROM requirement_forms WHERE id = ? AND store_id = ?")
+        .bind(formId, ctx.storeId)
+        .first<{ id: number }>();
+      if (!target?.id) {
+        return new Response(JSON.stringify({ ok: false, error: "Requirement not found" }), {
+          status: 404,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      if (hasInternalNote) {
+        await ctx.db
+          .prepare(
+            `UPDATE requirement_forms
+                SET internal_note = ?,
+                    internal_note_updated_at = CASE WHEN ? IS NULL THEN NULL ELSE datetime('now') END,
+                    updated_at = datetime('now')
+              WHERE id = ? AND store_id = ?`
+          )
+          .bind(internalNote || null, internalNote || null, formId, ctx.storeId)
+          .run();
+      }
+      if (hasExternalNote) {
+        // 內容沒變就不動時間，避免只是按了儲存就讓買家看到「已更新」
+        await ctx.db
+          .prepare(
+            `UPDATE requirement_forms
+                SET external_note_created_at = CASE
+                      WHEN ? IS NULL THEN NULL
+                      ELSE COALESCE(external_note_created_at, datetime('now'))
+                    END,
+                    external_note_updated_at = CASE
+                      WHEN ? IS NULL THEN NULL
+                      WHEN external_note IS ? THEN external_note_updated_at
+                      ELSE datetime('now')
+                    END,
+                    external_note = ?,
+                    updated_at = datetime('now')
+              WHERE id = ? AND store_id = ?`
+          )
+          .bind(externalNote || null, externalNote || null, externalNote || null, externalNote || null, formId, ctx.storeId)
+          .run();
+      }
+      const saved = await ctx.db
+        .prepare(
+          `SELECT internal_note, internal_note_updated_at, external_note, external_note_created_at, external_note_updated_at
+             FROM requirement_forms WHERE id = ? AND store_id = ?`
+        )
+        .bind(formId, ctx.storeId)
+        .first<Pick<FormRow, "internal_note" | "internal_note_updated_at" | "external_note" | "external_note_created_at" | "external_note_updated_at">>();
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          id: formId,
+          internalNote: saved?.internal_note || "",
+          internalNoteUpdatedAt: saved?.internal_note_updated_at || "",
+          externalNote: saved?.external_note || "",
+          externalNoteCreatedAt: saved?.external_note_created_at || "",
+          externalNoteUpdatedAt: saved?.external_note_updated_at || "",
+        }),
         { status: 200, headers: { "content-type": "application/json" } }
       );
     }
@@ -368,6 +457,11 @@ SELECT
   merged_into_id,
   (SELECT p.order_code FROM requirement_forms p WHERE p.id = requirement_forms.merged_into_id) AS merged_into_order_code,
   merged_at,
+  internal_note,
+  internal_note_updated_at,
+  external_note,
+  external_note_created_at,
+  external_note_updated_at,
   created_at
 FROM requirement_forms
 WHERE store_id = ?
@@ -472,6 +566,11 @@ ORDER BY ri.id DESC
         mergedIntoId: form.merged_into_id,
         mergedIntoOrderCode: form.merged_into_order_code || "",
         mergedAt: form.merged_at || "",
+        internalNote: form.internal_note || "",
+        internalNoteUpdatedAt: form.internal_note_updated_at || "",
+        externalNote: form.external_note || "",
+        externalNoteCreatedAt: form.external_note_created_at || "",
+        externalNoteUpdatedAt: form.external_note_updated_at || "",
         createdAt: form.created_at,
         items: itemsForForm(form).map((item) => ({
           id: item.id,
