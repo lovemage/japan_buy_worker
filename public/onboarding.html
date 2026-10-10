@@ -68,17 +68,7 @@ body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: v
 .hidden { display: none !important; }
 .loading { text-align: center; padding: 24px; color: var(--faint); }
 
-/* Phone input */
-#phone-container { min-height: 50px; }
-.phone-prefix { padding: 12px 14px; background: var(--bg-alt); border: 1.5px solid var(--line); border-radius: 10px; font-size: 15px; color: var(--muted); white-space: nowrap; }
-
-/* OTP code input — auto-advances on 6 digits */
-#code-input { text-align: center; font-family: "Noto Serif TC", serif; font-size: 26px; font-weight: 700; letter-spacing: .5em; text-indent: .5em; padding: 14px; }
-.code-verifying { font-size: 13px; color: var(--orange-text); margin-top: 10px; display: none; align-items: center; gap: 8px; justify-content: center; }
-.code-verifying.show { display: flex; }
-.code-spinner { width: 15px; height: 15px; border: 2px solid var(--orange-soft); border-top-color: var(--orange); border-radius: 50%; animation: code-spin .7s linear infinite; }
-@keyframes code-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .code-spinner { animation: none; } .btn-primary:active { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .btn-primary:active { transform: none; } }
 </style>
 </head>
 <body>
@@ -90,7 +80,6 @@ body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: v
     <div class="dot" id="dot-1"></div>
     <div class="dot" id="dot-2"></div>
     <div class="dot" id="dot-3"></div>
-    <div class="dot" id="dot-4"></div>
   </div>
 
   <div class="loading" id="loading">載入中...</div>
@@ -117,36 +106,7 @@ body { font-family: "Noto Sans TC", sans-serif; color: var(--ink); background: v
     </div>
   </div>
 
-  <!-- Step 2: Phone Verification -->
-  <div class="card hidden" id="step-phone">
-    <h2>📱 驗證手機號碼</h2>
-    <p>輸入你的手機號碼，我們會發送簡訊驗證碼。</p>
-    <div class="form-group">
-      <label>手機號碼</label>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span class="phone-prefix">+886</span>
-        <input type="tel" id="phone-input" placeholder="912345678" style="flex:1;" />
-      </div>
-      <div class="hint">首位 0 會自動移除</div>
-    </div>
-    <button class="btn btn-primary" id="send-code-btn" onclick="sendPhoneCode()">發送驗證碼</button>
-
-    <div class="hidden" id="verify-code-section" style="margin-top:16px;">
-      <div class="form-group">
-        <label>驗證碼（輸入 6 碼自動驗證）</label>
-        <input type="text" id="code-input" placeholder="······" maxlength="6" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" />
-      </div>
-      <div class="code-verifying" id="code-verifying"><span class="code-spinner"></span>驗證中…</div>
-      <button class="btn btn-secondary" id="manual-verify-btn" onclick="verifyPhoneCode()">手動驗證</button>
-    </div>
-    <p id="phone-error" class="error"></p>
-    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
-      <button class="btn btn-secondary" id="skip-phone-btn" onclick="skipPhoneVerification()">稍後再驗證，先開店</button>
-      <div class="hint" style="margin-top:8px;">未驗證手機仍可正常開店、上架與接單，免費方案最多上架 5 件商品。之後可在後台隨時完成驗證，或升級付費方案解除限制。</div>
-    </div>
-  </div>
-
-  <!-- Step 3: Store Setup -->
+  <!-- Step 2: Store Setup -->
   <div class="card hidden" id="step-store">
     <h2>🏪 設定你的店面</h2>
     <p>最後一步! 設定你的店面名稱和網址。預設代購國家/幣值為台灣，可在後台設定內再調整代購國家。</p>
@@ -222,9 +182,7 @@ async function init() {
       document.getElementById("email-input-section").classList.remove("hidden");
     }
     document.getElementById("step-email").classList.remove("hidden");
-  } else if (step === "phone_pending") {
-    document.getElementById("step-phone").classList.remove("hidden");
-  } else if (step === "store_setup") {
+  } else if (step === "store_setup" || step === "phone_pending") {
     document.getElementById("step-store").classList.remove("hidden");
   } else if (step === "complete") {
     document.getElementById("step-complete").classList.remove("hidden");
@@ -233,9 +191,9 @@ async function init() {
 }
 
 function updateDots(step) {
-  const steps = ["email_pending", "phone_pending", "store_setup", "complete"];
-  const idx = steps.indexOf(step);
-  for (let i = 0; i < 4; i++) {
+  const steps = ["email_pending", "store_setup", "complete"];
+  const idx = steps.indexOf(step === "phone_pending" ? "store_setup" : step);
+  for (let i = 0; i < steps.length; i++) {
     const dot = document.getElementById("dot-" + (i + 1));
     dot.className = "dot";
     if (i < idx) dot.classList.add("done");
@@ -323,141 +281,6 @@ function startCooldown(seconds) {
   tick();
 }
 
-// Phone verification via Every8D SMS
-function formatPhoneNumber(raw) {
-  let num = raw.replace(/[\s\-()]/g, "");
-  if (num.startsWith("0")) num = num.substring(1);
-  if (!num.startsWith("+")) num = "+886" + num;
-  return num;
-}
-
-async function sendPhoneCode() {
-  const rawPhone = document.getElementById("phone-input").value.trim();
-  if (!rawPhone) return;
-  const phone = formatPhoneNumber(rawPhone);
-
-  const btn = document.getElementById("send-code-btn");
-  btn.disabled = true;
-  btn.textContent = "發送中...";
-  const errEl = document.getElementById("phone-error");
-  errEl.style.display = "none";
-
-  try {
-    const resp = await fetch("/auth/send-phone-code", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ phoneNumber: phone }),
-    });
-    const data = await resp.json();
-    if (data.ok) {
-      document.getElementById("verify-code-section").classList.remove("hidden");
-      startPhoneCooldown(btn);
-    } else {
-      errEl.textContent = data.error || "發送失敗";
-      errEl.style.display = "block";
-      btn.textContent = "發送驗證碼";
-      btn.disabled = false;
-    }
-  } catch (e) {
-    errEl.textContent = "發送失敗: " + (e.message || e);
-    errEl.style.display = "block";
-    btn.textContent = "發送驗證碼";
-    btn.disabled = false;
-  }
-}
-
-function startPhoneCooldown(btn) {
-  let remaining = 60;
-  btn.disabled = true;
-  btn.textContent = "重新發送（" + remaining + "s）";
-  const timer = setInterval(function() {
-    remaining--;
-    if (remaining <= 0) {
-      clearInterval(timer);
-      btn.disabled = false;
-      btn.textContent = "重新發送驗證碼";
-    } else {
-      btn.textContent = "重新發送（" + remaining + "s）";
-    }
-  }, 1000);
-}
-
-async function skipPhoneVerification() {
-  const btn = document.getElementById("skip-phone-btn");
-  const errEl = document.getElementById("phone-error");
-  btn.disabled = true;
-  btn.textContent = "處理中...";
-  errEl.style.display = "none";
-
-  try {
-    const resp = await fetch("/auth/skip-phone", { method: "POST", credentials: "same-origin" });
-    const data = await resp.json();
-    if (data.ok) {
-      window.location.reload();
-      return;
-    }
-    errEl.textContent = data.error || "操作失敗";
-    errEl.style.display = "block";
-  } catch (e) {
-    errEl.textContent = "操作失敗: " + (e.message || e);
-    errEl.style.display = "block";
-  }
-
-  btn.textContent = "稍後再驗證，先開店";
-  btn.disabled = false;
-}
-
-let verifying = false;
-async function verifyPhoneCode() {
-  const codeEl = document.getElementById("code-input");
-  const code = codeEl.value.trim();
-  if (verifying || code.length < 6) return;
-  verifying = true;
-
-  const errEl = document.getElementById("phone-error");
-  const spin = document.getElementById("code-verifying");
-  const manualBtn = document.getElementById("manual-verify-btn");
-  errEl.style.display = "none";
-  if (spin) spin.classList.add("show");
-  if (manualBtn) manualBtn.disabled = true;
-  codeEl.disabled = true;
-
-  try {
-    const resp = await fetch("/auth/verify-phone", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ code }),
-    });
-    const data = await resp.json();
-    if (data.ok) {
-      window.location.reload();
-      return; // success: keep UI locked while the page reloads
-    }
-    errEl.textContent = data.error || "驗證失敗";
-    errEl.style.display = "block";
-  } catch (e) {
-    errEl.textContent = "驗證碼錯誤";
-    errEl.style.display = "block";
-  }
-
-  // Failure path: unlock and clear so the user can retype (auto-verifies again at 6 digits)
-  verifying = false;
-  codeEl.disabled = false;
-  codeEl.value = "";
-  codeEl.focus();
-  if (spin) spin.classList.remove("show");
-  if (manualBtn) manualBtn.disabled = false;
-}
-
-// Auto-advance: keep digits only and verify automatically once 6 digits entered
-document.getElementById("code-input")?.addEventListener("input", function () {
-  const digits = this.value.replace(/\D/g, "").slice(0, 6);
-  if (digits !== this.value) this.value = digits;
-  if (digits.length === 6) verifyPhoneCode();
-});
-
 // Store setup
 document.getElementById("store-slug")?.addEventListener("input", function() {
   document.getElementById("slug-display").textContent = this.value || "...";
@@ -529,9 +352,6 @@ async function submitEmail() {
 // Expose functions to HTML onclick handlers (module scope is not global)
 window.resendEmail = resendEmail;
 window.submitEmail = submitEmail;
-window.sendPhoneCode = sendPhoneCode;
-window.verifyPhoneCode = verifyPhoneCode;
-window.skipPhoneVerification = skipPhoneVerification;
 window.completeSetup = completeSetup;
 
 init();

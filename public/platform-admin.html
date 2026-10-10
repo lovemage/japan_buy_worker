@@ -1189,18 +1189,6 @@ async function toggleTest(storeId) {
   } else alert(data.error || "操作失敗");
 }
 
-async function skipPhonePending(storeId) {
-  if (!confirm("確定要幫此會員跳過手機驗證 pending？")) return;
-  var res = await fetch("/api/platform-admin/stores/" + storeId, {
-    method: "PATCH",
-    headers: { "content-type": "application/json", authorization: "Bearer " + adminToken },
-    body: JSON.stringify({ action: "skip_phone_pending" }),
-  });
-  var data = await res.json();
-  if (data.ok) await loadStores();
-  else alert(data.error || "操作失敗");
-}
-
 var memberViewState = {
   segment: "all",
   search: "",
@@ -1432,7 +1420,6 @@ function renderStores(stores) {
           (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
           (["pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showBannerManager(' + s.id + ')">招牌</button>' : '') +
           '<button type="button" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "標記測試") + '</button>' +
-          (s.onboarding_step === "phone_pending" ? '<button type="button" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
           (s.is_active ? '<button type="button" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button type="button" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
           '<button type="button" onclick="deleteStore(' + s.id + ',\'' + escapeJsString(s.name) + '\')">刪除</button>' +
         '</div>' +
@@ -1481,7 +1468,6 @@ function renderStores(stores) {
           (["plus", "pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showLogoManager(' + s.id + ')">Logo</button>' : '') +
           (["pro", "proplus"].indexOf(s.plan) >= 0 ? '<button type="button" onclick="showBannerManager(' + s.id + ')">招牌</button>' : '') +
           '<button type="button" onclick="toggleTest(' + s.id + ')">' + (isTest ? "取消測試" : "標記測試") + '</button>' +
-          (s.onboarding_step === "phone_pending" ? '<button type="button" onclick="skipPhonePending(' + s.id + ')">跳過手機驗證</button>' : '') +
           (s.is_active ? '<button type="button" onclick="updateStore(' + s.id + ',\'deactivate\')">停用</button>' : '<button type="button" onclick="updateStore(' + s.id + ',\'activate\')">啟用</button>') +
           '<button type="button" onclick="deleteStore(' + s.id + ',\'' + escapeJsString(s.name) + '\')">刪除</button>' +
         '</div>' +

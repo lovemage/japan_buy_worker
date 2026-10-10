@@ -13,9 +13,6 @@ import {
   handleSetEmail,
   handleVerifyEmail,
   handleResendVerificationEmail,
-  handleSendPhoneCode,
-  handleVerifyPhone,
-  handleSkipPhoneVerification,
   handleCompleteOnboarding,
   handleGetCurrentStore,
   handleAdminLogin,
@@ -72,10 +69,6 @@ type Env = {
   LINE_CHANNEL_ID: string;
   LINE_CHANNEL_SECRET: string;
   RESEND_API_KEY: string;
-  EVERY8D_UID: string;
-  EVERY8D_PWD: string;
-  SMS_RELAY_URL?: string;
-  SMS_RELAY_TOKEN?: string;
   APP_URL: string;
   PLATFORM_ADMIN_PASSWORD?: string;
   // Multi-tenant domain
@@ -210,10 +203,6 @@ function getAuthEnv(env: Env) {
     LINE_CHANNEL_ID: env.LINE_CHANNEL_ID,
     LINE_CHANNEL_SECRET: env.LINE_CHANNEL_SECRET,
     RESEND_API_KEY: env.RESEND_API_KEY,
-    EVERY8D_UID: env.EVERY8D_UID,
-    EVERY8D_PWD: env.EVERY8D_PWD,
-    SMS_RELAY_URL: env.SMS_RELAY_URL,
-    SMS_RELAY_TOKEN: env.SMS_RELAY_TOKEN,
     APP_URL: env.APP_URL,
   };
 }
@@ -315,13 +304,6 @@ export default {
       const redirectUrl = new URL(request.url);
       redirectUrl.hostname = mainDomain;
       return Response.redirect(redirectUrl.toString(), 302);
-    }
-
-    // relay.{mainDomain} is the Cloudflare Tunnel to the SMS relay VM, not a
-    // tenant. Hand it to the origin before subdomain routing below resolves it
-    // as a store slug and answers "Store not found".
-    if (hostname === `relay.${mainDomain}`) {
-      return fetch(request);
     }
 
     // ── Health check ──
@@ -482,15 +464,6 @@ export default {
     }
     if (url.pathname === "/auth/resend-verification") {
       return handleResendVerificationEmail(request, env.DB, getAuthEnv(env));
-    }
-    if (url.pathname === "/auth/send-phone-code") {
-      return handleSendPhoneCode(request, env.DB, getAuthEnv(env));
-    }
-    if (url.pathname === "/auth/verify-phone") {
-      return handleVerifyPhone(request, env.DB, getAuthEnv(env));
-    }
-    if (url.pathname === "/auth/skip-phone") {
-      return handleSkipPhoneVerification(request, env.DB);
     }
     if (url.pathname === "/auth/complete-onboarding") {
       return handleCompleteOnboarding(request, env.DB);

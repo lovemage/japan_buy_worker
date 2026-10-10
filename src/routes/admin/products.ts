@@ -39,8 +39,6 @@ function sanitizeVariants(input: unknown): Array<{ name: string; stock: number; 
 type ProductLimitState = {
   limit: number | null;
   planLimit: number | null;
-  phoneVerified: boolean;
-  cappedByPhone: boolean;
 };
 
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -57,12 +55,7 @@ async function getProductLimitState(ctx: RequestContext): Promise<ProductLimitSt
 }
 
 function buildLimitReachedMessage(ctx: RequestContext, state: ProductLimitState): string {
-  if (!state.cappedByPhone) {
-    return `${ctx.storePlan.toUpperCase()} 方案最多 ${state.limit} 件商品，升級方案可解鎖更多額度。`;
-  }
-  const unlocked =
-    state.planLimit === null ? "驗證後即可解除此限制" : `驗證後可上架至 ${state.planLimit} 件`;
-  return `未完成手機驗證最多 ${state.limit} 件商品。請至「設定 → 手機驗證」完成驗證，${unlocked}；升級付費方案則不受此限。`;
+  return `${ctx.storePlan.toUpperCase()} 方案最多 ${state.limit} 件商品，升級方案可解鎖更多額度。`;
 }
 
 async function getActiveProductCount(ctx: RequestContext): Promise<number> {
@@ -100,7 +93,6 @@ export async function handleAdminProducts(
         JSON.stringify({
           ok: false,
           error: buildLimitReachedMessage(ctx, limitState),
-          needsPhoneVerification: limitState.cappedByPhone,
         }),
         { status: 403, headers: { "content-type": "application/json" } }
       );
@@ -223,7 +215,6 @@ export async function handleAdminProductToggle(
             JSON.stringify({
               ok: false,
               error: buildLimitReachedMessage(ctx, limitState),
-              needsPhoneVerification: limitState.cappedByPhone,
             }),
             { status: 403, headers: { "content-type": "application/json" } }
           );

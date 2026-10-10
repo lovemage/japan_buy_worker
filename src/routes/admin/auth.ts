@@ -124,10 +124,6 @@ type AuthEnv = {
   LINE_CHANNEL_ID: string;
   LINE_CHANNEL_SECRET: string;
   RESEND_API_KEY: string;
-  EVERY8D_UID: string;
-  EVERY8D_PWD: string;
-  SMS_RELAY_URL?: string;
-  SMS_RELAY_TOKEN?: string;
   APP_URL: string; // e.g. "https://vovosnap.com"
 };
 
@@ -602,7 +598,7 @@ export async function handleVerifyEmail(request: Request, db: D1DatabaseLike, au
   }
 
   await db
-    .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'phone_pending', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
+    .prepare("UPDATE stores SET email_verified = 1, onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ? AND onboarding_step = 'email_pending'")
     .bind(row.store_id)
     .run();
 
@@ -763,281 +759,6 @@ export async function handleResendVerificationEmail(
   return json({ ok: true, message: "Verification email sent" });
 }
 
-// ── Every8D SMS Phone verification ──
-
-import {
-  sendSMS,
-  sendSMSViaRelay,
-  generateVerificationCode,
-  createEvery8DConfig,
-} from "../../services/every8d.js";
-
-const SMS_CODE_EXPIRY_SECONDS = 600; // 10 minutes
-const SMS_MAX_ATTEMPTS = 5;
-
-function normalizeSmsVerificationCode(raw: string): string {
-  // Convert full-width digits to half-width, then keep digits only.
-  return String(raw || "")
-    .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
-    .replace(/\D/g, "");
-}
-
-/**
- * Send phone verification code via Every8D SMS
- */
-export async function handleSendPhoneCode(
-  request: Request,
-  db: D1DatabaseLike,
-  authEnv: AuthEnv
-): Promise<Response> {
-  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
-
-  // Get store from session
-  const cookies = parseCookieHeader(request.headers.get("cookie"));
-  const sessionToken = cookies[STORE_COOKIE_NAME];
-  if (!sessionToken) return json({ ok: false, error: "Unauthorized" }, 401);
-
-  const session = await db
-    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
-    .bind(sessionToken)
-    .first<{ store_id: number }>();
-  if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
-
-  let body: { phoneNumber?: string };
-  try {
-    body = (await request.json()) as { phoneNumber?: string };
-  } catch {
-    return json({ ok: false, error: "Invalid JSON" }, 400);
-  }
-
-  const { phoneNumber } = body;
-  if (!phoneNumber) return json({ ok: false, error: "Missing phoneNumber" }, 400);
-
-  // Validate phone format (basic)
-  const cleanPhone = phoneNumber.replace(/[\s\-()]/g, "");
-  if (!/^[+]?[0-9]{8,15}$/.test(cleanPhone)) {
-    return json({ ok: false, error: "手機號碼格式不正確" }, 400);
-  }
-
-  // Test phone numbers — bypass duplicate check
-  const TEST_PHONES = ["+886912305910", "+886928901964", "+886979661678"];
-  const isTestPhone = TEST_PHONES.includes(cleanPhone);
-
-  // Check if phone number is already used by another store
-  if (!isTestPhone) {
-    const existing = await db
-      .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
-      .bind(cleanPhone, session.store_id)
-      .first<{ id: number }>();
-    if (existing) {
-      return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
-    }
-  }
-
-  // Rate limit: check if we sent a code recently (within 60 seconds)
-  const recentCode = await db
-    .prepare("SELECT id FROM phone_verification_codes WHERE store_id = ? AND created_at > datetime('now', '-60 seconds')")
-    .bind(session.store_id)
-    .first();
-  if (recentCode) {
-    return json({ ok: false, error: "請等待 60 秒後再重新發送" }, 429);
-  }
-
-  // Generate verification code
-  const code = generateVerificationCode();
-  const expiresAt = new Date(Date.now() + SMS_CODE_EXPIRY_SECONDS * 1000).toISOString();
-
-  // Delete old codes for this store
-  await db.prepare("DELETE FROM phone_verification_codes WHERE store_id = ?").bind(session.store_id).run();
-
-  // Insert new code
-  await db
-    .prepare("INSERT INTO phone_verification_codes (store_id, phone_number, code, expires_at) VALUES (?, ?, ?, ?)")
-    .bind(session.store_id, cleanPhone, code, expiresAt)
-    .run();
-
-  // Send SMS via Every8D
-  // Check credentials are configured
-  if (!authEnv.EVERY8D_UID || !authEnv.EVERY8D_PWD) {
-    console.error("Every8D credentials missing: EVERY8D_UID or EVERY8D_PWD not set");
-    return json({ ok: false, error: "簡訊服務未配置，請聯繫管理員" }, 500);
-  }
-
-  try {
-    const message = `您的 vovosnap 驗證碼為 ${code}，有效期 10 分鐘。如非本人操作請忽略此簡訊。`;
-
-    if (authEnv.SMS_RELAY_URL) {
-      console.log("Sending SMS via relay to:", cleanPhone, "relay:", authEnv.SMS_RELAY_URL);
-      const result = await sendSMSViaRelay(
-        authEnv.SMS_RELAY_URL,
-        authEnv.SMS_RELAY_TOKEN,
-        cleanPhone,
-        message
-      );
-      console.log("SMS relay result:", result);
-    } else {
-      const config = createEvery8DConfig({
-        EVERY8D_UID: authEnv.EVERY8D_UID,
-        EVERY8D_PWD: authEnv.EVERY8D_PWD,
-      });
-      console.log("Sending SMS via Every8D to:", cleanPhone, "site:", config.siteUrl);
-      const result = await sendSMS(config, cleanPhone, message);
-      console.log("Every8D SMS result:", result);
-    }
-
-    return json({ ok: true, message: "驗證碼已發送" });
-  } catch (e) {
-    console.error("SMS error:", e);
-    return json({ ok: false, error: "發送簡訊失敗: " + (e instanceof Error ? e.message : String(e)) }, 500);
-  }
-}
-
-/**
- * Verify phone code
- */
-export async function handleVerifyPhone(
-  request: Request,
-  db: D1DatabaseLike,
-  authEnv: AuthEnv
-): Promise<Response> {
-  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
-
-  // Get store from session
-  const cookies = parseCookieHeader(request.headers.get("cookie"));
-  const sessionToken = cookies[STORE_COOKIE_NAME];
-  if (!sessionToken) return json({ ok: false, error: "Unauthorized" }, 401);
-
-  const session = await db
-    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
-    .bind(sessionToken)
-    .first<{ store_id: number }>();
-  if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
-
-  let body: { code?: string };
-  try {
-    body = (await request.json()) as { code?: string };
-  } catch {
-    return json({ ok: false, error: "Invalid JSON" }, 400);
-  }
-
-  const { code } = body;
-  const inputCode = normalizeSmsVerificationCode(code || "");
-  if (!inputCode) return json({ ok: false, error: "Missing verification code" }, 400);
-
-  // Get stored verification code
-  const storedCode = await db
-    .prepare("SELECT id, phone_number, code, attempts, expires_at FROM phone_verification_codes WHERE store_id = ?")
-    .bind(session.store_id)
-    .first<{ id: number; phone_number: string; code: string; attempts: number; expires_at: string }>();
-
-  if (!storedCode) {
-    return json({ ok: false, error: "請先發送驗證碼" }, 400);
-  }
-
-  // Check expiry
-  if (new Date(storedCode.expires_at) < new Date()) {
-    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
-    return json({ ok: false, error: "驗證碼已過期，請重新發送" }, 400);
-  }
-
-  // Check attempts
-  if (storedCode.attempts >= SMS_MAX_ATTEMPTS) {
-    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
-    return json({ ok: false, error: "嘗試次數過多，請重新發送驗證碼" }, 429);
-  }
-
-  // Verify code
-  const expectedCode = normalizeSmsVerificationCode(storedCode.code);
-  if (expectedCode !== inputCode) {
-    // Increment attempts
-    await db
-      .prepare("UPDATE phone_verification_codes SET attempts = attempts + 1 WHERE id = ?")
-      .bind(storedCode.id)
-      .run();
-    return json({ ok: false, error: "驗證碼錯誤" }, 400);
-  }
-
-  // Code is correct — guard against the phone already belonging to another store.
-  // send-phone-code skips the duplicate check for test numbers, and a race can
-  // assign the same number between send and verify; without this guard the UNIQUE
-  // index on stores.phone_number throws on UPDATE and surfaces as a 500.
-  const phoneOwner = await db
-    .prepare("SELECT id FROM stores WHERE phone_number = ? AND id != ?")
-    .bind(storedCode.phone_number, session.store_id)
-    .first<{ id: number }>();
-  if (phoneOwner) {
-    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
-    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
-  }
-
-  // Code is correct - update store with verified phone
-  try {
-    await db
-      .prepare(
-        `UPDATE stores SET phone_number = ?, phone_verified = 1,
-         onboarding_step = CASE WHEN onboarding_step = 'phone_pending' THEN 'store_setup' ELSE onboarding_step END,
-         updated_at = datetime('now')
-         WHERE id = ?`
-      )
-      .bind(storedCode.phone_number, session.store_id)
-      .run();
-  } catch (e) {
-    // Most likely the UNIQUE index on stores.phone_number (race with another store).
-    console.error("verify-phone UPDATE failed:", e);
-    await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
-    return json({ ok: false, error: "此手機號碼已被其他帳號使用" }, 409);
-  }
-
-  // Delete used verification code
-  await db.prepare("DELETE FROM phone_verification_codes WHERE id = ?").bind(storedCode.id).run();
-
-  return json({ ok: true });
-}
-
-/**
- * Skip phone verification during onboarding.
- *
- * Moves the store on to store_setup while leaving phone_verified at 0 — the
- * owner really has not verified, and the free-plan product cap keys off that
- * flag. They can finish verifying later from the store admin.
- */
-export async function handleSkipPhoneVerification(
-  request: Request,
-  db: D1DatabaseLike
-): Promise<Response> {
-  if (request.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
-
-  const cookies = parseCookieHeader(request.headers.get("cookie"));
-  const sessionToken = cookies[STORE_COOKIE_NAME];
-  if (!sessionToken) return json({ ok: false, error: "Unauthorized" }, 401);
-
-  const session = await db
-    .prepare("SELECT store_id FROM store_sessions WHERE token = ? AND expires_at > datetime('now')")
-    .bind(sessionToken)
-    .first<{ store_id: number }>();
-  if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
-
-  const store = await db
-    .prepare("SELECT email_verified, onboarding_step FROM stores WHERE id = ?")
-    .bind(session.store_id)
-    .first<{ email_verified: number; onboarding_step: string }>();
-
-  if (!store) return json({ ok: false, error: "Store not found" }, 404);
-  if (!store.email_verified) return json({ ok: false, error: "請先完成 Email 驗證" }, 400);
-  if (store.onboarding_step !== "phone_pending") {
-    return json({ ok: false, error: "目前不是手機驗證步驟" }, 400);
-  }
-
-  await db
-    .prepare(
-      "UPDATE stores SET onboarding_step = 'store_setup', updated_at = datetime('now') WHERE id = ?"
-    )
-    .bind(session.store_id)
-    .run();
-
-  return json({ ok: true, onboarding_step: "store_setup" });
-}
-
 // ── Store onboarding: set slug and finalize ──
 
 export async function handleCompleteOnboarding(
@@ -1057,9 +778,9 @@ export async function handleCompleteOnboarding(
   if (!session) return json({ ok: false, error: "Unauthorized" }, 401);
 
   const store = await db
-    .prepare("SELECT email_verified, phone_verified, onboarding_step FROM stores WHERE id = ?")
+    .prepare("SELECT email_verified, onboarding_step FROM stores WHERE id = ?")
     .bind(session.store_id)
-    .first<{ email_verified: number; phone_verified: number; onboarding_step: string }>();
+    .first<{ email_verified: number; onboarding_step: string }>();
 
   if (!store) return json({ ok: false, error: "Store not found" }, 404);
   if (!store.email_verified) return json({ ok: false, error: "Email not verified" }, 400);
@@ -1139,7 +860,7 @@ export async function handleGetCurrentStore(
   const store = await db
     .prepare(
       `SELECT id, slug, name, owner_email, destination_country, display_currency,
-       line_id, plan, email_verified, phone_verified, onboarding_step
+       line_id, plan, email_verified, onboarding_step
        FROM stores WHERE id = ?`
     )
     .bind(session.store_id)

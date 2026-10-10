@@ -140,7 +140,7 @@ export async function handlePlatformAdmin(
       .prepare(`
         SELECT
           s.id, s.slug, s.name, s.owner_email, s.plan, s.plan_expires_at,
-          s.is_active, s.onboarding_step, s.email_verified, s.phone_verified,
+          s.is_active, s.onboarding_step, s.email_verified,
           s.phone_number, s.google_id, s.line_login_id, s.line_id, s.template,
           s.created_at, s.updated_at,
           (SELECT COUNT(1) FROM products p WHERE p.store_id = s.id) as product_count,
@@ -349,32 +349,6 @@ export async function handlePlatformAdmin(
           .bind(storeId)
           .run();
         return json({ ok: true });
-      case "skip_phone_pending": {
-        const store = await db
-          .prepare("SELECT email_verified, onboarding_step FROM stores WHERE id = ?")
-          .bind(storeId)
-          .first<{ email_verified: number; onboarding_step: string }>();
-        if (!store) return json({ ok: false, error: "Store not found" }, 404);
-        if (!store.email_verified) return json({ ok: false, error: "Email 尚未驗證，無法跳過手機驗證" }, 400);
-        if (store.onboarding_step !== "phone_pending") {
-          return json({ ok: false, error: "目前不是手機驗證待完成狀態" }, 400);
-        }
-
-        // Leave phone_verified at 0 — skipping is not verifying, and the
-        // free-plan product cap keys off that flag. Marking it 1 here would
-        // silently hand out the verified limit and make the two states
-        // indistinguishable afterwards.
-        await db
-          .prepare(
-            `UPDATE stores
-             SET onboarding_step = 'store_setup',
-                 updated_at = datetime('now')
-             WHERE id = ?`
-          )
-          .bind(storeId)
-          .run();
-        return json({ ok: true, onboarding_step: "store_setup", phone_verified: 0 });
-      }
       default:
         return json({ ok: false, error: "Unknown action" }, 400);
     }
@@ -583,7 +557,6 @@ export async function handlePlatformAdmin(
     await db.prepare("DELETE FROM requirement_forms WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM products WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM app_settings WHERE store_id = ?").bind(storeId).run();
-    await db.prepare("DELETE FROM phone_verification_codes WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM email_verifications WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM store_sessions WHERE store_id = ?").bind(storeId).run();
     await db.prepare("DELETE FROM stores WHERE id = ?").bind(storeId).run();

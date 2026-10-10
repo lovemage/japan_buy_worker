@@ -28,9 +28,7 @@ export async function handleAdminCrawl(request: Request, ctx: RequestContext, cr
       maxProducts = crawlLimit;
     }
 
-    // A free store that skipped phone verification is capped lower, and bulk
-    // import must respect it too — otherwise the cap is one crawl away from
-    // being bypassed.
+    // Bulk import must respect the platform plan_limits setting too.
     const limitState = await getStoreProductLimit(ctx.db, ctx.storeId, ctx.storePlan);
     if (limitState.limit !== null && limitState.limit > 0) {
       maxProducts = maxProducts === null ? limitState.limit : Math.min(maxProducts, limitState.limit);
