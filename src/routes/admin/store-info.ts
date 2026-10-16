@@ -665,7 +665,7 @@ export async function handleBannerGenerate(
   if (!apiKey) {
     return json({ ok: false, error: "AI 招牌生成功能尚未啟用，請聯繫 vovosnap 管理員處理" }, 400);
   }
-  const modelId = settingsMap["banner_model"] || settingsMap["image_gen_model"] || "gemini-2.5-flash-preview-image-generation";
+  const modelId = settingsMap["banner_model"] || settingsMap["image_gen_model"] || "gemini-2.5-flash-image";
 
   // System prompt — auto-injected, not visible to user
   const prompt = `Generate a professional e-commerce store banner image.

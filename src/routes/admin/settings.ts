@@ -51,7 +51,7 @@ export async function getGeminiModel(db: D1DatabaseLike): Promise<string> {
   const row = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'gemini_model'")
     .first<{ value: string }>();
-  return row?.value || "gemini-2.5-flash-preview-05-20";
+  return row?.value || "gemini-2.5-flash";
 }
 
 export async function getOpenRouterModel(db: D1DatabaseLike): Promise<string> {

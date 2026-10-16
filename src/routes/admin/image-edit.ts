@@ -47,7 +47,7 @@ async function getImageGenModel(db: RequestContext["db"]): Promise<string> {
   const row = await db
     .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'image_gen_model'")
     .first<{ value: string }>();
-  return row?.value || "gemini-2.5-flash-preview-image-generation";
+  return row?.value || "gemini-2.5-flash-image";
 }
 
 async function getImageGenPrompt(db: RequestContext["db"]): Promise<string> {
