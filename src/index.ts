@@ -22,6 +22,8 @@ import {
   isAdminAuthorized,
 } from "./routes/admin/auth";
 import { handlePlatformAdmin } from "./routes/platform-admin";
+import { handlePlatformModeration } from "./routes/platform-moderation";
+import { runModerationScan } from "./services/product-moderation";
 import { DEFAULT_PLAN_OFFERS } from "./shared/plan-offers.js";
 import {
   handleBillingCheckout,
@@ -297,8 +299,20 @@ function dispatchStorePayRoute(
   return null;
 }
 
+// Weekly product compliance scan: Monday 02:00 Asia/Taipei. Must match wrangler.toml.
+const MODERATION_SCAN_CRON = "0 18 * * 0";
+
 const worker = {
-  async scheduled(_controller: unknown, env: Env): Promise<void> {
+  async scheduled(controller: { cron?: string } | undefined, env: Env): Promise<void> {
+    if (controller?.cron === MODERATION_SCAN_CRON) {
+      try {
+        const result = await runModerationScan(env, { trigger: "cron" });
+        console.log("Product moderation scan completed:", result);
+      } catch (error) {
+        console.error("Product moderation scan failed:", error);
+      }
+      return;
+    }
     try {
       const result = await runPlanExpiryNotifications(env);
       console.log("Plan expiry notification job completed:", result);
@@ -377,6 +391,10 @@ const worker = {
     }
 
     // ── Platform admin ──
+    if (url.pathname.startsWith("/api/platform-admin/moderation")) {
+      const moderation = await handlePlatformModeration(request, env, env.PLATFORM_ADMIN_PASSWORD || "");
+      if (moderation) return moderation;
+    }
     if (url.pathname.startsWith("/platform-admin") || url.pathname.startsWith("/api/platform-admin")) {
       return handlePlatformAdmin(request, env.DB, env.PLATFORM_ADMIN_PASSWORD || "", env.ASSETS, env.IMAGES);
     }

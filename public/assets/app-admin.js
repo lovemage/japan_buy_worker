@@ -254,6 +254,7 @@ function bootstrap() {
   initMarketing();
 
   import("./app-admin-recognize.js");
+  import("./app-admin-moderation.js").then((m) => m.initModeration()).catch(() => {});
 }
 
 window.__buildStoreDomainChangeMessage = buildStoreDomainChangeMessage;

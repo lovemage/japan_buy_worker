@@ -37,6 +37,11 @@ import { handleAdminChangePassword } from "./routes/admin/password";
 import { handleAdminCategories } from "./routes/admin/categories";
 import { handleAdminRecognize } from "./routes/admin/recognize";
 import { handleAdminImageEdit } from "./routes/admin/image-edit";
+import {
+  handleSellerModerationList,
+  handleSellerModerationRespond,
+  handleSellerModerationSelfRemove,
+} from "./routes/admin/moderation";
 import { handleMarketing, handleMarketingUsage } from "./routes/admin/marketing";
 import { handleAdminGeminiSettings, handleAdminAiModel } from "./routes/admin/settings";
 import {
@@ -732,6 +737,18 @@ export async function routeTenantRequest(
   if (subPath === "/api/admin/products") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
     return handleAdminProducts(request, ctx);
+  }
+  if (subPath === "/api/admin/moderation") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleSellerModerationList(request, ctx);
+  }
+  if (subPath === "/api/admin/moderation/respond") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleSellerModerationRespond(request, ctx);
+  }
+  if (subPath === "/api/admin/moderation/self-remove") {
+    if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);
+    return handleSellerModerationSelfRemove(request, ctx);
   }
   if (subPath === "/api/admin/products/toggle") {
     if (!isOwner) return json({ ok: false, error: "Unauthorized" }, 401);

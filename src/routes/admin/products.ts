@@ -1,4 +1,5 @@
 import type { RequestContext } from "../../context";
+import { closeCasesForDeletedProduct, isRemovedByPlatform } from "../../services/product-moderation";
 import { getStoreProductLimit } from "../../shared/product-limits.js";
 
 type ManualProductRequest = {
@@ -204,6 +205,16 @@ export async function handleAdminProductToggle(
       return new Response(JSON.stringify({ ok: false, error: "商品不存在" }), {
         status: 404, headers: { "content-type": "application/json" },
       });
+    }
+
+    if (await isRemovedByPlatform(ctx.db, ctx.storeId, id)) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: "這件商品已由平台暫時下架，無法自行上架。若具備販售資格，請到「商品合規提醒」提出申訴。",
+        }),
+        { status: 403, headers: { "content-type": "application/json" } }
+      );
     }
 
     if (current.is_active !== 1) {
@@ -468,6 +479,7 @@ export async function handleAdminProductDelete(
     .prepare("DELETE FROM products WHERE id = ? AND store_id = ?")
     .bind(id, ctx.storeId)
     .run();
+  await closeCasesForDeletedProduct(ctx.db, ctx.storeId, id).catch(() => {});
 
   return new Response(
     JSON.stringify({ ok: true, id }),

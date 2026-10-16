@@ -21,7 +21,7 @@ type PlanKey = keyof typeof PLAN_LABELS;
 
 const FROM = { email: "notify@vovosnap.com", name: "我拍開店平台" };
 
-function isRealEmail(email: string | null | undefined): email is string {
+export function isRealEmail(email: string | null | undefined): email is string {
   return Boolean(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !email.endsWith("@placeholder.local"));
 }
 
@@ -36,7 +36,7 @@ function formatDate(value: string | null | undefined): string {
   return date.toLocaleDateString("zh-TW", { timeZone: "Asia/Taipei" });
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -44,12 +44,12 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function adminUrl(appUrl: string, slug: string): string {
+export function adminUrl(appUrl: string, slug: string): string {
   const base = appUrl.replace(/\/+$/, "");
   return `${base}/s/${encodeURIComponent(slug)}/admin.html`;
 }
 
-async function reserveNotification(
+export async function reserveNotification(
   db: D1DatabaseLike,
   input: { storeId: number; eventType: string; dedupeKey: string; recipientEmail: string }
 ): Promise<boolean> {
@@ -69,7 +69,7 @@ async function reserveNotification(
   return row?.status !== "sent";
 }
 
-async function markNotificationSent(db: D1DatabaseLike, eventType: string, dedupeKey: string) {
+export async function markNotificationSent(db: D1DatabaseLike, eventType: string, dedupeKey: string) {
   await db
     .prepare(
       `UPDATE email_notification_logs
@@ -80,7 +80,7 @@ async function markNotificationSent(db: D1DatabaseLike, eventType: string, dedup
     .run();
 }
 
-async function markNotificationFailed(db: D1DatabaseLike, eventType: string, dedupeKey: string, error: unknown) {
+export async function markNotificationFailed(db: D1DatabaseLike, eventType: string, dedupeKey: string, error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "unknown error");
   await db
     .prepare(
@@ -92,7 +92,7 @@ async function markNotificationFailed(db: D1DatabaseLike, eventType: string, ded
     .run();
 }
 
-async function sendEmail(env: EmailNotificationEnv, message: { to: string; subject: string; html: string; text: string }) {
+export async function sendEmail(env: EmailNotificationEnv, message: { to: string; subject: string; html: string; text: string }) {
   if (!env.EMAIL) throw new Error("EMAIL binding is not configured");
   await env.EMAIL.send({
     to: message.to,

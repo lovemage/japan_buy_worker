@@ -585,6 +585,42 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* 商品合規審核 */
+.mod-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.mod-stat { background: #f6f6f4; border-radius: 12px; padding: 10px 12px; }
+.mod-stat strong { display: block; font-size: 20px; }
+.mod-stat span { font-size: 11px; color: var(--pa-muted); }
+.mod-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.mod-switch { display: flex !important; align-items: center; gap: 6px; font-size: 13px !important; margin: 0 !important; }
+.mod-list { display: grid; gap: 10px; margin-top: 10px; }
+.mod-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; background: var(--pa-card); border: 1px solid var(--pa-line); border-radius: 14px; padding: 12px; }
+.mod-row img, .mod-thumb-empty { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; background: #f0f0f0; }
+.mod-row__title { font-weight: 700; font-size: 14px; word-break: break-word; }
+.mod-row__meta { font-size: 12px; color: var(--pa-muted); margin-top: 3px; line-height: 1.5; }
+.mod-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.mod-tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #f0f0f0; color: #555; }
+.mod-tag--high_risk { background: #1a1a1a; color: #fff; }
+.mod-tag--violation { background: #f3d9d9; color: #8a2a2a; }
+.mod-tag--suspected { background: #f6ecd2; color: #7a5a00; }
+.mod-tag--overdue { background: #f3d9d9; color: #8a2a2a; }
+.mod-tag--strike { background: #1a1a1a; color: #fff; }
+.mod-modal { width: 720px; max-height: 88vh; overflow-y: auto; }
+.mod-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.mod-box { background: #f8f8f6; border-radius: 10px; padding: 10px; font-size: 12px; line-height: 1.6; word-break: break-word; }
+.mod-box h4 { font-size: 12px; margin-bottom: 4px; }
+.mod-box img { max-width: 100%; max-height: 160px; border-radius: 8px; margin-bottom: 6px; }
+.mod-log { font-size: 12px; color: #555; list-style: none; padding: 0; margin: 6px 0 10px; }
+.mod-log li { padding: 5px 0; border-bottom: 1px solid var(--pa-line); }
+.mod-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.mod-actions .btn-danger { background: #1a1a1a; color: #fff; }
+.mod-modal textarea { width: 100%; min-height: 70px; padding: 8px 10px; border: 1px solid var(--pa-line); border-radius: 10px; font: inherit; font-size: 13px; }
+@media (max-width: 640px) {
+  .mod-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mod-compare { grid-template-columns: 1fr; }
+  .mod-row { grid-template-columns: 48px 1fr; }
+  .mod-row > button { grid-column: 1 / -1; }
+}
 </style>
 </head>
 <body>
@@ -763,7 +799,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div style="margin-top:12px;">
         <label style="font-size:12px;color:#666;">模型名稱（可手動輸入或從列表選擇）</label>
         <div style="display:flex;gap:6px;margin-top:4px;">
-          <input type="text" id="image-gen-model-input" placeholder="例：gemini-2.5-flash-preview-image-generation" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedImageGenModel=this.value.trim();document.getElementById('image-gen-selected-model').textContent=this.value.trim()||'未選擇'">
+          <input type="text" id="image-gen-model-input" placeholder="例：gemini-2.5-flash-image" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedImageGenModel=this.value.trim();document.getElementById('image-gen-selected-model').textContent=this.value.trim()||'未選擇'">
           <button class="btn" style="font-size:12px;padding:6px 10px;white-space:nowrap;" onclick="applyImageGenModelInput()">套用</button>
         </div>
         <div style="margin-top:6px;padding:8px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
@@ -833,7 +869,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div style="margin-top:12px;">
         <label style="font-size:12px;color:#666;">模型名稱（可手動輸入或從列表選擇）</label>
         <div style="display:flex;gap:6px;margin-top:4px;">
-          <input type="text" id="banner-model-input" placeholder="例：gemini-2.5-flash-preview-image-generation" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedBannerModel=this.value.trim();document.getElementById('banner-selected-model').textContent=this.value.trim()||'未選擇'">
+          <input type="text" id="banner-model-input" placeholder="例：gemini-2.5-flash-image" style="flex:1;padding:8px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;" oninput="selectedBannerModel=this.value.trim();document.getElementById('banner-selected-model').textContent=this.value.trim()||'未選擇'">
           <button class="btn" style="font-size:12px;padding:6px 10px;white-space:nowrap;" onclick="applyBannerModelInput()">套用</button>
         </div>
         <div style="margin-top:6px;padding:8px 12px;background:#f8f8f8;border-radius:6px;display:flex;align-items:center;gap:8px;">
@@ -945,6 +981,40 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     </div>
   </div>
 
+  <!-- Tab: 商品合規 -->
+  <div class="page-content hidden" id="page-moderation">
+    <div class="card">
+      <h3>商品合規審核</h3>
+      <p class="desc">AI 每週一凌晨 2:00 掃描新增或修改過的商品，可能違規的商品會先通知會員 7 天內確認。AI 只負責初篩，下架一律由管理員決定，所有動作都會留下紀錄。</p>
+      <div class="mod-stats">
+        <div class="mod-stat"><strong id="mod-count-open">0</strong><span>等待會員確認</span></div>
+        <div class="mod-stat"><strong id="mod-count-overdue">0</strong><span>已逾期</span></div>
+        <div class="mod-stat"><strong id="mod-count-review">0</strong><span>待審核（說明／申訴）</span></div>
+        <div class="mod-stat"><strong id="mod-count-removed">0</strong><span>平台已下架</span></div>
+      </div>
+      <p class="desc" id="mod-last-scan">尚未執行掃描</p>
+      <div class="mod-toolbar">
+        <button class="btn btn-dark" type="button" id="mod-scan-btn" onclick="runModerationScanNow()">立即掃描（最多 200 件）</button>
+        <label class="mod-switch"><input type="checkbox" id="mod-scan-enabled" onchange="toggleModerationScan(this.checked)"> 啟用每週自動掃描</label>
+      </div>
+    </div>
+    <div class="pill-filters" id="mod-filters">
+      <button class="pill-btn active" type="button" onclick="setModerationFilter('active', this)">處理中</button>
+      <button class="pill-btn" type="button" onclick="setModerationFilter('overdue', this)">已逾期</button>
+      <button class="pill-btn" type="button" onclick="setModerationFilter('review', this)">待審核</button>
+      <button class="pill-btn" type="button" onclick="setModerationFilter('removed', this)">已下架</button>
+      <button class="pill-btn" type="button" onclick="setModerationFilter('closed', this)">已結案</button>
+      <button class="pill-btn" type="button" onclick="setModerationFilter('all', this)">全部</button>
+    </div>
+    <div id="mod-list" class="mod-list"></div>
+  </div>
+
+  <div id="mod-modal" class="logo-modal-backdrop" onclick="if(event.target===this)closeModerationCase()">
+    <div class="logo-modal mod-modal">
+      <div id="mod-modal-body"></div>
+    </div>
+  </div>
+
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" data-page="overview" onclick="switchPage('overview', this)">
@@ -966,6 +1036,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <button class="nav-item" data-page="faq" onclick="switchPage('faq', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       <span>問與答</span>
+    </button>
+    <button class="nav-item" data-page="moderation" onclick="switchPage('moderation', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>合規</span>
     </button>
     <button class="nav-item" data-page="settings" onclick="switchPage('settings', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1040,6 +1114,7 @@ var PAGE_TITLES = {
   keys: "API 金鑰",
   usage: "API 用量",
   faq: "問與答",
+  moderation: "商品合規",
   settings: "系統設定",
 };
 
@@ -1093,6 +1168,7 @@ function switchPage(page, btn) {
   if (btn) btn.classList.add("active");
   var title = document.getElementById("page-title");
   if (title) title.textContent = PAGE_TITLES[page] || "平台管理";
+  if (page === "moderation" && typeof loadModerationPage === "function") loadModerationPage();
 }
 
 async function login() {
@@ -2585,5 +2661,6 @@ async function updateLogStatus(logId, status) {
 
 if (adminToken) showDashboard();
 </script>
+<script src="/assets/platform-moderation.js"></script>
 </body>
 </html>

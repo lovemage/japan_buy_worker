@@ -28,7 +28,7 @@ async function signToken(password: string, expiresAt: number): Promise<string> {
   return `${expiresAt}.${sigHex}`;
 }
 
-async function verifyToken(token: string, password: string): Promise<boolean> {
+export async function verifyToken(token: string, password: string): Promise<boolean> {
   if (!token || !password) return false;
   const dotIdx = token.indexOf(".");
   if (dotIdx < 0) return false;

@@ -1,4 +1,5 @@
 import type { RequestContext } from "../../context";
+import { findRemovedProductIds } from "../../services/product-moderation";
 import type { D1DatabaseLike } from "../../types/d1";
 import {
   genMerTradeNo,
@@ -348,6 +349,19 @@ export async function handlePublicRequirements(
   }
   if (body.items.some((item) => Number(item.quantity || 0) < 1)) {
     return badRequest("item quantity must be >= 1");
+  }
+
+  // Products taken down by the platform cannot be ordered from a stale cart.
+  const removedIds = await findRemovedProductIds(
+    ctx.db,
+    ctx.storeId,
+    body.items.map((item) => Number(item.productId))
+  );
+  if (removedIds.length > 0) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "購物清單中有商品已暫停販售，請移除後再送出訂單。", removedProductIds: removedIds }),
+      { status: 409, headers: { "content-type": "application/json" } }
+    );
   }
 
   // The server owns the quote so a browser cannot omit or alter the shipping fee.
