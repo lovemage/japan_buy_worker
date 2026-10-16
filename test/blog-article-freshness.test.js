@@ -52,8 +52,14 @@ test("the sitemap lists every published article with its real lastmod", () => {
   for (const article of articles) {
     assert.equal(
       listed.get(article.href),
-      article.date,
-      `${article.href} lastmod in src/index.ts does not match blog-data.js`
+      articleModifiedDate(article),
+      `${article.href} lastmod in src/index.ts does not match its structured modification date`
     );
   }
 });
+
+function articleModifiedDate(article) {
+  const schemas = [...readArticle(article.href).matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
+  const posting = schemas.find(schema => schema["@type"] === "Article" || schema["@type"] === "BlogPosting");
+  return posting.dateModified || posting.datePublished;
+}

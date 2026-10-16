@@ -65,6 +65,8 @@ import {
 import { parseStoredProductPayload } from "./jobs/product-records";
 import { buildVisibleProductLimitClause, getPlanProductLimit } from "./shared/product-limits.js";
 import { formatThousands, setElementHtmlById, setElementTextById } from "./shared/html-fill.js";
+import { calcRetailTwd } from "./shared/retail-price.js";
+import { isIndexableProduct, isSensitiveProduct } from "./shared/site-policy.js";
 import type { RequestContext } from "./context";
 
 type CrawlEnv = {
@@ -128,27 +130,6 @@ function safeInlineJson(json: string): string {
   return json.replace(/</g, "\\u003c");
 }
 
-/**
- * Server-side mirror of calcAdjustedPrices() in public/assets/app-product.js,
- * returning the retail TWD price shoppers actually see, so structured-data
- * prices never contradict the page (Google penalises price mismatches).
- */
-function calcRetailTwd(
-  baseJpy: number,
-  pricing: { pricingMode: string; markupMode: string; markupPercent: number; markupJpy: number; jpyToTwd: number }
-): number | null {
-  const base = Number(baseJpy);
-  if (!Number.isFinite(base)) return null;
-  // Manual mode: the stored base price is already the TWD selling price.
-  if (pricing.pricingMode === "manual") return Math.round(base);
-  const rate = pricing.jpyToTwd;
-  if (pricing.markupMode === "percent") {
-    return Math.round(base * rate * (1 + pricing.markupPercent / 100));
-  }
-  const src = Math.round(base + pricing.markupJpy);
-  return Math.round(src * rate);
-}
-
 // Serve tenant HTML pages with __API_BASE and __STORE_SLUG injection
 async function serveTenantHtml(
   request: Request,
@@ -194,11 +175,16 @@ async function serveTenantHtml(
     canonicalUrl.pathname = `${ctx.basePath}/product`;
     if (code) canonicalUrl.searchParams.set("code", code);
   }
+  if (ctx.storePlan === "proplus" && (filename === "store.html" || filename === "product.html")) {
+    canonicalUrl.protocol = "https:";
+    canonicalUrl.hostname = `${ctx.storeSubdomain || ctx.storeSlug}.${ctx.mainDomain}`;
+    canonicalUrl.port = "";
+    canonicalUrl.pathname = filename === "store.html" ? "/" : "/product";
+  }
   const canonicalTag = `<link rel="canonical" href="${escapeHtmlAttr(canonicalUrl.toString())}" />`;
   const noIndexPages = new Set(["request.html", "success.html", "order-history.html", "admin.html", "admin-login.html", "pay.html", "pay-result.html"]);
-  const robotsTag = noIndexPages.has(filename)
-    ? '<meta name="robots" content="noindex, nofollow" />'
-    : '<meta name="robots" content="index, follow" />';
+  let indexable = false;
+  let pageStatus = 200;
 
   // Replace page title: "原標題" → "商店名稱" or "原標題 — 商店名稱"
   html = html.replace(/<title>([^<]*)<\/title>/, (_, orig) => {
@@ -209,30 +195,15 @@ async function serveTenantHtml(
     return `<title>${nameEsc} — ${trimmed}</title>`;
   });
 
-  // Fetch display settings for view mode injection
-  const displayRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'display_settings'")
-    .bind(ctx.storeId)
-    .first<{ value: string }>();
-  const displaySettings = displayRow?.value || '{"viewMode":"2card","promoEnabled":true}';
-
-  // Tutorial state + avatar
-  const tutorialRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'tutorial_state'")
-    .bind(ctx.storeId)
-    .first<{ value: string }>();
-  const tutorialState = tutorialRow?.value || "null";
-  const tutorialAvatarRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = 0 AND key = 'tutorial_avatar'")
-    .first<{ value: string }>();
-  const tutorialAvatar = tutorialAvatarRow?.value || "";
-
-  // Banner settings
-  const bannerRow = await ctx.db
-    .prepare("SELECT value FROM app_settings WHERE store_id = ? AND key = 'banner_settings'")
-    .bind(ctx.storeId)
-    .first<{ value: string }>();
-  const bannerSettings = bannerRow?.value || '{"enabled":false,"images":[]}';
+  // Read all presentation settings in one round trip.
+  const settingsResult = await ctx.db.prepare(
+    "SELECT key, value FROM app_settings WHERE (store_id = ? AND key IN ('display_settings','tutorial_state','banner_settings')) OR (store_id = 0 AND key = 'tutorial_avatar')"
+  ).bind(ctx.storeId).all<{ key: string; value: string }>();
+  const settings = new Map((settingsResult.results || []).map(row => [row.key, row.value]));
+  const displaySettings = settings.get("display_settings") || '{"viewMode":"2card","promoEnabled":true}';
+  const tutorialState = settings.get("tutorial_state") || "null";
+  const tutorialAvatar = settings.get("tutorial_avatar") || "";
+  const bannerSettings = settings.get("banner_settings") || '{"enabled":false,"images":[]}';
 
   // Inject store context before </head>
   const inject = `<script>
@@ -267,7 +238,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     try { displayData = JSON.parse(displaySettings); } catch {}
 
     // OG description: store description > store rules > sensible zh-Hant default
-    const ogDesc = escapeHtmlAttr(storeDesc || displayData.storeRules || `歡迎光臨 ${storeName}，精選日本商品代購服務`);
+    const ogDesc = escapeHtmlAttr(storeDesc || displayData.storeRules || `歡迎光臨 ${storeName}，瀏覽商品與下單資訊`);
 
     // OG image: first hero/banner image if enabled, else member logo, else default logo
     const requestUrl = new URL(request.url);
@@ -295,7 +266,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     html = html.replace("</head>", () => ogTags + "\n</head>");
 
     // JSON-LD: BreadcrumbList for the store root
-    const storeRootUrl = `${origin}${ctx.basePath}/`;
+    const storeRootUrl = new URL(ctx.storePlan === "proplus" ? "/" : `${ctx.basePath}/`, canonicalUrl).href;
     const storeBreadcrumb = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -325,11 +296,11 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     });
     const listRows = await ctx.db
       .prepare(
-        `SELECT source_product_code, title_zh_tw, title_ja, brand, category, price_jpy_tax_in
+        `SELECT source_product_code, title_zh_tw, title_ja, brand, category, price_jpy_tax_in, image_url, source_payload_json
          FROM products p
          WHERE store_id = ? AND is_active = 1 AND source_product_code IS NOT NULL${visible.sql}
          ORDER BY created_at DESC, id DESC
-         LIMIT 60`
+         LIMIT 1000`
       )
       .bind(ctx.storeId, ...visible.params)
       .all<{
@@ -339,12 +310,30 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
         brand: string | null;
         category: string | null;
         price_jpy_tax_in: number | null;
+        image_url: string | null;
+        source_payload_json: string | null;
       }>();
     const products = Array.isArray(listRows?.results) ? listRows.results : [];
 
     if (products.length > 0) {
       const pricing = await getPricingConfig(ctx.db, ctx.storeId);
-      const items = products
+      const seoProducts = products.map(row => {
+        const payload = parseStoredProductPayload(row.source_payload_json);
+        return { ...row, description: payload.description, image_url: payload.gallery[0] || row.image_url };
+      });
+      indexable = Boolean(storeDesc.trim()) && products.length < 1000 && !seoProducts.some(isSensitiveProduct)
+        && seoProducts.some(row => isIndexableProduct(row,
+          row.price_jpy_tax_in == null ? null : calcRetailTwd(Number(row.price_jpy_tax_in), pricing)));
+      // Use a real product image if the store has no custom banner or logo.
+      const firstImage = seoProducts.find(row => row.image_url)?.image_url;
+      if (!bannerImage && !storeLogo && firstImage) {
+        const imageUrl = firstImage.startsWith("/api/images/") ? `${origin}${ctx.basePath}${firstImage}` : firstImage;
+        if (/^https?:\/\//i.test(imageUrl)) {
+          html = html.replace(/(<meta (?:property="og:image"|name="twitter:image") content=")[^"]*(" \/>)/g,
+            (_, prefix, suffix) => prefix + escapeHtmlAttr(imageUrl) + suffix);
+        }
+      }
+      const items = products.slice(0, 60)
         .map((row) => {
           const name = row.title_zh_tw || row.title_ja || "未命名商品";
           const href = `${ctx.basePath}/product?code=${encodeURIComponent(row.source_product_code)}`;
@@ -372,7 +361,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     const code = requestUrl.searchParams.get("code") || "";
     let ogImage = `${origin}/assets/images/logo-3.png`;
     let ogTitle = storeName;
-    let ogDesc = storeDesc || `${storeName} 代購商店 — 商品詳情`;
+    let ogDesc = storeDesc || `${storeName} 商店商品詳情`;
 
     // track resolved product data for JSON-LD reuse below
     let jsonLdProductName = "";
@@ -389,6 +378,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
       specRows: Array<[string, string]>;
     } | null = null;
     let ssrImageUrl = "";
+    let seoProduct: Parameters<typeof isIndexableProduct>[0] | null = null;
 
     if (code) {
       // Match the visibility rule handlePublicProductDetail applies to anonymous
@@ -419,6 +409,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 
       if (productRow) {
         const payload = parseStoredProductPayload(productRow.source_payload_json);
+        seoProduct = { ...productRow, description: payload.description, image_url: payload.gallery[0] || productRow.image_url };
         // Pick first image: gallery[0] from payload, else image_url column
         let firstImage = productRow.image_url || "";
         if (payload.gallery.length > 0) firstImage = payload.gallery[0];
@@ -433,14 +424,15 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
 
         const productName = productRow.title_zh_tw || productRow.title_ja || "";
         if (productName) {
-          ogTitle = `${productName} — ${storeName}`;
-          ogDesc = [productRow.brand, productName].filter(Boolean).join("｜");
+          ogTitle = `${productName}｜${storeName}`;
+          html = html.replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtmlAttr(ogTitle)}</title>`);
+          ogDesc = payload.description || [productRow.brand, productName].filter(Boolean).join("｜");
         }
 
         // Capture values for JSON-LD (raw, not HTML-escaped)
         jsonLdProductName = productName || storeName;
         jsonLdProductImage = ogImage;
-        jsonLdProductDesc = [productRow.brand, productName].filter(Boolean).join("｜");
+        jsonLdProductDesc = payload.description || [productRow.brand, productName].filter(Boolean).join("｜");
         jsonLdPriceJpy = productRow.price_jpy_tax_in != null ? Number(productRow.price_jpy_tax_in) : null;
 
         // Mirror what renderProduct() in app-product.js writes into the page, so
@@ -448,18 +440,18 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
         // shell. Field defaults follow handlePublicProductDetail exactly.
         const specRows: Array<[string, string]> = [
           ["商品編號", code],
-          ["品牌", productRow.brand || ""],
+          ["品牌", productRow.brand !== productRow.category ? productRow.brand || "" : ""],
           ["分類", productRow.category || ""],
-          ["色數", productRow.color_count != null ? String(productRow.color_count) : ""],
+          ["色數", Number(productRow.color_count) > 0 ? String(productRow.color_count) : ""],
           ...Object.entries(payload.specs),
         ].filter((row): row is [string, string] => Boolean(row[1] && row[1].trim()));
 
         ssrProduct = {
           name: productName || "未命名商品",
-          brand: productRow.brand || "未提供",
+          brand: productRow.brand !== productRow.category ? productRow.brand || "" : "",
           category: productRow.category || "未分類",
           colorCount: productRow.color_count,
-          description: payload.description || "此商品為日本站同步資料。實際尺寸與顏色以訂單備註為準。",
+          description: payload.description || "請向賣家確認商品規格與交付方式。",
           specRows,
         };
         ssrImageUrl = firstImage ? ogImage : "";
@@ -481,7 +473,7 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     html = html.replace("</head>", () => ogTags + "\n</head>");
 
     // JSON-LD: Product schema + BreadcrumbList
-    const storeRootUrl = `${origin}${ctx.basePath}/`;
+    const storeRootUrl = new URL(ctx.storePlan === "proplus" ? "/" : `${ctx.basePath}/`, canonicalUrl).href;
     const productPageUrl = canonicalUrl.toString();
 
     // Retail TWD price shoppers actually see (server-side mirror of the client
@@ -492,6 +484,9 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
       const pricing = await getPricingConfig(ctx.db, ctx.storeId);
       retailTwd = calcRetailTwd(jsonLdPriceJpy, pricing);
     }
+
+    indexable = Boolean(seoProduct && isIndexableProduct(seoProduct, retailTwd));
+    if (!ssrProduct) pageStatus = 404;
 
     // Product schema — only inject when we have an actual product
     if (jsonLdProductName) {
@@ -539,12 +534,12 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     if (product) {
       html = setElementTextById(html, "store-header-name", storeName);
       html = setElementTextById(html, "detail-title", product.name);
-      html = setElementTextById(html, "detail-brand", product.brand);
+      html = setElementHtmlById(html, "detail-brand", escapeHtmlAttr(product.brand));
       html = setElementTextById(html, "detail-category", `分類：${product.category}`);
       html = setElementTextById(
         html,
         "detail-color-count",
-        `顏色數：${product.colorCount != null ? product.colorCount : "-"}`
+        Number(product.colorCount) > 0 ? `顏色數：${product.colorCount}` : ""
       );
       html = setElementTextById(html, "detail-description", product.description);
       if (retailTwd != null && retailTwd > 0) {
@@ -575,6 +570,9 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
     }
   }
 
+  const robots = noIndexPages.has(filename) ? "noindex, nofollow" : indexable ? "index, follow" : "noindex, follow";
+  const robotsTag = `<meta name="robots" content="${robots}" /><meta property="og:url" content="${escapeHtmlAttr(canonicalUrl.href)}" />`;
+  html = html.replace(/<meta\s+name=["']robots["'][^>]*>/gi, "");
   if (!/<link\s+rel=["']canonical["']/i.test(html)) {
     html = html.replace("</head>", () => `${canonicalTag}\n${robotsTag}\n</head>`);
   } else if (!/<meta\s+name=["']robots["']/i.test(html)) {
@@ -600,12 +598,13 @@ window.apiFetch=function(p,o){return fetch((window.__API_BASE||"")+p,o)};
   // must never be cached.
   const publicCacheable = filename === "store.html" || filename === "product.html";
   return new Response(html, {
-    status: 200,
+    status: pageStatus,
     headers: {
       "content-type": "text/html; charset=UTF-8",
+      "X-Robots-Tag": robots,
       "cache-control": publicCacheable
-        ? "public, max-age=3600, stale-while-revalidate=86400"
-        : "no-cache",
+        ? "public, max-age=0, s-maxage=60, must-revalidate"
+        : "no-store",
     },
   });
 }

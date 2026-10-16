@@ -5,6 +5,8 @@ import type { D1DatabaseLike } from "./types/d1";
 import type { RequestContext } from "./context";
 import { resolveStore, resolveStoreBySubdomain, getEffectivePlan } from "./context";
 import { routeTenantRequest } from "./router";
+import { storefrontSitemap } from "./services/storefront-sitemap";
+import { canonicalRedirect, withSecurityHeaders, serveWithEdgeCache } from "./shared/site-policy.js";
 import {
   handleGoogleAuthRedirect,
   handleGoogleAuthCallback,
@@ -88,11 +90,8 @@ function normalizeMainDomain(raw: string | undefined): string {
     .replace(/\/+$/, "");
 }
 
-function resolveRequestHostname(request: Request, fallback: string): string {
-  const forwarded = (request.headers.get("x-forwarded-host") || "").split(",")[0].trim().toLowerCase();
-  const host = (request.headers.get("host") || "").split(",")[0].trim().toLowerCase();
-  const raw = forwarded || host || fallback.toLowerCase();
-  return raw.replace(/:\d+$/, "");
+function resolveRequestHostname(_request: Request, fallback: string): string {
+  return fallback.toLowerCase();
 }
 
 function json(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
@@ -134,29 +133,42 @@ function makeSitemapEntry(
   ].join("\n");
 }
 
-// Published blog articles and their publication dates, newest first. Mirrors
-// public/assets/blog-data.js — test/blog-article-freshness.test.js fails if the
-// two ever disagree, so add new articles to both.
+// Published blog articles and their modification dates. Article membership
+// mirrors public/assets/blog-data.js; freshness tests compare lastmod against
+// each article's JSON-LD dateModified (falling back to datePublished).
 //
 // Paths are extensionless on purpose: Workers Assets 307-redirects `/x.html` to
 // `/x`, so a sitemap full of `.html` URLs would cost one redirect per entry.
 const BLOG_ARTICLE_LASTMOD: ReadonlyArray<readonly [string, string]> = [
+  ["/blog/facebook-threads-store-link-sharing", "2026-10-16"],
+  ["/blog/online-shop-returns-seven-day-rule", "2026-10-16"],
+  ["/blog/product-photo-tips-ai-recognition", "2026-10-16"],
+  ["/blog/thailand-daigou-guide", "2026-10-16"],
+  ["/blog/overseas-seller-sell-to-taiwan", "2026-10-16"],
+  ["/blog/daigou-food-cosmetics-medicine-rules", "2026-10-16"],
+  ["/blog/taiwan-customs-duty-free-daigou", "2026-10-16"],
+  ["/blog/daigou-tax-registration-threshold", "2026-10-16"],
+  ["/blog/daigou-order-management-status", "2026-10-16"],
+  ["/blog/new-store-first-week-checklist", "2026-10-16"],
+  ["/blog/line-group-order-link-guide", "2026-10-16"],
+  ["/blog/instagram-story-product-link-guide", "2026-10-16"],
+  ["/blog/korea-daigou-beginner-guide", "2026-10-16"],
   ["/blog/daigou-exchange-rate-auto-pricing", "2026-08-07"],
   ["/blog/secondhand-bag-photo-recognition", "2026-08-07"],
-  ["/blog/japan-drugstore-batch-recognition", "2026-08-07"],
+  ["/blog/japan-drugstore-batch-recognition", "2026-10-16"],
   ["/blog/taobao-auto-listing-duplicate-risk", "2026-08-07"],
-  ["/blog/edit-ai-recognition-before-publish", "2026-08-07"],
+  ["/blog/edit-ai-recognition-before-publish", "2026-10-16"],
   ["/blog/free-or-pay-per-listing-software", "2026-08-07"],
   ["/blog/photo-listing-software-pricing", "2026-08-07"],
   ["/blog/secondhand-fast-listing-alternatives", "2026-08-07"],
-  ["/blog/japan-cosmetics-photo-listing-software", "2026-08-06"],
+  ["/blog/japan-cosmetics-photo-listing-software", "2026-10-16"],
   ["/blog/ai-vs-barcode-product-listing", "2026-08-06"],
   ["/blog/solo-seller-fast-product-listing", "2026-08-06"],
-  ["/blog/japan-cosmetics-daigou-guide", "2026-06-13"],
-  ["/blog/sell-secondhand-items-fast", "2026-04-07"],
+  ["/blog/japan-cosmetics-daigou-guide", "2026-10-16"],
+  ["/blog/sell-secondhand-items-fast", "2026-10-16"],
   ["/blog/daigou-profit-calculation", "2026-04-04"],
-  ["/blog/daigou-preparation-checklist", "2026-04-04"],
-  ["/blog/first-time-daigou-guide", "2026-04-04"],
+  ["/blog/daigou-preparation-checklist", "2026-10-16"],
+  ["/blog/first-time-daigou-guide", "2026-10-16"],
 ];
 
 function sitemapXml(entries: string[]): string {
@@ -236,7 +248,7 @@ function getCrawlEnv(env: Env) {
 }
 
 function buildCtxFromStore(
-  store: { id: number; slug: string; plan: string; plan_expires_at: string | null },
+  store: { id: number; slug: string; subdomain?: string | null; plan: string; plan_expires_at: string | null },
   env: Env,
   basePath: string
 ): RequestContext {
@@ -244,6 +256,7 @@ function buildCtxFromStore(
   return {
     storeId: store.id,
     storeSlug: store.slug,
+    storeSubdomain: store.subdomain || store.slug,
     storePlan: getEffectivePlan(store as any),
     mainDomain,
     db: env.DB,
@@ -284,7 +297,7 @@ function dispatchStorePayRoute(
   return null;
 }
 
-export default {
+const worker = {
   async scheduled(_controller: unknown, env: Env): Promise<void> {
     try {
       const result = await runPlanExpiryNotifications(env);
@@ -300,10 +313,21 @@ export default {
     const mainDomain = normalizeMainDomain(env.MAIN_DOMAIN);
     const hostname = resolveRequestHostname(request, url.hostname);
 
-    if (hostname === `www.${mainDomain}`) {
-      const redirectUrl = new URL(request.url);
-      redirectUrl.hostname = mainDomain;
-      return Response.redirect(redirectUrl.toString(), 302);
+    const redirect = canonicalRedirect(request, mainDomain);
+    if (redirect) return redirect;
+
+    // Sitemaps contain only URLs belonging to the requested host.
+    if (request.method === "GET" && (url.pathname === "/sitemap-stores.xml"
+      || (hostname !== mainDomain && url.pathname === "/sitemap.xml"))) {
+      const rows = await storefrontSitemap(env.DB, hostname, mainDomain);
+      return new Response(sitemapXml(rows.map(row => makeSitemapEntry(row.loc, toIsoDate(row.updated), "weekly", "0.6"))), {
+        headers: { "content-type": "application/xml; charset=UTF-8", "cache-control": "public, max-age=0, s-maxage=300" },
+      });
+    }
+    if (request.method === "GET" && hostname !== mainDomain && url.pathname === "/robots.txt") {
+      return new Response(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nSitemap: https://${hostname}/sitemap.xml\n`, {
+        headers: { "content-type": "text/plain; charset=UTF-8" },
+      });
     }
 
     // ── Health check ──
@@ -311,7 +335,7 @@ export default {
       return json({ ok: true, service: "vovosnap" });
     }
 
-    // ── Dynamic sitemap: platform + active member public pages ──
+    // ── Platform sitemap: editorial pages only ──
     if (request.method === "GET" && url.pathname === "/sitemap.xml") {
       const today = new Date().toISOString().slice(0, 10);
       const entries: string[] = [];
@@ -342,44 +366,6 @@ export default {
       }
       add(`https://${mainDomain}/guide/japan-cosmetics/`, today, "monthly", "0.8");
       add(`https://${mainDomain}/guide/payuni-setup/`, today, "monthly", "0.7");
-
-      const storesRows = await env.DB
-        .prepare("SELECT id, slug, plan, updated_at FROM stores WHERE is_active = 1")
-        .all<{ id: number; slug: string; plan: string; updated_at: string | null }>();
-      const stores = Array.isArray(storesRows?.results) ? storesRows.results : [];
-
-      const productsRows = await env.DB
-        .prepare("SELECT store_id, source_product_code, updated_at FROM products WHERE is_active = 1 AND source_product_code IS NOT NULL")
-        .all<{ store_id: number; source_product_code: string; updated_at: string | null }>();
-      const products = Array.isArray(productsRows?.results) ? productsRows.results : [];
-
-      const productsByStore = new Map<number, Array<{ code: string; updatedAt: string | null }>>();
-      for (const row of products) {
-        const list = productsByStore.get(row.store_id) || [];
-        list.push({ code: row.source_product_code, updatedAt: row.updated_at });
-        productsByStore.set(row.store_id, list);
-      }
-
-      for (const store of stores) {
-        const slug = (store.slug || "").trim().toLowerCase();
-        if (!slug) continue;
-
-        const baseUrl = store.plan === "proplus"
-          ? `https://${slug}.${mainDomain}`
-          : `https://${mainDomain}/s/${slug}`;
-        const storeLastmod = toIsoDate(store.updated_at);
-
-        // Member public storefront page
-        add(`${baseUrl}/`, storeLastmod, "daily", "0.7");
-
-        // Member public product pages
-        const storeProducts = productsByStore.get(store.id) || [];
-        for (const product of storeProducts) {
-          const code = (product.code || "").trim();
-          if (!code) continue;
-          add(`${baseUrl}/product?code=${encodeURIComponent(code)}`, toIsoDate(product.updatedAt), "weekly", "0.6");
-        }
-      }
 
       return new Response(sitemapXml(entries), {
         status: 200,
@@ -607,5 +593,23 @@ export default {
       { status: 500, headers: { "content-type": "application/json" } }
     );
    }
+  },
+};
+
+// Central response policy also covers redirects, errors, assets and APIs.
+export default {
+  ...worker,
+  async fetch(request: Request, env: Env, execution: ExecutionContext): Promise<Response> {
+    const mainDomain = normalizeMainDomain(env.MAIN_DOMAIN);
+    const cache = typeof caches !== "undefined" ? caches.default : undefined;
+    let response: Response;
+    try {
+      response = await serveWithEdgeCache(request, mainDomain, cache, execution,
+        () => worker.fetch(request, env));
+    } catch (error) {
+      console.error("Request failed", error);
+      response = json({ ok: false, error: "Internal server error" }, 500);
+    }
+    return withSecurityHeaders(response, request);
   },
 };

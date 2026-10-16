@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>日常小店・範例店舖｜我拍 VOVOSnap</title>
+  <meta name="robots" content="noindex, follow">
+  <meta name="description" content="看看商品照片、中文描述、價格與規格如何組成一間小店。展示商品不接受訂購。">
+  <link rel="canonical" href="https://vovosnap.com/demo/">
+  <link rel="icon" href="/assets/images/logo-icon-64.png">
+  <style>
+    :root{color-scheme:light;--ink:#322d27;--bg:#faf6ef;--line:#e9ddcb;--accent:#a74417}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 system-ui,sans-serif}
+    a{color:var(--accent)}header,main,footer{width:min(1080px,calc(100% - 40px));margin:auto}
+    header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0;border-bottom:1px solid var(--line)}header a{font-weight:700;text-decoration:none;min-height:44px;display:flex;align-items:center}
+    .intro{padding:42px 0 30px}.intro p{max-width:60ch}h1{font:700 clamp(30px,5vw,46px)/1.3 Georgia,serif;margin:10px 0}h1,h2{text-wrap:balance}p{margin:12px 0;text-wrap:pretty}
+    .notice{padding:12px 18px;background:#f7e7da;color:#583b2d}.product{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;padding:32px 0 56px}.product img{display:block;width:100%;height:auto}.caption{font-size:14px;color:#6f655a}h2{font-size:26px;line-height:1.4;margin:12px 0}.price{font-size:32px;font-weight:700;color:var(--accent)}dl{display:grid;grid-template-columns:80px 1fr;gap:12px 16px;padding:22px 0;border-block:1px solid var(--line)}dt{font-weight:700}dd{margin:0}select,button{font:inherit;min-height:44px;border-radius:0}select{width:100%;padding:8px;border:1px solid #8d7c68;background:white;color:var(--ink);margin:8px 0 16px}button,.cta{background:var(--accent);color:white;padding:12px 20px;border:0;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.cta{margin:12px 0}button:disabled{background:#6f655a;cursor:default}:focus-visible{outline:3px solid var(--accent);outline-offset:4px}footer{padding:24px 0;border-top:1px solid var(--line)}#demo-feedback{min-height:58px}label{display:block;font-weight:700}
+    @media(max-width:700px){.product{grid-template-columns:1fr;gap:20px}.intro{padding-top:24px}header{font-size:14px}button{width:100%}}
+  </style>
+</head>
+<body>
+  <header><a href="/">我拍 VOVOSnap</a><a href="/login.html">建立自己的商店 ↗</a></header>
+  <main>
+    <section class="intro"><p>VOVOSnap 範例店舖</p><h1>日常小店</h1><p>一件商品、一張清楚的照片，加上買家需要的規格與價格，就能開始介紹你的小店。</p><p class="notice">這是互動展示，圖片與商品資料皆為示意，不接受訂購，也不收集付款或聯絡資料。</p></section>
+    <article class="product">
+      <div><img src="/assets/images/hero/step3-listing.webp" alt="粉色童裝洋裝的商品頁示意，含照片、價格與尺寸選項" width="1024" height="1024"><p class="caption">商品頁示意圖，實際內容可由賣家編輯。</p></div>
+      <div><p>童裝 / 洋裝</p><h2>粉色花朵刺繡童裝洋裝</h2><p class="price">NT$680</p><p>粉色裙身搭配花朵刺繡、荷葉袖與腰間蝴蝶結。商品描述可補上實際材質、尺寸、清洗方式與交付時間，讓買家在下單前確認需求。</p>
+        <dl><dt>商品編號</dt><dd>DEMO-001</dd><dt>顏色</dt><dd>粉色</dd><dt>尺寸</dt><dd>80、90、100、110（示意）</dd><dt>寄送方式</dt><dd>由賣家設定，運費於確認訂單時列明</dd></dl>
+        <label for="demo-size">選擇尺寸</label><select id="demo-size"><option>80</option><option>90</option><option>100</option><option>110</option></select>
+        <button id="demo-add" type="button">試試加入購物清單</button><p id="demo-feedback" role="status" aria-live="polite"></p>
+        <a class="cta" href="/login.html">免費建立我的商店</a>
+      </div>
+    </article>
+  </main>
+  <footer><a href="/">回到我拍 VOVOSnap</a> · <a href="/about">了解開店流程</a></footer>
+  <script>
+    document.getElementById('demo-add').addEventListener('click', function () {
+      document.getElementById('demo-feedback').textContent = '已加入尺寸 ' + document.getElementById('demo-size').value + ' 的展示商品。這是操作示範，不會建立訂單。';
+    });
+  </script>
+</body>
+</html>

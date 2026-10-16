@@ -3,9 +3,22 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 const articles = [
+  { slug: "facebook-threads-store-link-sharing", image: "og-facebook-threads-store-link-sharing.webp" },
+  { slug: "online-shop-returns-seven-day-rule", image: "og-online-shop-returns-seven-day-rule.webp" },
+  { slug: "product-photo-tips-ai-recognition", image: "og-product-photo-tips-ai-recognition.webp" },
+  { slug: "thailand-daigou-guide", image: "og-thailand-daigou-guide.webp" },
+  { slug: "overseas-seller-sell-to-taiwan", image: "og-overseas-seller-sell-to-taiwan.webp" },
+  { slug: "daigou-food-cosmetics-medicine-rules", image: "og-daigou-food-cosmetics-medicine-rules.webp" },
+  { slug: "taiwan-customs-duty-free-daigou", image: "og-taiwan-customs-duty-free-daigou.webp" },
+  { slug: "daigou-tax-registration-threshold", image: "og-daigou-tax-registration-threshold.webp" },
+  { slug: "daigou-order-management-status", image: "og-daigou-order-management-status.webp" },
+  { slug: "new-store-first-week-checklist", image: "og-new-store-first-week-checklist.webp" },
+  { slug: "line-group-order-link-guide", image: "og-solo-seller-fast-listing.webp" },
+  { slug: "instagram-story-product-link-guide", image: "og-secondhand-fast-listing-alternatives.webp" },
+  { slug: "korea-daigou-beginner-guide", image: "og-ai-listing-review-edit.webp" },
   {
     slug: "japan-cosmetics-photo-listing-software",
-    image: "og-japan-cosmetics-photo-listing.webp",
+    image: "og-japan-product-listing-review.webp",
   },
   {
     slug: "ai-vs-barcode-product-listing",
@@ -37,7 +50,7 @@ const articles = [
   },
   {
     slug: "japan-drugstore-batch-recognition",
-    image: "og-japan-drugstore-batch-recognition.webp",
+    image: "og-japan-store-batch-recognition.webp",
   },
   {
     slug: "secondhand-bag-photo-recognition",

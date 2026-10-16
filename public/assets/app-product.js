@@ -111,7 +111,8 @@ async function renderProduct(item, pricing) {
   };
 
   bindText("detail-title", title);
-  bindText("detail-brand", item.brand || "未提供");
+  document.title = `${title}｜${window.__STORE_NAME || "我拍 VOVOSnap"}`;
+  bindText("detail-brand", item.brand !== item.category ? item.brand || "" : "");
   initShareButton(item, title);
 
   // Price block with prominent TWD
@@ -120,7 +121,7 @@ async function renderProduct(item, pricing) {
   if (priceBlock) priceBlock.innerHTML = renderPriceHtml(adjusted, pricing);
 
   bindText("detail-category", `分類：${item.category || "未分類"}`);
-  bindText("detail-color-count", `顏色數：${item.colorCount ?? "-"}`);
+  bindText("detail-color-count", Number(item.colorCount) > 0 ? `顏色數：${item.colorCount}` : "");
   bindText("detail-description", item.description || "");
 
   const specList = document.getElementById("detail-spec-list");
@@ -128,9 +129,9 @@ async function renderProduct(item, pricing) {
     const specifications = item.specifications || {};
     const baseRows = [
       ["商品編號", specifications.code || item.code || ""],
-      ["品牌", specifications.brand || item.brand || ""],
+      ["品牌", item.brand !== item.category ? specifications.brand || item.brand || "" : ""],
       ["分類", specifications.category || item.category || ""],
-      ["色數", specifications.colorCount ?? item.colorCount ?? ""],
+      ["色數", Number(specifications.colorCount ?? item.colorCount) > 0 ? specifications.colorCount ?? item.colorCount : ""],
     ].filter(([, v]) => v && v !== "");
     const extraSpecs = item.specs && typeof item.specs === "object" ? item.specs : {};
     const extraRows = Object.entries(extraSpecs)

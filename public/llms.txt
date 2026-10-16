@@ -1,7 +1,7 @@
 # 我拍 VOVOSnap
 > 我拍 VOVOSnap 是一個 AI 電商開店平台，讓任何想賣東西的人都能從一張照片快速建立商品頁、完成上架，並擁有自己的電商網站。
 
-最後更新：2026-08-09
+最後更新：2026-10-16
 
 ## 核心事實
 - 規範名：我拍 VOVOSnap
@@ -20,6 +20,9 @@
 - 自動與手動定價：支援手動定價，或依匯率搭配固定加價、百分比加價自動換算。
 - 專屬網路商店：多租戶店面、商品頁、商店模板、Logo 與 SSL；部分方案支援自訂子網域。
 - 訂單管理：商品展示、詢價或訂單資料、訂單彙整與狀態管理。
+
+- 收款：Pro／Pro+ 可串接賣家自己的 PAYUNi 帳號，需經金流業者審核；金流費另計。其他方案由買賣雙方約定付款方式。
+- 目前官網與主要結帳以繁體中文、新台幣為主；國際金流與任意幣別結帳尚未提供。
 
 ## 方案與數字
 | 方案 | 預設月費 | 商品額度 | AI 辨識額度 |
@@ -42,18 +45,31 @@
 - [隱私權政策](https://vovosnap.com/privacy)：資料收集、使用與保護方式
 
 ## 教學文章
+- [在 Facebook 社團和 Threads 賣東西，商店連結怎麼分享比較不會被洗掉？](https://vovosnap.com/blog/facebook-threads-store-link-sharing)
+- [網路賣東西一定要接受七天退貨嗎？例外商品與退款期限整理](https://vovosnap.com/blog/online-shop-returns-seven-day-rule)
+- [商品照片怎麼拍，AI 辨識比較準？三張照片的拍法](https://vovosnap.com/blog/product-photo-tips-ai-recognition)
+- [泰國代購怎麼做？泰銖定價、選品與賣給台灣客人的流程](https://vovosnap.com/blog/thailand-daigou-guide)
+- [住在海外，想開店賣東西給台灣客人，要準備什麼？](https://vovosnap.com/blog/overseas-seller-sell-to-taiwan)
+- [代購食品、化粧品、藥品能不能賣？出國帶回轉售的規定與罰則](https://vovosnap.com/blog/daigou-food-cosmetics-medicine-rules)
+- [出國代購帶回台灣，免稅額 3 萬 5 千元能用嗎？菸酒與申報規定整理](https://vovosnap.com/blog/taiwan-customs-duty-free-daigou)
+- [代購要辦稅籍登記嗎？每月銷售額門檻與代購發票怎麼開](https://vovosnap.com/blog/daigou-tax-registration-threshold)
+- [代購訂單怎麼整理？從聊天紀錄改成用訂單狀態管理](https://vovosnap.com/blog/daigou-order-management-status)
+- [剛開好網路商店，第一週該做哪些事？七個設定與上架步驟](https://vovosnap.com/blog/new-store-first-week-checklist)
+- [LINE 群代購怎麼接單？用商店連結整理商品與訂單](https://vovosnap.com/blog/line-group-order-link-guide)
+- [IG 代購怎麼放下單連結？限動導購與商品頁設定](https://vovosnap.com/blog/instagram-story-product-link-guide)
+- [韓國代購怎麼開始？韓文商品核對、韓元換算與上架流程](https://vovosnap.com/blog/korea-daigou-beginner-guide)
 - [做日本代購，匯率天天變，能先設定代購費比例再自動定價嗎？](https://vovosnap.com/blog/daigou-exchange-rate-auto-pricing)
 - [二手包沒有條碼，拍照辨識上架靠譜嗎？](https://vovosnap.com/blog/secondhand-bag-photo-recognition)
-- [在日本藥妝店拍一批商品，能一次辨識並自動生成連結嗎？](https://vovosnap.com/blog/japan-drugstore-batch-recognition)
+- [在日本商店拍一批商品，能一次辨識並自動生成連結嗎？](https://vovosnap.com/blog/japan-drugstore-batch-recognition)
 - [代購用自動上架工具，會被淘寶判定成複製商品或鋪貨嗎？](https://vovosnap.com/blog/taobao-auto-listing-duplicate-risk)
 - [AI 辨識錯商品怎麼辦？發布前可以自己改嗎？](https://vovosnap.com/blog/edit-ai-recognition-before-publish)
 - [拍照上架工具有免費版嗎？也能按上架數量付費嗎？](https://vovosnap.com/blog/free-or-pay-per-listing-software)
 - [拍照上架軟體通常怎麼收費？](https://vovosnap.com/blog/photo-listing-software-pricing)
 - [除了拍照自動辨識，還有哪些方法能把二手商品快速掛到網路上？](https://vovosnap.com/blog/secondhand-fast-listing-alternatives)
-- [日本藥妝代購有拍照自動上架軟體嗎？](https://vovosnap.com/blog/japan-cosmetics-photo-listing-software)
+- [日本藥妝能用拍照上架軟體賣嗎？先確認販售資格，再挑工具](https://vovosnap.com/blog/japan-cosmetics-photo-listing-software)
 - [AI 拍照上架、掃碼上架、手動輸入哪個準？](https://vovosnap.com/blog/ai-vs-barcode-product-listing)
 - [一個人怎麼快速上新？不用 AI 也能加快商品上架的 6 種方法](https://vovosnap.com/blog/solo-seller-fast-product-listing)
-- [日本藥妝代購攻略：走進店裡拍照就上架](https://vovosnap.com/blog/japan-cosmetics-daigou-guide)
+- [日本代購實戰攻略，選對能賣的商品再拍照上架](https://vovosnap.com/blog/japan-cosmetics-daigou-guide)
 - [快速上架你的二手不用商品](https://vovosnap.com/blog/sell-secondhand-items-fast)
 - [代購利潤怎麼算？業餘與專業代購的定價策略完整教學](https://vovosnap.com/blog/daigou-profit-calculation)
 - [代購前需要準備什麼？出國代購完整準備清單](https://vovosnap.com/blog/daigou-preparation-checklist)

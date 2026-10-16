@@ -3,6 +3,7 @@ import type { D1DatabaseLike } from "./types/d1";
 export type RequestContext = {
   storeId: number;
   storeSlug: string;
+  storeSubdomain?: string;
   storePlan: string; // "free" | "plus" | "pro" | "proplus"
   mainDomain: string;
   db: D1DatabaseLike;

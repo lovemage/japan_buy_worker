@@ -20,3 +20,4 @@ Disallow: /s/*/admin-login.html
 Disallow: /s/*/order-history
 
 Sitemap: https://vovosnap.com/sitemap.xml
+Sitemap: https://vovosnap.com/sitemap-stores.xml
