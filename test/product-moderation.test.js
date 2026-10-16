@@ -186,6 +186,31 @@ test("without an AI key, or when the AI fails, the scan falls back to keyword ch
   } finally { failing.sqlite.close(); }
 });
 
+test("manual-review cases written without a notice are emailed once by the next scan", async () => {
+  const f = fixture();
+  try {
+    f.sqlite.exec(`
+      UPDATE products SET is_active = 0, moderation_status = 'removed' WHERE id = 1;
+      INSERT INTO moderation_cases (store_id, product_id, source, risk_level, rule_code, reason, status, snapshot_json)
+        VALUES (1, 1, 'manual_review', 'violation', 'pesticide', '商品名稱標示防蚊。', 'removed', '{"title":"防蚊磚"}');
+      UPDATE products SET moderation_status = 'flagged' WHERE id = 2;
+      INSERT INTO moderation_cases (store_id, product_id, source, risk_level, rule_code, reason, status, seller_deadline_at, snapshot_json)
+        VALUES (1, 2, 'manual_review', 'suspected', 'radio_device', '須通過 NCC 審驗。', 'open', '2026-10-23T00:00:00Z', '{"title":"無線滑鼠"}');
+    `);
+    const summary = await moderation.runModerationScan(f.env, { trigger: "manual", fetchImpl: fakeGemini() });
+    assert.equal(summary.notifiedStores, 2, "one removal email and one notice email");
+    assert.equal(f.sent.length, 2);
+    const removal = f.sent.find((m) => /暫時下架/.test(m.subject));
+    assert.match(removal.text, /防蚊磚（環境用藥、防蚊產品）/);
+    assert.match(removal.text, /提出申訴/);
+    assert.ok(f.sent.some((m) => /無線滑鼠/.test(m.text) && /仍正常販售/.test(m.text)));
+    assert.equal(f.rows("SELECT * FROM moderation_cases WHERE notified_at IS NULL").length, 0);
+
+    await moderation.runModerationScan(f.env, { trigger: "manual", fetchImpl: fakeGemini() });
+    assert.equal(f.sent.length, 2, "notices are not sent twice");
+  } finally { f.sqlite.close(); }
+});
+
 test("cron scan respects the platform switch", async () => {
   const f = fixture();
   try {

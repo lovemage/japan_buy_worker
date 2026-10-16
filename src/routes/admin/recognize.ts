@@ -1,6 +1,7 @@
 import type { RequestContext } from "../../context";
 import type { D1DatabaseLike } from "../../types/d1";
 import { getGeminiApiKey, getAiModel, getOpenRouterApiKey, getOpenRouterModel, getGeminiModel } from "./settings";
+import { TAIWAN_CLAIM_RULES } from "../../shared/claim-rules.js";
 
 type RecognizeRequest = {
   images: string[]; // base64 encoded JPEG, max 3
@@ -54,7 +55,8 @@ const DEFAULT_RECOGNIZE_PROMPT = `你是商品辨識專家。分析以下商品�
 - specs 只列出能從包裝上看到的規格
 - sizeOptions/colorOptions 只列出包裝上標示的選項
 - 品牌名保留原文
-- category 用繁體中文`;
+- category 用繁體中文
+- description 必須遵守最後的「台灣法規限制」`;
 
 async function getRecognizePrompt(db: D1DatabaseLike): Promise<string> {
   const row = await db
@@ -197,7 +199,7 @@ export async function handleAdminRecognize(
   const mode = body.mode === "search" ? "search" : "quick";
   const basePrompt = await getRecognizePrompt(ctx.db);
   const categoryHints = await buildCategoryHints(ctx.db, ctx.storeId);
-  const prompt = (mode === "search" ? basePrompt + SEARCH_PROMPT_SUFFIX : basePrompt) + categoryHints;
+  const prompt = (mode === "search" ? basePrompt + SEARCH_PROMPT_SUFFIX : basePrompt) + categoryHints + TAIWAN_CLAIM_RULES;
 
   let rawText: string;
 

@@ -27,6 +27,7 @@ export const RULES = {
   food: { label: "食品、保健食品", guidance: "以自用名義帶回的食品不得販售；輸入販售須以業者身分辦理輸入查驗。" },
   drug: { label: "藥品", guidance: "非藥商不得販售藥品；未經核准輸入的藥品可能屬禁藥。" },
   medical_device: { label: "醫療器材", guidance: "醫療器材須取得許可證，並由合格業者販售。" },
+  pesticide: { label: "環境用藥、防蚊產品", guidance: "宣稱防蚊、驅蟲、殺蟎、殺菌的產品屬於環境用藥或藥品，須取得環境部或衛福部許可證才能販售。" },
   tobacco: { label: "菸品、電子煙", guidance: "《菸害防制法》禁止以郵購、電子購物等方式販賣菸品，電子煙等類菸品禁止販售。" },
   alcohol: { label: "酒類", guidance: "《菸酒管理法》規定酒類不得以無法辨識購買者年齡的方式販賣，並不得販售予未滿 18 歲者。" },
   radio_device: { label: "無線電子產品", guidance: "藍牙、Wi-Fi 等射頻器材須通過 NCC 審驗才能販售。" },
@@ -47,10 +48,11 @@ const KEYWORD_RULES = [
   { rule: "food", re: /保健食品|健康食品|營養補充|营养补充|膠原蛋白錠|維他命|維生素|酵素|益生菌|喉糖|零食|餅乾|巧克力|糖果|泡麵|調味料|茶包|咖啡豆/i },
   { rule: "cosmetics", re: /化妝水|化粧水|乳液|精華液|美容液|防曬|日焼け止め|面膜|粉底|口紅|唇膏|眼影|卸妝|洗面乳|洗顔|保養品|彩妝|香水|染髮/i },
   { rule: "medical_device", re: /醫療器材|医療機器|血壓計|體溫計|隱形眼鏡|OK繃|絆創膏|護具/i },
+  { rule: "pesticide", re: /防蚊|驅蚊|驱蚊|虫よけ|蟲よけ|除蟎|殺蟎|殺蟲|殺虫|蚊香/i },
   { rule: "tobacco", re: /香菸|菸品|煙草|烟草|電子煙|电子烟|加熱菸|雪茄|\b(vape|tobacco)\b/i },
   { rule: "alcohol", re: /酒類|酒类|清酒|燒酎|焼酎|威士忌|葡萄酒|啤酒|梅酒|\b(whisky|sake|wine)\b/i },
   { rule: "radio_device", re: /藍牙|蓝牙|Bluetooth|無線耳機|无线耳机|Wi-?Fi|無線滑鼠|无线鼠标|對講機/i },
-  { rule: "efficacy_claim", re: /開光|法事|姻緣|姻缘|桃花燈|桃花灯|招財|治療|根治|消炎|保證有效/i },
+  { rule: "efficacy_claim", re: /開光|法事|姻緣|姻缘|桃花燈|桃花灯|招財|治療|根治|消炎|保證有效|燃脂|排毒|淨痘|抗痘|助眠|增強免疫/i },
 ];
 
 export function keywordAssessment(product) {

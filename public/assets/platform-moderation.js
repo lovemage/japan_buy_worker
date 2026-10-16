@@ -191,7 +191,7 @@ async function openModerationCase(caseId) {
     + '<p class="meta">' + modEsc(c.store ? c.store.name : "") + "（/s/" + modEsc(slug) + "）・" + modEsc(c.status_label)
     + (c.overdue ? "・<strong>已逾期</strong>" : "") + "・" + productLink + "</p>"
     + '<div class="mod-tags"><span class="mod-tag mod-tag--' + modEsc(c.risk_level) + '">' + modEsc(c.risk_label) + '</span><span class="mod-tag">' + modEsc(c.rule_label) + "</span>"
-    + '<span class="mod-tag">' + (c.source === "ai_scan" ? "AI 判斷" : "關鍵字判斷") + "</span></div>"
+    + '<span class="mod-tag">' + ({ ai_scan: "AI 判斷", keyword_scan: "關鍵字判斷", manual_review: "人工審查" }[c.source] || "系統判斷") + "</span></div>"
     + '<p class="desc" style="margin-top:8px;">判斷理由：' + modEsc(c.reason || "") + "<br>法規說明：" + modEsc(c.rule_guidance || "") + "</p>"
     + (c.seller_response ? '<div class="mod-box"><h4>會員說明（' + modEsc(modDate(c.seller_responded_at)) + "）</h4>" + modEsc(c.seller_response) + "</div>" : '<p class="desc">會員尚未回覆。</p>')
     + '<div class="mod-compare">' + modProductBox("標記時的內容（證據）", snapView) + modProductBox("目前的商品內容", cur) + "</div>"

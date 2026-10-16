@@ -1,5 +1,6 @@
 import type { RequestContext } from "../../context";
 import { getMarketingProvider, getMarketingApiKey, getMarketingModel } from "./settings";
+import { TAIWAN_CLAIM_RULES } from "../../shared/claim-rules.js";
 
 const TONE_MAP: Record<string, string> = {
   professional: "專業、有信賴感的語氣，用詞精準，強調品質與服務",
@@ -200,6 +201,7 @@ ${tone}
 - 只輸出「1 種」文案，絕對不要提供其他平台版本、替代版本或多段選項
 - 如適合，可提及幾個熱門商品名稱作為推薦
 - 文案需為繁體中文
+${TAIWAN_CLAIM_RULES}
 
 ## 輸出格式（嚴格遵守）
 - 直接輸出文案本體，第一個字就是文案內容

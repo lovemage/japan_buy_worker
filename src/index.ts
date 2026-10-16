@@ -2,7 +2,7 @@
 // Top-level request dispatcher
 
 import type { D1DatabaseLike } from "./types/d1";
-import type { RequestContext } from "./context";
+import type { RequestContext, StoreRow } from "./context";
 import { resolveStore, resolveStoreBySubdomain, getEffectivePlan } from "./context";
 import { routeTenantRequest } from "./router";
 import { storefrontSitemap } from "./services/storefront-sitemap";
@@ -595,6 +595,17 @@ const worker = {
       if (store) {
         const ctx = buildCtxFromStore(store, env, "");
         return routeTenantRequest(request, ctx, url.pathname, getCrawlEnv(env), env.ASSETS);
+      }
+      // The bootstrap store may be closed, but root-relative /api/images/* URLs
+      // are stored for every store and must keep resolving.
+      if (url.pathname.startsWith("/api/images/")) {
+        const bootstrap = await env.DB
+          .prepare("SELECT * FROM stores WHERE slug = 'default' LIMIT 1")
+          .first<StoreRow>();
+        if (bootstrap) {
+          const ctx = buildCtxFromStore(bootstrap, env, "");
+          return routeTenantRequest(request, ctx, url.pathname, getCrawlEnv(env), env.ASSETS);
+        }
       }
     }
 

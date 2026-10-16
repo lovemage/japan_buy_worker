@@ -247,6 +247,8 @@ export async function runModerationScan(
     return summary;
   }
 
+  await deliverPendingNotices(env, summary);
+
   const configuredMax = Number(await getSetting(db, "moderation_scan_max_products"));
   const maxProducts = options.maxProducts ?? (Number.isFinite(configuredMax) && configuredMax > 0 ? configuredMax : DEFAULT_SCAN_MAX_PRODUCTS);
 
@@ -429,6 +431,100 @@ export async function notifySellerOfNewCases(env: ModerationEnv, storeId: number
         <p>逾期未處理的商品，平台將依服務條款第 5.1 條審查後處理。</p>
         <p><a href="${escapeHtml(link)}">前往會員後台</a></p>
         <p style="color:#888;font-size:12px;">這封信由系統自動判斷寄出，若判斷有誤，回覆說明即可，我們會人工確認。</p>
+      `,
+    });
+  } catch (error) {
+    failure = error;
+  }
+
+  for (const c of cases) {
+    if (sent) {
+      await env.DB.prepare("UPDATE moderation_cases SET notified_at = datetime('now') WHERE id = ?").bind(c.id).run();
+    }
+    await logAction(env.DB, {
+      caseId: c.id,
+      storeId: c.store_id,
+      productId: c.product_id,
+      actor: "system",
+      action: sent ? "notified" : "notify_failed",
+      detail: sent ? store.owner_email || "" : failure instanceof Error ? failure.message : "未寄出（無有效 Email）",
+    });
+  }
+  if (failure) throw failure;
+  return sent;
+}
+
+// Cases opened outside the scan loop (manual review by the platform) are
+// written with notified_at = NULL; the next scan run sends their emails.
+async function deliverPendingNotices(env: ModerationEnv, summary: ScanSummary): Promise<void> {
+  const { results } = await env.DB
+    .prepare(
+      `SELECT id, store_id, status FROM moderation_cases
+       WHERE source = 'manual_review' AND notified_at IS NULL AND status IN ('open', 'removed')
+         AND created_at > datetime('now', '-14 days')
+       ORDER BY store_id, id`
+    )
+    .all<{ id: number; store_id: number; status: string }>();
+  const groups = new Map<string, { storeId: number; status: string; ids: number[] }>();
+  for (const row of results) {
+    const key = `${row.store_id}:${row.status}`;
+    const group = groups.get(key) ?? { storeId: row.store_id, status: row.status, ids: [] };
+    group.ids.push(row.id);
+    groups.set(key, group);
+  }
+  for (const group of groups.values()) {
+    try {
+      const sent = group.status === "removed"
+        ? await notifySellerOfRemovals(env, group.storeId, group.ids)
+        : await notifySellerOfNewCases(env, group.storeId, group.ids);
+      if (sent) summary.notifiedStores += 1;
+    } catch (error) {
+      summary.errors.push(`store ${group.storeId} 通知失敗：${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+}
+
+export async function notifySellerOfRemovals(env: ModerationEnv, storeId: number, caseIds: number[]): Promise<boolean> {
+  if (caseIds.length === 0) return false;
+  const store = await getStore(env.DB, storeId);
+  if (!store) return false;
+  const placeholders = caseIds.map(() => "?").join(", ");
+  const { results: cases } = await env.DB
+    .prepare(`SELECT * FROM moderation_cases WHERE id IN (${placeholders}) ORDER BY id`)
+    .bind(...caseIds)
+    .all<CaseRow>();
+  if (cases.length === 0) return false;
+
+  const storeName = store.name || "你的商店";
+  const link = adminUrl(env.APP_URL, store.slug);
+  const items = cases.map((c) => ({ title: snapshotTitle(c), rule: ruleLabel(c.rule_code), reason: c.reason || ruleGuidance(c.rule_code) }));
+
+  let sent = false;
+  let failure: unknown = null;
+  try {
+    sent = await deliver(env, store, {
+      eventType: "moderation_removal",
+      dedupeKey: `removed:${caseIds.join(",")}`,
+      subject: `我拍｜你的商店有 ${cases.length} 件商品已由平台暫時下架`,
+      lines: [
+        `${storeName} 你好，`,
+        "",
+        "平台審查商品時，發現以下商品可能不符合台灣法規，已依服務條款第 5.1 條暫時下架：",
+        "",
+        ...items.map((it) => `・${it.title}（${it.rule}）：${it.reason}`),
+        "",
+        "商品資料與照片都會保留。若你具備合法販售資格，請到會員後台的「商品合規提醒」提出申訴並附上證明，例如輸入許可、產品登錄字號或許可證字號，我們會再次審核。",
+        "商品描述若含有療效或保證效果的字句，修改內容後也可以提出申訴。",
+        "",
+        `前往會員後台：${link}`,
+      ],
+      htmlBody: `
+        <p>${escapeHtml(storeName)} 你好，</p>
+        <p>平台審查商品時，發現以下商品可能不符合台灣法規，已依服務條款第 5.1 條暫時下架：</p>
+        <ul>${items.map((it) => `<li><strong>${escapeHtml(it.title)}</strong>（${escapeHtml(it.rule)}）：${escapeHtml(it.reason)}</li>`).join("")}</ul>
+        <p>商品資料與照片都會保留。若你具備合法販售資格，請到會員後台的「商品合規提醒」提出申訴並附上證明，例如輸入許可、產品登錄字號或許可證字號，我們會再次審核。</p>
+        <p>商品描述若含有療效或保證效果的字句，修改內容後也可以提出申訴。</p>
+        <p><a href="${escapeHtml(link)}">前往會員後台</a></p>
       `,
     });
   } catch (error) {
@@ -658,6 +754,10 @@ export async function adminActOnCase(
   let emailed = false;
   try {
     emailed = await notifySellerOfDecision(env, c, action, note);
+    if (emailed) {
+      // A decision email covers any notice still pending for this case.
+      await db.prepare("UPDATE moderation_cases SET notified_at = COALESCE(notified_at, datetime('now')) WHERE id = ?").bind(c.id).run();
+    }
     await logAction(db, { ...base, actor: "system", action: emailed ? "notified" : "notify_failed", detail: emailed ? action : "未寄出（無有效 Email）" });
   } catch (error) {
     await logAction(db, { ...base, actor: "system", action: "notify_failed", detail: error instanceof Error ? error.message : String(error) });
