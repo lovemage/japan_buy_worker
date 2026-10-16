@@ -15,7 +15,7 @@ enabled = true
 [triggers]
 # 00:15 Asia/Taipei: downgrade expired paid plans and send renewal reminders.
 # Monday 02:00 Asia/Taipei: weekly AI product compliance scan (MODERATION_SCAN_CRON in src/index.ts).
-crons = ["15 16 * * *", "0 18 * * 0"]
+crons = ["15 16 * * *", "0 18 * * SUN"]
 
 [vars]
 CRAWL_LIST_PAGES = "100"

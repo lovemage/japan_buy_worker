@@ -300,7 +300,7 @@ function dispatchStorePayRoute(
 }
 
 // Weekly product compliance scan: Monday 02:00 Asia/Taipei. Must match wrangler.toml.
-const MODERATION_SCAN_CRON = "0 18 * * 0";
+const MODERATION_SCAN_CRON = "0 18 * * SUN";
 
 const worker = {
   async scheduled(controller: { cron?: string } | undefined, env: Env): Promise<void> {
