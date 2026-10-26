@@ -13,6 +13,7 @@ import {
 } from "./email-notifications";
 import {
   ACTIVE_CASE_STATUSES,
+  isExemptAssessment,
   CASE_STATUS_LABELS,
   DEFAULT_SCAN_MAX_PRODUCTS,
   RISK_LABELS,
@@ -278,7 +279,7 @@ export async function runModerationScan(
       const fromAi = aiResults.get(product.id);
       const assessment = fromAi ?? keywordAssessment(product);
       const source = fromAi ? "ai_scan" : "keyword_scan";
-      if (assessment.risk !== "none" && product.hash !== product.moderation_cleared_hash) {
+      if (assessment.risk !== "none" && !isExemptAssessment(assessment) && product.hash !== product.moderation_cleared_hash) {
         const caseId = await openCase(db, product, assessment, source, now);
         if (caseId) {
           summary.flagged += 1;

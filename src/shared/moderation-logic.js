@@ -41,8 +41,16 @@ export const RULES = {
 
 const RULE_CODES = Object.keys(RULES);
 
+// Minor categories that drew too many seller complaints: never open a case
+// for them, and never for the "suspected" level at all.
+export const EXEMPT_RULES = ["pesticide", "efficacy_claim", "food", "cosmetics"];
+
+export function isExemptAssessment(assessment) {
+  return assessment.risk === "suspected" || EXEMPT_RULES.includes(assessment.rule);
+}
+
 // Fallback when no AI key is configured or the AI call fails. Broad on
-// purpose: everything here is only a "suspected" notice for human review.
+// purpose; only drugs and tobacco rank above "suspected", which is exempt.
 const KEYWORD_RULES = [
   { rule: "drug", re: /醫藥品|医薬品|藥品|药品|處方|处方|眼藥水|目薬|感冒藥|口內炎|口内炎|止痛藥|胃腸藥|藥膏|第[一二三]類医薬品/i },
   { rule: "food", re: /保健食品|健康食品|營養補充|营养补充|膠原蛋白錠|維他命|維生素|酵素|益生菌|喉糖|零食|餅乾|巧克力|糖果|泡麵|調味料|茶包|咖啡豆/i },
@@ -60,7 +68,8 @@ export function keywordAssessment(product) {
   for (const { rule, re } of KEYWORD_RULES) {
     const match = text.match(re);
     if (match) {
-      return { risk: "suspected", rule, reason: `商品內容出現「${match[0]}」，可能屬於${RULES[rule].label}，請確認販售資格。` };
+      const risk = rule === "drug" || rule === "tobacco" ? "high_risk" : "suspected";
+      return { risk, rule, reason: `商品內容出現「${match[0]}」，可能屬於${RULES[rule].label}，請確認販售資格。` };
     }
   }
   return { risk: "none", rule: "other", reason: "" };

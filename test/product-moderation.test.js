@@ -10,6 +10,7 @@ import { createRequire } from "node:module";
 import {
   adminActionAllowed,
   keywordAssessment,
+  isExemptAssessment,
   normalizeAiResults,
   sellerActionAllowed,
   shouldSuggestSuspension,
@@ -47,7 +48,7 @@ function fixture({ withAiKey = true } = {}) {
   if (withAiKey) sqlite.exec("INSERT INTO app_settings VALUES (0, 'gemini_api_key_starter', 'test-key', '2026-10-16')");
   const payload = (description) => JSON.stringify({ description, gallery: [] });
   const insert = sqlite.prepare("INSERT INTO products (id, store_id, source_product_code, title_zh_tw, title_ja, brand, category, price_jpy_tax_in, image_url, source_payload_json, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, '', ?, ?, 500, '/api/images/x.webp', ?, 1, '2026-10-01', '2026-10-01')");
-  insert.run(1, 1, "lotion", "日本帶回肌研化妝水", "肌研", "保養", payload("出國在藥妝店買回來的化妝水，170ml。"));
+  insert.run(1, 1, "eyedrop", "日本帶回參天眼藥水", "參天", "醫藥", payload("出國在藥妝店買回來的眼藥水，12ml。"));
   insert.run(2, 1, "notebook", "日本手帳", "LOFT", "文具", payload("A5 尺寸週記手帳。"));
   insert.run(3, 2, "pill", "感冒藥", "", "醫藥品", payload("停用店的商品不會被掃描。"));
 
@@ -78,14 +79,14 @@ function fixture({ withAiKey = true } = {}) {
   return { sqlite, env, sent, row, rows, fetchWorker };
 }
 
-// Fake Gemini: flags anything that looks like cosmetics, passes everything else.
+// Fake Gemini: flags anything that looks like a drug, passes everything else.
 function fakeGemini(calls = []) {
   return async (url, init) => {
     calls.push(url);
     const prompt = JSON.parse(init.body).contents[0].parts[0].text;
     const items = JSON.parse(prompt.slice(prompt.indexOf("[")));
-    const out = items.map((item) => /化妝水/.test(item.title)
-      ? { id: item.id, risk: "violation", rule: "cosmetics", reason: "標題寫明日本帶回的化妝水，可能為自用帶回轉售。" }
+    const out = items.map((item) => /眼藥水/.test(item.title)
+      ? { id: item.id, risk: "high_risk", rule: "drug", reason: "標題寫明日本帶回的眼藥水，屬於藥品。" }
       : { id: item.id, risk: "none", rule: "other", reason: "一般商品" });
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(out) }] } }] }), { status: 200 });
   };
@@ -116,6 +117,17 @@ test("pure rules: transitions, appeals, strikes, overdue and AI output validatio
   assert.ok(!isOverdue({ status: "responded", seller_deadline_at: "2000-01-01T00:00:00Z" }));
   assert.equal(keywordAssessment({ title_zh_tw: "日本眼藥水" }).rule, "drug");
   assert.equal(keywordAssessment({ title_zh_tw: "帆布托特包" }).risk, "none");
+  assert.equal(keywordAssessment({ title_zh_tw: "日本眼藥水" }).risk, "high_risk");
+});
+
+test("minor categories and the suspected level never open a case", () => {
+  assert.equal(isExemptAssessment({ risk: "violation", rule: "pesticide" }), true);
+  assert.equal(isExemptAssessment({ risk: "high_risk", rule: "efficacy_claim" }), true);
+  assert.equal(isExemptAssessment({ risk: "violation", rule: "food" }), true);
+  assert.equal(isExemptAssessment({ risk: "violation", rule: "cosmetics" }), true);
+  assert.equal(isExemptAssessment({ risk: "suspected", rule: "alcohol" }), true);
+  assert.equal(isExemptAssessment({ risk: "violation", rule: "counterfeit" }), false);
+  assert.equal(isExemptAssessment({ risk: "high_risk", rule: "drug" }), false);
 
   const normalized = normalizeAiResults(
     [{ id: 1, risk: "high_risk", rule: "drug", reason: "藥品" }, { id: 99, risk: "violation", rule: "food" }, { id: 2, risk: "weird", rule: "nope", reason: "" }],
@@ -142,16 +154,16 @@ test("weekly scan flags risky products, notifies the seller once and skips uncha
     const c = f.row("SELECT * FROM moderation_cases");
     assert.equal(c.product_id, 1);
     assert.equal(c.status, "open");
-    assert.equal(c.rule_code, "cosmetics");
+    assert.equal(c.rule_code, "drug");
     assert.equal(c.seller_deadline_at, new Date(now.getTime() + SELLER_RESPONSE_DAYS * 86400_000).toISOString());
-    assert.match(JSON.parse(c.snapshot_json).title, /化妝水/);
+    assert.match(JSON.parse(c.snapshot_json).title, /眼藥水/);
     assert.ok(c.notified_at);
     assert.equal(f.row("SELECT moderation_status FROM products WHERE id = 1").moderation_status, "flagged");
     assert.equal(f.row("SELECT is_active FROM products WHERE id = 1").is_active, 1, "a notice never takes the product down");
 
     assert.equal(f.sent.length, 1);
     assert.equal(f.sent[0].to, "owner@example.com");
-    assert.match(f.sent[0].text, /日本帶回肌研化妝水/);
+    assert.match(f.sent[0].text, /日本帶回參天眼藥水/);
     assert.match(f.sent[0].text, /商品目前仍正常販售/);
     assert.ok(f.rows("SELECT action FROM moderation_actions").some((a) => a.action === "notified"));
 
