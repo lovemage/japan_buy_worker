@@ -4,7 +4,8 @@ import { buildListQueryParams } from "./list-query.js";
 import { getNormalizedQuickSort, nextSingleBrandSelection } from "./list-state.js";
 import { fetchStoreJson } from "./storefront-data.js";
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 20;
+const MAX_FETCH_LIMIT = 100;
 const _cc = window.__COUNTRY_CONFIG || {};
 const DEFAULT_PRICING = { markupJpy: 1000, markupMode: "flat", markupPercent: 15, jpyToTwd: _cc.defaultRate || 0.21, promoTagMaxTwd: 500 };
 const PROMO_STORAGE_KEY = "ccwep-promo-shown-v1";
@@ -169,6 +170,7 @@ function saveListScrollState() {
     JSON.stringify({
       url: getCurrentListUrl(),
       scrollY: window.scrollY,
+      loaded: listState.loaded,
       at: Date.now(),
     })
   );
@@ -184,15 +186,16 @@ function consumeListScrollState() {
     const parsed = JSON.parse(raw);
     const sameUrl = parsed?.url === getCurrentListUrl();
     const y = Number(parsed?.scrollY);
+    const loaded = Number(parsed?.loaded);
     if (sameUrl && Number.isFinite(y) && y >= 0) {
-      return y;
+      return { y, loaded: Number.isFinite(loaded) && loaded > 0 ? loaded : PAGE_SIZE };
     }
   } catch {}
   return null;
 }
 
-function bindProductNavigationState() {
-  document.querySelectorAll('a[data-product-detail-link="1"]').forEach((link) => {
+function bindProductNavigationState(scope = document) {
+  scope.querySelectorAll('a[data-product-detail-link="1"]').forEach((link) => {
     link.addEventListener("click", () => {
       saveListScrollState();
     });
@@ -210,8 +213,8 @@ function bumpFloatingCartButton() {
   }, { once: true });
 }
 
-function bindListCartButtons() {
-  document.querySelectorAll("[data-card-cart]").forEach((button) => {
+function bindListCartButtons(scope = document) {
+  scope.querySelectorAll("[data-card-cart]").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -236,8 +239,8 @@ function bindListCartButtons() {
   });
 }
 
-function initOverlayToggle() {
-  document.querySelectorAll("[data-card-overlay]").forEach((overlay) => {
+function initOverlayToggle(scope = document) {
+  scope.querySelectorAll("[data-card-overlay]").forEach((overlay) => {
     const media = overlay.closest(".product-card__media");
     if (!media) return;
     const detailLink = overlay.querySelector("[data-product-detail-link]");
@@ -260,13 +263,21 @@ function initOverlayToggle() {
   });
 }
 
-function renderProducts(products, pricing) {
+function appendProducts(products, pricing) {
   const grid = document.getElementById("product-grid");
   if (!grid) {
     return;
   }
   const promoThreshold = Number(pricing?.promoTagMaxTwd ?? DEFAULT_PRICING.promoTagMaxTwd);
-  grid.innerHTML = products
+  // The first batch replaces the server-rendered SEO cards.
+  const firstBatch = grid.dataset.hydrated !== "1";
+  if (firstBatch) {
+    grid.innerHTML = "";
+    grid.dataset.hydrated = "1";
+  }
+  const eagerCount = firstBatch ? 2 : 0;
+  const batch = document.createElement("template");
+  batch.innerHTML = products
     .map((item, index) => {
       const title = item.nameZhTw || item.nameJa || "未命名商品";
       const adjusted = calcAdjustedPrices(item.priceJpyTaxIn, pricing);
@@ -297,7 +308,7 @@ function renderProducts(products, pricing) {
         <div class="product-card__media image-loading" data-image-loading-wrap>
           ${isPromo ? '<span class="promo-badge">優惠</span>' : ""}
           ${(item.tags || []).map(t => `<span class="product-tag product-tag--${escapeHtml(t)}">${getTagLabel(t)}</span>`).join("")}
-          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" data-card-image data-fallback="product" data-image-loading="1" />
+          <img src="${firstImage}" alt="${escapeHtml(title)}" loading="${index < eagerCount ? "eager" : "lazy"}" decoding="async" data-card-image data-fallback="product" data-image-loading="1" />
           <button type="button" class="product-card__nav product-card__nav--prev" data-card-prev aria-label="上一張">‹</button>
           <button type="button" class="product-card__nav product-card__nav--next" data-card-next aria-label="下一張">›</button>
           <div class="product-card__overlay" data-card-overlay>
@@ -317,16 +328,20 @@ function renderProducts(products, pricing) {
       `;
     })
     .join("");
-  bindProductNavigationState();
-  bindListCartButtons();
+  const scope = batch.content;
+  bindProductNavigationState(scope);
+  bindListCartButtons(scope);
+  initProductCardGalleries(scope);
+  initOverlayToggle(scope);
+  grid.append(scope);
 }
 
-function initProductCardGalleries() {
+function initProductCardGalleries(scope = document) {
   const supportsHover =
     typeof window.matchMedia === "function" &&
     window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-  document.querySelectorAll("[data-product-card]").forEach((card) => {
+  scope.querySelectorAll("[data-product-card]").forEach((card) => {
     const raw = card.getAttribute("data-gallery") || "";
     let images = [];
     try {
@@ -435,7 +450,7 @@ function initPromoSwitch() {
       } else {
         url.searchParams.set("sort", value);
       }
-      url.searchParams.set("page", "1");
+      url.searchParams.delete("page");
       location.href = url.toString();
     });
   });
@@ -510,12 +525,6 @@ function translateCategoryLabel(raw) {
   return translated;
 }
 
-function getPage() {
-  const url = new URL(location.href);
-  const pageRaw = Number(url.searchParams.get("page") || "1");
-  return Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
-}
-
 function getCategory() {
   const url = new URL(location.href);
   return (url.searchParams.get("category") || "").trim();
@@ -533,15 +542,13 @@ function getSelectedBrands() {
   );
 }
 
-function goPage(
-  page,
+function goList(
   category = getCategory(),
   sort = getQuickSort(),
   brands = getSelectedBrands()
 ) {
-  const target = Math.max(1, page);
   const url = new URL(location.href);
-  url.searchParams.set("page", String(target));
+  url.searchParams.delete("page");
   if (category) {
     url.searchParams.set("category", category);
   } else {
@@ -558,62 +565,6 @@ function goPage(
     url.searchParams.delete("brands");
   }
   location.href = url.toString();
-}
-
-function renderPagination(paging) {
-  const wrapper = document.getElementById("pagination");
-  const prev = document.getElementById("page-prev");
-  const next = document.getElementById("page-next");
-  const indicator = document.getElementById("page-indicator");
-  if (!wrapper || !prev || !next || !indicator || !paging) {
-    return;
-  }
-
-  wrapper.classList.remove("hidden");
-  wrapper.style.display = "flex";
-
-  const totalPages = Math.max(1, paging.totalPages || 1);
-  const current = Math.min(Math.max(1, paging.page || 1), totalPages);
-
-  // Sliding window of at most 5 page numbers, centered on current when possible.
-  // Always append the last page (with optional ellipsis) when it falls outside the window.
-  const max = 5;
-  let start = Math.max(1, current - Math.floor(max / 2));
-  let end = Math.min(totalPages, start + max - 1);
-  start = Math.max(1, end - max + 1);
-
-  const numBtn = (p) => {
-    const isActive = p === current;
-    return `<button type="button" class="page-num-btn${isActive ? " is-active" : ""}" data-page="${p}" aria-label="第 ${p} 頁"${isActive ? ' aria-current="page"' : ""}>${p}</button>`;
-  };
-
-  const buttons = [];
-  for (let p = start; p <= end; p++) buttons.push(numBtn(p));
-  if (end < totalPages) {
-    if (end < totalPages - 1) buttons.push('<span class="page-ellipsis" aria-hidden="true">…</span>');
-    buttons.push(numBtn(totalPages));
-  }
-  indicator.innerHTML = buttons.join("");
-  indicator.querySelectorAll(".page-num-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const target = Number(btn.getAttribute("data-page"));
-      if (target && target !== current) goPage(target);
-    });
-  });
-
-  prev.disabled = current <= 1;
-  next.disabled = current >= totalPages;
-  prev.onclick = () => goPage(current - 1);
-  next.onclick = () => goPage(current + 1);
-}
-
-function renderFloatingPagination(paging) {
-  const prev = document.getElementById("float-page-prev");
-  if (!prev || !paging) {
-    return;
-  }
-  prev.disabled = paging.page <= 1;
-  prev.onclick = () => goPage(paging.page - 1);
 }
 
 function closeDrawer() {
@@ -678,7 +629,7 @@ function renderCategoryFilters(categories) {
       button.addEventListener("click", () => {
         const category = (button.getAttribute("data-category") || "").trim();
         closeDrawer();
-        goPage(1, category);
+        goList(category);
       });
     });
   });
@@ -709,10 +660,10 @@ function renderBrandFilters(brands) {
         const brand = (button.getAttribute("data-brand") || "").trim();
         closeDrawer();
         if (!brand) {
-          goPage(1, getCategory(), getQuickSort(), []);
+          goList(getCategory(), getQuickSort(), []);
           return;
         }
-        goPage(1, getCategory(), getQuickSort(), nextSingleBrandSelection(getSelectedBrands(), brand));
+        goList(getCategory(), getQuickSort(), nextSingleBrandSelection(getSelectedBrands(), brand));
       });
     });
   });
@@ -753,6 +704,69 @@ function initPromoModal() {
   });
 }
 
+// pricing is a promise so the first product request runs in parallel with it.
+const listState = { pricing: null, loaded: 0, total: 0, loading: false };
+
+async function loadMoreProducts(limit = PAGE_SIZE) {
+  listState.loading = true;
+  try {
+    const params = buildListQueryParams({
+      limit,
+      offset: listState.loaded,
+      sort: getQuickSort(),
+      category: getCategory(),
+      brands: getSelectedBrands(),
+    });
+    const [body, pricing] = await Promise.all([
+      fetchStoreJson(`/api/products?${params.toString()}`),
+      listState.pricing,
+    ]);
+    const products = Array.isArray(body.products) ? body.products : [];
+    listState.total = Number(body?.paging?.total || 0);
+    listState.loaded += products.length;
+    if (products.length === 0) listState.total = listState.loaded;
+    appendProducts(products, pricing);
+    return body;
+  } finally {
+    listState.loading = false;
+  }
+}
+
+// Load the next PAGE_SIZE products when the end of the list scrolls into view.
+function initInfiniteScroll() {
+  const sentinel = document.getElementById("list-sentinel");
+  if (!sentinel) return;
+  const hasMore = () => listState.loaded < listState.total;
+  const sync = () => {
+    sentinel.hidden = !hasMore();
+  };
+  sync();
+  if (!hasMore()) return;
+
+  const loadNext = async () => {
+    if (listState.loading || !hasMore()) return;
+    sentinel.classList.add("is-loading");
+    try {
+      await loadMoreProducts(PAGE_SIZE);
+    } catch {
+      sentinel.classList.remove("is-loading");
+      return;
+    }
+    sentinel.classList.remove("is-loading");
+    sync();
+    if (!hasMore()) observer.disconnect();
+    // Still on screen (short page or fast scroll): keep filling.
+    else if (sentinel.getBoundingClientRect().top < window.innerHeight + 600) loadNext();
+  };
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) loadNext();
+    },
+    { rootMargin: "0px 0px 600px 0px" }
+  );
+  observer.observe(sentinel);
+}
+
 async function bootstrap() {
   renderDraftCount();
   initDrawerSections();
@@ -761,10 +775,8 @@ async function bootstrap() {
   renderQuickFilterControls();
   initPromoSwitch();
   try {
-    const category = getCategory();
-    const quickSort = getQuickSort();
     const brandParams = buildListQueryParams({
-      category,
+      category: getCategory(),
     });
     // Filters are optional: a slow/failed filter must not hold up products.
     void fetchStoreJson("/api/product-categories")
@@ -773,38 +785,24 @@ async function bootstrap() {
     void fetchStoreJson(`/api/product-brands?${brandParams.toString()}`)
       .then((body) => renderBrandFilters(Array.isArray(body.brands) ? body.brands : []))
       .catch(() => {});
-    const page = getPage();
-    const selectedBrands = getSelectedBrands();
-    const offset = (page - 1) * PAGE_SIZE;
-    const params = buildListQueryParams({
-      limit: PAGE_SIZE,
-      offset,
-      sort: quickSort,
-      category,
-      brands: selectedBrands,
+    const restore = consumeListScrollState();
+    listState.pricing = fetchStoreJson("/api/pricing").then((pricingBody) => {
+      if (!pricingBody.pricing) throw new Error("價格載入失敗，請重新整理後再試");
+      return pricingBody.pricing;
     });
-    const [pricingBody, body] = await Promise.all([
-      fetchStoreJson("/api/pricing"),
-      fetchStoreJson(`/api/products?${params.toString()}`),
-    ]);
-    if (!pricingBody.pricing) throw new Error("價格載入失敗，請重新整理後再試");
-    const pricing = pricingBody.pricing;
-    const products = Array.isArray(body.products) ? body.products : [];
-    const last = products.find((p) => p.lastCrawledAt)?.lastCrawledAt;
-    const totalProducts = Number(body?.paging?.total || 0);
+    const body = await loadMoreProducts(Math.min(restore?.loaded || PAGE_SIZE, MAX_FETCH_LIMIT));
+    const last = (body.products || []).find((p) => p.lastCrawledAt)?.lastCrawledAt;
     const lastNode = document.getElementById("last-updated-text");
     if (lastNode) {
       const dateText = last ? formatDateOnly(last) : "未知";
-      lastNode.textContent = `最後更新：${dateText}｜商品數量：${totalProducts.toLocaleString("en-US")}`;
+      lastNode.textContent = `最後更新：${dateText}｜商品數量：${listState.total.toLocaleString("en-US")}`;
     }
-    renderProducts(products, pricing);
-    initProductCardGalleries();
-    initOverlayToggle();
-    renderPagination(body.paging || null);
-    renderFloatingPagination(body.paging || null);
-    const restoreY = consumeListScrollState();
-    if (restoreY !== null) {
-      requestAnimationFrame(() => window.scrollTo({ top: restoreY, behavior: "auto" }));
+    while (restore && listState.loaded < restore.loaded && listState.loaded < listState.total) {
+      await loadMoreProducts(Math.min(restore.loaded - listState.loaded, MAX_FETCH_LIMIT));
+    }
+    initInfiniteScroll();
+    if (restore) {
+      requestAnimationFrame(() => window.scrollTo({ top: restore.y, behavior: "auto" }));
     } else if (getCategory() || getSelectedBrands().length > 0) {
       scrollToFirstProductCard();
     }
@@ -826,25 +824,4 @@ function dismissLoading() {
   }, { once: true });
 }
 
-// Hide floating nav / cart buttons when the pagination row is in view, so
-// they don't overlap the page-number buttons at the bottom of the storefront.
-function initFloatingButtonsAutoHide() {
-  const pagination = document.getElementById("pagination");
-  const floatNav = document.querySelector(".floating-nav-buttons");
-  const floatCart = document.querySelector(".floating-request-btn");
-  if (!pagination || !("IntersectionObserver" in window)) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries.some((e) => e.isIntersecting);
-      if (floatNav) floatNav.classList.toggle("is-hidden", visible);
-      if (floatCart) floatCart.classList.toggle("is-hidden", visible);
-    },
-    // trigger as soon as the pagination row peeks into the viewport bottom
-    { rootMargin: "0px 0px -40px 0px", threshold: 0.01 }
-  );
-  observer.observe(pagination);
-}
-
 bootstrap();
-initFloatingButtonsAutoHide();

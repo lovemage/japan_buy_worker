@@ -100,14 +100,13 @@ test('product list starts pricing/products together and renders without waiting 
     if (path.includes('categories') || path.includes('brands')) return new Promise(() => {});
     return pending.promise.then(() => path === '/api/pricing' ? { pricing: {} } : { products: [] });
   }, buildListQueryParams: () => new URLSearchParams() });
-  vm.runInContext(read('../public/assets/app-list.js').replace(/^import .*;$/gm, '').replace(/bootstrap\(\);\s*initFloatingButtonsAutoHide\(\);\s*$/, ''), context);
-  for (const name of ['renderDraftCount', 'initDrawerSections', 'initPromoModal', 'initViewSwitch', 'renderQuickFilterControls', 'initPromoSwitch', 'initProductCardGalleries', 'initOverlayToggle', 'renderPagination', 'renderFloatingPagination', 'dismissLoading']) context[name] = () => {};
+  vm.runInContext(read('../public/assets/app-list.js').replace(/^import .*;$/gm, '').replace(/bootstrap\(\);\s*$/, ''), context);
+  for (const name of ['renderDraftCount', 'initDrawerSections', 'initPromoModal', 'initViewSwitch', 'renderQuickFilterControls', 'initPromoSwitch', 'initInfiniteScroll', 'dismissLoading']) context[name] = () => {};
   context.getCategory = () => '';
   context.getQuickSort = () => '';
-  context.getPage = () => 1;
   context.getSelectedBrands = () => [];
   context.consumeListScrollState = () => null;
-  context.renderProducts = () => { rendered = true; };
+  context.appendProducts = () => { rendered = true; };
   const task = context.bootstrap();
   assert.equal(calls.length, 4);
   assert.ok(calls.includes('/api/pricing'));

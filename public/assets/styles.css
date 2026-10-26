@@ -248,9 +248,11 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* Store Logo (header) */
+/* Store Logo (header): fixed height, width follows the logo so wide
+   transparent wordmarks are not squeezed into a square. */
 .store-logo-header {
-  width: 44px;
+  width: auto;
+  max-width: 132px;
   height: 44px;
   object-fit: contain;
   border-radius: 10px;
@@ -2463,6 +2465,22 @@ select:disabled {
 }
 
 /* Pagination */
+.list-sentinel {
+  padding: 20px 0 4px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.list-sentinel__text {
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.list-sentinel.is-loading .list-sentinel__text {
+  opacity: 1;
+}
+
 .pagination {
   margin-top: 20px;
   display: flex;
@@ -2704,8 +2722,8 @@ select:disabled {
   gap: 4px;
   padding: 4px;
   border-radius: 999px;
-  background: #eef2e6;
-  border: 1px solid #d9e0cc;
+  background: var(--bg-color);
+  border: 1px solid var(--line);
 }
 
 /* Drawer (hamburger menu) version: drop the hardcoded pill backdrop */
@@ -2742,6 +2760,16 @@ select:disabled {
 
 .quick-filter-switch {
   align-items: center;
+}
+
+/* Quick-filter buttons are also .btn-pill.secondary, which every template
+   restyles with higher specificity; keep the selected one on the brand color. */
+.quick-filter-switch .btn-pill.secondary.quick-filter-btn.is-active,
+.quick-filter-switch .btn-pill.secondary.quick-filter-btn.is-active:hover {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px var(--brand-shadow-md);
 }
 
 .quick-filter-btn {
