@@ -118,6 +118,10 @@ export function sanitizeDisplaySettingsPatch(input, storePlan, storeId) {
     next.checkoutPage = getPublicCheckoutSettings(next, storeId);
   }
 
+  if (Object.prototype.hasOwnProperty.call(next, "headerTextHidden")) {
+    next.headerTextHidden = next.headerTextHidden === true;
+  }
+
   if (!canManageStoreLogo(storePlan)) {
     delete next.storeLogo;
   }

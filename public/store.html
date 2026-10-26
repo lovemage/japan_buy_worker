@@ -27,7 +27,7 @@
         <div class="header-top">
           <div class="header-left">
             <a href="/" id="store-logo-link"><img id="store-logo" class="store-logo-header" src="/assets/images/logo2.png" alt="商店 Logo" /></a>
-            <div>
+            <div id="store-header-text">
               <h1 id="store-header-name">商品列表</h1>
               <p id="store-desc" class="store-desc" style="display:none;"></p>
             </div>
@@ -57,7 +57,7 @@
         </div>
         <div class="drawer-section" id="promo-drawer-section" data-promo-section="mobile" style="display:none;">
           <h3 class="drawer-section-title">快速篩選</h3>
-          <div id="promo-switch" class="view-switch quick-filter-switch" aria-label="快速篩選切換" data-promo-switch="mobile" style="flex-wrap:wrap;gap:6px;"></div>
+          <div id="promo-switch" class="view-switch quick-filter-switch" aria-label="快速篩選切換" data-promo-switch="mobile" style="gap:4px;"></div>
         </div>
         <div class="drawer-section drawer-section--collapsible is-collapsed" data-drawer-section>
           <button class="drawer-section-toggle" type="button" data-drawer-toggle aria-expanded="false" aria-controls="brand-filters">
@@ -183,6 +183,7 @@
     }
     // Render store logo
     var ds = window.__DISPLAY_SETTINGS || {};
+    if (ds.headerTextHidden === true) { var ht = document.getElementById("store-header-text"); if (ht) ht.className = "sr-only"; }
     var base = window.__API_BASE || "";
     var logoLink = document.getElementById("store-logo-link");
     if (logoLink && base) logoLink.href = base + "/";

@@ -606,6 +606,18 @@
           <p id="store-logo-status" class="admin-status">已儲存</p>
         </div>
 
+        <div class="settings-group">
+          <div class="toggle-row">
+            <h3 class="settings-group__title" style="margin:0;">頁首商店名稱</h3>
+            <label class="toggle-label">
+              <span id="header-text-toggle-label" style="color:var(--admin-success);">顯示</span>
+              <input type="checkbox" id="header-text-toggle" checked onchange="onHeaderTextToggle()" />
+            </label>
+          </div>
+          <p class="meta" style="margin-top:8px;">關閉後，前台頁首只顯示 Logo，不顯示商店名稱與副標題。適合 Logo 已含店名的商店。</p>
+          <p id="header-text-status" class="admin-status">已儲存</p>
+        </div>
+
         <!-- 商店招牌製作 (Pro / Pro+ only) -->
         <div class="settings-group" id="banner-section" style="display:none;">
           <button
@@ -2404,6 +2416,30 @@
     img.src = URL.createObjectURL(file);
   }
 
+  function updateHeaderTextToggleUI(show) {
+    var label = document.getElementById("header-text-toggle-label");
+    if (label) { label.textContent = show ? "顯示" : "隱藏"; label.style.color = show ? "var(--admin-success)" : "var(--admin-text-muted)"; }
+  }
+
+  function onHeaderTextToggle() {
+    var toggle = document.getElementById("header-text-toggle");
+    var show = toggle.checked;
+    updateHeaderTextToggleUI(show);
+    toggle.disabled = true;
+    apiFetch("/api/admin/display-settings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ headerTextHidden: !show }),
+    }).then(function(r){return r.json()}).then(function(d) {
+      if (!d.ok) throw new Error(d.error || "儲存失敗");
+      var st = document.getElementById("header-text-status"); st.style.display = "block"; setTimeout(function(){ st.style.display = "none"; }, 2000);
+    }).catch(function() {
+      toggle.checked = !show;
+      updateHeaderTextToggleUI(!show);
+      alert("儲存失敗，請稍後再試");
+    }).then(function() { toggle.disabled = false; });
+  }
+
   function removeStoreLogo() {
     apiFetch("/api/admin/display-settings").then(function(r){return r.json()}).then(function(current) {
       current.storeLogo = "";
@@ -2437,6 +2473,8 @@
         var p = document.getElementById("edit-tag-popular-label"); if (p) p.textContent = d.tagNames.popular || "人氣特賣";
       }
       if (d.storeLogo) renderStoreLogoPreview(d.storeLogo);
+      var headerToggle = document.getElementById("header-text-toggle");
+      if (headerToggle) { headerToggle.checked = d.headerTextHidden !== true; updateHeaderTextToggleUI(headerToggle.checked); }
       // Promo tag threshold
       if (d.promoTagEnabled) {
         document.getElementById("promo-tag-toggle").checked = true;

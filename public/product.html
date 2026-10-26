@@ -47,7 +47,7 @@
         <div class="header-top">
           <div class="header-left">
             <a href="/" id="store-logo-link"><img id="store-logo" class="store-logo-header" src="/assets/images/logo2.png" alt="商店 Logo" /></a>
-            <div>
+            <div id="store-header-text">
               <h1 id="store-header-name">商品詳情</h1>
             </div>
           </div>
@@ -79,6 +79,7 @@
       // Store name
       var h = document.getElementById("store-header-name");
       if (h && window.__STORE_NAME) h.textContent = window.__STORE_NAME;
+      if (ds.headerTextHidden === true) { var ht = document.getElementById("store-header-text"); if (ht) ht.className = "sr-only"; }
       // Store rules
       if (ds.storeRules) {
         document.addEventListener("DOMContentLoaded", function() {

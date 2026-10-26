@@ -27,6 +27,8 @@ export interface DisplaySettings {
   promoEnabled?: boolean;
   wholesaleEnabled?: boolean;
   storeLogo?: string;
+  /** Hide the store name and subtitle in the storefront header (logo only). */
+  headerTextHidden?: boolean;
   /** Legacy mirror retained while existing stores migrate to checkoutPage.message. */
   checkoutMessage?: string;
   checkoutPage?: CheckoutPageSettings;

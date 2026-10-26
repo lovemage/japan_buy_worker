@@ -625,16 +625,7 @@ body {
 .store-sidebar__promo-switch {
   width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.store-sidebar__promo-switch .view-switch__btn {
-  flex: 1 1 calc(50% - 6px);
-}
-
-.store-sidebar__promo-switch .quick-filter-btn {
-  flex: 0 0 40px;
+  gap: 4px;
 }
 
 .button {
@@ -2758,8 +2749,11 @@ select:disabled {
   box-shadow: 0 2px 8px var(--brand-shadow-md);
 }
 
+/* Text sort buttons stay on one row at every width (no wrapping). */
 .quick-filter-switch {
   align-items: center;
+  flex-wrap: nowrap;
+  max-width: 100%;
 }
 
 /* Quick-filter buttons are also .btn-pill.secondary, which every template
@@ -2772,13 +2766,15 @@ select:disabled {
   box-shadow: 0 2px 8px var(--brand-shadow-md);
 }
 
-.quick-filter-btn {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.quick-filter-switch .btn-pill.secondary.quick-filter-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 7px 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: 999px;
+  transform: none;
 }
 
 /* Promo Modal */
