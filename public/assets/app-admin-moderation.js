@@ -3,7 +3,7 @@
 // 會員可以留言說明資格、自行下架，或對平台下架的商品提出申訴。
 
 const ACTIVE = new Set(["open", "responded", "removed", "appealed"]);
-let expanded = true;
+let expanded = false;
 
 function esc(value) {
   return String(value ?? "")

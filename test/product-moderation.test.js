@@ -288,12 +288,24 @@ test("seller self-removal closes the case and a relisted product is checked agai
     assert.deepEqual(f.row("SELECT is_active, moderation_status, moderation_scanned_hash FROM products WHERE id = 1"), { is_active: 0, moderation_status: "none", moderation_scanned_hash: null });
 
     const sellerView = await moderation.listSellerCases(f.env.DB, 1);
-    assert.equal(sellerView[0].status, "seller_removed");
-    assert.equal(sellerView[0].canRespond, false);
+    assert.equal(sellerView.length, 0, "self-removed products drop out of the seller notice");
 
     f.sqlite.exec("UPDATE products SET is_active = 1 WHERE id = 1");
     const rescan = await moderation.runModerationScan(f.env, { trigger: "cron", fetchImpl: fakeGemini() });
     assert.equal(rescan.flagged, 1, "relisting the same content raises a new notice");
+  } finally { f.sqlite.close(); }
+});
+
+test("seller notice hides cases whose product was delisted or deleted", async () => {
+  const f = fixture();
+  try {
+    await moderation.runModerationScan(f.env, { trigger: "cron", fetchImpl: fakeGemini() });
+    assert.equal((await moderation.listSellerCases(f.env.DB, 1)).length, 1);
+    f.sqlite.exec("UPDATE products SET is_active = 0 WHERE id = 1");
+    assert.equal((await moderation.listSellerCases(f.env.DB, 1)).length, 0, "delisted by the seller");
+    f.sqlite.exec("UPDATE products SET is_active = 1 WHERE id = 1");
+    f.sqlite.exec("DELETE FROM products WHERE id = 1");
+    assert.equal((await moderation.listSellerCases(f.env.DB, 1)).length, 0, "deleted product");
   } finally { f.sqlite.close(); }
 });
 

@@ -805,6 +805,10 @@ export async function listSellerCases(db: D1DatabaseLike, storeId: number) {
        LEFT JOIN products p ON p.id = c.product_id
        WHERE c.store_id = ?
          AND (c.status IN (${ACTIVE_STATUS_SQL}) OR c.resolved_at >= datetime('now', '-30 days'))
+         AND c.status != 'seller_removed'
+         -- Deleted or seller-delisted products no longer need a notice; platform removals stay for appeals.
+         AND p.id IS NOT NULL
+         AND (p.is_active = 1 OR c.status IN ('removed', 'appealed'))
        ORDER BY c.created_at DESC
        LIMIT 100`
     )
