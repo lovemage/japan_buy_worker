@@ -806,9 +806,8 @@ export async function listSellerCases(db: D1DatabaseLike, storeId: number) {
        WHERE c.store_id = ?
          AND (c.status IN (${ACTIVE_STATUS_SQL}) OR c.resolved_at >= datetime('now', '-30 days'))
          AND c.status != 'seller_removed'
-         -- Deleted or seller-delisted products no longer need a notice; platform removals stay for appeals.
-         AND p.id IS NOT NULL
-         AND (p.is_active = 1 OR c.status IN ('removed', 'appealed'))
+         -- Deleted or delisted products (by the seller or the platform) no longer show a notice.
+         AND p.is_active = 1
        ORDER BY c.created_at DESC
        LIMIT 100`
     )
